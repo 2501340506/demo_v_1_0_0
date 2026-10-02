@@ -5,6 +5,7 @@ TD_project/demo_Runs/phy_1/
 TD_project/.lock.f
 diagnostics/modelsim*/
 diagnostics/*.bin
+docs/history/2026-10-03/HANDOFF.before_event_refactor.bin
 transcript
 *.wlf
 
