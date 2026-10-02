@@ -1,0 +1,15 @@
+# Tang Dynasty generated logs and intermediate implementation databases
+TD_project/log/
+TD_project/demo_Runs/syn_1/
+TD_project/demo_Runs/phy_1/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+
+# Tool-created constraint backup
+user_source/constraints_source/.edid_debug_bak.cwc
+
