@@ -6,7 +6,7 @@
 
 完成：统一按键事件层、pending 同拍保留、自动冲突处理；ModelSim 14 组通过；TD 构建完成；用户板级验收通过。README、CHANGELOG、docs/KEY_CONTROL_LESSONS.md 已整理。本次将 02:23:16 构建的 bitstream 及配套结果复制到 best_result 作为 v0.1.0 发布归档。
 
-当前任务：将源码、测试、文档与稳定产物提交 main 并推送 origin，创建 v0.1.0 标签；推送结果以 Git 远端 main 和标签核验为准。无实施阻塞。后续如需改动，以该标签为稳定基线。
+归档已完成：源码、测试、文档与稳定产物已提交 main，main 与 v0.1.0 附注标签已原子推送至 origin（xier1-droid/anlogic-eg4-hdmi-bmp-player）。本次后续仅补充该推送状态记录。无实施阻塞；后续改动以 v0.1.0 标签为稳定基线。
 
 保留问题：Setup WNS -6.699 ns 未收敛，Hold WNS +0.011 ns；没有真实异步内存模型，也没有定量板级压力测试时长。禁止批量删除，不写摘要校验值，不为低概率情况添加过度防御。历史混合编码原件及仿真中间产物仅留本地并忽略。
 
