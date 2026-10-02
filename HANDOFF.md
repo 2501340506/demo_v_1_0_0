@@ -15,6 +15,7 @@
 - 初始化 Git 仓库，创建 `main` 分支并完成首个提交。
 - 通过 GitHub 官方 CLI 登录账户 `xier1-droid`。
 - 创建私有仓库 `xier1-droid/anlogic-eg4-hdmi-bmp-player`，添加 `origin` 并推送 `main`。
+- 更新按键引脚约束：`key1` 使用 A2（KEY1/下一张），`key2` 使用 B2（KEY2/自动轮播），`rst_n` 使用 B1（KEY3/复位）。
 
 ## 卡住的问题
 
