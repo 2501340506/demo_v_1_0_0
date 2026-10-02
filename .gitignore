@@ -2,6 +2,11 @@
 TD_project/log/
 TD_project/demo_Runs/syn_1/
 TD_project/demo_Runs/phy_1/
+TD_project/.lock.f
+diagnostics/modelsim*/
+diagnostics/*.bin
+transcript
+*.wlf
 
 # Editor and operating-system files
 .vscode/
