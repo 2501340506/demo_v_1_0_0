@@ -112,7 +112,7 @@ module tb_picture_requests;
         integer n;
         begin
             n = 0;
-            while ((dut.load_busy || dut.next_req_pending || dut.prev_req_pending) && n < 15000) begin
+            while ((dut.load_busy || dut.u_media_player_control.next_pending || dut.u_media_player_control.previous_pending) && n < 15000) begin
                 tick(1); n = n + 1;
             end
             if (n == 15000) $fatal(1, "requests did not drain");
@@ -139,10 +139,10 @@ module tb_picture_requests;
         next_key();
         key_auto = 0; tick(1030); key_auto = 1; tick(25);
         next_key();
-        if (!dut.prev_req_pending || !dut.next_req_pending)
+        if (!dut.u_media_player_control.previous_pending || !dut.u_media_player_control.next_pending)
             $fatal(1, "opposite pending request lost");
         drain();
-        if (commits - before_count != 3 || dut.auto_play_en)
+        if (commits - before_count != 3 || dut.u_media_player_control.auto_play_en)
             $fatal(1, "next/previous arbitration or long/short exclusion failed");
         $display("PASS both directions drain with next priority; long hold leaves autoplay off");
         for (i = 0; i < 20; i = i + 1) begin
@@ -185,20 +185,20 @@ module tb_picture_requests;
         $display("PASS KEY1 two-second equivalent hold and release/repress");
         pe = prev_events; se = short_events;
         key_auto = 0; tick(998); key_auto = 1; tick(25);
-        if (short_events != se + 1 || prev_events != pe || !dut.auto_play_en)
+        if (short_events != se + 1 || prev_events != pe || !dut.u_media_player_control.auto_play_en)
             $fatal(1, "below-threshold release classification");
         key_auto = 0; tick(25); key_auto = 1; tick(25);
-        if (short_events != se + 2 || dut.auto_play_en)
+        if (short_events != se + 2 || dut.u_media_player_control.auto_play_en)
             $fatal(1, "short press did not toggle exactly once");
         se = short_events; pe = prev_events; before_count = commits;
         key_auto = 0; tick(1025); key_auto = 1; tick(25); drain();
-        if (prev_events != pe + 1 || short_events != se || dut.auto_play_en || commits != before_count + 1)
+        if (prev_events != pe + 1 || short_events != se || dut.u_media_player_control.auto_play_en || commits != before_count + 1)
             $fatal(1, "above-threshold long/short exclusion");
         $display("PASS KEY2 threshold boundaries and short/long exclusion");
         before_count = commits; pe = prev_events; se = short_events;
         hold_finish = 1; next_key();
         key_auto = 0; tick(2100); key_auto = 1; tick(25);
-        if (!dut.prev_req_pending || prev_events != pe + 1 || short_events != se)
+        if (!dut.u_media_player_control.previous_pending || prev_events != pe + 1 || short_events != se)
             $fatal(1, "busy long press lost or repeated");
         hold_finish = 0; drain();
         if (commits != before_count + 2) $fatal(1, "busy previous request execution count");
@@ -207,13 +207,13 @@ module tb_picture_requests;
         key_auto = 0; tick(25); key_auto = 1; tick(25);
         key_next = 0;
         wait(dut.key1_single_press_event); @(negedge clk);
-        dut.auto_cnt = 2999;
+        dut.u_media_player_control.auto_count = 2999;
         @(posedge clk); #1;
-        if (dut.load_start_pulse || !dut.next_req_pending)
+        if (dut.load_start_pulse || !dut.u_media_player_control.next_pending)
             $fatal(1, "autoplay stole manual event cycle");
         @(negedge clk); key_next = 1; tick(25); drain();
         key_auto = 0; tick(25); key_auto = 1; tick(25);
-        if (dut.auto_play_en) $fatal(1, "autoplay shutdown failed");
+        if (dut.u_media_player_control.auto_play_en) $fatal(1, "autoplay shutdown failed");
         $display("PASS autoplay expiry yields to stable manual edge");
         before_count = commits; start_base = starts; saved_idx = dut.img_idx;
         hold_finish = 1;
@@ -227,33 +227,33 @@ module tb_picture_requests;
             $fatal(1, "four-image direction priority/order failed");
         $display("PASS four-image next/next/previous execution order");
         // Isolate arbitration collision: old pending is consumed while a new event arrives.
-        @(negedge clk); dut.next_req_pending = 1;
+        @(negedge clk); dut.u_media_player_control.next_pending = 1;
         force dut.key1_single_press_event = 1;
         @(posedge clk); #1;
-        if (!dut.load_start_pulse || !dut.next_req_pending)
+        if (!dut.load_start_pulse || !dut.u_media_player_control.next_pending)
             $fatal(1, "same-cycle next capture lost");
         @(negedge clk); release dut.key1_single_press_event; drain();
-        @(negedge clk); dut.prev_req_pending = 1;
+        @(negedge clk); dut.u_media_player_control.previous_pending = 1;
         force dut.prev_event = 1;
         @(posedge clk); #1;
-        if (!dut.load_start_pulse || !dut.prev_req_pending)
+        if (!dut.load_start_pulse || !dut.u_media_player_control.previous_pending)
             $fatal(1, "same-cycle previous capture lost");
         @(negedge clk); release dut.prev_event; tick(2); drain();
         $display("PASS simultaneous pending consumption and new event capture");
         // Expiry at the long-event production edge must not preempt the registered event.
         key_auto = 0; tick(25); key_auto = 1; tick(25);
         key_auto = 0;
-        wait(dut.key2_long_due); @(negedge clk); dut.auto_cnt = 2999;
+        wait(dut.key2_long_due); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
         @(posedge clk); #1;
         if (dut.load_start_pulse || !dut.prev_event)
             $fatal(1, "autoplay preempted KEY2 threshold");
         tick(25); key_auto = 1; tick(25); drain();
         key_auto = 0; tick(25); key_auto = 1;
-        wait(dut.key2_single_release_event); @(negedge clk); dut.auto_cnt = 2999;
+        wait(dut.key2_single_release_event); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
         @(posedge clk); #1;
         if (dut.load_start_pulse) $fatal(1, "autoplay preempted short release");
         tick(3);
-        if (dut.auto_play_en || dut.auto_cnt != 0) $fatal(1, "short release did not reset autoplay");
+        if (dut.u_media_player_control.auto_play_en || dut.u_media_player_control.auto_count != 0) $fatal(1, "short release did not reset autoplay");
         $display("PASS autoplay expiry at KEY2 threshold and short release");
         $finish;
     end

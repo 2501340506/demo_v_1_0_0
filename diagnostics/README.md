@@ -41,6 +41,9 @@ if (-not (Test-Path -LiteralPath "$simLib/_info")) {
     if ($LASTEXITCODE -ne 0) { throw 'vlib failed' }
 }
 $rtlFiles = @(
+    'user_source/hdl_source/SD/media_player_control.v'
+    'user_source/hdl_source/SD/media_policy.v'
+    'user_source/hdl_source/SD/dual_key_event_router.v'
     'user_source/hdl_source/SD/sd_card_bmp.v'
     'user_source/hdl_source/SD/bmp_read.v'
     'user_source/hdl_source/SD/sd_card_top.v'
@@ -65,3 +68,12 @@ if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
 | modelsim_work/、modelsim_work_4img/、modelsim_work_delay/ | 旧验证产物，仅本地保留，不作为当前验证依据 |
 
 上述 ModelSim 目录均已被 Git 忽略。原 HANDOFF 编码备份已移到 docs/history/2026-10-03/HANDOFF.before_event_refactor.bin，并继续忽略。无需为文档整理删除仿真库；如果后续需要批量清理目录，按项目约定由用户手动处理。
+## Media control extraction (2026-10-03)
+The 14 integration cases pass using the extracted controller. Hierarchical injection
+now targets u_media_player_control; no legacy pending registers remain.
+Compile diagnostics/tb_media_player_control.sv with the same RTL list and run
+ tb_media_player_control for acceptance, current committed index, direction priority,
+same-cycle capture, single-image wrapping, and exact autoplay boundary checks.
+Latest logs: modelsim_check/control_fixed.log and control_unit_fixed.log.
+Both simulations finished with 0 errors and 0 warnings. TD synthesis and board tests
+have not been run for this change.

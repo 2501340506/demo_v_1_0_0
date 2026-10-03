@@ -31,9 +31,9 @@ TF 卡中的图片需要满足以下格式：
 
 工程按扇区顺序查找图片，不依赖 FAT 文件名。上电后自动显示找到的第一张图片。加载期间每个方向最多挂起一次请求，下一张优先于上一张，再优先于自动轮播。
 
-## 当前版本：v0.1.0
+## 当前版本：v0.1.3
 
-2026-10-03 用户确认当前按键功能及稳定性表现良好，作为本次稳定归档版本。ModelSim 14 组回归通过；TD 完成综合、布局布线和 bitstream 构建。Setup WNS -6.699 ns，Hold WNS +0.011 ns：功能验收通过，但时序尚未完全收敛。
+2026-10-03 用户确认媒体控制模块拆分后的板级功能正常，作为本次归档版本。ModelSim 14 组回归通过；TD 完成综合、布局布线和 bitstream 构建。Setup WNS -6.699 ns，Hold WNS +0.011 ns：功能验收通过，但时序尚未完全收敛。
 
 版本说明见 [CHANGELOG.md](CHANGELOG.md)，修改经验见 [按键与加载链路经验](docs/KEY_CONTROL_LESSONS.md)，仿真范围见 [diagnostics/README.md](diagnostics/README.md)。
 
@@ -55,5 +55,4 @@ user_source/
 3. 依次运行综合和布局布线。
 4. 生成的 bitstream 位于 `TD_project/demo_Runs/phy_1/demo.bit`。
 
-仓库中的 `TD_project/demo_Runs/best_result/demo.bit` 已更新为本次验收版本，构建时间为 2026-10-03 02:23:16。该目录是发布归档，不表示时序最优；使用版本标签 v0.1.0 可定位本次源码与产物。IP 包装文件已包含在 `user_source/hdl_source/IP`，相关说明见 `user_source/hdl_source/_IP核需在TD中生成.txt`。
-
+当前验收产物及验证报告见 [releases/v0.1.3](releases/v0.1.3/README.md)，源码由标签 v0.1.3 定位。best_result 保留旧发布产物。时序问题按用户要求暂不处理。

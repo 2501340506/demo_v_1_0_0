@@ -50,6 +50,9 @@ wire combo_active;
 wire combo_press_event;
 wire combo_release_event;
 wire media_next_request, media_previous_request, media_auto_toggle_request, media_combo_request;
+wire ctrl_auto_play_en, ctrl_next_pending, ctrl_prev_pending, ctrl_auto_tick, ctrl_load_request;
+wire [1:0] ctrl_target_image;
+wire ctrl_request_accept;
 wire key2_long_due;
 reg  prev_event;
 reg  short_event;
@@ -79,8 +82,6 @@ reg              load_start_pulse;
 reg [31:0]       load_sector;
 reg              scan_kicked;
 reg              first_image_committed;
-reg              auto_play_en;
-reg [31:0]       auto_cnt;
 reg [2:0]        img_found_count;
 reg [1:0]        img_idx;              // 当前真正显示中的图片编号
 reg [1:0]        load_idx;             // 当前正在写入的图片编号
@@ -89,8 +90,6 @@ reg [31:0]       img_sector0;
 reg [31:0]       img_sector1;
 reg [31:0]       img_sector2;
 reg [31:0]       img_sector3;
-reg              next_req_pending;
-reg              prev_req_pending;
 reg              load_busy;
 reg [31:0]       long_press_cnt;
 
@@ -104,9 +103,6 @@ reg              write_started_seen;
 reg [2:0]        wrfin_tgl_sync;
 wire             write_finish_pulse;
 
-wire auto_tick;
-wire [1:0] next_from_current;
-wire [1:0] prev_from_current;
 wire source_done_now;
 wire write_finish_now;
 
@@ -116,11 +112,9 @@ localparam integer COMBO_WINDOW_CYCLES = (CLK_FREQ_HZ / 1000) * COMBO_WINDOW_MS;
 localparam integer COMBO_DEBUG_CYCLES = CLK_FREQ_HZ / 1;
 reg [31:0] combo_debug_timer;
 
+assign ctrl_request_accept = ctrl_load_request && bmp_ready;
 assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
-assign auto_tick  = (auto_cnt == (AUTO_PLAY_CYCLES - 1));
-assign next_from_current = next_index_limited(img_idx, img_found_count);
-assign prev_from_current = prev_index_limited(img_idx, img_found_count);
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign source_done_now = source_done_seen || (source_busy_seen && bmp_ready);
 assign write_finish_now = write_finish_seen || write_finish_pulse;
@@ -178,6 +172,21 @@ media_policy u_media_policy (
     .auto_toggle_request(media_auto_toggle_request), .combo_request(media_combo_request)
 );
 
+media_player_control #(
+    .AUTO_PLAY_CYCLES(AUTO_PLAY_CYCLES)
+) u_media_player_control (
+    .clk(clk), .rst(rst), .enable(sd_init_done && (scan_kicked || !bmp_ready)), .scan_done(scan_done),
+    .display_valid(display_valid), .load_busy(load_busy),
+    .first_image_committed(first_image_committed), .image_count(img_found_count),
+    .current_image(img_idx), .next_event(media_next_request),
+    .previous_event(media_previous_request), .auto_toggle_event(media_auto_toggle_request),
+    .request_accept(ctrl_request_accept),
+    .manual_activity(key2_single_press_event || key2_single_release_event || key2_long_due),
+    .next_load_request(), .previous_load_request(), .auto_load_request(),
+    .auto_play_en(ctrl_auto_play_en), .next_pending(ctrl_next_pending),
+    .previous_pending(ctrl_prev_pending), .auto_tick(ctrl_auto_tick),
+    .load_request(ctrl_load_request), .target_image(ctrl_target_image)
+);
 
 key_press_debounce #(
     .CLK_FREQ_HZ (CLK_FREQ_HZ),
@@ -189,34 +198,6 @@ key_press_debounce #(
     .press_pulse      (),
     .button_stable_out(key2_stable)
 );
-
-function [1:0] next_index_limited;
-    input [1:0] cur;
-    input [2:0] count;
-    begin
-        case (count)
-            3'd0: next_index_limited = 2'd0;
-            3'd1: next_index_limited = 2'd0;
-            3'd2: next_index_limited = (cur == 2'd1) ? 2'd0 : (cur + 2'd1);
-            3'd3: next_index_limited = (cur == 2'd2) ? 2'd0 : (cur + 2'd1);
-            default: next_index_limited = (cur == 2'd3) ? 2'd0 : (cur + 2'd1);
-        endcase
-    end
-endfunction
-
-function [1:0] prev_index_limited;
-    input [1:0] cur;
-    input [2:0] count;
-    begin
-        case (count)
-            3'd0: prev_index_limited = 2'd0;
-            3'd1: prev_index_limited = 2'd0;
-            3'd2: prev_index_limited = (cur == 2'd0) ? 2'd1 : (cur - 2'd1);
-            3'd3: prev_index_limited = (cur == 2'd0) ? 2'd2 : (cur - 2'd1);
-            default: prev_index_limited = (cur == 2'd0) ? 2'd3 : (cur - 2'd1);
-        endcase
-    end
-endfunction
 
 function [31:0] sector_lut;
     input [1:0] idx;
@@ -262,8 +243,7 @@ always @(posedge clk or posedge rst) begin
         load_sector           <= 32'd0;
         scan_kicked           <= 1'b0;
         first_image_committed <= 1'b0;
-        auto_play_en          <= 1'b0;
-        auto_cnt              <= 32'd0;
+
         img_found_count       <= 3'd0;
         img_idx               <= 2'd0;
         load_idx              <= 2'd0;
@@ -274,8 +254,7 @@ always @(posedge clk or posedge rst) begin
         img_sector1           <= 32'd0;
         img_sector2           <= 32'd0;
         img_sector3           <= 32'd0;
-        next_req_pending      <= 1'b0;
-        prev_req_pending      <= 1'b0;
+
         load_busy             <= 1'b0;
         long_press_cnt        <= 32'd0;
         key1_stable_d         <= 1'b1;
@@ -327,8 +306,7 @@ always @(posedge clk or posedge rst) begin
         if (!sd_init_done) begin
             scan_kicked           <= 1'b0;
             first_image_committed <= 1'b0;
-            auto_play_en          <= 1'b0;
-            auto_cnt              <= 32'd0;
+
             img_found_count       <= 3'd0;
             img_idx               <= 2'd0;
             load_idx              <= 2'd0;
@@ -339,8 +317,7 @@ always @(posedge clk or posedge rst) begin
             img_sector1           <= 32'd0;
             img_sector2           <= 32'd0;
             img_sector3           <= 32'd0;
-            next_req_pending      <= 1'b0;
-            prev_req_pending      <= 1'b0;
+
             load_busy             <= 1'b0;
             long_press_cnt        <= 32'd0;
             key1_stable_d         <= 1'b1;
@@ -424,16 +401,14 @@ always @(posedge clk or posedge rst) begin
                 scan_start_pulse      <= 1'b1;
                 scan_kicked           <= 1'b1;
                 first_image_committed <= 1'b0;
-                auto_play_en          <= 1'b0;
-                auto_cnt              <= 32'd0;
+
                 img_found_count       <= 3'd0;
                 img_idx               <= 2'd0;
                 load_idx              <= 2'd0;
                 pending_buf_idx       <= 2'd0;
                 write_buf_idx         <= 2'd0;
                 disp_buf_idx          <= 2'd0;
-                next_req_pending      <= 1'b0;
-                prev_req_pending      <= 1'b0;
+
                 display_valid         <= 1'b0;
                 load_busy             <= 1'b0;
                 long_press_cnt        <= 32'd0;
@@ -447,27 +422,7 @@ always @(posedge clk or posedge rst) begin
                 source_done_seen      <= 1'b0;
                 write_finish_seen     <= 1'b0;
             end else begin
-                // 忙的时候也只记 1 次“下一张”请求，不会累积成连跳两张
-                if (media_auto_toggle_request && scan_done && (img_found_count > 3'd1)) begin
-                    auto_play_en <= ~auto_play_en;
-                    auto_cnt     <= 32'd0;
-                end
-
-                // 自动播放计数：只有当前没有写图任务时才计时
-                if (scan_done && auto_play_en && display_valid && !load_busy && first_image_committed &&
-                    (img_found_count > 3'd1) && !media_auto_toggle_request &&
-                    !media_next_request && !media_previous_request &&
-                    !key2_single_press_event && !key2_single_release_event && !key2_long_due &&
-                    !next_req_pending && !prev_req_pending) begin
-                    if (auto_tick)
-                        auto_cnt <= 32'd0;
-                    else
-                        auto_cnt <= auto_cnt + 32'd1;
-                end else begin
-                    auto_cnt <= 32'd0;
-                end
-
-                // 首图自动加载到 buffer0
+                // First image loading stays local.
                 if (scan_done && !first_image_committed && bmp_ready && !load_busy && (img_found_count != 3'd0)) begin
                     load_idx         <= 2'd0;
                     load_sector      <= img_sector0;
@@ -478,59 +433,19 @@ always @(posedge clk or posedge rst) begin
                     source_busy_seen <= 1'b0;
                     source_done_seen <= 1'b0;
                     write_finish_seen <= 1'b0;
-                    auto_cnt         <= 32'd0;
+
                 end
-                // 手动下一张优先：写到“非当前显示”的另一块 buffer
-                else if (scan_done && bmp_ready && display_valid && !load_busy &&
-                         next_req_pending && (img_found_count != 3'd0)) begin
-                    load_idx         <= next_from_current;
-                    load_sector      <= sector_lut(next_from_current);
-                    pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
+                // Accept request and index together; write to the inactive buffer.
+                else if (ctrl_request_accept) begin
+                    load_idx <= ctrl_target_image;
+                    load_sector <= sector_lut(ctrl_target_image);
+                    pending_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
+                    write_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;
-                    load_busy        <= 1'b1;
+                    load_busy <= 1'b1;
                     source_busy_seen <= 1'b0;
                     source_done_seen <= 1'b0;
                     write_finish_seen <= 1'b0;
-                    next_req_pending <= 1'b0;
-                    auto_cnt         <= 32'd0;
-                end
-                // 手动上一张次优先：同样写到“非当前显示”的另一块 buffer
-                else if (scan_done && bmp_ready && display_valid && !load_busy &&
-                         prev_req_pending && (img_found_count != 3'd0)) begin
-                    load_idx         <= prev_from_current;
-                    load_sector      <= sector_lut(prev_from_current);
-                    pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
-                    load_start_pulse <= 1'b1;
-                    load_busy        <= 1'b1;
-                    source_busy_seen <= 1'b0;
-                    source_done_seen <= 1'b0;
-                    write_finish_seen <= 1'b0;
-                    prev_req_pending <= 1'b0;
-                    auto_cnt         <= 32'd0;
-                end
-                // 自动播放下一张：同样写到“非当前显示”的另一块 buffer
-                else if (scan_done && bmp_ready && display_valid && !load_busy && auto_play_en && auto_tick &&
-                         (img_found_count > 3'd1) && !media_auto_toggle_request &&
-                         !media_next_request && !media_previous_request &&
-                         !key2_single_press_event && !key2_single_release_event && !key2_long_due &&
-                         !next_req_pending && !prev_req_pending) begin
-                    load_idx         <= next_from_current;
-                    load_sector      <= sector_lut(next_from_current);
-                    pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
-                    load_start_pulse <= 1'b1;
-                    load_busy        <= 1'b1;
-                    source_busy_seen <= 1'b0;
-                    source_done_seen <= 1'b0;
-                    write_finish_seen <= 1'b0;
-                    auto_cnt         <= 32'd0;
-                end
-                // Capture after consumption: a new event on the consumption cycle survives.
-                if (scan_done && (img_found_count != 3'd0)) begin
-                    if (media_next_request) next_req_pending <= 1'b1;
-                    if (media_previous_request) prev_req_pending <= 1'b1;
                 end
             end
         end
