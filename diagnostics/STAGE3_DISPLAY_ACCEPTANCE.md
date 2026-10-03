@@ -1,6 +1,6 @@
 # 第三阶段：轮播小数点提示验收
 
-2026-10-04 用户确认板级验收正常。固定验收产物见 releases/v0.1.7/demo.bit，后续构建目录将更新。
+2026-10-04 用户确认板级验收正常。固定验收产物见 releases/v0.1.7/demo.bit，该文件为历史阶段说明；最终归档位于 releases/v0.1.8，构建目录可能包含后续版本结果。
 
 ## 行为
 
@@ -14,7 +14,7 @@
 
 运行 `./diagnostics/run_control_tests.ps1`；日志 `diagnostics/modelsim_check/stage3_tb_*.log`，完整日志 `stage3_suite.log`。
 
-TD 综合、布局布线、bitgen 完成。文件 `TD_project/demo_Runs/phy_1/demo.bit`，2026-10-04 00:39:15（北京时间），629624 字节。Setup WNS -6.699 ns，TNS -293.790 ns；Hold WNS +0.004 ns。时序仍未收敛，按约定暂缓；保留既有 SDRAM 位置调整、局部时钟布线等警告。构建日志分别位于 syn_1/build_stage3.log 和 phy_1/build_stage3.log。已验收基线为 `releases/v0.1.6/demo.bit`，未替换。
+TD 综合、布局布线、bitgen 完成。文件 `TD_project/demo_Runs/phy_1/demo.bit`，2026-10-04 00:39:15（北京时间），629624 字节。Setup WNS -6.699 ns，TNS -293.790 ns；Hold WNS +0.004 ns。时序仍未收敛，按约定暂缓；保留既有 SDRAM 位置调整、局部时钟布线等警告。构建日志分别位于 syn_1/build_stage3.log 和 phy_1/build_stage3.log。当时阶段基线为 `releases/v0.1.6/demo.bit`；最终归档使用 releases/v0.1.8。
 
 ## 上板步骤
 

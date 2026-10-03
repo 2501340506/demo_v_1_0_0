@@ -43,7 +43,7 @@ frame_read_write 原来 9 位 FIFO 用量直接连接 10 位控制器输入，�
 
 ## 构建与板级验收
 
-TD 综合、布局布线、bitgen 已完成。新文件 `TD_project/demo_Runs/phy_1/demo.bit`，2026-10-04 01:05:13（北京时间），629624 字节。Setup WNS -6.699 ns，TNS -292.732 ns；Hold WNS +0.003 ns。时序仍未收敛，保留既有 IP/SDRAM 位置/局部时钟布线警告。本阶段未修改时序约束。构建日志为 syn_1/build_stage4.log、phy_1/build_stage4.log。已验收回退版本为 releases/v0.1.7/demo.bit，未替换。
+TD 综合、布局布线、bitgen 已完成。新文件 `TD_project/demo_Runs/phy_1/demo.bit`，2026-10-04 01:05:13（北京时间），629624 字节。Setup WNS -6.699 ns，TNS -292.732 ns；Hold WNS +0.003 ns。时序仍未收敛，保留既有 IP/SDRAM 位置/局部时钟布线警告。本阶段未修改时序约束。构建日志为 syn_1/build_stage4.log、phy_1/build_stage4.log。历史回退版本为 releases/v0.1.7/demo.bit；最终验收归档为 releases/v0.1.8。
 
 1. 下载新版本，上电确认首图可出现，不能一直黑屏或停在读取状态。
 2. 四张明显不同的图片连续 KEY1 切换、KEY2 长按反向切换；图片编号应跟随完成的切换，不停住或跳错顺序。

@@ -7,7 +7,7 @@
 文件：`TD_project/demo_Runs/phy_1/demo.bit`。
 生成时间：2026-10-03 23:32:30（北京时间）；大小：629624 字节。
 本阶段修复窗口内快速短按丢失，以及窗口外重叠按键被误识别为组合。
-已有 releases/v0.1.4 与 best_result 未替换；未提交或上传 GitHub。
+已有 releases/v0.1.4 与 best_result 未替换；当时阶段记录；现已由 v0.1.5 归档并上传。
 
 ModelSim：原 14 项、新增 4 组集成检查、路由/播放/显示专项全部通过，0 errors、0 warnings。
 TD 6.2：综合、布局布线、bitgen 完成。Setup WNS -6.699 ns，Hold WNS +0.003 ns，时序仍未收敛。保留 SDRAM 位置调整、局部时钟布线等既有警告。
