@@ -2,7 +2,7 @@
 
 更新日期：2026-10-04
 
-## 模式选择阶段3已构建，等待上板验收
+## 模式选择阶段4已完成
 
 - 当前任务：按批准的四阶段方案增加拨码模式、新按键映射和模式显示。每阶段上板确认后再继续；加载请求挂起机制保持远程基线行为。
 - 已完成：新增 `switch_mode_control`，50MHz域同步SW2/SW1并整体稳定20ms后更新；模式显示在 `seg_data_4`；顶层及约束登记SW1=C8、SW2=C7、KEY4=C1；TD工程登记新模块。
@@ -11,9 +11,10 @@
 - TD结果：综合、布局布线和bitgen完成；`TD_project/demo_Runs/phy_1/demo.bit`为本阶段产物，629624字节。Setup WNS −6.699ns、TNS −294.291ns；Hold WNS +0.003ns、TNS 0ns。LUT 4349、寄存器3937、BRAM 20、PLL 3。
 - 阶段2板级验收已通过。阶段3增加模式变化重置AUTO计时，保留AUTO状态和已有挂起请求；`tb_media_player_control`通过，0 errors、0 warnings。
 - TD结果：阶段3产物正在生成/复用当前工程运行；上板前需确认 `phy_1/demo.bit` 更新时间和bitgen日志。阶段3等待用户上板验收。
-- 当前阻塞：等待用户确认四模式AUTO、模式切换重新计时、忙时挂起和切回MAN行为。阶段4尚未实施。不发布、不推送。
+- 阶段3板级验收已通过；阶段4完成最终回归、文档和交接。用户已确认四模式AUTO、模式切换重新计时、忙时挂起和切回MAN行为正常。
+- 最终产物：`TD_project/demo_Runs/phy_1/demo.bit`，629624字节；bitgen成功。最终验收记录见 `diagnostics/MODE_FINAL_ACCEPTANCE.md`。
 - 构建证据：syn_1和phy_1目录的 `build_mode_stage1.log`；最终 `demo_phy.ts`、`demo_phy.area`。保留既有时序未收敛、SDRAM位置调整和局部时钟布线警告，另有原工程media_policy/seg7_panel编译顺序重复提示。
-- 下一步：阶段4整体回归与交接。详见 `diagnostics/MODE_STAGE3_ACCEPTANCE.md`。
+- 下一步：当前方案范围已完成。若继续开发，另行规划B/C图像处理、OSD或缩放；不得默认改变已验收的加载挂起机制。
 - 踩坑：TD命令行读取运行目录的 `demo.prj`，新增源文件必须同步运行文件清单；刷新脚本应使用明确的仓库绝对路径，不能把运行目录当仓库根。本次首次刷新路径错误已纠正后重新构建。
 - 后续需求仅记录：B初值0、范围−128..127；C初值128、范围0..256、至少9位。OSD、B/C处理和缩放不在本轮实现。
 
