@@ -41,6 +41,7 @@ if (-not (Test-Path -LiteralPath "$simLib/_info")) {
     if ($LASTEXITCODE -ne 0) { throw 'vlib failed' }
 }
 $rtlFiles = @(
+    'user_source/hdl_source/SD/media_display_control.v'
     'user_source/hdl_source/SD/media_player_control.v'
     'user_source/hdl_source/SD/media_policy.v'
     'user_source/hdl_source/SD/dual_key_event_router.v'
@@ -77,3 +78,6 @@ same-cycle capture, single-image wrapping, and exact autoplay boundary checks.
 Latest logs: modelsim_check/control_fixed.log and control_unit_fixed.log.
 Both simulations finished with 0 errors and 0 warnings. TD synthesis and board tests
 have not been run for this change.
+
+## 显示策略拆分专项测试
+入口 tb_media_display_control.sv，使用同一 RTL 清单编译，仿真顶层为 tb_media_display_control。覆盖正常图片 1～4、首图前 BMP 状态、全部诊断优先级、组合提示保持周期、重复触发续时、计数饱和和提示期间异步复位。缩放 CLK_FREQ_HZ=4，4 个周期代表 1 秒。日志：modelsim_check/display_tb_media_display_control.log。原有三个 testbench 同时回归，日志前缀 display_。

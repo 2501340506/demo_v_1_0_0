@@ -13,9 +13,9 @@ module sd_card_bmp #(
     input                       rst,
     input                       key_next,
     input                       key_auto,
-    output reg [3:0]            state_code,
-    output reg [7:0]            combo_event_count,
-    output reg                  combo_debug_active,
+    output     [3:0]            state_code,
+    output     [7:0]            combo_event_count,
+    output                      combo_debug_active,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
     output reg                  display_valid,
@@ -109,8 +109,6 @@ wire write_finish_now;
 localparam integer LONG_PRESS_CYCLES = (CLK_FREQ_HZ / 1000) * LONG_PRESS_MS;
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 localparam integer COMBO_WINDOW_CYCLES = (CLK_FREQ_HZ / 1000) * COMBO_WINDOW_MS;
-localparam integer COMBO_DEBUG_CYCLES = CLK_FREQ_HZ / 1;
-reg [31:0] combo_debug_timer;
 
 assign ctrl_request_accept = ctrl_load_request && bmp_ready;
 assign write_en   = bmp_data_wr_en;
@@ -170,6 +168,15 @@ media_policy u_media_policy (
     .auto_toggle_event(short_event), .combo_event(combo_press_event),
     .next_request(media_next_request), .previous_request(media_previous_request),
     .auto_toggle_request(media_auto_toggle_request), .combo_request(media_combo_request)
+);
+
+media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .DIAG_DISPLAY(DIAG_DISPLAY)) u_media_display_control (
+ .clk(clk), .rst(rst), .combo_request(media_combo_request),
+ .sd_init_done(sd_init_done), .scan_done(scan_done), .display_valid(display_valid),
+ .load_busy(load_busy), .write_started_seen(write_started_seen),
+ .source_done_now(source_done_now), .write_finish_now(write_finish_now),
+ .img_idx(img_idx), .bmp_state_code(bmp_state_code), .state_code(state_code),
+ .combo_event_count(combo_event_count), .combo_debug_active(combo_debug_active)
 );
 
 media_player_control #(
@@ -267,10 +274,6 @@ always @(posedge clk or posedge rst) begin
         source_done_seen      <= 1'b0;
         write_finish_seen     <= 1'b0;
         display_valid         <= 1'b0;
-        state_code            <= 4'd0;
-        combo_event_count     <= 8'd0;
-        combo_debug_active    <= 1'b0;
-        combo_debug_timer     <= 32'd0;
     end else begin
         wrfin_tgl_sync   <= {wrfin_tgl_sync[1:0], write_finish_toggle};
         scan_start_pulse <= 1'b0;
@@ -279,29 +282,6 @@ always @(posedge clk or posedge rst) begin
         key2_stable_d <= key2_stable;
         prev_event    <= 1'b0;
         short_event   <= 1'b0;
-        if (media_combo_request && combo_event_count != 8'hff)
-            combo_event_count <= combo_event_count + 8'd1;
-        if (media_combo_request) begin
-            combo_debug_active <= 1'b1;
-            combo_debug_timer  <= COMBO_DEBUG_CYCLES - 1;
-        end else if (combo_debug_active) begin
-            if (combo_debug_timer == 0)
-                combo_debug_active <= 1'b0;
-            else
-                combo_debug_timer <= combo_debug_timer - 1'b1;
-        end
-        if (DIAG_DISPLAY != 0) begin
-            if (!sd_init_done) state_code <= 4'd0;
-            else if (!scan_done) state_code <= 4'd1;
-            else if (!display_valid && !load_busy) state_code <= 4'd3;
-            else if (load_busy && !write_started_seen) state_code <= 4'd4;
-            else if (load_busy && !source_done_now) state_code <= 4'd6;
-            else if (load_busy && !write_finish_now) state_code <= 4'd7;
-            else if (load_busy) state_code <= 4'd5;
-            else state_code <= 4'd8;
-        end else begin
-            state_code <= display_valid ? ({2'b00, img_idx} + 4'd1) : bmp_state_code;
-        end
 
         if (!sd_init_done) begin
             scan_kicked           <= 1'b0;
