@@ -15,6 +15,7 @@ module sd_card_bmp #(
     input                       key_auto,
     output reg [3:0]            state_code,
     output reg [7:0]            combo_event_count,
+    output reg                  combo_debug_active,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
     output reg                  display_valid,
@@ -111,6 +112,8 @@ wire write_finish_now;
 localparam integer LONG_PRESS_CYCLES = (CLK_FREQ_HZ / 1000) * LONG_PRESS_MS;
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 localparam integer COMBO_WINDOW_CYCLES = (CLK_FREQ_HZ / 1000) * COMBO_WINDOW_MS;
+localparam integer COMBO_DEBUG_CYCLES = CLK_FREQ_HZ / 1;
+reg [31:0] combo_debug_timer;
 
 assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
@@ -277,6 +280,8 @@ always @(posedge clk or posedge rst) begin
         display_valid         <= 1'b0;
         state_code            <= 4'd0;
         combo_event_count     <= 8'd0;
+        combo_debug_active    <= 1'b0;
+        combo_debug_timer     <= 32'd0;
     end else begin
         wrfin_tgl_sync   <= {wrfin_tgl_sync[1:0], write_finish_toggle};
         scan_start_pulse <= 1'b0;
@@ -287,6 +292,15 @@ always @(posedge clk or posedge rst) begin
         short_event   <= 1'b0;
         if (combo_press_event && combo_event_count != 8'hff)
             combo_event_count <= combo_event_count + 8'd1;
+        if (combo_press_event) begin
+            combo_debug_active <= 1'b1;
+            combo_debug_timer  <= COMBO_DEBUG_CYCLES - 1;
+        end else if (combo_debug_active) begin
+            if (combo_debug_timer == 0)
+                combo_debug_active <= 1'b0;
+            else
+                combo_debug_timer <= combo_debug_timer - 1'b1;
+        end
         if (DIAG_DISPLAY != 0) begin
             if (!sd_init_done) state_code <= 4'd0;
             else if (!scan_done) state_code <= 4'd1;
