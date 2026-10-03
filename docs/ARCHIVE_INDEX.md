@@ -44,3 +44,9 @@ v0.1.1、v0.1.2 为早期过程归档，保留原目录和标签。
 - `TD_project/demo.al`
 - `TD_project/demo_Runs/best_result/demo.bit`
 - `TD_project/demo_Runs/best_result/demo_phy.ts`
+
+## 本次目录历史归档
+
+- [诊断阶段资料](../diagnostics/history/2026-10-04/README.md)
+- [已完成计划与经验资料](history/2026-10-04/README.md)
+- 旧文档路径保留索引入口；测试源码、脚本、本地仿真库及 releases 均保持原位。
