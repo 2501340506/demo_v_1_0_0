@@ -1,26 +1,46 @@
-﻿# Anlogic EG4 HDMI BMP Player
+﻿# 安路 EG4 HDMI 图片播放器
 
-当前归档版本：v0.2.0，2026-10-04，分支demo010-0_1_1。本次未创建Git标签或GitHub Release。
+当前版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。开发分支：`demo010-0_1_1`；合并至 `main` 等待用户审核。
+
+基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz测试音。本版增加拨码模式显示与独立三键控制。
+
+## 使用方式
 
 | SW2 SW1 | 模式位 | KEY1 | KEY2 |
 |---|---|---|---|
 | 00 | 0 图片 | 上一张 | 下一张 |
-| 01 | 1 亮度预留 | 无新请求 | 无新请求 |
-| 10 | 2 对比度预留 | 无新请求 | 无新请求 |
-| 11 | 3 缩放预留 | 无新请求 | 无新请求 |
+| 01 | 1 亮度预留 | 不产生新请求 | 不产生新请求 |
+| 10 | 2 对比度预留 | 不产生新请求 | 不产生新请求 |
+| 11 | 3 缩放预留 | 不产生新请求 | 不产生新请求 |
 
-KEY4单击切换MAN/AUTO；复位MAN，扫描完成且图片多于一张才允许切换AUTO。按键20ms消抖，长按不连发。SW1=C8、SW2=C7，拨上为1；KEY4=C1，按下为0。
+KEY4单击切换MAN/AUTO。复位默认MAN，扫描完成且图片多于一张时允许切换AUTO。三个按键20ms消抖，长按不连发；图片首尾循环。
 
-AUTO跨模式保持，空闲约3秒后轮播；模式变化重新计时。加载时各方向最多挂起一次，同向合并，下一张优先于上一张，再优先于自动轮播。图片编号在显示交接确认后更新，小数点表示AUTO。
+AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间隔包括加载时间。模式变化重新计时。图片编号位小数点表示AUTO。
 
-TF卡扫描前131072扇区，最多4张640×480、24位未压缩BMP；双缓冲HDMI输出和48kHz测试音。未实现OSD、B/C调节及缩放。
+加载期间每个方向最多挂起一次，同向请求合并；下一张优先于上一张，再优先于自动轮播。模式切换不清除已有挂起请求；切回MAN不取消已开始的加载和挂起的手动请求。图片编号在显示交接确认后更新。
 
-用户确认阶段1至3板级正常；专项仿真和TD构建通过。完整集成回归仍需适配旧测试，不能视为全套通过。时序未收敛：Setup WNS −6.699ns，Hold WNS +0.003ns。
+## 硬件与图片
 
-- [固定bitstream](releases/v0.2.0/demo.bit)
-- [版本说明](releases/v0.2.0/README.md)
-- [当前交接](HANDOFF.md)
-- [验证边界](diagnostics/README.md)
-- [归档索引](docs/ARCHIVE_INDEX.md)
+| 信号 | FPGA引脚 | 说明 |
+|---|---|---|
+| KEY1 | A2 | 按下为0 |
+| KEY2 | B2 | 按下为0 |
+| KEY4 | C1 | 按下为0 |
+| SW1 | C8 | 拨上为1 |
+| SW2 | C7 | 拨上为1 |
 
-构建：Tang Dynasty 6.2打开TD_project/demo.al，器件EG4S20BG256，顶层top；产物TD_project/demo_Runs/phy_1/demo.bit会随构建覆盖，固定版本使用releases目录。
+图片须为640×480、24位、未压缩BMP。程序按扇区顺序扫描前131072个扇区，最多查找4张图片，不依赖FAT文件名；上电自动加载首图。模式位显示0/1/2/3，不代表亮度、对比度或缩放已经实现。
+
+## 下载与构建
+
+- [已验收的固定bitstream](releases/v0.2.0/demo.bit)
+- [中文版本说明及构建报告](releases/v0.2.0/README.md)
+- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/V0_2_0_MERGE_REVIEW.md)
+
+使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，固定版本使用 `releases/v0.2.0/demo.bit`，不使用旧 `best_result` 产物。
+
+## 验证状态与范围
+
+用户已确认阶段1至3板级功能正常；专项仿真和TD构建有通过记录。完整集成回归尚需适配旧图片测试，本轮未重新执行RTL仿真或构建。Setup WNS −6.699ns，Hold WNS +0.003ns，时序未完全收敛。[具体验证边界](docs/VALIDATION_STATUS.md)。
+
+本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。

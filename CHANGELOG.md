@@ -1,16 +1,18 @@
-# Version history
-
-## v0.2.0 - 2026-10-04
-
-Switch mode display, independent KEY1/KEY2 direction control in mode 00, KEY4 MAN/AUTO toggle, mode-change timer reset. Pending direction semantics retained. No OSD, B/C adjustment or scaling. Fixed artifacts: releases/v0.2.0/. No Git tag created.
-
-Board acceptance passed for stages 1-3. Focused simulations and TD builds passed. Full integration regression is NOT complete: tb_picture_requests.sv still uses removed ports, parameters and hierarchy. The asynchronous buffer regression was not rerun in this cycle. Mode change coincident with AUTO expiry also needs a dedicated check.
-
-## v0.1.9 - 2026-10-04
-
-Panel module refactor; TD build and board acceptance passed. See releases/v0.1.9/README.md.
-
 # 版本更新说明
+
+## v0.2.0 — 2026-10-04
+
+- 四模式数码管显示；00模式KEY1上一张、KEY2下一张，其他模式不产生新方向请求。
+- KEY4切换MAN/AUTO，长按不连发；AUTO跨模式保持，模式变化重置等待计时。
+- 保留原请求挂起、同向合并、方向优先级与双缓冲显示交接。
+- 用户已确认阶段1至3板级正常；专项仿真和TD构建有通过记录。完整图片集成测试仍待适配，异步缓冲回归待补跑，模式变化与AUTO到期同拍需补测。
+- 固定产物和中文说明见 [releases/v0.2.0](releases/v0.2.0/README.md)，Git标签为v0.2.0；main合并等待用户审核。
+- 时序尚未收敛；不包含OSD、B/C调节、缩放。详见[验证边界](docs/VALIDATION_STATUS.md)。
+
+## v0.1.9 — 2026-10-04
+
+- 数码管面板模块化，保留图片编号和AUTO提示。
+- TD构建和用户板级验收通过；详见 [版本说明](releases/v0.1.9/README.md)。
 
 ## v0.1.8 — 2026-10-04
 

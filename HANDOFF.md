@@ -1,6 +1,6 @@
-﻿# 当前交接记录
+# 当前交接记录
 
-更新：2026-10-04。当前归档编号：v0.2.0；分支：demo010-0_1_1。本次不创建Git标签或GitHub Release。
+更新：2026-10-04。当前版本标签：v0.2.0；分支：demo010-0_1_1。标签与中文文档提交后推送GitHub，main等待用户审核通过再合并。
 
 ## 当前任务与已完成内容
 
@@ -30,5 +30,13 @@ TD命令行使用运行目录demo.prj；新增源文件需同步清单，使用�
 
 - [固定产物和版本说明](releases/v0.2.0/README.md)
 - [归档索引](docs/ARCHIVE_INDEX.md)
-- [验证说明](diagnostics/README.md)
+- [验证说明](docs/VALIDATION_STATUS.md)
 - [替换前交接原文](docs/history/2026-10-04/HANDOFF_pre_v0.2.0.md)
+
+## 本次版本工作与审核入口
+
+- 完成README、版本说明、CHANGELOG和当前归档索引的中文整理；不修改RTL或重新生成产物。
+- [审核说明](docs/V0_2_0_MERGE_REVIEW.md)列出main至当前分支的累计范围，用户确认后才快进合并并推送main。
+- 新增版本标签v0.2.0指向本次文档提交，既有版本标签不改写；不另建GitHub Release页面。
+- 工作区5份诊断文档删除及问题小记录修改为用户未提交内容，不恢复、不提交；当前文档入口改指docs/VALIDATION_STATUS.md。
+- 本次检查：文档链接、中文编码、归档bitstream与阶段3产物逐字节一致、合并祖先关系。未补跑先前标明缺失的集成回归。
