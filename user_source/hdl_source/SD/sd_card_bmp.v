@@ -49,6 +49,7 @@ wire key2_single_release_event;
 wire combo_active;
 wire combo_press_event;
 wire combo_release_event;
+wire media_next_request, media_previous_request, media_auto_toggle_request, media_combo_request;
 wire key2_long_due;
 reg  prev_event;
 reg  short_event;
@@ -168,6 +169,15 @@ dual_key_event_router #(
     .key1_single_release_event(key1_single_release_event),
     .key2_single_release_event(key2_single_release_event)
 );
+
+media_policy u_media_policy (
+    .clk(clk), .rst(rst),
+    .next_event(key1_single_press_event), .previous_event(prev_event),
+    .auto_toggle_event(short_event), .combo_event(combo_press_event),
+    .next_request(media_next_request), .previous_request(media_previous_request),
+    .auto_toggle_request(media_auto_toggle_request), .combo_request(media_combo_request)
+);
+
 
 key_press_debounce #(
     .CLK_FREQ_HZ (CLK_FREQ_HZ),
@@ -290,9 +300,9 @@ always @(posedge clk or posedge rst) begin
         key2_stable_d <= key2_stable;
         prev_event    <= 1'b0;
         short_event   <= 1'b0;
-        if (combo_press_event && combo_event_count != 8'hff)
+        if (media_combo_request && combo_event_count != 8'hff)
             combo_event_count <= combo_event_count + 8'd1;
-        if (combo_press_event) begin
+        if (media_combo_request) begin
             combo_debug_active <= 1'b1;
             combo_debug_timer  <= COMBO_DEBUG_CYCLES - 1;
         end else if (combo_debug_active) begin
@@ -438,15 +448,15 @@ always @(posedge clk or posedge rst) begin
                 write_finish_seen     <= 1'b0;
             end else begin
                 // 忙的时候也只记 1 次“下一张”请求，不会累积成连跳两张
-                if (short_event && scan_done && (img_found_count > 3'd1)) begin
+                if (media_auto_toggle_request && scan_done && (img_found_count > 3'd1)) begin
                     auto_play_en <= ~auto_play_en;
                     auto_cnt     <= 32'd0;
                 end
 
                 // 自动播放计数：只有当前没有写图任务时才计时
                 if (scan_done && auto_play_en && display_valid && !load_busy && first_image_committed &&
-                    (img_found_count > 3'd1) && !short_event &&
-                    !key1_single_press_event && !prev_event &&
+                    (img_found_count > 3'd1) && !media_auto_toggle_request &&
+                    !media_next_request && !media_previous_request &&
                     !key2_single_press_event && !key2_single_release_event && !key2_long_due &&
                     !next_req_pending && !prev_req_pending) begin
                     if (auto_tick)
@@ -502,8 +512,8 @@ always @(posedge clk or posedge rst) begin
                 end
                 // 自动播放下一张：同样写到“非当前显示”的另一块 buffer
                 else if (scan_done && bmp_ready && display_valid && !load_busy && auto_play_en && auto_tick &&
-                         (img_found_count > 3'd1) && !short_event &&
-                         !key1_single_press_event && !prev_event &&
+                         (img_found_count > 3'd1) && !media_auto_toggle_request &&
+                         !media_next_request && !media_previous_request &&
                          !key2_single_press_event && !key2_single_release_event && !key2_long_due &&
                          !next_req_pending && !prev_req_pending) begin
                     load_idx         <= next_from_current;
@@ -519,8 +529,8 @@ always @(posedge clk or posedge rst) begin
                 end
                 // Capture after consumption: a new event on the consumption cycle survives.
                 if (scan_done && (img_found_count != 3'd0)) begin
-                    if (key1_single_press_event) next_req_pending <= 1'b1;
-                    if (prev_event) prev_req_pending <= 1'b1;
+                    if (media_next_request) next_req_pending <= 1'b1;
+                    if (media_previous_request) prev_req_pending <= 1'b1;
                 end
             end
         end
