@@ -6,7 +6,7 @@ module sd_card_bmp #(
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
     parameter integer LONG_PRESS_MS      = 1000,
     parameter integer AUTO_PLAY_MS       = 3000,
-    parameter integer COMBO_WINDOW_MS    = 1,
+    parameter integer COMBO_WINDOW_MS    = 100,
     parameter integer DIAG_DISPLAY       = 0
 )(
     input                       clk,

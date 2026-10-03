@@ -29,7 +29,7 @@ module tb_picture_requests;
     reg hold_finish = 0, finish_pending = 0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .SCAN_MAX_SECTOR(4),
                   .SCAN_TARGET_COUNT(4), .LONG_PRESS_MS(1000),
-                  .AUTO_PLAY_MS(3000)) dut (
+                  .AUTO_PLAY_MS(3000), .COMBO_WINDOW_MS(1)) dut (
         .clk(clk), .rst(rst), .key_next(key_next), .key_auto(key_auto),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
         .combo_event_count(), .combo_debug_active(),
