@@ -1,5 +1,8 @@
 
-module seg_scan(
+module seg_scan #(
+	parameter integer SCAN_FREQ = 200,
+	parameter integer CLK_FREQ = 50000000
+)(
 	input           clk,
 	input           rst_n,
 	output reg[5:0] seg_sel,      //digital led chip select
@@ -11,9 +14,6 @@ module seg_scan(
 	input[7:0]      seg_data_4,
 	input[7:0]      seg_data_5
 );
-parameter SCAN_FREQ = 200;     //scan frequency
-parameter CLK_FREQ = 50000000; //clock frequency
-
 parameter SCAN_COUNT = CLK_FREQ /(SCAN_FREQ * 6) - 1;
 
 reg[31:0] scan_timer;  //scan time counter

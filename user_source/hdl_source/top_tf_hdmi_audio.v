@@ -51,9 +51,6 @@ wire [23:0] vout_data;
 wire        display_valid;
 
 wire [3:0]  state_code;
-wire [6:0]  seg_data_0;
-wire [6:0]  seg_data_combo_count;
-wire [6:0]  seg_data_combo_mark;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
 wire        auto_play_indicator;
@@ -197,32 +194,15 @@ sd_card_bmp #(
     .SD_MISO           (sd_miso)
 );
 
-seg_decoder seg_decoder_m0(
-    .bin_data          (state_code),
-    .seg_data          (seg_data_0)
-);
-
-seg_decoder seg_decoder_combo_count(
-    .bin_data          (combo_event_count[3:0]),
-    .seg_data          (seg_data_combo_count)
-);
-
-seg_decoder seg_decoder_combo_mark(
-    .bin_data          (4'hc),
-    .seg_data          (seg_data_combo_mark)
-);
-
-seg_scan seg_scan_m0(
+seg7_panel seg7_panel_m0(
     .clk               (clk),
     .rst_n             (rst_n),
-    .seg_sel           (seg_sel),
-    .seg_data          (seg_data),
-    .seg_data_0        ({1'b1,7'b1111_111}),
-    .seg_data_1        ({1'b1,7'b1111_111}),
-    .seg_data_2        ({1'b1,7'b1111_111}),
-    .seg_data_3        ({1'b1,7'b1111_111}),
-    .seg_data_4        (combo_debug_active ? {1'b1,seg_data_combo_mark} : {1'b1,7'b1111_111}),
-    .seg_data_5        ({~auto_indicator_sync[1], combo_debug_active ? seg_data_combo_count : seg_data_0})
+    .state_code        (state_code),
+    .combo_event_count (combo_event_count),
+    .combo_debug_active(combo_debug_active),
+    .auto_play_indicator(auto_indicator_sync[1]),
+    .seg_sel            (seg_sel),
+    .seg_data           (seg_data)
 );
 
 // ===================== 原图像时序与帧缓存 =====================

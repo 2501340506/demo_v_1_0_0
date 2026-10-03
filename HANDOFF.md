@@ -29,3 +29,23 @@
 ## 后续入口
 
 恢复工作时，以 `releases/v0.1.8/`、`diagnostics/README.md` 和 `docs/ARCHIVE_INDEX.md` 为入口，另行提出修改计划。上一版交接记录见 [HANDOFF_2026-10-04.md](docs/history/2026-10-04/HANDOFF_2026-10-04.md)，本次归档副本见 [HANDOFF_2026-10-04_02.md](docs/history/2026-10-04/HANDOFF_2026-10-04_02.md)。
+
+## 2026-10-04 — seg7_panel 面板模块化
+
+- 新增 `user_source/hdl_source/SD/seg7_panel.v`，统一数码管译码、组合提示、轮播小数点和 6 位扫描显示策略。
+- 顶层 `top_tf_hdmi_audio.v` 改为实例化 `seg7_panel`；`seg_scan.v` 增加可选 `CLK_FREQ`/`SCAN_FREQ` 参数，默认行为保持不变。
+- TD 工程已登记新 HDL 文件；课程文档第 2.8 节已改为基于当前 v0.1.8 的真实 6 位面板说明。
+- 尚未完成板级重构后的重新综合和上板验收；下一步运行 Verilog 编译/控制回归，再执行 TD 构建。
+
+## 后续验收约束
+
+- 本机已安装 ModelSim 和 TD，可继续执行 HDL 仿真、综合、布局布线和 bitstream 生成。
+- `seg7_panel` 重构后的功能必须先经过用户上板验收，重点确认位选顺序、段码极性、图片编号、组合提示和自动轮播小数点。
+- 在用户明确确认上板通过前，不上传 GitHub、不发布新版本。
+
+## 2026-10-04 — ModelSim/TD 验证结果
+
+- ModelSim `diagnostics/run_control_tests.ps1`：6 个控制顶层全部通过，编译 0 errors、0 warnings；图片请求、组合键、播放控制、显示策略和手势回归均通过。
+- ModelSim 单独编译 `seg_decoder.v`、`seg_scan.v`、`seg7_panel.v`：0 errors、0 warnings。
+- TD 6.2 综合、布局布线和 bitgen 完成，产物为 `TD_project/demo_Runs/phy_1/demo.bit`。
+- 本次最终时序：Setup WNS -6.699 ns，Hold WNS +0.011 ns；保留既有时序未收敛情况。尚未上板，等待用户验收后再上传 GitHub。
