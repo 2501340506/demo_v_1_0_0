@@ -6,6 +6,7 @@ module sd_card_bmp #(
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
     parameter integer LONG_PRESS_MS      = 1000,
     parameter integer AUTO_PLAY_MS       = 3000,
+    parameter integer COMBO_WINDOW_MS    = 1,
     parameter integer DIAG_DISPLAY       = 0
 )(
     input                       clk,
@@ -38,6 +39,14 @@ reg  key2_stable_d;
 wire key1_press_event;
 wire key2_press_event;
 wire key2_release_event;
+wire key1_release_event;
+wire key1_single_press_event;
+wire key2_single_press_event;
+wire key1_single_release_event;
+wire key2_single_release_event;
+wire combo_active;
+wire combo_press_event;
+wire combo_release_event;
 wire key2_long_due;
 reg  prev_event;
 reg  short_event;
@@ -100,6 +109,7 @@ wire write_finish_now;
 
 localparam integer LONG_PRESS_CYCLES = (CLK_FREQ_HZ / 1000) * LONG_PRESS_MS;
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
+localparam integer COMBO_WINDOW_CYCLES = (CLK_FREQ_HZ / 1000) * COMBO_WINDOW_MS;
 
 assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
@@ -111,6 +121,7 @@ assign source_done_now = source_done_seen || (source_busy_seen && bmp_ready);
 assign write_finish_now = write_finish_seen || write_finish_pulse;
 assign key1_press_event   = key1_stable_d && !key1_stable;
 assign key2_press_event   = key2_stable_d && !key2_stable;
+assign key1_release_event = !key1_stable_d && key1_stable;
 assign key2_release_event = !key2_stable_d && key2_stable;
 assign key2_long_due = (key2_state == KEY2_HELD) && !key2_stable &&
                        !key2_long_fired && (long_press_cnt >= LONG_PRESS_CYCLES - 1);
@@ -132,6 +143,26 @@ key_press_debounce #(
     .button_in        (key_next),
     .press_pulse      (),
     .button_stable_out(key1_stable)
+);
+
+dual_key_event_router #(
+    .COMBO_WINDOW_CYCLES(COMBO_WINDOW_CYCLES)
+) u_dual_key_event_router (
+    .clk                     (clk),
+    .rst                     (rst),
+    .key1_stable             (key1_stable),
+    .key2_stable             (key2_stable),
+    .key1_press_event        (key1_press_event),
+    .key2_press_event        (key2_press_event),
+    .key1_release_event      (key1_release_event),
+    .key2_release_event      (key2_release_event),
+    .combo_active            (combo_active),
+    .combo_press_event       (combo_press_event),
+    .combo_release_event     (combo_release_event),
+    .key1_single_press_event (key1_single_press_event),
+    .key2_single_press_event (key2_single_press_event),
+    .key1_single_release_event(key1_single_release_event),
+    .key2_single_release_event(key2_single_release_event)
 );
 
 key_press_debounce #(
@@ -297,7 +328,7 @@ always @(posedge clk or posedge rst) begin
         end else begin
             // 统一按键事件边界：KEY1 按下产生 next，KEY2 在释放时区分短按，跨阈值时产生 prev。
             if (key2_state == KEY2_IDLE) begin
-                if (key2_press_event) begin
+                if (key2_press_event && key1_stable) begin
                     key2_state      <= KEY2_HELD;
                     key2_long_fired <= 1'b0;
                     long_press_cnt  <= 32'd0;
@@ -309,7 +340,7 @@ always @(posedge clk or posedge rst) begin
                     prev_event      <= 1'b1;
                     key2_long_fired <= 1'b1;
                 end
-            end else if (key2_release_event) begin
+            end else if (key2_release_event && key1_stable) begin
                 if (!key2_long_fired)
                     short_event <= 1'b1;
                 key2_state      <= KEY2_IDLE;
@@ -397,8 +428,9 @@ always @(posedge clk or posedge rst) begin
                 // 自动播放计数：只有当前没有写图任务时才计时
                 if (scan_done && auto_play_en && display_valid && !load_busy && first_image_committed &&
                     (img_found_count > 3'd1) && !short_event &&
-                    !key1_press_event && !prev_event && !key2_press_event && !key2_release_event &&
-                    !key2_long_due && !next_req_pending && !prev_req_pending) begin
+                    !key1_press_event && !prev_event &&
+                    !key2_press_event && !key2_release_event && !key2_long_due &&
+                    !next_req_pending && !prev_req_pending) begin
                     if (auto_tick)
                         auto_cnt <= 32'd0;
                     else
@@ -453,8 +485,9 @@ always @(posedge clk or posedge rst) begin
                 // 自动播放下一张：同样写到“非当前显示”的另一块 buffer
                 else if (scan_done && bmp_ready && display_valid && !load_busy && auto_play_en && auto_tick &&
                          (img_found_count > 3'd1) && !short_event &&
-                         !key1_press_event && !prev_event && !key2_press_event && !key2_release_event &&
-                         !key2_long_due && !next_req_pending && !prev_req_pending) begin
+                         !key1_press_event && !prev_event &&
+                         !key2_press_event && !key2_release_event && !key2_long_due &&
+                         !next_req_pending && !prev_req_pending) begin
                     load_idx         <= next_from_current;
                     load_sector      <= sector_lut(next_from_current);
                     pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
@@ -468,7 +501,7 @@ always @(posedge clk or posedge rst) begin
                 end
                 // Capture after consumption: a new event on the consumption cycle survives.
                 if (scan_done && (img_found_count != 3'd0)) begin
-                    if (key1_press_event) next_req_pending <= 1'b1;
+                    if (key1_press_event && key2_stable) next_req_pending <= 1'b1;
                     if (prev_event) prev_req_pending <= 1'b1;
                 end
             end
