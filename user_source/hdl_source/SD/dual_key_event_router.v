@@ -19,7 +19,8 @@ module dual_key_event_router #(
     output reg  key1_single_press_event,
     output reg  key2_single_press_event,
     output reg  key1_single_release_event,
-    output reg  key2_single_release_event
+    output reg  key2_single_release_event,
+    output wire gesture_active
 );
     localparam [2:0] ST_IDLE = 3'd0;
     localparam [2:0] ST_KEY1 = 3'd1;
@@ -30,6 +31,11 @@ module dual_key_event_router #(
 
     reg [2:0] state;
     reg [COUNT_WIDTH-1:0] window_count;
+
+    assign gesture_active = (state != ST_IDLE) || key1_press_event || key2_press_event ||
+        key1_release_event || key2_release_event || key1_single_press_event ||
+        key2_single_press_event || key1_single_release_event || key2_single_release_event ||
+        combo_press_event || combo_release_event;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin

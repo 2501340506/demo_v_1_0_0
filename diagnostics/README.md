@@ -1,14 +1,20 @@
 # 图片请求与按键回归测试
 
+## 当前工作版本：第二阶段
+
+2026-10-04，第一阶段 v0.1.5 已获用户板级功能验收并上传原开发分支。当前第二阶段改为稳定按下后计时，增加手势活动接口。6 个仿真顶层通过：原 14 项图片回归、4 组真实组合窗口集成检查、路由/播放/显示专项以及 5 组手势专项。日志为 `modelsim_check/stage2_tb_*.log`。
+
+运行 `./diagnostics/run_control_tests.ps1` 可重新编译并执行全部 6 个顶层。脚本检查 Fatal/Error、PASS 和零错误警告摘要，不只检查进程退出码。`tb_key_gesture_control` 使用真实同步/消抖、默认等效 100 ms 窗口和实际播放控制，验证稳定沿后 1000 周期长按、999/1001 周期分类、自动到期与稳定沿/组合等待冲突、组合部分释放、完整 3000 周期重新计时、超窗重叠及复位恢复。到期碰撞通过设置播放计数器定位，其余按键从真实输入驱动。
+
 ## 课程对照改进：阶段一
 
 新增顶层 `tb_picture_chord_integration`，与 `tb_picture_requests` 同文件，共用 SD 扇区和写完成模型。默认旧顶层保留原 14 项断言；新顶层使用等效 100 ms 组合窗口、20 ms 消抖、1000 ms 长按，验证快速短按、两种组合顺序、超窗重叠单键、操作后恢复。按键由真实输入驱动。
 
 按下方清单编译后，将仿真顶层替换为 `tb_picture_chord_integration` 即可运行。阶段一 5 个顶层全部通过，日志为 `modelsim_check/stage1_*.log`。其中 `stage1_baseline.log`、`stage1_old_router.log` 是独立旧代码反证测试，预期失败，不属于修复后通过日志。实际异步 SDRAM/FIFO 验证仍留待专项阶段。
 
-## 当前基线
+## 原始回归基线（历史说明）
 
-v0.1.0（2026-10-03）已获用户板级功能和稳定性认可。ModelSim SE-64 10.6e 最近一次回归为 14 组 PASS，编译、仿真均 0 errors、0 warnings。本次仅整理文档，没有重新执行测试。
+v0.1.0（2026-10-03）建立了下列 14 项回归；目前已随第二阶段重新执行并通过，最新结果以上方说明为准。
 
 测试入口为 [tb_picture_requests.sv](tb_picture_requests.sv)。旧诊断过程已归档至 [历史记录](../docs/history/2026-10-03/DIAGNOSTICS_HISTORY.md)，后续以本文件说明为准。
 
@@ -31,7 +37,7 @@ v0.1.0（2026-10-03）已获用户板级功能和稳定性认可。ModelSim SE-6
 
 实际控制器、消抖模块及 BMP 解析器参与仿真。CLK_FREQ_HZ=1000，20/1000/3000 周期分别代表消抖/长按/轮播；2 秒保持以 2000 周期缩放。扫描四张 4×1、24 位 BMP，按扇区生成不同像素。写应答延迟四个控制周期，写完成可以单独延迟。
 
-按键测试驱动实际输入；同拍仲裁测试局部 force 事件，自动边界测试设置计数器。模型未包含真实异步 SDRAM/FIFO、亚稳态或布线延迟。板级验收与仿真通过不等于时序收敛：本次 TD 构建 Setup WNS -6.699 ns、Hold WNS +0.011 ns。
+按键测试驱动实际输入；同拍仲裁测试局部 force 事件，自动边界测试设置计数器。模型未包含真实异步 SDRAM/FIFO、亚稳态或布线延迟。板级验收与仿真通过不等于时序收敛，最新构建结果见对应阶段验收说明。
 
 ## 重跑方法（PowerShell）
 
@@ -51,6 +57,7 @@ $rtlFiles = @(
     'user_source/hdl_source/SD/media_player_control.v'
     'user_source/hdl_source/SD/media_policy.v'
     'user_source/hdl_source/SD/dual_key_event_router.v'
+    'user_source/hdl_source/SD/key_gesture_control.v'
     'user_source/hdl_source/SD/sd_card_bmp.v'
     'user_source/hdl_source/SD/bmp_read.v'
     'user_source/hdl_source/SD/sd_card_top.v'
@@ -82,8 +89,8 @@ Compile diagnostics/tb_media_player_control.sv with the same RTL list and run
  tb_media_player_control for acceptance, current committed index, direction priority,
 same-cycle capture, single-image wrapping, and exact autoplay boundary checks.
 Latest logs: modelsim_check/control_fixed.log and control_unit_fixed.log.
-Both simulations finished with 0 errors and 0 warnings. TD synthesis and board tests
-have not been run for this change.
+Both simulations finished with 0 errors and 0 warnings. This historical extraction
+subsequently passed TD and user board acceptance in v0.1.3.
 
 ## 显示策略拆分专项测试
 入口 tb_media_display_control.sv，使用同一 RTL 清单编译，仿真顶层为 tb_media_display_control。覆盖正常图片 1～4、首图前 BMP 状态、全部诊断优先级、组合提示保持周期、重复触发续时、计数饱和和提示期间异步复位。缩放 CLK_FREQ_HZ=4，4 个周期代表 1 秒。日志：modelsim_check/display_tb_media_display_control.log。原有三个 testbench 同时回归，日志前缀 display_。

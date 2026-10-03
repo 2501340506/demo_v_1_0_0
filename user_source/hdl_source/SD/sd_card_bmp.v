@@ -34,31 +34,12 @@ module sd_card_bmp #(
     input                       SD_MISO
 );
 
-wire key1_stable;
-wire key2_stable;
-reg  key1_stable_d;
-reg  key2_stable_d;
-wire key1_press_event;
-wire key2_press_event;
-wire key2_release_event;
-wire key1_release_event;
-wire key1_single_press_event;
-wire key2_single_press_event;
-wire key1_single_release_event;
-wire key2_single_release_event;
-wire combo_active;
-wire combo_press_event;
-wire combo_release_event;
+wire key1_single_press_event, prev_event, short_event, combo_press_event;
+wire manual_activity;
 wire media_next_request, media_previous_request, media_auto_toggle_request, media_combo_request;
 wire ctrl_auto_play_en, ctrl_next_pending, ctrl_prev_pending, ctrl_auto_tick, ctrl_load_request;
 wire [1:0] ctrl_target_image;
 wire ctrl_request_accept;
-wire key2_long_due;
-reg  prev_event;
-reg  short_event;
-reg  key2_state;
-reg  key2_long_fired;
-localparam KEY2_IDLE = 1'b0, KEY2_HELD = 1'b1;
 
 wire             sd_sec_read;
 wire [31:0]      sd_sec_read_addr;
@@ -91,7 +72,6 @@ reg [31:0]       img_sector1;
 reg [31:0]       img_sector2;
 reg [31:0]       img_sector3;
 reg              load_busy;
-reg [31:0]       long_press_cnt;
 
 // 一次加载必须先观察到 bmp_read 进入忙态，之后返回 ready 才算源端完成
 reg              source_busy_seen;
@@ -106,9 +86,7 @@ wire             write_finish_pulse;
 wire source_done_now;
 wire write_finish_now;
 
-localparam integer LONG_PRESS_CYCLES = (CLK_FREQ_HZ / 1000) * LONG_PRESS_MS;
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
-localparam integer COMBO_WINDOW_CYCLES = (CLK_FREQ_HZ / 1000) * COMBO_WINDOW_MS;
 
 assign ctrl_request_accept = ctrl_load_request && bmp_ready;
 assign write_en   = bmp_data_wr_en;
@@ -116,12 +94,6 @@ assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign source_done_now = source_done_seen || (source_busy_seen && bmp_ready);
 assign write_finish_now = write_finish_seen || write_finish_pulse;
-assign key1_press_event   = key1_stable_d && !key1_stable;
-assign key2_press_event   = key2_stable_d && !key2_stable;
-assign key1_release_event = !key1_stable_d && key1_stable;
-assign key2_release_event = !key2_stable_d && key2_stable;
-assign key2_long_due = (key2_state == KEY2_HELD) && !key2_stable &&
-                       !key2_long_fired && (long_press_cnt >= LONG_PRESS_CYCLES - 1);
 assign write_req_ack_sync = write_req_ack_pipe[1];
 
 always @(posedge clk or posedge rst) begin
@@ -131,35 +103,15 @@ always @(posedge clk or posedge rst) begin
         write_req_ack_pipe <= {write_req_ack_pipe[0], write_req_ack};
 end
 
-key_press_debounce #(
-    .CLK_FREQ_HZ (CLK_FREQ_HZ),
-    .DEBOUNCE_MS (20)
-) u_key_next (
-    .clk        (clk),
-    .rst        (rst),
-    .button_in        (key_next),
-    .press_pulse      (),
-    .button_stable_out(key1_stable)
-);
-
-dual_key_event_router #(
-    .COMBO_WINDOW_CYCLES(COMBO_WINDOW_CYCLES)
-) u_dual_key_event_router (
-    .clk                     (clk),
-    .rst                     (rst),
-    .key1_stable             (key1_stable),
-    .key2_stable             (key2_stable),
-    .key1_press_event        (key1_press_event),
-    .key2_press_event        (key2_press_event),
-    .key1_release_event      (key1_release_event),
-    .key2_release_event      (key2_release_event),
-    .combo_active            (combo_active),
-    .combo_press_event       (combo_press_event),
-    .combo_release_event     (combo_release_event),
-    .key1_single_press_event (key1_single_press_event),
-    .key2_single_press_event (key2_single_press_event),
-    .key1_single_release_event(key1_single_release_event),
-    .key2_single_release_event(key2_single_release_event)
+key_gesture_control #(
+    .CLK_FREQ_HZ(CLK_FREQ_HZ), .LONG_PRESS_MS(LONG_PRESS_MS),
+    .COMBO_WINDOW_MS(COMBO_WINDOW_MS)
+) u_key_gesture_control (
+    .clk(clk), .rst(rst), .enable(sd_init_done && scan_kicked),
+    .key_next(key_next), .key_auto(key_auto),
+    .next_event(key1_single_press_event), .previous_event(prev_event),
+    .auto_toggle_event(short_event), .combo_event(combo_press_event),
+    .manual_activity(manual_activity)
 );
 
 media_policy u_media_policy (
@@ -188,22 +140,11 @@ media_player_control #(
     .current_image(img_idx), .next_event(media_next_request),
     .previous_event(media_previous_request), .auto_toggle_event(media_auto_toggle_request),
     .request_accept(ctrl_request_accept),
-    .manual_activity(key2_single_press_event || key2_single_release_event || key2_long_due),
+    .manual_activity(manual_activity),
     .next_load_request(), .previous_load_request(), .auto_load_request(),
     .auto_play_en(ctrl_auto_play_en), .next_pending(ctrl_next_pending),
     .previous_pending(ctrl_prev_pending), .auto_tick(ctrl_auto_tick),
     .load_request(ctrl_load_request), .target_image(ctrl_target_image)
-);
-
-key_press_debounce #(
-    .CLK_FREQ_HZ (CLK_FREQ_HZ),
-    .DEBOUNCE_MS (20)
-) u_key_auto (
-    .clk        (clk),
-    .rst        (rst),
-    .button_in        (key_auto),
-    .press_pulse      (),
-    .button_stable_out(key2_stable)
 );
 
 function [31:0] sector_lut;
@@ -263,13 +204,6 @@ always @(posedge clk or posedge rst) begin
         img_sector3           <= 32'd0;
 
         load_busy             <= 1'b0;
-        long_press_cnt        <= 32'd0;
-        key1_stable_d         <= 1'b1;
-        key2_stable_d         <= 1'b1;
-        prev_event            <= 1'b0;
-        short_event           <= 1'b0;
-        key2_state            <= 1'b0;
-        key2_long_fired       <= 1'b0;
         source_busy_seen      <= 1'b0;
         source_done_seen      <= 1'b0;
         write_finish_seen     <= 1'b0;
@@ -278,10 +212,6 @@ always @(posedge clk or posedge rst) begin
         wrfin_tgl_sync   <= {wrfin_tgl_sync[1:0], write_finish_toggle};
         scan_start_pulse <= 1'b0;
         load_start_pulse <= 1'b0;
-        key1_stable_d <= key1_stable;
-        key2_stable_d <= key2_stable;
-        prev_event    <= 1'b0;
-        short_event   <= 1'b0;
 
         if (!sd_init_done) begin
             scan_kicked           <= 1'b0;
@@ -299,44 +229,11 @@ always @(posedge clk or posedge rst) begin
             img_sector3           <= 32'd0;
 
             load_busy             <= 1'b0;
-            long_press_cnt        <= 32'd0;
-            key1_stable_d         <= 1'b1;
-            key2_stable_d         <= 1'b1;
-            prev_event            <= 1'b0;
-            short_event           <= 1'b0;
-            key2_state            <= 1'b0;
-            key2_long_fired       <= 1'b0;
             source_busy_seen      <= 1'b0;
             source_done_seen      <= 1'b0;
             write_finish_seen     <= 1'b0;
             display_valid         <= 1'b0;
         end else begin
-            // 统一按键事件边界：KEY1 按下产生 next，KEY2 在释放时区分短按，跨阈值时产生 prev。
-            if (key2_state == KEY2_IDLE) begin
-                if (key2_single_press_event) begin
-                    // A tap released inside the chord window arrives as a
-                    // complete press/release pair on the same clock edge.
-                    key2_state      <= key2_single_release_event ? KEY2_IDLE : KEY2_HELD;
-                    if (key2_single_release_event)
-                        short_event <= 1'b1;
-                    key2_long_fired <= 1'b0;
-                    long_press_cnt  <= 32'd0;
-                end
-            end else if (!key2_stable) begin
-                if (long_press_cnt < LONG_PRESS_CYCLES)
-                    long_press_cnt <= long_press_cnt + 32'd1;
-                if (key2_long_due) begin
-                    prev_event      <= 1'b1;
-                    key2_long_fired <= 1'b1;
-                end
-            end else if (key2_single_release_event) begin
-                if (!key2_long_fired)
-                    short_event <= 1'b1;
-                key2_state      <= KEY2_IDLE;
-                key2_long_fired <= 1'b0;
-                long_press_cnt  <= 32'd0;
-            end
-
             // 扫描阶段缓存前 4 张图的起始 sector
             if (scan_found_valid) begin
                 case (img_found_count)
@@ -395,13 +292,6 @@ always @(posedge clk or posedge rst) begin
 
                 display_valid         <= 1'b0;
                 load_busy             <= 1'b0;
-                long_press_cnt        <= 32'd0;
-                key1_stable_d         <= 1'b1;
-                key2_stable_d         <= 1'b1;
-                prev_event            <= 1'b0;
-                short_event           <= 1'b0;
-                key2_state            <= 1'b0;
-                key2_long_fired       <= 1'b0;
                 source_busy_seen      <= 1'b0;
                 source_done_seen      <= 1'b0;
                 write_finish_seen     <= 1'b0;
@@ -487,54 +377,5 @@ sd_card_top sd_card_top_m0(
     .sd_sec_write_data_req  (),
     .sd_sec_write_end       ()
 );
-
-endmodule
-
-module key_press_debounce #(
-    parameter integer CLK_FREQ_HZ = 100_000_000,
-    parameter integer DEBOUNCE_MS = 20
-)(
-    input  wire clk,
-    input  wire rst,
-    input  wire button_in,    // 默认：松开=1，按下=0
-    output reg  press_pulse,
-    output wire button_stable_out
-);
-
-localparam integer DEBOUNCE_CYCLES = (CLK_FREQ_HZ / 1000) * DEBOUNCE_MS;
-
-reg button_sync0;
-reg button_sync1;
-reg button_stable;
-reg [31:0] cnt;
-
-assign button_stable_out = button_stable;
-
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        button_sync0  <= 1'b1;
-        button_sync1  <= 1'b1;
-        button_stable <= 1'b1;
-        cnt           <= 32'd0;
-        press_pulse   <= 1'b0;
-    end else begin
-        button_sync0 <= button_in;
-        button_sync1 <= button_sync0;
-        press_pulse  <= 1'b0;
-
-        if (button_sync1 == button_stable) begin
-            cnt <= 32'd0;
-        end else begin
-            if (cnt >= DEBOUNCE_CYCLES - 1) begin
-                if (button_stable && !button_sync1)
-                    press_pulse <= 1'b1;
-                button_stable <= button_sync1;
-                cnt           <= 32'd0;
-            end else begin
-                cnt <= cnt + 32'd1;
-            end
-        end
-    end
-end
 
 endmodule

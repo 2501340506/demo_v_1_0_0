@@ -20,7 +20,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
             started_idx[starts] = dut.load_idx;
             starts = starts + 1;
         end
-        if (dut.key1_press_event) next_events = next_events + 1;
+        if (dut.u_key_gesture_control.key1_press_event) next_events = next_events + 1;
         if (dut.prev_event) prev_events = prev_events + 1;
         if (dut.short_event) short_events = short_events + 1;
     end
@@ -128,7 +128,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
             wait(valid); tick(3);
             // Real debounce and 100 ms chord window, with 1 cycle = 1 ms.
             key_auto = 0; tick(50); key_auto = 1; tick(30);
-            if (short_events !== 1 || dut.u_media_player_control.auto_play_en !== 1'b1 || dut.key2_state !== 0)
+            if (short_events !== 1 || dut.u_media_player_control.auto_play_en !== 1'b1 || dut.u_key_gesture_control.key2_held !== 0)
                 $fatal(1, "quick KEY2 tap lost or left HELD state");
             key_auto = 0; tick(50); key_auto = 1; tick(30);
             if (short_events !== 2 || dut.u_media_player_control.auto_play_en !== 1'b0)
@@ -140,7 +140,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
                 tick(50);
                 key_next = 0; key_auto = 0; tick(1200);
                 key_next = 1; key_auto = 1; tick(30);
-                if (starts !== start_base || short_events !== se || prev_events !== pe || dut.key2_state !== 0)
+                if (starts !== start_base || short_events !== se || prev_events !== pe || dut.u_key_gesture_control.key2_held !== 0)
                     $fatal(1, "chord leaked single-key action");
             end
             if (dut.combo_event_count !== 8'd2) $fatal(1, "chord count");
@@ -149,7 +149,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
             se = short_events; pe = prev_events; start_base = starts;
             key_auto = 0; tick(180); key_next = 0; tick(50);
             key_auto = 1; key_next = 1; tick(30);
-            if (short_events !== se + 1 || prev_events !== pe || dut.combo_event_count !== 8'd2 || dut.key2_state !== 0)
+            if (short_events !== se + 1 || prev_events !== pe || dut.combo_event_count !== 8'd2 || dut.u_key_gesture_control.key2_held !== 0)
                 $fatal(1, "late KEY1 became chord or lost KEY2 release");
             key_auto = 0; tick(50); key_auto = 1; tick(30); drain();
             if (starts !== start_base + 1 || dut.u_media_player_control.auto_play_en !== 0)
@@ -158,15 +158,15 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
             se = short_events; start_base = starts;
             key_next = 0; tick(180); key_auto = 0; tick(50);
             key_next = 1; tick(30); key_auto = 1; tick(30);
-            if (short_events !== se + 1 || dut.combo_event_count !== 8'd2 || dut.key2_state !== 0)
+            if (short_events !== se + 1 || dut.combo_event_count !== 8'd2 || dut.u_key_gesture_control.key2_held !== 0)
                 $fatal(1, "late KEY2 single gesture failed");
             key_auto = 0; tick(50); key_auto = 1; tick(30); drain();
             if (starts !== start_base + 1) $fatal(1, "late overlap repeated KEY1");
             $display("PASS outside-window overlaps remain independent and rearm");
-            // Long classification is deliberately unchanged in stage one.
+            // Long/short exclusion must survive the preceding chord gestures.
             se = short_events; pe = prev_events;
             key_auto = 0; tick(1200); key_auto = 1; tick(30); drain();
-            if (prev_events !== pe + 1 || short_events !== se || dut.key2_state !== 0)
+            if (prev_events !== pe + 1 || short_events !== se || dut.u_key_gesture_control.key2_held !== 0)
                 $fatal(1, "long hold after chord gestures failed");
             $display("PASS long hold after chord gestures remains exclusive");
             $finish;
@@ -290,13 +290,13 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         // Expiry at the long-event production edge must not preempt the registered event.
         key_auto = 0; tick(25); key_auto = 1; tick(25);
         key_auto = 0;
-        wait(dut.key2_long_due); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
+        wait(dut.u_key_gesture_control.key2_long_due); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
         @(posedge clk); #1;
         if (dut.load_start_pulse || !dut.prev_event)
             $fatal(1, "autoplay preempted KEY2 threshold");
         tick(25); key_auto = 1; tick(25); drain();
         key_auto = 0; tick(25); key_auto = 1;
-        wait(dut.key2_single_release_event); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
+        wait(dut.u_key_gesture_control.key2_single_release_event); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
         @(posedge clk); #1;
         if (dut.load_start_pulse) $fatal(1, "autoplay preempted short release");
         tick(3);

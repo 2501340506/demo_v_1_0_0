@@ -18,7 +18,7 @@ module tb_dual_key_event_router;
         .key1_stable(key1_stable), .key2_stable(key2_stable),
         .key1_press_event(key1_press_event), .key2_press_event(key2_press_event),
         .key1_release_event(key1_release_event), .key2_release_event(key2_release_event),
-        .combo_active(combo_active), .combo_press_event(combo_press_event),
+        .gesture_active(), .combo_active(combo_active), .combo_press_event(combo_press_event),
         .combo_release_event(combo_release_event),
         .key1_single_press_event(key1_single_press_event),
         .key2_single_press_event(key2_single_press_event),
