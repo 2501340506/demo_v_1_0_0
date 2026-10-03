@@ -34,6 +34,8 @@ module frame_read_write
 	
 	input                            read_clk,                   // data read module clock
 	input                            read_req,                   // data read module read request,keep '1' until read_req_ack = '1'
+    input                            display_commit_request,
+    output                           display_commit_ack,
 	output                           read_req_ack,               // data read module read request response
 	output                           read_finish,                // data read module read request finish
 	input[ADDR_BITS - 1:0]           read_addr_0,                // data read module read request base address 0, used when read_addr_index = 0
@@ -137,7 +139,7 @@ frame_fifo_write_m0
 	.write_addr_index           (write_addr_index         ),    
 	.write_len                  (write_len                ),
 	.fifo_aclr                  (write_fifo_aclr          ),
-	.rdusedw                 	(rdusedw                  )
+	.rdusedw                 	({{(10-BURST_BITS){1'b0}}, rdusedw})
 );
 
 //instantiate an asynchronous FIFO 
@@ -178,6 +180,8 @@ frame_fifo_read_m0
     .App_rd_en					(App_rd_en),
     .App_rd_addr				(App_rd_addr),
 	.read_req                   (read_req                 ),
+    .display_commit_request     (display_commit_request   ),
+    .display_commit_ack         (display_commit_ack       ),
 	.read_req_ack               (read_req_ack             ),
 	.read_finish                (read_finish              ),
 	.read_addr_0                (read_addr_0              ),
@@ -187,7 +191,7 @@ frame_fifo_read_m0
 	.read_addr_index            (read_addr_index          ),    
 	.read_len                   (read_len                 ),
 	.fifo_aclr                  (read_fifo_aclr           ),
-	.wrusedw                	(wrusedw                  )
+	.wrusedw                	({{(10-BURST_BITS){1'b0}}, wrusedw})
 );
 
 endmodule

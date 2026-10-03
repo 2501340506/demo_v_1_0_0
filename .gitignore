@@ -19,3 +19,7 @@ Desktop.ini
 # Tool-created constraint backup
 user_source/constraints_source/.edid_debug_bak.cwc
 
+
+# Local ModelSim lint library
+work/
+

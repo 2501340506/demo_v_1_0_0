@@ -28,6 +28,8 @@ module frame_fifo_read
 	output  [ADDR_BITS - 1:0]		 App_rd_addr,
 	
 	input                            read_req,                   // data read module read request,keep '1' until read_req_ack = '1'
+    input                            display_commit_request,
+    output reg                       display_commit_ack,
 	output reg                       read_req_ack,               // data read module read request response
 	output                           read_finish,                // data read module read request finish
 	input[ADDR_BITS - 1:0]           read_addr_0,                // data read module read request base address 0, used when read_addr_index = 0
@@ -70,6 +72,21 @@ reg App_rd_en_d0;
 
 wire rd_vld;
 reg [3:0] rd_delay;
+reg [2:0] commit_req_sync;
+
+always @(posedge mem_clk or posedge rst) begin
+    if (rst) begin
+        commit_req_sync <= 3'b000;
+        display_commit_ack <= 1'b0;
+    end else begin
+        commit_req_sync <= {commit_req_sync[1:0], display_commit_request};
+        // On this same edge App_rd_addr_r takes read_addr_index_d1.
+        // Three request stages trail the two data stages; the source keeps
+        // index stable until this acknowledgement returns.
+        if (state == S_ACK && !read_req_d2)
+            display_commit_ack <= commit_req_sync[2];
+    end
+end
 
 assign App_rd_addr = {App_rd_addr_r[ADDR_BITS - 1:0]};
 assign rd_vld = (state == S_READ_BURST && burst_cnt >= BURST_SIZE);

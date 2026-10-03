@@ -1,59 +1,46 @@
-# Anlogic EG4 HDMI BMP Player
+﻿# 安路 EG4 HDMI 图片播放器
 
-基于安路 EG4S20 FPGA 的 TF 卡 BMP 图片播放器。工程从 TF 卡扫描并读取图片，使用 SDRAM 双缓冲保存帧数据，通过 HDMI 输出 640x480 RGB 视频，同时输出 48 kHz I2S 测试音。
+当前版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。开发分支：`demo010-0_1_1`；合并至 `main` 等待用户审核。
 
-## 功能
+基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz测试音。本版增加拨码模式显示与独立三键控制。
 
-- 上电后扫描 TF 卡前 131072 个扇区，查找最多 4 张符合要求的 BMP 图片
-- KEY1 稳定按下切换下一张，按住不连发
-- KEY2 短按释放切换自动轮播，长按 1 秒切换上一张，长按释放不附带短按
-- 自动轮播间隔 3 秒，手动切换完成后重新计时
-- 使用 SDRAM 双缓冲，完整写入下一帧后再切换显示
-- HDMI 1.4b 输出 640x480 视频和 48 kHz 音频
-- 首图提交前数码管显示读取状态，提交后显示图片编号
+## 使用方式
 
-## 硬件与工具
+| SW2 SW1 | 模式位 | KEY1 | KEY2 |
+|---|---|---|---|
+| 00 | 0 图片 | 上一张 | 下一张 |
+| 01 | 1 亮度预留 | 不产生新请求 | 不产生新请求 |
+| 10 | 2 对比度预留 | 不产生新请求 | 不产生新请求 |
+| 11 | 3 缩放预留 | 不产生新请求 | 不产生新请求 |
 
-- FPGA：Anlogic EG4S20BG256
-- 开发工具：Tang Dynasty 6.2.168116
-- 输入时钟：50 MHz
-- 顶层模块：`top`
-- 顶层文件：`user_source/hdl_source/top_tf_hdmi_audio.v`
+KEY4单击切换MAN/AUTO。复位默认MAN，扫描完成且图片多于一张时允许切换AUTO。三个按键20ms消抖，长按不连发；图片首尾循环。
 
-## 图片要求
+AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间隔包括加载时间。模式变化重新计时。图片编号位小数点表示AUTO。
 
-TF 卡中的图片需要满足以下格式：
+加载期间每个方向最多挂起一次，同向请求合并；下一张优先于上一张，再优先于自动轮播。模式切换不清除已有挂起请求；切回MAN不取消已开始的加载和挂起的手动请求。图片编号在显示交接确认后更新。
 
-- BMP 文件
-- 640x480 像素
-- 24 位色
-- 不压缩
+## 硬件与图片
 
-工程按扇区顺序查找图片，不依赖 FAT 文件名。上电后自动显示找到的第一张图片。加载期间每个方向最多挂起一次请求，下一张优先于上一张，再优先于自动轮播。
+| 信号 | FPGA引脚 | 说明 |
+|---|---|---|
+| KEY1 | A2 | 按下为0 |
+| KEY2 | B2 | 按下为0 |
+| KEY4 | C1 | 按下为0 |
+| SW1 | C8 | 拨上为1 |
+| SW2 | C7 | 拨上为1 |
 
-## 当前版本：v0.1.0
+图片须为640×480、24位、未压缩BMP。程序按扇区顺序扫描前131072个扇区，最多查找4张图片，不依赖FAT文件名；上电自动加载首图。模式位显示0/1/2/3，不代表亮度、对比度或缩放已经实现。
 
-2026-10-03 用户确认当前按键功能及稳定性表现良好，作为本次稳定归档版本。ModelSim 14 组回归通过；TD 完成综合、布局布线和 bitstream 构建。Setup WNS -6.699 ns，Hold WNS +0.011 ns：功能验收通过，但时序尚未完全收敛。
+## 下载与构建
 
-版本说明见 [CHANGELOG.md](CHANGELOG.md)，修改经验见 [按键与加载链路经验](docs/KEY_CONTROL_LESSONS.md)，仿真范围见 [diagnostics/README.md](diagnostics/README.md)。
+- [已验收的固定bitstream](releases/v0.2.0/demo.bit)
+- [中文版本说明及构建报告](releases/v0.2.0/README.md)
+- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/V0_2_0_MERGE_REVIEW.md)
 
-## 目录
+使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，固定版本使用 `releases/v0.2.0/demo.bit`，不使用旧 `best_result` 产物。
 
-```text
-TD_project/
-  demo.al                  TD 工程文件
-  demo_Runs/best_result/   已生成的最佳布局布线结果和 bitstream
-user_source/
-  constraints_source/      引脚与时序约束
-  hdl_source/              Verilog 源码、IP 包装和加密 IP
-```
+## 验证状态与范围
 
-## 构建
+用户已确认阶段1至3板级功能正常；专项仿真和TD构建有通过记录。完整集成回归尚需适配旧图片测试，本轮未重新执行RTL仿真或构建。Setup WNS −6.699ns，Hold WNS +0.003ns，时序未完全收敛。[具体验证边界](docs/VALIDATION_STATUS.md)。
 
-1. 使用 Tang Dynasty 6.2 打开 `TD_project/demo.al`。
-2. 确认器件为 `EG4S20BG256`，顶层模块为 `top`。
-3. 依次运行综合和布局布线。
-4. 生成的 bitstream 位于 `TD_project/demo_Runs/phy_1/demo.bit`。
-
-仓库中的 `TD_project/demo_Runs/best_result/demo.bit` 已更新为本次验收版本，构建时间为 2026-10-03 02:23:16。该目录是发布归档，不表示时序最优；使用版本标签 v0.1.0 可定位本次源码与产物。IP 包装文件已包含在 `user_source/hdl_source/IP`，相关说明见 `user_source/hdl_source/_IP核需在TD中生成.txt`。
-
+本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
