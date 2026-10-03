@@ -16,6 +16,7 @@ module sd_card_bmp #(
     output     [3:0]            state_code,
     output     [7:0]            combo_event_count,
     output                      combo_debug_active,
+    output                      auto_play_indicator,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
     output reg                  display_valid,
@@ -128,6 +129,7 @@ media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .DIAG_DISPLAY(DIAG_DISPLAY)) 
  .load_busy(load_busy), .write_started_seen(write_started_seen),
  .source_done_now(source_done_now), .write_finish_now(write_finish_now),
  .img_idx(img_idx), .bmp_state_code(bmp_state_code), .state_code(state_code),
+ .auto_play_en(ctrl_auto_play_en), .auto_play_indicator(auto_play_indicator),
  .combo_event_count(combo_event_count), .combo_debug_active(combo_debug_active)
 );
 

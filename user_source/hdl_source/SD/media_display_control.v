@@ -5,12 +5,14 @@ module media_display_control #(
 )(
  input clk, rst, combo_request,
  input sd_init_done, scan_done, display_valid, load_busy,
+ input auto_play_en,
  input write_started_seen, source_done_now, write_finish_now,
  input [1:0] img_idx,
  input [3:0] bmp_state_code,
  output reg [3:0] state_code,
  output reg [7:0] combo_event_count,
- output reg combo_debug_active
+ output reg combo_debug_active,
+ output reg auto_play_indicator
 );
  localparam integer COMBO_DEBUG_CYCLES = CLK_FREQ_HZ;
  reg [31:0] combo_debug_timer;
@@ -20,7 +22,9 @@ module media_display_control #(
    combo_event_count <= 0;
    combo_debug_active <= 0;
    combo_debug_timer <= 0;
+   auto_play_indicator <= 0;
   end else begin
+        auto_play_indicator <= (DIAG_DISPLAY == 0) && display_valid && auto_play_en;
         if (combo_request && combo_event_count != 8'hff)
             combo_event_count <= combo_event_count + 8'd1;
         if (combo_request) begin

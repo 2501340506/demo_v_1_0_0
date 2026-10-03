@@ -9,6 +9,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
     reg [7:0] sector_data = 0;
     wire [3:0] code;
     wire valid, req, we;
+    wire auto_indicator;
     wire [31:0] pixel;
     wire [1:0] wb, db;
     integer pixels = 0, commits = 0;
@@ -33,6 +34,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         .clk(clk), .rst(rst), .key_next(key_next), .key_auto(key_auto),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
         .combo_event_count(), .combo_debug_active(),
+        .auto_play_indicator(auto_indicator),
         .display_valid(valid), .write_finish_toggle(finish_toggle),
         .write_buf_idx(wb), .disp_buf_idx(db), .write_req(req),
         .write_req_ack(ack), .write_en(we), .write_data(pixel),
@@ -126,13 +128,16 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         wait(dut.scan_done);
         if (TEST_CHORD) begin
             wait(valid); tick(3);
+            if (auto_indicator !== 1'b0) $fatal(1, "initial manual indicator");
             // Real debounce and 100 ms chord window, with 1 cycle = 1 ms.
             key_auto = 0; tick(50); key_auto = 1; tick(30);
             if (short_events !== 1 || dut.u_media_player_control.auto_play_en !== 1'b1 || dut.u_key_gesture_control.key2_held !== 0)
                 $fatal(1, "quick KEY2 tap lost or left HELD state");
+            if (auto_indicator !== 1'b1) $fatal(1, "autoplay indicator not enabled by real key");
             key_auto = 0; tick(50); key_auto = 1; tick(30);
             if (short_events !== 2 || dut.u_media_player_control.auto_play_en !== 1'b0)
                 $fatal(1, "quick KEY2 tap did not rearm");
+            if (auto_indicator !== 1'b0) $fatal(1, "autoplay indicator not disabled by real key");
             $display("PASS real-window quick KEY2 taps toggle and rearm");
             for (i = 0; i < 2; i = i + 1) begin
                 start_base = starts; se = short_events; pe = prev_events;

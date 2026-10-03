@@ -56,6 +56,8 @@ wire [6:0]  seg_data_combo_count;
 wire [6:0]  seg_data_combo_mark;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
+wire        auto_play_indicator;
+reg [1:0]   auto_indicator_sync;
 
 wire        video_read_req;
 wire        video_read_req_ack;
@@ -117,6 +119,14 @@ wire [9:0]  tmds_clk_data;
 wire rst_all;
 assign rst_all = ~rst_n | ~audio_pll_lock;
 
+// The mode indicator crosses from SD control to the 50 MHz scan clock.
+always @(posedge clk or posedge rst_all) begin
+    if (rst_all)
+        auto_indicator_sync <= 2'b00;
+    else
+        auto_indicator_sync <= {auto_indicator_sync[0], auto_play_indicator};
+end
+
 // 保持你原来的 TF / SDRAM / video 时钟
 sys_pll sys_pll_m0(
     .refclk     (clk),
@@ -165,6 +175,7 @@ sd_card_bmp #(
     .state_code        (state_code),
     .combo_event_count (combo_event_count),
     .combo_debug_active(combo_debug_active),
+    .auto_play_indicator(auto_play_indicator),
     .bmp_width         (16'd640),
     .bmp_height        (16'd480),
     .display_valid     (display_valid),
@@ -208,7 +219,7 @@ seg_scan seg_scan_m0(
     .seg_data_2        ({1'b1,7'b1111_111}),
     .seg_data_3        ({1'b1,7'b1111_111}),
     .seg_data_4        (combo_debug_active ? {1'b1,seg_data_combo_mark} : {1'b1,7'b1111_111}),
-    .seg_data_5        (combo_debug_active ? {1'b1,seg_data_combo_count} : {1'b1,seg_data_0})
+    .seg_data_5        ({~auto_indicator_sync[1], combo_debug_active ? seg_data_combo_count : seg_data_0})
 );
 
 // ===================== 原图像时序与帧缓存 =====================
