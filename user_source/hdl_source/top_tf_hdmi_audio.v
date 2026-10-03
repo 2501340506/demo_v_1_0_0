@@ -2,8 +2,11 @@
 module top(
     input                       clk,
     input                       rst_n,
-    input                       key1,           // 手动下一张
-    input                       key2,           // 自动播放 开/关
+    input                       key1,           // 图片模式：上一张
+    input                       key2,           // 图片模式：下一张
+    input                       key4,           // MAN/AUTO切换
+    input                       sw1,            // C8，拨上=1
+    input                       sw2,            // C7，拨上=1
 
     output [5:0]                seg_sel,
     output [7:0]                seg_data,
@@ -117,6 +120,22 @@ wire [9:0]  tmds_clk_data;
 wire rst_all;
 assign rst_all = ~rst_n | ~audio_pll_lock;
 
+// Mode and key routing share the SD control clock. Synchronize mode for panel display.
+wire [1:0] switch_mode;
+reg [1:0] mode_panel_sync0, mode_panel_sync1;
+switch_mode_control #(.CLK_FREQ_HZ(100_000_000)) u_switch_mode_control (
+    .clk(sd_card_clk), .rst(rst_all), .switches({sw2, sw1}), .mode(switch_mode)
+);
+always @(posedge clk or posedge rst_all) begin
+    if (rst_all) begin
+        mode_panel_sync0 <= 0;
+        mode_panel_sync1 <= 0;
+    end else begin
+        mode_panel_sync0 <= switch_mode;
+        mode_panel_sync1 <= mode_panel_sync0;
+    end
+end
+
 // The mode indicator crosses from SD control to the 50 MHz scan clock.
 always @(posedge clk or posedge rst_all) begin
     if (rst_all)
@@ -168,8 +187,10 @@ sd_card_bmp #(
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_all),
-    .key_next          (key1),
-    .key_auto          (key2),
+    .key1              (key1),
+    .key2              (key2),
+    .key4              (key4),
+    .mode              (switch_mode),
     .state_code        (state_code),
     .combo_event_count (combo_event_count),
     .combo_debug_active(combo_debug_active),
@@ -197,6 +218,7 @@ sd_card_bmp #(
 seg7_panel seg7_panel_m0(
     .clk               (clk),
     .rst_n             (rst_n),
+    .mode              (mode_panel_sync1),
     .state_code        (state_code),
     .combo_event_count (combo_event_count),
     .combo_debug_active(combo_debug_active),

@@ -4,15 +4,15 @@ module sd_card_bmp #(
     parameter [31:0]  SCAN_START_SECTOR = 32'd0,
     parameter [31:0]  SCAN_MAX_SECTOR   = 32'd131071,
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
-    parameter integer LONG_PRESS_MS      = 1000,
     parameter integer AUTO_PLAY_MS       = 3000,
-    parameter integer COMBO_WINDOW_MS    = 100,
     parameter integer DIAG_DISPLAY       = 0
 )(
     input                       clk,
     input                       rst,
-    input                       key_next,
-    input                       key_auto,
+    input                       key1,
+    input                       key2,
+    input                       key4,
+    input [1:0]                 mode,
     output     [3:0]            state_code,
     output     [7:0]            combo_event_count,
     output                      combo_debug_active,
@@ -37,9 +37,8 @@ module sd_card_bmp #(
     input                       SD_MISO
 );
 
-wire key1_single_press_event, prev_event, short_event, combo_press_event;
 wire manual_activity;
-wire media_next_request, media_previous_request, media_auto_toggle_request, media_combo_request;
+wire media_next_request, media_previous_request, media_auto_toggle_request;
 wire ctrl_auto_play_en, ctrl_next_pending, ctrl_prev_pending, ctrl_auto_tick, ctrl_load_request;
 wire [1:0] ctrl_target_image;
 wire ctrl_request_accept;
@@ -111,27 +110,15 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-key_gesture_control #(
-    .CLK_FREQ_HZ(CLK_FREQ_HZ), .LONG_PRESS_MS(LONG_PRESS_MS),
-    .COMBO_WINDOW_MS(COMBO_WINDOW_MS)
-) u_key_gesture_control (
+mode_key_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control (
     .clk(clk), .rst(rst), .enable(sd_init_done && scan_kicked),
-    .key_next(key_next), .key_auto(key_auto),
-    .next_event(key1_single_press_event), .previous_event(prev_event),
-    .auto_toggle_event(short_event), .combo_event(combo_press_event),
-    .manual_activity(manual_activity)
-);
-
-media_policy u_media_policy (
-    .clk(clk), .rst(rst),
-    .next_event(key1_single_press_event), .previous_event(prev_event),
-    .auto_toggle_event(short_event), .combo_event(combo_press_event),
-    .next_request(media_next_request), .previous_request(media_previous_request),
-    .auto_toggle_request(media_auto_toggle_request), .combo_request(media_combo_request)
+    .key1(key1), .key2(key2), .key4(key4), .mode(mode),
+    .next_event(media_next_request), .previous_event(media_previous_request),
+    .auto_toggle_event(media_auto_toggle_request), .manual_activity(manual_activity)
 );
 
 media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .DIAG_DISPLAY(DIAG_DISPLAY)) u_media_display_control (
- .clk(clk), .rst(rst), .combo_request(media_combo_request),
+ .clk(clk), .rst(rst), .combo_request(1'b0),
  .sd_init_done(sd_init_done), .scan_done(scan_done), .display_valid(display_valid),
  .load_busy(load_busy), .write_started_seen(write_started_seen),
  .source_done_now(source_done_now), .write_finish_now(write_finish_now),
@@ -146,7 +133,7 @@ media_player_control #(
     .clk(clk), .rst(rst), .enable(sd_init_done && (scan_kicked || !bmp_ready)), .scan_done(scan_done),
     .display_valid(display_valid), .load_busy(load_busy),
     .first_image_committed(first_image_committed), .image_count(img_found_count),
-    .current_image(img_idx), .next_event(media_next_request),
+    .current_image(img_idx), .mode(mode), .next_event(media_next_request),
     .previous_event(media_previous_request), .auto_toggle_event(media_auto_toggle_request),
     .request_accept(ctrl_request_accept),
     .manual_activity(manual_activity),

@@ -13,7 +13,7 @@ try {
     }
     # Separate library: this bench supplies behavioral BMP/SD and vendor FIFO models.
     $rtl = @('media_display_control','media_player_control','media_policy',
-        'key_gesture_control','dual_key_event_router','sd_card_bmp',
+        'key_gesture_control', 'key_press_debounce', 'mode_key_control','dual_key_event_router','sd_card_bmp',
         'frame_fifo_read','frame_fifo_write','frame_read_write') |
         ForEach-Object { "user_source/hdl_source/SD/$_.v" }
     if ($Baseline) {
@@ -23,7 +23,10 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Cannot read v0.1.7 source' }
         $oldSource = $oldSource.Replace('input                       write_finish_toggle,',
             "input                       write_finish_toggle,`n    input display_commit_ack,`n    output display_commit_request,")
+        $oldSource = $oldSource.Replace('key_next', 'key1').Replace('key_auto', 'key2')
+        $oldSource = $oldSource.Replace('input                       key2,', "input                       key2,`n    input key4,`n    input [1:0] mode,")
         $oldSource = $oldSource.Replace('assign ctrl_request_accept', "assign display_commit_request = 1'b0;`nassign ctrl_request_accept")
+        $oldSource = $oldSource.Replace('.key1(key1)', '.key_next(key1)').Replace('.key2(key2)', '.key_auto(key2)')
         $oldPath = Join-Path $simDir 'stage4_baseline_sd_card_bmp.v'
         [IO.File]::WriteAllText($oldPath, $oldSource, [Text.UTF8Encoding]::new($false))
         $rtl = $rtl | ForEach-Object { if ($_ -like '*/sd_card_bmp.v') { $oldPath } else { $_ } }

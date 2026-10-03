@@ -3,6 +3,7 @@ module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000)(
  input first_image_committed, manual_activity, request_accept,
  input [2:0] image_count,
  input [1:0] current_image,
+ input [1:0] mode,
  input next_event, previous_event, auto_toggle_event,
  output reg auto_play_en, next_pending, previous_pending,
  output auto_tick, load_request,
@@ -10,6 +11,7 @@ module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000)(
  output [1:0] target_image
 );
  reg [31:0] auto_count;
+ reg [1:0] mode_seen;
  wire available = enable && scan_done && display_valid && !load_busy &&
                   first_image_committed && (image_count != 0);
  wire auto_allowed = auto_play_en && (image_count > 1) &&
@@ -55,13 +57,16 @@ endfunction
 
  always @(posedge clk or posedge rst) begin
    if (rst) begin
-     auto_play_en <= 0; auto_count <= 0; next_pending <= 0; previous_pending <= 0;
+     auto_play_en <= 0; auto_count <= 0; next_pending <= 0; previous_pending <= 0; mode_seen <= 0;
    end else if (!enable) begin
-     auto_play_en <= 0; auto_count <= 0; next_pending <= 0; previous_pending <= 0;
+     auto_play_en <= 0; auto_count <= 0; next_pending <= 0; previous_pending <= 0; mode_seen <= mode;
    end else begin
      if (scan_done && image_count > 1 && auto_toggle_event)
        auto_play_en <= ~auto_play_en;
-     if (available && auto_allowed) begin
+     if (mode != mode_seen) begin
+       mode_seen <= mode;
+       auto_count <= 0;
+     end else if (available && auto_allowed) begin
        if (auto_tick) auto_count <= 0;
        else auto_count <= auto_count + 1'b1;
      end else auto_count <= 0;
