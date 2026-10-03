@@ -73,6 +73,7 @@ reg         frame_write_toggle_mem;
 
 wire [1:0]  write_buf_idx;
 wire [1:0]  disp_buf_idx;
+wire        display_commit_request, display_commit_ack;
 
 wire App_rd_en;
 wire [ADDR_BITS-1:0] App_rd_addr;
@@ -181,6 +182,8 @@ sd_card_bmp #(
     .display_valid     (display_valid),
 
     .write_finish_toggle(frame_write_toggle_mem),
+    .display_commit_request(display_commit_request),
+    .display_commit_ack(display_commit_ack),
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
 
@@ -275,6 +278,8 @@ frame_read_write #(
     .read_addr_2       (24'd0),
     .read_addr_3       (24'd0),
     .read_addr_index   (disp_buf_idx),
+    .display_commit_request(display_commit_request),
+    .display_commit_ack(display_commit_ack),
     .read_len          (FRAME_PIXELS),
     .read_en           (video_read_en),
     .read_data         (video_read_data),

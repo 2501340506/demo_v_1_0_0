@@ -1,4 +1,4 @@
-param([string]$Prefix = 'stage3')
+param([string]$Prefix = 'stage4')
 $ErrorActionPreference = 'Stop'
 $simTools = 'D:/modelsim/win64'
 $simDir = Join-Path $PSScriptRoot 'modelsim_check'

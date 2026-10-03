@@ -22,6 +22,8 @@ module sd_card_bmp #(
     output reg                  display_valid,
 
     input                       write_finish_toggle,
+    input                       display_commit_ack,
+    output reg                  display_commit_request,
     output reg [1:0]            write_buf_idx,
     output reg [1:0]            disp_buf_idx,
 
@@ -73,6 +75,8 @@ reg [31:0]       img_sector1;
 reg [31:0]       img_sector2;
 reg [31:0]       img_sector3;
 reg              load_busy;
+reg              commit_pending;
+reg [1:0]        commit_ack_sync;
 
 // 一次加载必须先观察到 bmp_read 进入忙态，之后返回 ready 才算源端完成
 reg              source_busy_seen;
@@ -98,10 +102,13 @@ assign write_finish_now = write_finish_seen || write_finish_pulse;
 assign write_req_ack_sync = write_req_ack_pipe[1];
 
 always @(posedge clk or posedge rst) begin
-    if (rst)
+    if (rst) begin
         write_req_ack_pipe <= 2'b00;
-    else
+        commit_ack_sync <= 2'b00;
+    end else begin
         write_req_ack_pipe <= {write_req_ack_pipe[0], write_req_ack};
+        commit_ack_sync <= {commit_ack_sync[0], display_commit_ack};
+    end
 end
 
 key_gesture_control #(
@@ -206,6 +213,8 @@ always @(posedge clk or posedge rst) begin
         img_sector3           <= 32'd0;
 
         load_busy             <= 1'b0;
+        commit_pending        <= 1'b0;
+        display_commit_request <= 1'b0;
         source_busy_seen      <= 1'b0;
         source_done_seen      <= 1'b0;
         write_finish_seen     <= 1'b0;
@@ -231,6 +240,7 @@ always @(posedge clk or posedge rst) begin
             img_sector3           <= 32'd0;
 
             load_busy             <= 1'b0;
+            commit_pending        <= 1'b0;
             source_busy_seen      <= 1'b0;
             source_done_seen      <= 1'b0;
             write_finish_seen     <= 1'b0;
@@ -260,23 +270,28 @@ always @(posedge clk or posedge rst) begin
             if (load_busy && write_finish_pulse)
                 write_finish_seen <= 1'b1;
 
-            // 源端返回空闲且 SDRAM 整帧写完后，才原子提交新图
-            if (load_busy && source_done_now && !write_started_seen && !write_req) begin
+            // Keep the old buffer owned by the reader until its frame request
+            // has adopted the new base address. Data stays stable until ack.
+            if (commit_pending && commit_ack_sync[1] == display_commit_request) begin
+                commit_pending        <= 1'b0;
+                load_busy             <= 1'b0;
+                source_busy_seen      <= 1'b0;
+                source_done_seen      <= 1'b0;
+                write_finish_seen     <= 1'b0;
+                img_idx               <= load_idx;
+                display_valid         <= 1'b1;
+                first_image_committed <= 1'b1;
+            end else if (!commit_pending && load_busy && source_done_now && !write_started_seen && !write_req) begin
                 // bmp_read 忙过后返回空闲，但未发写请求：图头被拒绝。
                 // 释放加载任务，保持已显示图片和挂起请求；首图失败会再次尝试加载。
                 load_busy             <= 1'b0;
                 source_busy_seen      <= 1'b0;
                 source_done_seen      <= 1'b0;
                 write_finish_seen     <= 1'b0;
-            end else if (load_busy && source_done_now && write_finish_now) begin
-                load_busy             <= 1'b0;
-                source_busy_seen      <= 1'b0;
-                source_done_seen      <= 1'b0;
-                write_finish_seen     <= 1'b0;
+            end else if (!commit_pending && load_busy && source_done_now && write_finish_now) begin
+                commit_pending        <= 1'b1;
+                display_commit_request <= ~display_commit_request;
                 disp_buf_idx          <= pending_buf_idx;
-                img_idx               <= load_idx;
-                display_valid         <= 1'b1;
-                first_image_committed <= 1'b1;
             end
 
             // 上电后自动发起一次“扫描前 4 张 BMP”

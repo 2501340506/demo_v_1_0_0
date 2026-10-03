@@ -10,6 +10,9 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
     wire [3:0] code;
     wire valid, req, we;
     wire auto_indicator;
+    wire commit_request;
+    reg [3:0] commit_ack_pipe=0;
+    reg hold_commit_ack=0;
     wire [31:0] pixel;
     wire [1:0] wb, db;
     integer pixels = 0, commits = 0;
@@ -36,6 +39,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         .combo_event_count(), .combo_debug_active(),
         .auto_play_indicator(auto_indicator),
         .display_valid(valid), .write_finish_toggle(finish_toggle),
+        .display_commit_request(commit_request), .display_commit_ack(commit_ack_pipe[3]),
         .write_buf_idx(wb), .disp_buf_idx(db), .write_req(req),
         .write_req_ack(ack), .write_en(we), .write_data(pixel),
         .SD_nCS(), .SD_DCLK(), .SD_MOSI(), .SD_MISO(1'b1)
@@ -79,6 +83,8 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         end
     end
     always @(posedge clk) begin
+        if (rst) commit_ack_pipe <= 0;
+        else if (!hold_commit_ack) commit_ack_pipe <= {commit_ack_pipe[2:0],commit_request};
             ack_pipe <= {ack_pipe[2:0], req};
             ack <= ack_pipe[3];
         if (rst) begin
@@ -100,8 +106,8 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
                 finish_toggle <= ~finish_toggle;
                 finish_pending <= 0;
             end
-            if (dut.load_busy && dut.source_done_now && dut.write_finish_now &&
-                (dut.write_started_seen || req)) commits <= commits + 1;
+            if (dut.commit_pending && dut.commit_ack_sync[1] == commit_request)
+                commits <= commits + 1;
         end
     end
     task tick(input integer n);
@@ -307,6 +313,19 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         tick(3);
         if (dut.u_media_player_control.auto_play_en || dut.u_media_player_control.auto_count != 0) $fatal(1, "short release did not reset autoplay");
         $display("PASS autoplay expiry at KEY2 threshold and short release");
+        // Source and SDRAM completion cannot release the buffer before display ack.
+        before_count = commits; start_base = starts; saved_idx = dut.img_idx;
+        hold_commit_ack = 1;
+        next_key(); wait(dut.commit_pending); next_key(); tick(200);
+        if (!dut.load_busy || dut.img_idx !== saved_idx || commits !== before_count ||
+            starts !== start_base + 1 || !dut.u_media_player_control.next_pending)
+            $fatal(1, "display wait released ownership, index or pending request");
+        hold_commit_ack = 0; drain();
+        if (commits !== before_count + 2 || starts !== start_base + 2 ||
+            started_idx[start_base] !== ((saved_idx + 1) % 4) ||
+            started_idx[start_base+1] !== ((saved_idx + 2) % 4))
+            $fatal(1, "display ack did not release queued request using new index");
+        $display("PASS delayed display ack preserves old image and drains pending after adoption");
         $finish;
         end
     end
