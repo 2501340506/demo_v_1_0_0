@@ -1,3 +1,15 @@
+# Version history
+
+## v0.2.0 - 2026-10-04
+
+Switch mode display, independent KEY1/KEY2 direction control in mode 00, KEY4 MAN/AUTO toggle, mode-change timer reset. Pending direction semantics retained. No OSD, B/C adjustment or scaling. Fixed artifacts: releases/v0.2.0/. No Git tag created.
+
+Board acceptance passed for stages 1-3. Focused simulations and TD builds passed. Full integration regression is NOT complete: tb_picture_requests.sv still uses removed ports, parameters and hierarchy. The asynchronous buffer regression was not rerun in this cycle. Mode change coincident with AUTO expiry also needs a dedicated check.
+
+## v0.1.9 - 2026-10-04
+
+Panel module refactor; TD build and board acceptance passed. See releases/v0.1.9/README.md.
+
 # 版本更新说明
 
 ## v0.1.8 — 2026-10-04

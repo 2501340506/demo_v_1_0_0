@@ -1,70 +1,34 @@
 ﻿# 当前交接记录
 
-更新日期：2026-10-04
+更新：2026-10-04。当前归档编号：v0.2.0；分支：demo010-0_1_1。本次不创建Git标签或GitHub Release。
 
-## 模式选择阶段4已完成
+## 当前任务与已完成内容
 
-- 当前任务：按批准的四阶段方案增加拨码模式、新按键映射和模式显示。每阶段上板确认后再继续；加载请求挂起机制保持远程基线行为。
-- 已完成：新增 `switch_mode_control`，50MHz域同步SW2/SW1并整体稳定20ms后更新；模式显示在 `seg_data_4`；顶层及约束登记SW1=C8、SW2=C7、KEY4=C1；TD工程登记新模块。
-- 已完成验证：阶段1板级验收通过；阶段2 `tb_mode_key_control`及新播放控制器RTL编译通过，0 errors、0 warnings。
-- 范围：阶段2已将KEY1/KEY2/KEY4接入新控制器：00模式方向翻图，其他模式屏蔽新方向事件，KEY4单击切换AUTO。旧长短按和组合入口已移除；播放控制器的挂起机制、SDRAM及HDMI音视频未改。
-- TD结果：综合、布局布线和bitgen完成；`TD_project/demo_Runs/phy_1/demo.bit`为本阶段产物，629624字节。Setup WNS −6.699ns、TNS −294.291ns；Hold WNS +0.003ns、TNS 0ns。LUT 4349、寄存器3937、BRAM 20、PLL 3。
-- 阶段2板级验收已通过。阶段3增加模式变化重置AUTO计时，保留AUTO状态和已有挂起请求；`tb_media_player_control`通过，0 errors、0 warnings。
-- TD结果：阶段3产物正在生成/复用当前工程运行；上板前需确认 `phy_1/demo.bit` 更新时间和bitgen日志。阶段3等待用户上板验收。
-- 阶段3板级验收已通过；阶段4完成最终回归、文档和交接。用户已确认四模式AUTO、模式切换重新计时、忙时挂起和切回MAN行为正常。
-- 最终产物：`TD_project/demo_Runs/phy_1/demo.bit`，629624字节；bitgen成功。最终验收记录见 `diagnostics/MODE_FINAL_ACCEPTANCE.md`。
-- 构建证据：syn_1和phy_1目录的 `build_mode_stage1.log`；最终 `demo_phy.ts`、`demo_phy.area`。保留既有时序未收敛、SDRAM位置调整和局部时钟布线警告，另有原工程media_policy/seg7_panel编译顺序重复提示。
-- 下一步：当前方案范围已完成。若继续开发，另行规划B/C图像处理、OSD或缩放；不得默认改变已验收的加载挂起机制。
-- 踩坑：TD命令行读取运行目录的 `demo.prj`，新增源文件必须同步运行文件清单；刷新脚本应使用明确的仓库绝对路径，不能把运行目录当仓库根。本次首次刷新路径错误已纠正后重新构建。
-- 后续需求仅记录：B初值0、范围−128..127；C初值128、范围0..256、至少9位。OSD、B/C处理和缩放不在本轮实现。
+文档更新、阶段历史归档、固定产物保存及交接替换。用户已确认阶段1至3板级功能正常；专项仿真与TD构建完成。本轮未修改RTL、测试脚本，也未重新运行构建。
 
-以下为基线历史交接记录。
+00模式KEY1上一张、KEY2下一张；01/10/11不产生新方向请求。KEY4在四模式切换MAN/AUTO，长按不连发。数码管显示模式0/1/2/3。加载时各方向最多挂起一次，同向合并，下一张优先；模式变化不清除挂起。
 
-## 当前状态
+阶段2起拨码在100MHz SD控制域消抖，模式同步到50MHz面板域。SW1=C8、SW2=C7，拨上为1；KEY4=C1，按下为0。
 
-项目当前固定基线为 **v0.1.8**。四阶段已完成仿真、TD 构建和用户板级功能验收；后续 RTL、仿真、TD 与时序优化工作暂停。
+## 证据与未完成问题
 
-- 分支：`demo010-0_1_1`
-- 标签：`v0.1.8`，不改写
-- `main`：未合并
-- 上板文件：`releases/v0.1.8/demo.bit`
-- 归档入口：[docs/ARCHIVE_INDEX.md](docs/ARCHIVE_INDEX.md)
+- 用户板级验收已通过；模式、按键、播放控制器专项测试有通过记录。
+- 完整集成回归尚未补齐：tb_picture_requests.sv仍使用旧按键端口、长按参数及旧实例，run_control_tests.ps1不能视为当前全套通过证据。
+- 本轮开发没有重新运行异步双缓冲回归的记录。旧文档“最终完整回归完成”表述不准确，以本记录为准。
+- 模式切换恰逢AUTO到期需要补测：计数在时序块清零，但自动请求组合逻辑未屏蔽模式变化，不能宣称该同拍行为已验证。
+- 阶段3时序：Setup WNS −6.699ns、TNS −295.899ns；Hold WNS +0.003ns、TNS 0ns。时序未完全收敛。
 
-## 证据边界
+## 下一步与经验
 
-控制回归和缓冲交接行为模型均已通过。`baseline_*.log` 仅用于旧控制器问题对照，不是当前版本失败结果。板级结论来自用户验收；Setup WNS -6.699 ns、Hold WNS +0.003 ns，时序尚未收敛。行为模型不覆盖厂商 IP 内部时序、真实亚稳态和完整电气行为。
+先适配旧图片集成测试并补跑完整控制和异步缓冲回归，再核对上述AUTO同拍行为。后续每次小验证通过应提交并推送GitHub。用户修改的“问题小记录.txt”不纳入本次文档提交。
 
-## 当前工作区
+TD命令行使用运行目录demo.prj；新增源文件需同步清单，使用明确仓库绝对路径。文档写入使用UTF-8，避免PowerShell管道传中文给Python时变为问号。
 
-以下文件按用户要求保留原状，不纳入文档整理：
+未实现OSD、B/C调节及缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅作为后续需求。
 
-- `TD_project/demo.al`
-- `TD_project/demo_Runs/best_result/demo.bit`
-- `TD_project/demo_Runs/best_result/demo_phy.ts`
+## 入口
 
-本次仅更新交接文档，未运行 RTL/ModelSim/TD，未移动发布目录或改写标签。
-
-## 后续入口
-
-恢复工作时，以 `releases/v0.1.8/`、`diagnostics/README.md` 和 `docs/ARCHIVE_INDEX.md` 为入口，另行提出修改计划。上一版交接记录见 [HANDOFF_2026-10-04.md](docs/history/2026-10-04/HANDOFF_2026-10-04.md)，本次归档副本见 [HANDOFF_2026-10-04_02.md](docs/history/2026-10-04/HANDOFF_2026-10-04_02.md)。
-
-## 2026-10-04 — seg7_panel 面板模块化
-
-- 新增 `user_source/hdl_source/SD/seg7_panel.v`，统一数码管译码、组合提示、轮播小数点和 6 位扫描显示策略。
-- 顶层 `top_tf_hdmi_audio.v` 改为实例化 `seg7_panel`；`seg_scan.v` 增加可选 `CLK_FREQ`/`SCAN_FREQ` 参数，默认行为保持不变。
-- TD 工程已登记新 HDL 文件；课程文档第 2.8 节已改为基于当前 v0.1.8 的真实 6 位面板说明。
-- 尚未完成板级重构后的重新综合和上板验收；下一步运行 Verilog 编译/控制回归，再执行 TD 构建。
-
-## 后续验收约束
-
-- 本机已安装 ModelSim 和 TD，可继续执行 HDL 仿真、综合、布局布线和 bitstream 生成。
-- `seg7_panel` 重构后的功能必须先经过用户上板验收，重点确认位选顺序、段码极性、图片编号、组合提示和自动轮播小数点。
-- 在用户明确确认上板通过前，不上传 GitHub、不发布新版本。
-
-## 2026-10-04 — ModelSim/TD 验证结果
-
-- ModelSim `diagnostics/run_control_tests.ps1`：6 个控制顶层全部通过，编译 0 errors、0 warnings；图片请求、组合键、播放控制、显示策略和手势回归均通过。
-- ModelSim 单独编译 `seg_decoder.v`、`seg_scan.v`、`seg7_panel.v`：0 errors、0 warnings。
-- TD 6.2 综合、布局布线和 bitgen 完成，产物为 `TD_project/demo_Runs/phy_1/demo.bit`。
-- 本次最终时序：Setup WNS -6.699 ns，Hold WNS +0.011 ns；保留既有时序未收敛情况。用户已完成板级验收并确认通过；v0.1.9 已归档并上传 GitHub。
-
+- [固定产物和版本说明](releases/v0.2.0/README.md)
+- [归档索引](docs/ARCHIVE_INDEX.md)
+- [验证说明](diagnostics/README.md)
+- [替换前交接原文](docs/history/2026-10-04/HANDOFF_pre_v0.2.0.md)
