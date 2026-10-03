@@ -314,7 +314,11 @@ always @(posedge clk or posedge rst) begin
             // 统一按键事件边界：KEY1 按下产生 next，KEY2 在释放时区分短按，跨阈值时产生 prev。
             if (key2_state == KEY2_IDLE) begin
                 if (key2_single_press_event) begin
-                    key2_state      <= KEY2_HELD;
+                    // A tap released inside the chord window arrives as a
+                    // complete press/release pair on the same clock edge.
+                    key2_state      <= key2_single_release_event ? KEY2_IDLE : KEY2_HELD;
+                    if (key2_single_release_event)
+                        short_event <= 1'b1;
                     key2_long_fired <= 1'b0;
                     long_press_cnt  <= 32'd0;
                 end

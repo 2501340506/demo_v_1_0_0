@@ -1,5 +1,11 @@
 # 图片请求与按键回归测试
 
+## 课程对照改进：阶段一
+
+新增顶层 `tb_picture_chord_integration`，与 `tb_picture_requests` 同文件，共用 SD 扇区和写完成模型。默认旧顶层保留原 14 项断言；新顶层使用等效 100 ms 组合窗口、20 ms 消抖、1000 ms 长按，验证快速短按、两种组合顺序、超窗重叠单键、操作后恢复。按键由真实输入驱动。
+
+按下方清单编译后，将仿真顶层替换为 `tb_picture_chord_integration` 即可运行。阶段一 5 个顶层全部通过，日志为 `modelsim_check/stage1_*.log`。其中 `stage1_baseline.log`、`stage1_old_router.log` 是独立旧代码反证测试，预期失败，不属于修复后通过日志。实际异步 SDRAM/FIFO 验证仍留待专项阶段。
+
 ## 当前基线
 
 v0.1.0（2026-10-03）已获用户板级功能和稳定性认可。ModelSim SE-64 10.6e 最近一次回归为 14 组 PASS，编译、仿真均 0 errors、0 warnings。本次仅整理文档，没有重新执行测试。

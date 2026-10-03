@@ -33,7 +33,7 @@ TF 卡中的图片需要满足以下格式：
 
 ## 当前版本：v0.1.4
 
-2026-10-03 用户确认显示策略拆分后的板级功能正常，作为本次归档版本。ModelSim 14 组回归通过；TD 完成综合、布局布线和 bitstream 构建。Setup WNS -6.699 ns，Hold WNS +0.011 ns：功能验收通过，但时序尚未完全收敛。
+2026-10-03 用户确认显示策略拆分后的板级功能正常，作为本次归档版本。ModelSim 14 组回归通过；TD 完成综合、布局布线和 bitstream 构建。Setup WNS -6.699 ns，Hold WNS +0.003 ns：功能验收通过，但时序尚未完全收敛。
 
 版本说明见 [CHANGELOG.md](CHANGELOG.md)，修改经验见 [按键与加载链路经验](docs/KEY_CONTROL_LESSONS.md)，仿真范围见 [diagnostics/README.md](diagnostics/README.md)。
 
@@ -55,4 +55,4 @@ user_source/
 3. 依次运行综合和布局布线。
 4. 生成的 bitstream 位于 `TD_project/demo_Runs/phy_1/demo.bit`。
 
-当前验收产物及验证报告见 [releases/v0.1.4](releases/v0.1.4/README.md)，源码由标签 v0.1.4 定位。best_result 保留旧发布产物。时序问题按用户要求暂不处理。
+当前验收产物及验证报告见 [releases/v0.1.5](releases/v0.1.5/README.md)，源码由标签 v0.1.4 定位。best_result 保留旧发布产物。时序问题按用户要求暂不处理。

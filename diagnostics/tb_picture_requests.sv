@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 // Actual controller + BMP reader; SD sectors and SDRAM acknowledgement are modeled.
-module tb_picture_requests;
+module tb_picture_requests #(parameter TEST_CHORD = 0);
     reg clk = 0;
     always #5 clk = ~clk;
     reg rst = 1, key_next = 1, key_auto = 1, finish_toggle = 0;
@@ -29,7 +29,7 @@ module tb_picture_requests;
     reg hold_finish = 0, finish_pending = 0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .SCAN_MAX_SECTOR(4),
                   .SCAN_TARGET_COUNT(4), .LONG_PRESS_MS(1000),
-                  .AUTO_PLAY_MS(3000), .COMBO_WINDOW_MS(1)) dut (
+                  .AUTO_PLAY_MS(3000), .COMBO_WINDOW_MS(TEST_CHORD ? 100 : 1)) dut (
         .clk(clk), .rst(rst), .key_next(key_next), .key_auto(key_auto),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
         .combo_event_count(), .combo_debug_active(),
@@ -124,6 +124,53 @@ module tb_picture_requests;
     initial begin
         tick(5); rst = 0; init_done = 1;
         wait(dut.scan_done);
+        if (TEST_CHORD) begin
+            wait(valid); tick(3);
+            // Real debounce and 100 ms chord window, with 1 cycle = 1 ms.
+            key_auto = 0; tick(50); key_auto = 1; tick(30);
+            if (short_events !== 1 || dut.u_media_player_control.auto_play_en !== 1'b1 || dut.key2_state !== 0)
+                $fatal(1, "quick KEY2 tap lost or left HELD state");
+            key_auto = 0; tick(50); key_auto = 1; tick(30);
+            if (short_events !== 2 || dut.u_media_player_control.auto_play_en !== 1'b0)
+                $fatal(1, "quick KEY2 tap did not rearm");
+            $display("PASS real-window quick KEY2 taps toggle and rearm");
+            for (i = 0; i < 2; i = i + 1) begin
+                start_base = starts; se = short_events; pe = prev_events;
+                if (i == 0) key_next = 0; else key_auto = 0;
+                tick(50);
+                key_next = 0; key_auto = 0; tick(1200);
+                key_next = 1; key_auto = 1; tick(30);
+                if (starts !== start_base || short_events !== se || prev_events !== pe || dut.key2_state !== 0)
+                    $fatal(1, "chord leaked single-key action");
+            end
+            if (dut.combo_event_count !== 8'd2) $fatal(1, "chord count");
+            $display("PASS both chord orders suppress single-key actions");
+            // KEY2 already classified as single, then KEY1 overlaps outside window.
+            se = short_events; pe = prev_events; start_base = starts;
+            key_auto = 0; tick(180); key_next = 0; tick(50);
+            key_auto = 1; key_next = 1; tick(30);
+            if (short_events !== se + 1 || prev_events !== pe || dut.combo_event_count !== 8'd2 || dut.key2_state !== 0)
+                $fatal(1, "late KEY1 became chord or lost KEY2 release");
+            key_auto = 0; tick(50); key_auto = 1; tick(30); drain();
+            if (starts !== start_base + 1 || dut.u_media_player_control.auto_play_en !== 0)
+                $fatal(1, "late KEY1 action or subsequent short tap failed");
+            // Reverse order, then release independently.
+            se = short_events; start_base = starts;
+            key_next = 0; tick(180); key_auto = 0; tick(50);
+            key_next = 1; tick(30); key_auto = 1; tick(30);
+            if (short_events !== se + 1 || dut.combo_event_count !== 8'd2 || dut.key2_state !== 0)
+                $fatal(1, "late KEY2 single gesture failed");
+            key_auto = 0; tick(50); key_auto = 1; tick(30); drain();
+            if (starts !== start_base + 1) $fatal(1, "late overlap repeated KEY1");
+            $display("PASS outside-window overlaps remain independent and rearm");
+            // Long classification is deliberately unchanged in stage one.
+            se = short_events; pe = prev_events;
+            key_auto = 0; tick(1200); key_auto = 1; tick(30); drain();
+            if (prev_events !== pe + 1 || short_events !== se || dut.key2_state !== 0)
+                $fatal(1, "long hold after chord gestures failed");
+            $display("PASS long hold after chord gestures remains exclusive");
+            $finish;
+        end else begin
         bad_header = 1; tick(1200);
         if (valid || dut.first_image_committed) $fatal(1, "bad first image was displayed");
         bad_header = 0;
@@ -256,6 +303,11 @@ module tb_picture_requests;
         if (dut.u_media_player_control.auto_play_en || dut.u_media_player_control.auto_count != 0) $fatal(1, "short release did not reset autoplay");
         $display("PASS autoplay expiry at KEY2 threshold and short release");
         $finish;
+        end
     end
     initial begin #3000000; $fatal(1, "simulation watchdog"); end
+endmodule
+
+module tb_picture_chord_integration;
+    tb_picture_requests #(.TEST_CHORD(1)) test();
 endmodule

@@ -21,13 +21,14 @@ module dual_key_event_router #(
     output reg  key1_single_release_event,
     output reg  key2_single_release_event
 );
-    localparam [1:0] ST_IDLE = 2'd0;
-    localparam [1:0] ST_KEY1 = 2'd1;
-    localparam [1:0] ST_KEY2 = 2'd2;
-    localparam [1:0] ST_COMBO = 2'd3;
+    localparam [2:0] ST_IDLE = 3'd0;
+    localparam [2:0] ST_KEY1 = 3'd1;
+    localparam [2:0] ST_KEY2 = 3'd2;
+    localparam [2:0] ST_COMBO = 3'd3;
+    localparam [2:0] ST_SINGLE = 3'd4;
     localparam integer COUNT_WIDTH = (COMBO_WINDOW_CYCLES <= 2) ? 1 : $clog2(COMBO_WINDOW_CYCLES + 1);
 
-    reg [1:0] state;
+    reg [2:0] state;
     reg [COUNT_WIDTH-1:0] window_count;
 
     always @(posedge clk or posedge rst) begin
@@ -79,7 +80,7 @@ module dual_key_event_router #(
                         combo_press_event <= 1'b1;
                         window_count <= {COUNT_WIDTH{1'b0}};
                     end else if (window_count >= COMBO_WINDOW_CYCLES - 1) begin
-                        state <= ST_IDLE;
+                        state <= ST_SINGLE;
                         key1_single_press_event <= 1'b1;
                         window_count <= {COUNT_WIDTH{1'b0}};
                     end else begin
@@ -93,12 +94,22 @@ module dual_key_event_router #(
                         combo_press_event <= 1'b1;
                         window_count <= {COUNT_WIDTH{1'b0}};
                     end else if (window_count >= COMBO_WINDOW_CYCLES - 1) begin
-                        state <= ST_IDLE;
+                        state <= ST_SINGLE;
                         key2_single_press_event <= 1'b1;
                         window_count <= {COUNT_WIDTH{1'b0}};
                     end else begin
                         window_count <= window_count + 1'b1;
                     end
+                end
+                // Once a single gesture is committed, overlapping keys stay
+                // independent until both keys have been released.
+                ST_SINGLE: begin
+                    key1_single_press_event <= key1_press_event;
+                    key2_single_press_event <= key2_press_event;
+                    key1_single_release_event <= key1_release_event;
+                    key2_single_release_event <= key2_release_event;
+                    if (key1_stable && key2_stable)
+                        state <= ST_IDLE;
                 end
                 ST_COMBO: begin
                     if (key1_stable && key2_stable) begin

@@ -1,6 +1,20 @@
 # 当前交接记录
 更新日期：2026-10-03
 
+## 最新任务：课程对照改进阶段一（进行中）
+
+用户要求另存分析计划并逐步实施，使用本机 ModelSim/TD，相关功能必须先由用户上板验证再上传 GitHub。总计划见 docs/COURSE_REVIEW_IMPROVEMENT_PLAN.md；仍暂缓历史时序优化。
+
+- 已修复 KEY2 窗口内短按的同拍按下/释放丢失；增加路由 ST_SINGLE，单键确认后重叠的另一键仍独立处理，直到两键释放才重新允许组合。
+- 新增 tb_picture_chord_integration，复用真实 BMP/控制器测试模型，使用默认等效 100 ms 窗口；覆盖快速短按重入、双键两种顺序、超窗重叠与长按恢复。
+- 新增 4 组集成检查、原 14 项及路由/播放/显示专项全部通过，ModelSim 0 errors、0 warnings。日志 diagnostics/modelsim_check/stage1_*.log。
+- 反证验证：原代码在快速短按检查失败；仅修短按而保留旧路由时在超窗重叠检查失败。旧代码仅存在本地忽略的独立测试目录，不影响当前 RTL。
+- TD 综合、布局布线、bitgen 已完成；产物 TD_project/demo_Runs/phy_1/demo.bit，2026-10-03 23:32:30，629624 字节。Setup WNS -6.699 ns，Hold WNS +0.003 ns。旧 releases/v0.1.4 和 best_result 未替换。
+- 下一步：等待用户按 diagnostics/STAGE1_KEY_ACCEPTANCE.md 上板验证；通过后才上传 GitHub并继续长按起算及手动优先阶段。阶段二至四未实施；未提交、未上传。当前所需外部反馈为板级验收结果。
+- 经验：原回归将组合窗口缩为 1 ms，不能代替默认 100 ms 交互验收；路由输出的按下/释放可以同拍，消费方必须接收完整手势。不能把 ModelSim 进程返回 0 当作通过，需检查 Fatal 和 PASS。
+
+以下为历史阶段记录，以最新任务及后续验收结果为准。
+
 ## 当前任务与结果
 修复 media_player_control 拆分后的四图顺序与请求消费问题。现已完成实际接入，旧控制寄存器和兼容 OR 路径已移除。用户已授权 TD 构建验证，现已完成。
 
