@@ -346,7 +346,7 @@ always @(posedge clk or posedge rst) begin
         end else begin
             // 统一按键事件边界：KEY1 按下产生 next，KEY2 在释放时区分短按，跨阈值时产生 prev。
             if (key2_state == KEY2_IDLE) begin
-                if (key2_press_event && key1_stable) begin
+                if (key2_single_press_event) begin
                     key2_state      <= KEY2_HELD;
                     key2_long_fired <= 1'b0;
                     long_press_cnt  <= 32'd0;
@@ -358,7 +358,7 @@ always @(posedge clk or posedge rst) begin
                     prev_event      <= 1'b1;
                     key2_long_fired <= 1'b1;
                 end
-            end else if (key2_release_event && key1_stable) begin
+            end else if (key2_single_release_event) begin
                 if (!key2_long_fired)
                     short_event <= 1'b1;
                 key2_state      <= KEY2_IDLE;
@@ -446,8 +446,8 @@ always @(posedge clk or posedge rst) begin
                 // 自动播放计数：只有当前没有写图任务时才计时
                 if (scan_done && auto_play_en && display_valid && !load_busy && first_image_committed &&
                     (img_found_count > 3'd1) && !short_event &&
-                    !key1_press_event && !prev_event &&
-                    !key2_press_event && !key2_release_event && !key2_long_due &&
+                    !key1_single_press_event && !prev_event &&
+                    !key2_single_press_event && !key2_single_release_event && !key2_long_due &&
                     !next_req_pending && !prev_req_pending) begin
                     if (auto_tick)
                         auto_cnt <= 32'd0;
@@ -503,8 +503,8 @@ always @(posedge clk or posedge rst) begin
                 // 自动播放下一张：同样写到“非当前显示”的另一块 buffer
                 else if (scan_done && bmp_ready && display_valid && !load_busy && auto_play_en && auto_tick &&
                          (img_found_count > 3'd1) && !short_event &&
-                         !key1_press_event && !prev_event &&
-                         !key2_press_event && !key2_release_event && !key2_long_due &&
+                         !key1_single_press_event && !prev_event &&
+                         !key2_single_press_event && !key2_single_release_event && !key2_long_due &&
                          !next_req_pending && !prev_req_pending) begin
                     load_idx         <= next_from_current;
                     load_sector      <= sector_lut(next_from_current);
@@ -519,7 +519,7 @@ always @(posedge clk or posedge rst) begin
                 end
                 // Capture after consumption: a new event on the consumption cycle survives.
                 if (scan_done && (img_found_count != 3'd0)) begin
-                    if (key1_press_event && key2_stable) next_req_pending <= 1'b1;
+                    if (key1_single_press_event) next_req_pending <= 1'b1;
                     if (prev_event) prev_req_pending <= 1'b1;
                 end
             end

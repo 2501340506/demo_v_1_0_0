@@ -206,7 +206,7 @@ module tb_picture_requests;
         // Arrange an expiry on the actual stable KEY1 edge, without forcing the event.
         key_auto = 0; tick(25); key_auto = 1; tick(25);
         key_next = 0;
-        wait(dut.key1_press_event); @(negedge clk);
+        wait(dut.key1_single_press_event); @(negedge clk);
         dut.auto_cnt = 2999;
         @(posedge clk); #1;
         if (dut.load_start_pulse || !dut.next_req_pending)
@@ -228,11 +228,11 @@ module tb_picture_requests;
         $display("PASS four-image next/next/previous execution order");
         // Isolate arbitration collision: old pending is consumed while a new event arrives.
         @(negedge clk); dut.next_req_pending = 1;
-        force dut.key1_press_event = 1;
+        force dut.key1_single_press_event = 1;
         @(posedge clk); #1;
         if (!dut.load_start_pulse || !dut.next_req_pending)
             $fatal(1, "same-cycle next capture lost");
-        @(negedge clk); release dut.key1_press_event; drain();
+        @(negedge clk); release dut.key1_single_press_event; drain();
         @(negedge clk); dut.prev_req_pending = 1;
         force dut.prev_event = 1;
         @(posedge clk); #1;
@@ -249,7 +249,7 @@ module tb_picture_requests;
             $fatal(1, "autoplay preempted KEY2 threshold");
         tick(25); key_auto = 1; tick(25); drain();
         key_auto = 0; tick(25); key_auto = 1;
-        wait(dut.key2_release_event); @(negedge clk); dut.auto_cnt = 2999;
+        wait(dut.key2_single_release_event); @(negedge clk); dut.auto_cnt = 2999;
         @(posedge clk); #1;
         if (dut.load_start_pulse) $fatal(1, "autoplay preempted short release");
         tick(3);
