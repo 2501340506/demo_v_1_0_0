@@ -159,6 +159,7 @@ sd_card_bmp #(
     .key_next          (key1),
     .key_auto          (key2),
     .state_code        (state_code),
+    .combo_event_count (),
     .bmp_width         (16'd640),
     .bmp_height        (16'd480),
     .display_valid     (display_valid),

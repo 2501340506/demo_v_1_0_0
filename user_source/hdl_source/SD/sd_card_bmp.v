@@ -14,6 +14,7 @@ module sd_card_bmp #(
     input                       key_next,
     input                       key_auto,
     output reg [3:0]            state_code,
+    output reg [7:0]            combo_event_count,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
     output reg                  display_valid,
@@ -275,6 +276,7 @@ always @(posedge clk or posedge rst) begin
         write_finish_seen     <= 1'b0;
         display_valid         <= 1'b0;
         state_code            <= 4'd0;
+        combo_event_count     <= 8'd0;
     end else begin
         wrfin_tgl_sync   <= {wrfin_tgl_sync[1:0], write_finish_toggle};
         scan_start_pulse <= 1'b0;
@@ -283,6 +285,8 @@ always @(posedge clk or posedge rst) begin
         key2_stable_d <= key2_stable;
         prev_event    <= 1'b0;
         short_event   <= 1'b0;
+        if (combo_press_event && combo_event_count != 8'hff)
+            combo_event_count <= combo_event_count + 8'd1;
         if (DIAG_DISPLAY != 0) begin
             if (!sd_init_done) state_code <= 4'd0;
             else if (!scan_done) state_code <= 4'd1;

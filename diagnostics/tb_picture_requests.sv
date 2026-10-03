@@ -32,6 +32,7 @@ module tb_picture_requests;
                   .AUTO_PLAY_MS(3000)) dut (
         .clk(clk), .rst(rst), .key_next(key_next), .key_auto(key_auto),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
+        .combo_event_count(),
         .display_valid(valid), .write_finish_toggle(finish_toggle),
         .write_buf_idx(wb), .disp_buf_idx(db), .write_req(req),
         .write_req_ack(ack), .write_en(we), .write_data(pixel),
