@@ -4,7 +4,9 @@
 
 当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消；R2 S2独立PCM已恢复并通过ModelSim复核，尚未接顶层；S4视频坐标对齐已完成仿真及TD构建，[已上板通过](releases/v0.3.0-r2-s4-local.1/README.md)。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
 
-基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频。当前S7候选使用新核心输出48kHz采样的440Hz双声道正弦音；最近已验收S6为静音版本。本版增加拨码模式显示与独立三键控制。
+基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频。当前S8候选使用48kHz双声道图片琶音，实际显示提交后触发一次提示音；最近已验收S7为440Hz正弦音版本。本版增加拨码模式显示与独立三键控制。
+
+当前候选：[S8固定产物与验证结果](releases/v0.3.0-r2-s8-local.1/README.md) · [S8上板验证文档](releases/v0.3.0-r2-s8-local.1/BOARD_VALIDATION.md)。仿真及TD构建完成，等待上板；全局时序限制及BMP解析路径退化见候选说明。
 
 ## 使用方式
 

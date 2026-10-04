@@ -17,7 +17,7 @@ module tb_buffer_handoff;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000)) dut (
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'b00),
         .state_code(),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
-        .bmp_width(16'd32),.bmp_height(16'd32),.display_valid(valid),
+        .bmp_width(16'd32),.bmp_height(16'd32),.display_valid(valid),.committed_image(),.committed_valid(),.committed_ready(1'b1),
         .write_finish_toggle(finish_toggle),.write_buf_idx(wb),.disp_buf_idx(db),
         .display_commit_request(commit_request),.display_commit_ack(commit_ack),
         .write_req(req),.write_req_ack(ack),.write_en(we),.write_data(data),

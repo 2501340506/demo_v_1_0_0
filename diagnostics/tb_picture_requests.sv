@@ -29,6 +29,30 @@ module tb_picture_requests;
         if (dut.media_previous_request) prev_events = prev_events + 1;
         if (dut.media_auto_toggle_request) toggle_events = toggle_events + 1;
     end
+    reg pixel_clk=0;
+    always #19 pixel_clk=~pixel_clk;
+    wire [1:0] committed_image, media_id;
+    wire committed_valid, committed_ready, media_update, media_enable;
+    integer sent=0, received=0, cues=0;
+    reg [1:0] expected [0:255];
+    media_commit_cdc cdc(.src_clk(clk),.dst_clk(pixel_clk),.rst(rst),
+      .src_image(committed_image),.src_valid(committed_valid),.src_ready(committed_ready),
+      .media_id(media_id),.media_update(media_update),.media_enable(media_enable));
+    pcm_media_tone #(.CLOCK_HZ(480000)) audio_source(.clk(pixel_clk),.rst_n(!rst),
+      .enable(media_enable),.media_update(media_update),.media_id(media_id),.volume(8'd128),
+      .sample_valid(),.sample_ready(1'b1),.sample_left(),.sample_right(),.overflow(),.blip_active());
+    always @(posedge clk) if (!rst && committed_valid && committed_ready) begin
+      if (!valid || committed_image !== dut.img_idx || sent >= commits)
+        $fatal(1,"audio event before actual display commit");
+      expected[sent]=committed_image; sent=sent+1;
+    end
+    always @(posedge pixel_clk) if (!rst && media_update) begin
+      if (received>=sent || media_id!==expected[received]) $fatal(1,"CDC lost/repeated/wrong image");
+      received=received+1;
+      #1;
+      if (audio_source.blip_countdown!=4800) $fatal(1,"missing commit cue");
+      cues=cues+1;
+    end
     reg old_busy = 0;
     reg bad_header = 0;
     reg hold_finish = 0, finish_pending = 0;
@@ -38,6 +62,7 @@ module tb_picture_requests;
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
         .combo_event_count(), .combo_debug_active(),
         .auto_play_indicator(auto_indicator),
+        .committed_image(committed_image),.committed_valid(committed_valid),.committed_ready(committed_ready),
         .display_valid(valid), .write_finish_toggle(finish_toggle),
         .display_commit_request(commit_request), .display_commit_ack(commit_ack_pipe[3]),
         .write_buf_idx(wb), .disp_buf_idx(db), .write_req(req),
@@ -106,7 +131,7 @@ module tb_picture_requests;
                 finish_toggle <= ~finish_toggle;
                 finish_pending <= 0;
             end
-            if (dut.commit_pending && dut.commit_ack_sync[1] == commit_request)
+            if (dut.commit_pending && dut.commit_ack_sync[1] == commit_request && (!committed_valid || committed_ready))
                 commits <= commits + 1;
         end
     end
@@ -299,6 +324,9 @@ module tb_picture_requests;
             started_idx[start_base+1] !== ((saved_idx+2)%4))
             $fatal(1, "display ack failed to release queued request at new index");
         $display("PASS delayed display ack preserves old image and drains pending after adoption");
+        tick(100);
+        if (sent!=commits || received!=commits || cues!=commits) $fatal(1,"commit/event/cue count mismatch");
+        $display("PASS S8 %0d display commits delivered once with matching picture and cue",commits);
         $finish;
     end
     initial begin #3000000; $fatal(1, "simulation watchdog"); end

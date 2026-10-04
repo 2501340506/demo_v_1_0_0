@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 module tb_hdmi_packets;
     parameter integer PATTERN = 0;
+    parameter integer MEDIA = 0;
     parameter integer SILENCE = 0;
     reg clk=0,rst_n=0;
     always #20 clk=~clk;
@@ -8,7 +9,7 @@ module tb_hdmi_packets;
     wire hs=!(x>=656 && x<752),vs=!(line<2);
     wire de=(x<640 && line>=35 && line<515);
     wire [23:0] rgb={line[7:0],x[7:0],(x[7:0]^line[7:0])};
-    reg select_media=0;
+    reg select_media=MEDIA;
     wire tv,tr,mr,seq_error,tap;
     wire signed [15:0] tl,rr,tapl,tapr;
     wire [9:0] c0,c1,c2;
@@ -16,9 +17,18 @@ module tb_hdmi_packets;
     integer generated=0;
     // Stop the source after a multiple of four accepted samples; drain packets.
     wire tone_enable=generated<3200;
+    generate if (!MEDIA) begin : test_source
     pcm_test_tone tone(.clk(clk),.rst_n(rst_n),.enable(tone_enable),
         .sample_valid(tv),.sample_ready(tr),
         .sample_left(tl),.sample_right(rr),.sample_tick(tick),.overflow(overflow));
+    end else begin : media_source
+      reg started=0;
+      always @(posedge clk) if(!rst_n) started<=0;else started<=1;
+      pcm_media_tone tone(.clk(clk),.rst_n(rst_n),.enable(1'b1),
+       .media_update(!started),.media_id(2'd2),.volume(8'd128),
+       .sample_valid(tv),.sample_ready(mr || !tone_enable),.sample_left(tl),.sample_right(rr),.overflow(overflow),.blip_active());
+      assign tick=tone.sample_tick;
+    end endgenerate
     // PATTERN=1 drives each selected producer continuously. This exercises
     // switching during a stalled packet, distinct stereo and signed extremes.
     integer test_index=0,media_index=0;
@@ -30,12 +40,12 @@ module tb_hdmi_packets;
         endcase
     endfunction
     wire pattern_running=(test_index+media_index)<800;
-    wire test_valid=PATTERN ? pattern_running : (tv && tone_enable);
-    wire media_valid=PATTERN && pattern_running;
+    wire test_valid=MEDIA ? 1'b0 : PATTERN ? pattern_running : (tv && tone_enable);
+    wire media_valid=MEDIA ? (tv && tone_enable) : PATTERN && pattern_running;
     wire signed [15:0] test_left=SILENCE ? 16'sd0 : PATTERN ? left_pattern(test_index) : tl;
     wire signed [15:0] test_right=SILENCE ? 16'sd0 : PATTERN ? ~left_pattern(test_index) : rr;
-    wire signed [15:0] media_left=left_pattern(media_index+10000);
-    wire signed [15:0] media_right=media_index*137;
+    wire signed [15:0] media_left=MEDIA ? tl : left_pattern(media_index+10000);
+    wire signed [15:0] media_right=MEDIA ? rr : media_index*137;
     media_hdmi_audio_bridge dut(.pixel_clk(clk),.pixel_rst_n(rst_n),
         .video_hsync(hs),.video_vsync(vs),.video_de(de),.video_x(x[9:0]),.video_rgb(rgb),
         .select_media(select_media),.test_valid(test_valid),.test_ready(tr),

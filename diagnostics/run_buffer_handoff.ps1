@@ -22,7 +22,7 @@ try {
         $oldSource = (& git show 'v0.1.7:user_source/hdl_source/SD/sd_card_bmp.v') -join "`n"
         if ($LASTEXITCODE -ne 0) { throw 'Cannot read v0.1.7 source' }
         $oldSource = $oldSource.Replace('input                       write_finish_toggle,',
-            "input                       write_finish_toggle,`n    input display_commit_ack,`n    output display_commit_request,")
+            "input                       write_finish_toggle,`n    input display_commit_ack,`n    output [1:0] committed_image,`n    output committed_valid,`n    input committed_ready,`n    output display_commit_request,")
         $oldSource = $oldSource.Replace('key_next', 'key1').Replace('key_auto', 'key2')
         $oldSource = $oldSource.Replace('input                       key2,', "input                       key2,`n    input key4,`n    input [1:0] mode,")
         $oldSource = $oldSource.Replace('assign ctrl_request_accept', "assign display_commit_request = 1'b0;`nassign ctrl_request_accept")

@@ -1,4 +1,4 @@
-param([ValidateSet('s6','s7')][string]$Stage = 's6')
+param([ValidateSet('s6','s7','s8')][string]$Stage = 's6')
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $simTools = 'D:/modelsim/win64'
@@ -14,17 +14,19 @@ try {
     }
     $rtl = @(Get-ChildItem user_source/hdl_source/hdmi_audio -Filter '*.v' | ForEach-Object {$_.FullName})
     & "$simTools/vlog.exe" -sv -work $lib '+incdir+user_source/hdl_source/SD' -l "$simDir/compile.log" @rtl `
-        user_source/hdl_source/audio/pcm_test_tone.v user_source/hdl_source/SD/color_bar.v `
+        user_source/hdl_source/audio/media_commit_cdc.v user_source/hdl_source/audio/pcm_media_tone.v user_source/hdl_source/audio/pcm_test_tone.v user_source/hdl_source/SD/color_bar.v `
         user_source/hdl_source/SD/video_timing_data.v user_source/hdl_source/SD/video_delay.v `
         user_source/hdl_source/hdmi_phy_warpper.v user_source/hdl_source/lane_lvds_10_1.v `
-        "$vendor/eg_logic_io.v" "$vendor/eg_phy_glbl.v" diagnostics/tb_hdmi_packets.sv diagnostics/tb_hdmi_s6_phy.sv
+        "$vendor/eg_logic_io.v" "$vendor/eg_phy_glbl.v" diagnostics/tb_hdmi_packets.sv diagnostics/tb_hdmi_s6_phy.sv diagnostics/tb_pcm_media_tone.sv diagnostics/tb_media_commit_cdc.sv
     if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
     Push-Location $simDir
     try {
-        foreach ($test in @('tb_hdmi_packets','tb_hdmi_s6_phy')) {
+        $tests = if ($Stage -eq 's8') { @('tb_hdmi_packets','tb_hdmi_s6_phy','tb_pcm_media_tone','tb_media_commit_cdc') } else { @('tb_hdmi_packets','tb_hdmi_s6_phy') }
+        foreach ($test in $tests) {
             $simOptions = @()
             $silence = if ($Stage -eq 's6') { 1 } else { 0 }
-            $simOptions += "-gSILENCE=$silence"
+            if ($test -in @('tb_hdmi_packets','tb_hdmi_s6_phy')) { $simOptions += "-gSILENCE=$silence" }
+            if ($Stage -eq 's8' -and $test -in @('tb_hdmi_packets','tb_hdmi_s6_phy')) { $simOptions += "-gMEDIA=1" }
             & "$simTools/vsim.exe" -c -quiet -voptargs=+acc -lib $lib $test glbl @simOptions -l "$simDir/$test.log" -do 'run -all; quit -f'
             $log = Get-Content "$simDir/$test.log" -Raw
             if ($LASTEXITCODE -ne 0 -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS ' -or $log -notmatch 'Errors: 0, Warnings: 0') {
@@ -37,7 +39,7 @@ try {
             $nonzero = Get-Content tone_packets.txt | Where-Object { $_ -like 'A *' -and $_ -ne 'A 0000 0000' }
             if ($nonzero) { throw 'S6 PCM is not silent' }
             Write-Output 'PASS S6 all accepted and decoded PCM samples are zero'
-        } else {
+        } elseif ($Stage -eq 's7') {
             & python -X utf8 "$repoRoot/diagnostics/check_s7_tone.py" tone_packets.txt
             if ($LASTEXITCODE -ne 0) { throw 'S7 independent tone reference failed' }
         }

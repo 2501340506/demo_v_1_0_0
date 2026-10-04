@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 module tb_hdmi_s6_phy;
     parameter integer SILENCE = 1;
+    parameter integer MEDIA = 0;
     reg clk=0,serial=0,rst=1;
     always #20 clk=~clk;
     initial begin #1;forever #4 serial=~serial;end
@@ -26,14 +27,25 @@ module tb_hdmi_s6_phy;
     end
     wire valid,ready,overflow,tap,sequence_error;
     wire signed [15:0] tap_l,tap_r,source_l,source_r;
+    wire test_ready,media_ready;
+    assign ready=MEDIA ? media_ready : test_ready;
+    generate if (!MEDIA) begin : test_source
     pcm_test_tone pacing(.clk(clk),.rst_n(~rst),.enable(1'b1),
         .sample_valid(valid),.sample_ready(ready),.sample_left(source_l),.sample_right(source_r),
         .sample_tick(),.overflow(overflow));
+    end else begin : media_source
+      integer age=0;
+      always @(posedge clk) if(rst) age<=0;else age<=age+1;
+      pcm_media_tone pacing(.clk(clk),.rst_n(~rst),.enable(age>=100),
+       .media_update(age==100 || age==250000),.media_id(age<250000 ? 2'd0 : 2'd3),.volume(8'd128),
+       .sample_valid(valid),.sample_ready(ready),.sample_left(source_l),.sample_right(source_r),
+       .overflow(overflow),.blip_active());
+    end endgenerate
     media_hdmi_audio_bridge bridge(.pixel_clk(clk),.pixel_rst_n(~rst),
         .video_hsync(hs),.video_vsync(vs),.video_de(de),.video_x(x),.video_rgb(rgb),
-        .select_media(1'b0),.test_valid(valid),.test_ready(ready),
-        .test_left(SILENCE ? 16'sd0 : source_l),.test_right(SILENCE ? 16'sd0 : source_r),.media_valid(1'b0),.media_ready(),
-        .media_left(16'sd0),.media_right(16'sd0),
+        .select_media(MEDIA!=0),.test_valid(valid && !MEDIA),.test_ready(test_ready),
+        .test_left(SILENCE ? 16'sd0 : source_l),.test_right(SILENCE ? 16'sd0 : source_r),.media_valid(valid && MEDIA),.media_ready(media_ready),
+        .media_left(source_l),.media_right(source_r),
         .channel0_symbol(c0),.channel1_symbol(c1),.channel2_symbol(c2),
         .sequence_error(sequence_error),.pcm_tap_valid(tap),.pcm_tap_left(tap_l),.pcm_tap_right(tap_r));
     wire p0,p1,p2,pc;

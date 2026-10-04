@@ -470,7 +470,9 @@
                     <Attr Name="CompileOrder" Val="55"/>
                 </FileInfo>
             </File>
-        </Verilog>
+        <File Path="../user_source/hdl_source/audio/pcm_media_tone.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="56"/></FileInfo></File>
+<File Path="../user_source/hdl_source/audio/media_commit_cdc.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="57"/></FileInfo></File>
+</Verilog>
         <ADC_FILE>
             <File Path="../user_source/constraints_source/pin.adc">
                 <FileInfo>
