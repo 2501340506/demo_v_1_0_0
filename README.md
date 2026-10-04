@@ -2,7 +2,7 @@
 
 已验收版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。当前开发分支：`feature/hdmi-audio-v0.3.0`，不自动合并main。
 
-当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消；R2 S2独立PCM已恢复并通过ModelSim复核，尚未接顶层；S4视频坐标对齐已完成仿真及TD构建，[候选待上板](releases/v0.3.0-r2-s4-local.1/README.md)。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
+当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消；R2 S2独立PCM已恢复并通过ModelSim复核，尚未接顶层；S4视频坐标对齐已完成仿真及TD构建，[已上板通过](releases/v0.3.0-r2-s4-local.1/README.md)。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
 
 基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和旧I2S测试音（现有音频PLL约12.295082MHz，不作为精确48kHz基准）。本版增加拨码模式显示与独立三键控制。
 
@@ -35,7 +35,7 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-- [S4待上板候选](releases/v0.3.0-r2-s4-local.1/demo.bit)
+- [S4已验收固定产物](releases/v0.3.0-r2-s4-local.1/demo.bit)
 - [S1恢复用固定bitstream](releases/v0.3.0-s1-local.1/demo.bit)
 - [中文版本说明及构建报告](releases/v0.2.0/README.md)
 - [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/V0_2_0_MERGE_REVIEW.md)
@@ -44,6 +44,6 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 验证状态与范围
 
-用户已确认S0/S1通过，当前源码新增独立PCM及S4视频坐标对齐，S4尚待板级确认。S1控制/图片/面板/异步缓冲回归及板级证据保留；S2模块已通过；本轮S4视频、控制及面板仿真零错误零警告，TD构建完成。全局Setup WNS −6.699ns，时序未收敛；待用户上板确认后再进入S5。详见[验证状态](docs/VALIDATION_STATUS.md)。
+用户已确认S0/S1通过，当前源码新增独立PCM及S4视频坐标对齐，S4已获用户板级确认。S1控制/图片/面板/异步缓冲回归及板级证据保留；S2模块已通过；本轮S4视频、控制及面板仿真零错误零警告，TD构建完成。全局Setup WNS −6.699ns，时序未收敛；用户已确认S4通过，下一阶段为S5。详见[验证状态](docs/VALIDATION_STATUS.md)。
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
