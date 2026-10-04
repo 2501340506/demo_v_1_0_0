@@ -20,6 +20,9 @@ module sd_card_bmp #(
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
     output reg                  display_valid,
+    output reg [1:0]            committed_image,
+    output reg                  committed_valid,
+    input                       committed_ready,
 
     input                       write_finish_toggle,
     input                       display_commit_ack,
@@ -181,6 +184,8 @@ end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
+        committed_image <= 0;
+        committed_valid <= 0;
         wrfin_tgl_sync        <= 3'b000;
         scan_start_pulse      <= 1'b0;
         load_start_pulse      <= 1'b0;
@@ -207,6 +212,7 @@ always @(posedge clk or posedge rst) begin
         write_finish_seen     <= 1'b0;
         display_valid         <= 1'b0;
     end else begin
+        if (committed_valid && committed_ready) committed_valid <= 0;
         wrfin_tgl_sync   <= {wrfin_tgl_sync[1:0], write_finish_toggle};
         scan_start_pulse <= 1'b0;
         load_start_pulse <= 1'b0;
@@ -259,7 +265,10 @@ always @(posedge clk or posedge rst) begin
 
             // Keep the old buffer owned by the reader until its frame request
             // has adopted the new base address. Data stays stable until ack.
-            if (commit_pending && commit_ack_sync[1] == display_commit_request) begin
+            if (commit_pending && commit_ack_sync[1] == display_commit_request &&
+                (!committed_valid || committed_ready)) begin
+                committed_image <= load_idx;
+                committed_valid <= 1;
                 commit_pending        <= 1'b0;
                 load_busy             <= 1'b0;
                 source_busy_seen      <= 1'b0;

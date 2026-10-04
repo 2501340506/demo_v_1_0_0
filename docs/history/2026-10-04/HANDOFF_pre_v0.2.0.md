@@ -28,7 +28,7 @@
 - 标签：`v0.1.8`，不改写
 - `main`：未合并
 - 上板文件：`releases/v0.1.8/demo.bit`
-- 归档入口：[docs/ARCHIVE_INDEX.md](docs/ARCHIVE_INDEX.md)
+- 归档入口：[docs/ARCHIVE_INDEX.md](../../ARCHIVE_INDEX.md)
 
 ## 证据边界
 
@@ -46,7 +46,7 @@
 
 ## 后续入口
 
-恢复工作时，以 `releases/v0.1.8/`、`diagnostics/README.md` 和 `docs/ARCHIVE_INDEX.md` 为入口，另行提出修改计划。上一版交接记录见 [HANDOFF_2026-10-04.md](docs/history/2026-10-04/HANDOFF_2026-10-04.md)，本次归档副本见 [HANDOFF_2026-10-04_02.md](docs/history/2026-10-04/HANDOFF_2026-10-04_02.md)。
+恢复工作时，以 `releases/v0.1.8/`、`diagnostics/README.md` 和 `docs/ARCHIVE_INDEX.md` 为入口，另行提出修改计划。上一版交接记录见 [HANDOFF_2026-10-04.md](HANDOFF_2026-10-04.md)，本次归档副本见 [HANDOFF_2026-10-04_02.md](HANDOFF_2026-10-04_02.md)。
 
 ## 2026-10-04 — seg7_panel 面板模块化
 
@@ -63,7 +63,7 @@
 
 ## 2026-10-04 — ModelSim/TD 验证结果
 
-- ModelSim `diagnostics/run_control_tests.ps1`：6 个控制顶层全部通过，编译 0 errors、0 warnings；图片请求、组合键、播放控制、显示策略和手势回归均通过。
+- ModelSim `diagnostics/history/v0.3.0/run_control_tests.ps1`：6 个控制顶层全部通过，编译 0 errors、0 warnings；图片请求、组合键、播放控制、显示策略和手势回归均通过。
 - ModelSim 单独编译 `seg_decoder.v`、`seg_scan.v`、`seg7_panel.v`：0 errors、0 warnings。
 - TD 6.2 综合、布局布线和 bitgen 完成，产物为 `TD_project/demo_Runs/phy_1/demo.bit`。
 - 本次最终时序：Setup WNS -6.699 ns，Hold WNS +0.011 ns；保留既有时序未收敛情况。用户已完成板级验收并确认通过；v0.1.9 已归档并上传 GitHub。

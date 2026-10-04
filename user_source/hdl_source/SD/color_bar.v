@@ -8,7 +8,8 @@ module color_bar(
 	output                de,            //video valid
 	output[7:0]           rgb_r,         //video red data
 	output[7:0]           rgb_g,         //video green data
-	output[7:0]           rgb_b          //video blue data
+	output[7:0]           rgb_b,         //video blue data
+	output[11:0]          video_x        //full line, active pixel 0 then blanking
 );
 //video timing parameter definition
 `ifdef  VIDEO_1280_720
@@ -142,6 +143,8 @@ reg[11:0] h_cnt;                 //horizontal counter
 reg[11:0] v_cnt;                 //vertical counter
 reg[11:0] active_x;              //video x position 
 reg[11:0] active_y;              //video y position 
+reg[11:0] line_x;
+reg[11:0] line_x_d0;
 reg[7:0] rgb_r_reg;              //video red data register
 reg[7:0] rgb_g_reg;              //video green data register
 reg[7:0] rgb_b_reg;              //video blue data register
@@ -156,6 +159,21 @@ assign de = video_active_d0;
 assign rgb_r = rgb_r_reg;
 assign rgb_g = rgb_g_reg;
 assign rgb_b = rgb_b_reg;
+assign video_x = line_x_d0;
+// Match h_active's register and the following DE/HS/VS output register.
+// Unlike active_x, this coordinate also advances through blanking lines.
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        line_x <= 12'd0;
+        line_x_d0 <= 12'd0;
+    end else begin
+        if (h_cnt >= H_FP + H_SYNC + H_BP - 1)
+            line_x <= h_cnt - (H_FP + H_SYNC + H_BP - 1);
+        else
+            line_x <= h_cnt + H_ACTIVE + 1;
+        line_x_d0 <= line_x;
+    end
+end
 always@(posedge clk or posedge rst)
 begin
 	if(rst == 1'b1)
@@ -324,4 +342,4 @@ begin
 		end
 end
 
-endmodule 
+endmodule

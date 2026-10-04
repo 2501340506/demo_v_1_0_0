@@ -1,8 +1,14 @@
-﻿# 安路 EG4 HDMI 图片播放器
+# 安路 EG4 HDMI 图片播放器
 
-当前版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。开发分支：`demo010-0_1_1`；合并至 `main` 等待用户审核。
+目录入口：[统一文档](docs/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
 
-基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz测试音。本版增加拨码模式显示与独立三键控制。
+已验收版本：**[v0.3.0](releases/v0.3.0/README.md)**，2026-10-05。已按用户要求将`feature/hdmi-audio-v0.3.0`合并到主分支`main`，包含文档统一和诊断归档。
+
+R2 HDMI音频计划已结项：S0/S1、S4、S6、S7、S8、S9获用户上板确认，S2/S5独立模块验证完成，S3独立EDID取消。[完整阶段记录](docs/HDMI音频分阶段修改计划.md) · [结项归档](docs/history/2026-10-05/HDMI音频升级/README.md)。
+
+基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz双声道图片琶音。实际显示提交后触发一次提示音，音量固定128。本版移除旧音频PLL/I2S/AXIS及官方加密HDMI依赖，保留系统/视频两颗PLL，五个时钟域各自同步释放复位；最近已验收节点为S9。
+
+正式产物：[v0.3.0固定bit与说明](releases/v0.3.0/README.md) · [S9上板验收记录](releases/v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md)。SD复位/拔卡恢复问题已记录，用户明确本版本不修、暂不修改。全局时序仍未收敛。
 
 ## 使用方式
 
@@ -15,7 +21,7 @@
 
 KEY4单击切换MAN/AUTO。复位默认MAN，扫描完成且图片多于一张时允许切换AUTO。三个按键20ms消抖，长按不连发；图片首尾循环。
 
-AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间隔包括加载时间。模式变化重新计时。图片编号位小数点表示AUTO。
+AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间隔包括加载时间。模式变化重新计时，S1修复模式变化恰逢AUTO到期时同拍误发翻图请求；已有手动挂起请求继续处理。图片编号位小数点表示AUTO。
 
 加载期间每个方向最多挂起一次，同向请求合并；下一张优先于上一张，再优先于自动轮播。模式切换不清除已有挂起请求；切回MAN不取消已开始的加载和挂起的手动请求。图片编号在显示交接确认后更新。
 
@@ -33,14 +39,22 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-- [已验收的固定bitstream](releases/v0.2.0/demo.bit)
+- [v0.3.0已验收图片音调版本](releases/v0.3.0/demo.bit)
+- [S8已验收恢复产物](releases/v0.3.0-r2-s8-local.1/demo.bit)
+- [S6已验收静音恢复产物](releases/v0.3.0-r2-s6-local.1/demo.bit)
+- [S4已验收恢复产物](releases/v0.3.0-r2-s4-local.1/demo.bit)
+- [S1恢复用固定bitstream](releases/v0.3.0-s1-local.1/demo.bit)
 - [中文版本说明及构建报告](releases/v0.2.0/README.md)
-- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/V0_2_0_MERGE_REVIEW.md)
+- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/history/2026-10-04/V0_2_0_MERGE_REVIEW.md)
 
-使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，固定版本使用 `releases/v0.2.0/demo.bit`，不使用旧 `best_result` 产物。
+使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，正式下载使用 `releases/v0.3.0/demo.bit`，不使用旧 `best_result` 产物。
 
 ## 验证状态与范围
 
-用户已确认阶段1至3板级功能正常；专项仿真和TD构建有通过记录。完整集成回归尚需适配旧图片测试，本轮未重新执行RTL仿真或构建。Setup WNS −6.699ns，Hold WNS +0.003ns，时序未完全收敛。[具体验证边界](docs/VALIDATION_STATUS.md)。
+S9已获用户整体上板确认，v0.3.0沿用其固定bit。S9完整ModelSim回归及TD构建证据保留；PLL为2个，STA覆盖99.86%，像素→串行+6.376ns，Setup−6.565ns，仍有64个SDRAM接口违例。已知SD恢复问题按用户决定延期，未作修复。详见[验证状态](docs/VALIDATION_STATUS.md)。
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
+
+S5独立封装及双PCM源接口已完成，详见[模块交付与仿真证据](releases/v0.3.0-r2-s5-local.1/README.md)。S5无新bit或上板要求；S6已接入新核心，预期正常图片及静音，详见[上板验证文档](releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。
+
+S6静音、S7正弦音、S8图片联动、S9清理均已获用户确认；正式发布使用S9产物。

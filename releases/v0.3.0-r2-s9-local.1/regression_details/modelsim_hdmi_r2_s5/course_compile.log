@@ -1,0 +1,14 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 23:18:25 on Oct 04,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/modelsim_hdmi_r2_s5/course_work -l D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/modelsim_hdmi_r2_s5/course_compile.log reference/hdmi_audio_lesson3/hdmi_bch8.v reference/hdmi_audio_lesson3/hdmi_audio_acr_packetizer.v reference/hdmi_audio_lesson3/hdmi_terc4_encoder.v reference/hdmi_audio_lesson3/hdmi_tmds_channel_encoder.v reference/hdmi_audio_lesson3/hdmi_audio_packet_scheduler.v diagnostics/tb_hdmi_primitives.sv 
+-- Compiling module hdmi_bch8
+-- Compiling module hdmi_audio_acr_packetizer
+-- Compiling module hdmi_terc4_encoder
+-- Compiling module hdmi_tmds_channel_encoder
+-- Compiling module hdmi_audio_packet_scheduler
+-- Compiling module tb_hdmi_primitives
+
+Top level modules:
+	tb_hdmi_primitives
+End time: 23:18:25 on Oct 04,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

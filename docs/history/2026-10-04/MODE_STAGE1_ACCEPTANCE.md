@@ -26,8 +26,8 @@
 ## 仿真复现
 
 ```powershell
-./diagnostics/run_mode_tests.ps1
-./diagnostics/run_control_tests.ps1 -Prefix mode_stage1
+./diagnostics/history/v0.3.0/run_mode_tests.ps1
+./diagnostics/history/v0.3.0/run_control_tests.ps1 -Prefix mode_stage1
 ```
 
 新增测试检查四种模式、短暂抖动、整体字稳定时间、复位恢复、扫描位和段码、空白位、AUTO小数点及阶段1组合计数兼容性。既有六个控制测试顶层检查原图片请求挂起和按键行为。

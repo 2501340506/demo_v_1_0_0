@@ -11,12 +11,15 @@ module video_timing_data
 	//input[DATA_WIDTH - 1:0]     read_data,          // Read data
 	output                      hs,                 // horizontal synchronization
 	output                      vs,                 // vertical synchronization
-	output                      de                  // video valid
+	output                      de,                 // video valid
+	output [9:0]                video_x             // 640x480: full line 0..799
 	//output[DATA_WIDTH - 1:0]    vout_data           // video data
 );
 wire                   video_hs;
 wire                   video_vs;
 wire                   video_de;
+wire [11:0]            timing_x;
+reg [9:0]              video_x_d0, video_x_d1;
 //delay video_hs video_vs  video_de 2 clock cycles
 reg                    video_hs_d0;
 reg                    video_vs_d0;
@@ -30,6 +33,7 @@ reg                    video_de_d1;
 assign hs = video_hs_d1;
 assign vs = video_vs_d1;
 assign de = video_de_d1;
+assign video_x = video_x_d1;
 //assign vout_data = vout_data_r;
 always@(posedge video_clk or posedge rst)
 begin
@@ -38,6 +42,11 @@ begin
 		video_hs_d0 <= 1'b0;
 		video_vs_d0 <= 1'b0;
 		video_de_d0 <= 1'b0;
+		video_hs_d1 <= 1'b0;
+		video_vs_d1 <= 1'b0;
+		video_de_d1 <= 1'b0;
+		video_x_d0 <= 10'd0;
+		video_x_d1 <= 10'd0;
 	end
 	else
 	begin
@@ -48,6 +57,8 @@ begin
 		video_hs_d1 <= video_hs_d0;
 		video_vs_d1 <= video_vs_d0;
 		video_de_d1 <= video_de_d0;		
+		video_x_d0 <= timing_x[9:0];
+		video_x_d1 <= video_x_d0;
 	end
 end
 /*
@@ -79,6 +90,7 @@ color_bar color_bar_m0(
 	.de(video_de),
 	.rgb_r(),
 	.rgb_g(),
-	.rgb_b()
+	.rgb_b(),
+	.video_x(timing_x)
 );
-endmodule 
+endmodule

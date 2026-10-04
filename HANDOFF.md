@@ -1,42 +1,36 @@
 # 当前交接记录
 
-更新：2026-10-04。当前版本标签：v0.2.0；分支：demo010-0_1_1。标签与中文文档提交后推送GitHub，main等待用户审核通过再合并。
+更新2026-10-05。当前任务：将feature/hdmi-audio-v0.3.0合并到main并更新文档。文档迁移、链接修复和诊断归档已完成；用户已手动删除_cleanup，已核实目录不存在。目录整理此前已提交并推送开发分支。本轮基于最新origin/main无冲突合并开发分支，保留双方历史，更新当前状态文档后推送main。
 
-## 当前任务与已完成内容
+## 已完成
 
-文档更新、阶段历史归档、固定产物保存及交接替换。用户已确认阶段1至3板级功能正常；专项仿真与TD构建完成。本轮未修改RTL、测试脚本，也未重新运行构建。
+- 原docx的11份文档并入docs及对应history日期，无冲突覆盖；docs/README.md为入口。v0.2.0合并审查移入docs/history/2026-10-04。
+- reference没有活动工程/仿真依赖。课程来源保留在docs/HDMI_AUDIO_SOURCES.md，用户已有备份的14份原件及原说明移到_cleanup/reference。
+- diagnostics根部只保留README、run_td_build.ps1、history和output。8个仿真入口、16个testbench、2个Python参考放在history/v0.3.0，脚本适配新路径，运行输出统一diagnostics/output。
+- 延期SD问题复现testbench单独归入history/sd_recovery，仅存档，不接入正常回归，不开启修复。
+- 299个旧日志/报告/生成源码/bit等压缩到diagnostics/history/2026-10-05/local_results.zip（约2MB），已校验可读并逐条与原件比对一致；inventory.json记录迁移。851份其余缓存未纳入归档，可重建。
+- 旧运行目录、空EDID目录和合并后空的docx目录树移至_cleanup；没有批量删除文件。output和_cleanup加入Git忽略。
+- 历史文档及发布README的链接/复现路径同步，失效本地链接修复；原始工具日志不改。
+- 迁移后的8个仿真入口全部通过。testbench/Python代码未改变，生产RTL/TD工程/正式时序资源报告无Git差异，正式bit与发布节点逐字节一致。未重新构建TD，也未修改SD恢复逻辑。
 
-00模式KEY1上一张、KEY2下一张；01/10/11不产生新方向请求。KEY4在四模式切换MAN/AUTO，长按不连发。数码管显示模式0/1/2/3。加载时各方向最多挂起一次，同向合并，下一张优先；模式变化不清除挂起。
+## 卡点与待操作
 
-阶段2起拨码在100MHz SD控制域消抖，模式同步到50MHz面板域。SW1=C8、SW2=C7，拨上为1；KEY4=C1，按下为0。
+无合并冲突或其他阻塞。遵守用户禁止批量删除的要求，助手仅迁移和归档；暂存目录由用户手动删除，已核实清理完成。
 
-## 证据与未完成问题
+## 下一步
 
-- 用户板级验收已通过；模式、按键、播放控制器专项测试有通过记录。
-- 完整集成回归尚未补齐：tb_picture_requests.sv仍使用旧按键端口、长按参数及旧实例，run_control_tests.ps1不能视为当前全套通过证据。
-- 本轮开发没有重新运行异步双缓冲回归的记录。旧文档“最终完整回归完成”表述不准确，以本记录为准。
-- 模式切换恰逢AUTO到期需要补测：计数在时序块清零，但自动请求组合逻辑未屏蔽模式变化，不能宣称该同拍行为已验证。
-- 阶段3时序：Setup WNS −6.699ns、TNS −295.899ns；Hold WNS +0.003ns、TNS 0ns。时序未完全收敛。
+主分支已纳入v0.3.0及目录整理，后续以main为当前基线，等待用户安排后续工作。不重写既有版本标签，不自动启动新功能或SD修复。后续诊断输出放在diagnostics/output，历史资料从docs/README.md和diagnostics/README.md进入。
 
-## 下一步与经验
+## 版本与延期问题
 
-先适配旧图片集成测试并补跑完整控制和异步缓冲回归，再核对上述AUTO同拍行为。后续每次小验证通过应提交并推送GitHub。用户修改的“问题小记录.txt”不纳入本次文档提交。
+v0.3.0/S9已获用户确认并发布，固定下载releases/v0.3.0/demo.bit。SD复位偶发卡0、扫描/读头拔卡卡2、密集翻图中KEY3复位卡0仍按用户指令暂不修改。Setup−6.565ns/TNS−294.439ns，Hold+0.004ns，64个SDRAM接口违例仍在。
 
-TD命令行使用运行目录demo.prj；新增源文件需同步清单，使用明确仓库绝对路径。文档写入使用UTF-8，避免PowerShell管道传中文给Python时变为问号。
+## 踩过的坑
 
-未实现OSD、B/C调节及缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅作为后续需求。
+- 脚本迁移需同时调整PSScriptRoot、testbench/Python路径和输出位置；不能让新缓存进入历史源码目录。
+- 历史快照混用根相对/文件相对路径，本轮统一检查可达性；工具日志里的旧路径属于原始证据，不改写。
+- SD复现的PASS REPRO表示观察到旧缺陷，不是修复成功，不能并入正常回归。
+- _cleanup原为待删暂存，现已由用户删除；不得通过循环逐文件删除规避禁止批量删除要求。
+- Windows所有迁移源/目标已确认在工作区内且目标不冲突。Git对文本有CRLF转换，文本一致性与bit逐字节一致性分别检查。
 
-## 入口
-
-- [固定产物和版本说明](releases/v0.2.0/README.md)
-- [归档索引](docs/ARCHIVE_INDEX.md)
-- [验证说明](docs/VALIDATION_STATUS.md)
-- [替换前交接原文](docs/history/2026-10-04/HANDOFF_pre_v0.2.0.md)
-
-## 本次版本工作与审核入口
-
-- 完成README、版本说明、CHANGELOG和当前归档索引的中文整理；不修改RTL或重新生成产物。
-- [审核说明](docs/V0_2_0_MERGE_REVIEW.md)列出main至当前分支的累计范围，用户确认后才快进合并并推送main。
-- 新增版本标签v0.2.0指向本次文档提交，既有版本标签不改写；不另建GitHub Release页面。
-- 工作区5份诊断文档删除及问题小记录修改为用户未提交内容，不恢复、不提交；当前文档入口改指docs/VALIDATION_STATUS.md。
-- 本次检查：文档链接、中文编码、归档bitstream与阶段3产物逐字节一致、合并祖先关系。未补跑先前标明缺失的集成回归。
+[统一文档](docs/README.md) · [诊断入口](diagnostics/README.md) · [迁移归档](diagnostics/history/2026-10-05/README.md) · [正式版本](releases/v0.3.0/README.md)
