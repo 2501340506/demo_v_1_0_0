@@ -6,7 +6,7 @@ S0/S1均由用户上板确认，相关验收节点已推送。S1六个控制测�
 
 原S1时序：Setup WNS−6.699ns/TNS−296.363ns，Hold+0.003ns，控制域−0.044ns。时序未收敛，板级通过不抹除STA限制。
 
-R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5—S9未开始。
+R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6—S9未开始。
 
 [R2方案](../docx/HDMI音频分阶段修改计划.md) · [回退与归档说明](../docx/history/2026-10-04/HDMI音频升级/方案重规划/README.md)
 
@@ -16,4 +16,10 @@ R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 wa
 
 TD 6.2.168116综合/布局布线/bitgen通过。Setup WNS −6.699ns/TNS −293.242ns、Hold +0.003ns；视频同域+27.772ns、控制域+0.203ns。剩余64个违例端点位于两组SDRAM接口路径，全局时序未收敛；未改约束。坐标尚无旧HDMI消费者，可被综合裁剪，不能宣称验证了新HDMI核心集成时序。
 
-[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；下一阶段S5。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
+[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；下一阶段S6。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
+
+## R2 S5 独立模块
+
+ModelSim 10.6e编译及基础、48kHz、双源三组仿真均0 errors、0 warnings；Python独立多项式参考与符号解码通过。3200个48kHz样本及800个双源样本全数按序解码，覆盖4+2有效视频帧；四组音频、192帧状态、BCH、奇偶校验、InfoFrame、固定N/CTS、数据前导/保护带、视频RGB及调度锁定均通过。原课程BCH及ACR错误对照已保存。
+
+[详细证据及边界](../releases/v0.3.0-r2-s5-local.1/README.md)。未改板级top/TD清单或约束，无新bit、资源或时序结果。新核心PHY/实际显示器验收在S6执行。
