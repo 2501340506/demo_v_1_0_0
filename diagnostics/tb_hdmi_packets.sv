@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 module tb_hdmi_packets;
     parameter integer PATTERN = 0;
+    parameter integer SILENCE = 0;
     reg clk=0,rst_n=0;
     always #20 clk=~clk;
     integer x=0,line=0,cycles=0;
@@ -31,8 +32,8 @@ module tb_hdmi_packets;
     wire pattern_running=(test_index+media_index)<800;
     wire test_valid=PATTERN ? pattern_running : (tv && tone_enable);
     wire media_valid=PATTERN && pattern_running;
-    wire signed [15:0] test_left=PATTERN ? left_pattern(test_index) : tl;
-    wire signed [15:0] test_right=PATTERN ? ~left_pattern(test_index) : rr;
+    wire signed [15:0] test_left=SILENCE ? 16'sd0 : PATTERN ? left_pattern(test_index) : tl;
+    wire signed [15:0] test_right=SILENCE ? 16'sd0 : PATTERN ? ~left_pattern(test_index) : rr;
     wire signed [15:0] media_left=left_pattern(media_index+10000);
     wire signed [15:0] media_right=media_index*137;
     media_hdmi_audio_bridge dut(.pixel_clk(clk),.pixel_rst_n(rst_n),

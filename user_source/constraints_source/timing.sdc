@@ -34,7 +34,8 @@ rename_clock -name {sd_card_clk} -source [get_ports {clk}] -master_clock {clk} [
 rename_clock -name {ext_mem_clk} -source [get_ports {clk}] -master_clock {clk} [get_pins {sys_pll_m0/pll_inst.clkc[1]}]
 rename_clock -name {video_clk}   -source [get_ports {clk}] -master_clock {clk} [get_pins {video_pll_m0/pll_inst.clkc[0]}]
 rename_clock -name {hdmi_5x_clk} -source [get_ports {clk}] -master_clock {clk} [get_pins {video_pll_m0/pll_inst.clkc[1]}]
-rename_clock -name {audio_mclk}  -source [get_ports {clk}] -master_clock {clk} [get_pins {u_audio_pll/pll_inst.clkc[2]}]
+# S6: audio PLL lock still owns reset, but its unused data clock is trimmed.
+# No audio_mclk clock remains to rename in the new output path.
 
 # ------------------------------------------------------------
 # 4. 从原 timing(2).sdc 迁移过来的 HDMI 像素/串行时钟约束
@@ -60,9 +61,8 @@ set_clock_groups -exclusive \
 #    audio_mclk 域里生成 I2S，video_clk 域里做三拍同步采样。
 #    这类路径不是普通同步时序路径，直接切掉更合理。
 # ------------------------------------------------------------
-set_clock_groups -asynchronous \
-    -group [get_clocks {audio_mclk}] \
-    -group [get_clocks {video_clk} hdmi_5x_clk sd_card_clk ext_mem_clk]
+# S6: removed the now-empty audio_mclk group after retiring its consumer.
+# No new timing exception is introduced.
 
 # ------------------------------------------------------------
 # 6. 可选：如果你的 frame_read_write 内部异步 FIFO 已经完全处理好了跨域，

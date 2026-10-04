@@ -18,7 +18,7 @@ module top(
     output                      HDMI_D0_P,
 
     // HDMI DDC
-    output                      HDMI_DDC_SCL,
+    inout                       HDMI_DDC_SCL,
     inout                       HDMI_DDC_SDA,
 
     // TF card SPI
@@ -374,62 +374,29 @@ video_rgb_to_axis_640x480 u_video_rgb_to_axis_640x480(
     .O_video_data  (axis_s_data)
 );
 
-// 上电后自动打一拍，触发一次 EDID 读取
-startup_pulse #(
-    .CNT_MAX(20'd100000)
-) u_startup_pulse (
-    .I_clk   (video_clk),
-    .I_rst   (rst_all),
-    .O_pulse (edid_trig)
+// S6: retain the accepted picture/control path, send continuous 48 kHz
+// zero PCM through the new symbol core. The old audio PLL still owns reset.
+wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
+pcm_test_tone u_pcm_clock (
+    .clk(video_clk), .rst_n(~rst_all), .enable(1'b1),
+    .sample_valid(pcm_valid), .sample_ready(pcm_ready),
+    .sample_left(), .sample_right(), .sample_tick(), .overflow(pcm_overflow)
 );
-
-// ===================== 带音频的 HDMI 1.4b 发射 =====================
-hdmi_1_4b_transmitter_core_wrapper #(
-    .DEVICE                 ( "EG"       ),
-    .HTOTAL                 ( 800        ),
-    .HSA                    ( 96         ),
-    .HFP                    ( 16         ),
-    .HBP                    ( 48         ),
-    .HACTIVE                ( 640        ),
-    .VTOTAL                 ( 525        ),
-    .VSA                    ( 2          ),
-    .VFP                    ( 10         ),
-    .VBP                    ( 33         ),
-    .VACTIVE                ( 480        ),
-    .VIDEO_VIC              ( 1          ),
-    .VIDEO_TPG              ( "Disable"  ),
-    .VIDEO_FORMAT           ( "RGB"      ),
-    .AUDIO_SAMPLE_RATE      ( "48K"      ),
-    .IIC_SCL_DIV            ( 250        )
-) u_hdmi_1_4b_transmitter_core_wrapper(
-    .I_pixel_clk        (video_clk),
-    .I_rst              (rst_all),
-    .I_edid_read_trig   (edid_trig),
-    .O_edid_read_valid  (edid_valid),
-    .O_edid_read_data   (edid_data),
-
-    .I_axis_s_user      (axis_s_user),
-    .I_axis_s_valid     (axis_s_valid),
-    .I_axis_s_last      (axis_s_last),
-    .I_axis_s_data      (axis_s_data),
-    .O_axis_s_ready     (axis_s_ready),
-
-    .I_audio_valid      (audio_valid),
-    .I_audio_left_data  (audio_left_data),
-    .I_audio_right_data (audio_right_data),
-    .I_acr_valid        (acr_valid),
-    .I_acr_cts          (acr_cts),
-    .I_acr_n            (acr_n),
-
-    .O_video_locked     (),
-    .O_ddc_scl          (HDMI_DDC_SCL),
-    .IO_ddc_sda         (HDMI_DDC_SDA),
-
-    .O_ch0_tmds_data    (tmds_ch0_data),
-    .O_ch1_tmds_data    (tmds_ch1_data),
-    .O_ch2_tmds_data    (tmds_ch2_data),
-    .O_clk_tmds_data    (tmds_clk_data)
+media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
+    .pixel_clk(video_clk), .pixel_rst_n(~rst_all),
+    .video_hsync(hs), .video_vsync(vs), .video_de(de),
+    .video_x(video_x), .video_rgb(vout_data),
+    .select_media(1'b0), .test_valid(pcm_valid), .test_ready(pcm_ready),
+    .test_left(16'sd0), .test_right(16'sd0),
+    .media_valid(1'b0), .media_ready(),
+    .media_left(16'sd0), .media_right(16'sd0),
+    .channel0_symbol(tmds_ch0_data), .channel1_symbol(tmds_ch1_data),
+    .channel2_symbol(tmds_ch2_data), .sequence_error(hdmi_sequence_error),
+    .pcm_tap_valid(), .pcm_tap_left(), .pcm_tap_right()
 );
+assign tmds_clk_data = 10'b1111100000; // Serialized bit 0 first by existing PHY.
+assign HDMI_DDC_SCL = 1'bz;
+assign HDMI_DDC_SDA = 1'bz;
 
 hdmi_phy_wrapper #(
     .DEVICE ( "EG" )

@@ -6,7 +6,7 @@ S0/S1均由用户上板确认，相关验收节点已推送。S1六个控制测�
 
 原S1时序：Setup WNS−6.699ns/TNS−296.363ns，Hold+0.003ns，控制域−0.044ns。时序未收敛，板级通过不抹除STA限制。
 
-R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6—S9未开始。
+R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6已完成仿真/TD构建，待上板；S7—S9未开始。
 
 [R2方案](../docx/HDMI音频分阶段修改计划.md) · [回退与归档说明](../docx/history/2026-10-04/HDMI音频升级/方案重规划/README.md)
 
@@ -16,10 +16,18 @@ R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 wa
 
 TD 6.2.168116综合/布局布线/bitgen通过。Setup WNS −6.699ns/TNS −293.242ns、Hold +0.003ns；视频同域+27.772ns、控制域+0.203ns。剩余64个违例端点位于两组SDRAM接口路径，全局时序未收敛；未改约束。坐标尚无旧HDMI消费者，可被综合裁剪，不能宣称验证了新HDMI核心集成时序。
 
-[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；下一阶段S6。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
+[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；当前S6待上板。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
 
 ## R2 S5 独立模块
 
 ModelSim 10.6e编译及基础、48kHz、双源三组仿真均0 errors、0 warnings；Python独立多项式参考与符号解码通过。3200个48kHz样本及800个双源样本全数按序解码，覆盖4+2有效视频帧；四组音频、192帧状态、BCH、奇偶校验、InfoFrame、固定N/CTS、数据前导/保护带、视频RGB及调度锁定均通过。原课程BCH及ACR错误对照已保存。
 
 [详细证据及边界](../releases/v0.3.0-r2-s5-local.1/README.md)。未改板级top/TD清单或约束，无新bit、资源或时序结果。新核心PHY/实际显示器验收在S6执行。
+
+## R2 S6 静音集成
+
+ModelSim 10.6e编译、静音包及实际S4时序/延迟/新bridge/原PHY仿真零错误零警告；3200个零样本完整解码，厂商EG_LOGIC_ODDR模型验证三数据通道低位先发及0000011111时钟。实际视频两帧614400像素和复位后一帧307200像素通过；六个控制测试及面板通过。FIFO为行为模型，不代表整板物理SDRAM或PLL仿真。
+
+TD综合/布局布线/bitgen完成。全局Setup−6.699ns/TNS−295.870ns、Hold+0.004ns。视频同域+25.367ns，控制域−0.387ns（BMP解析3端点）、内存内部−0.219ns（帧缓存4端点），另64个SDRAM接口端点违例。清理被裁剪audio_mclk的失效rename与异步组，原像素/串行exclusive关系保留，不宣称完整跨域STA已收敛。资源2809 LUT/2264寄存器/4 BRAM/3 PLL。
+
+[S6固定候选](../releases/v0.3.0-r2-s6-local.1/README.md) · [上板验证步骤](../releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。尚无用户S6反馈，暂不进入S7。
