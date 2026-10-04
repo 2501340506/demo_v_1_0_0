@@ -2,7 +2,7 @@
 
 已验收版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。当前开发分支：`feature/hdmi-audio-v0.3.0`，不自动合并main。
 
-当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消，S2及后续尚未在当前分支重新实施。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
+当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消；R2 S2独立PCM已恢复并通过ModelSim复核，尚未接顶层，下一阶段为S4。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
 
 基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和旧I2S测试音（现有音频PLL约12.295082MHz，不作为精确48kHz基准）。本版增加拨码模式显示与独立三键控制。
 
@@ -43,6 +43,6 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 验证状态与范围
 
-用户已确认S0/S1通过，当前源代码恢复S1基线。S1控制/图片/面板/异步缓冲回归及板级证据保留；本轮只修改计划，不重新宣称仿真、构建或上板。详见[验证状态](docs/VALIDATION_STATUS.md)。
+用户已确认S0/S1通过，板级源代码保持S1基线，新增独立PCM模块。S1控制/图片/面板/异步缓冲回归及板级证据保留；本轮PCM编译/仿真均0 errors、0 warnings，五组PASS；没有TD构建或新增板级验收。[S2证据](releases/v0.3.0-r2-s2-local.1/README.md)。详见[验证状态](docs/VALIDATION_STATUS.md)。
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
