@@ -37,7 +37,11 @@ module tb_media_player_control;
   step; next_event=0; request_accept=1; step; request_accept=0;
   check(dut.auto_count==0,"manual resets timer");
   repeat(3) step; check(auto_load_request,"auto resumes after full interval");
-  mode=1; step; check(dut.auto_count==0,"mode change resets autoplay timer");
+  // Check the request BEFORE the accepting edge, not only the timer afterwards.
+  mode=1; request_accept=1; #1;
+  check(!auto_load_request && !load_request,"mode change must suppress expiry before acceptance");
+  step; request_accept=0;
+  check(dut.auto_count==0 && auto_play_en,"mode change resets timer and preserves AUTO");
   repeat(2) step; check(!auto_load_request,"mode reset prevents early autoplay");
   mode=0;
   request_accept=1; step; request_accept=0; load_busy=1;

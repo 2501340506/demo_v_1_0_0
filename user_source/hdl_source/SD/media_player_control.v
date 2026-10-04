@@ -20,7 +20,8 @@ module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000)(
  assign auto_tick = (auto_count == AUTO_PLAY_CYCLES - 1);
  assign next_load_request = available && next_pending;
  assign previous_load_request = available && !next_pending && previous_pending;
- assign auto_load_request = available && auto_allowed && auto_tick;
+ // A mode change restarts the interval; suppress an expiry before acceptance.
+ assign auto_load_request = available && auto_allowed && auto_tick && (mode == mode_seen);
  assign load_request = next_load_request || previous_load_request || auto_load_request;
  // The consumer samples this index on the same edge as request_accept.
  // Busy-time requests store direction only, never an index from an older frame.
