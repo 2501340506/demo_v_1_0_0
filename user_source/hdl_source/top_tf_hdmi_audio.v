@@ -48,6 +48,7 @@ wire hdmi_5x_clk;
 wire hs;
 wire vs;
 wire de;
+wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the future HDMI core.
 
 wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
@@ -87,6 +88,7 @@ wire [3:0] App_wr_dm;
 wire hs_0;
 wire vs_0;
 wire de_0;
+wire [9:0] video_x_0;
 
 // HDMI 1.4b 音频发射相关
 wire        audio_pll_lock;
@@ -235,7 +237,8 @@ video_timing_data video_timing_data_m0(
     .read_req_ack      (video_read_req_ack),
     .hs                (hs_0),
     .vs                (vs_0),
-    .de                (de_0)
+    .de                (de_0),
+    .video_x           (video_x_0)
 );
 
 video_delay video_delay_m0(
@@ -246,10 +249,12 @@ video_delay video_delay_m0(
     .hs                (hs_0),
     .vs                (vs_0),
     .de                (de_0),
+    .video_x           (video_x_0),
     .hs_r              (hs),
     .vs_r              (vs),
     .de_r              (de),
-    .vout_data         (vout_data_raw)
+    .vout_data         (vout_data_raw),
+    .video_x_r         (video_x)
 );
 
 // 首图提交前黑屏；提交后一直显示当前显示缓冲区内容

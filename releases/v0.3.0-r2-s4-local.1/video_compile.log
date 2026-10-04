@@ -1,0 +1,15 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 22:56:48 on Oct 04,2026
+vlog -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/modelsim_video_r2_s4/video_work -sv "+incdir+user_source/hdl_source/SD" -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\modelsim_video_r2_s4/video_compile.log user_source/hdl_source/SD/color_bar.v user_source/hdl_source/SD/video_timing_data.v user_source/hdl_source/SD/video_delay.v D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\modelsim_video_r2_s4\s1_color_bar.v D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\modelsim_video_r2_s4\s1_video_timing_data.v D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\modelsim_video_r2_s4\s1_video_delay.v diagnostics/tb_video_alignment.sv 
+-- Compiling module color_bar
+-- Compiling module video_timing_data
+-- Compiling module video_delay
+-- Compiling module s1_color_bar
+-- Compiling module s1_video_timing_data
+-- Compiling module s1_video_delay
+-- Compiling module tb_video_alignment
+
+Top level modules:
+	tb_video_alignment
+End time: 22:56:48 on Oct 04,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
