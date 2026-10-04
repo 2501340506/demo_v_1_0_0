@@ -25,7 +25,9 @@ module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000)(
  assign load_request = next_load_request || previous_load_request || auto_load_request;
  // The consumer samples this index on the same edge as request_accept.
  // Busy-time requests store direction only, never an index from an older frame.
- assign target_image = previous_load_request ? prev_index_limited(current_image, image_count) :
+ // target_image is consumed only with load_request. Select direction without
+ // routing availability through the image/sector mux on the acceptance path.
+ assign target_image = (!next_pending && previous_pending) ? prev_index_limited(current_image, image_count) :
                                               next_index_limited(current_image, image_count);
 function [1:0] next_index_limited;
     input [1:0] cur;
