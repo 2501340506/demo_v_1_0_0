@@ -30,4 +30,4 @@ ModelSim 10.6e编译、静音包及实际S4时序/延迟/新bridge/原PHY仿真�
 
 TD综合/布局布线/bitgen完成。全局Setup−6.699ns/TNS−295.870ns、Hold+0.004ns。视频同域+25.367ns，控制域−0.387ns（BMP解析3端点）、内存内部−0.219ns（帧缓存4端点），另64个SDRAM接口端点违例。清理被裁剪audio_mclk的失效rename与异步组，原像素/串行exclusive关系保留，不宣称完整跨域STA已收敛。资源2809 LUT/2264寄存器/4 BRAM/3 PLL。
 
-[S6固定候选](../releases/v0.3.0-r2-s6-local.1/README.md) · [上板验证步骤](../releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。尚无用户S6反馈，暂不进入S7。
+[S6固定候选](../releases/v0.3.0-r2-s6-local.1/README.md) · [上板验证步骤](../releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。2026-10-05用户确认S6通过并授权S7，固定bit不变。
