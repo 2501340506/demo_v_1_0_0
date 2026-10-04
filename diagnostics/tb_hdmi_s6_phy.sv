@@ -2,7 +2,15 @@
 module tb_hdmi_s6_phy;
     parameter integer SILENCE = 1;
     parameter integer MEDIA = 0;
-    reg clk=0,serial=0,rst=1;
+    parameter integer LOCAL_RESET = 0;
+    reg clk=0,serial=0,reset_request=1;
+    wire rst,serial_rst;
+    generate if(LOCAL_RESET) begin : local_reset
+      reset_sync pixel_reset(.clk(clk),.async_rst(reset_request),.rst(rst));
+      reset_sync serial_reset(.clk(serial),.async_rst(reset_request),.rst(serial_rst));
+    end else begin : shared_reset
+      assign rst=reset_request;assign serial_rst=reset_request;
+    end endgenerate
     always #20 clk=~clk;
     initial begin #1;forever #4 serial=~serial;end
     wire hs0,vs0,de0,hs,vs,de,read_en,request;
@@ -49,7 +57,7 @@ module tb_hdmi_s6_phy;
         .channel0_symbol(c0),.channel1_symbol(c1),.channel2_symbol(c2),
         .sequence_error(sequence_error),.pcm_tap_valid(tap),.pcm_tap_left(tap_l),.pcm_tap_right(tap_r));
     wire p0,p1,p2,pc;
-    hdmi_phy_wrapper phy(.I_pixel_clk(clk),.I_serial_clk(serial),.I_rst(rst),
+    hdmi_phy_wrapper phy(.I_pixel_clk(clk),.I_serial_clk(serial),.I_rst(rst),.I_serial_rst(serial_rst),
         .I_tmds_channel_0(c0),.I_tmds_channel_1(c1),.I_tmds_channel_2(c2),
         .I_tmds_channel_clk(10'b1111100000),
         .O_tmds_ch0_p(p0),.O_tmds_ch1_p(p1),.O_tmds_ch2_p(p2),.O_tmds_clk_p(pc));
@@ -90,7 +98,7 @@ module tb_hdmi_s6_phy;
     integer bit_index=0,words=0;
     reg checking=0;
     always @(posedge serial) begin
-        if(rst) begin load_d0=0;load_d1=0;checking=0;words=0;end
+        if(serial_rst) begin load_d0=0;load_d1=0;checking=0;words=0;end
         else begin
             if(load_d1) begin
                 expected0=captured0;expected1=captured1;expected2=captured2;
@@ -109,7 +117,7 @@ module tb_hdmi_s6_phy;
     end
     always @(negedge serial) begin
         #0.5;
-        if(!rst && checking) begin
+        if(!serial_rst && checking) begin
             if({p2,p1,p0}!=={expected2[bit_index],expected1[bit_index],expected0[bit_index]} || pc !== (bit_index>=5))
                 $fatal(1,"PHY falling bit mismatch index=%0d",bit_index);
             if(bit_index==9) begin words=words+1;checking=0;end
@@ -117,11 +125,11 @@ module tb_hdmi_s6_phy;
         end
     end
     initial begin
-        repeat(5) @(negedge clk);rst=0;
+        repeat(5) @(negedge clk);reset_request=0;
         repeat(850000) @(negedge clk);
         if(pixels<614400 || samples<1600 || words<840000) $fatal(1,"S6 coverage incomplete");
         $display("PASS S6 real raster RGB=%0d PCM samples=%0d serialized words=%0d, all lanes LSB-first and clock 0000011111",pixels,samples,words);
-        rst=1;repeat(5) @(negedge clk);rst=0;
+        reset_request=1;repeat(5) @(negedge clk);reset_request=0;
         repeat(450000) @(negedge clk);
         if(pixels<307200 || words<440000) $fatal(1,"restart coverage incomplete");
         $display("PASS S6 reset/restart RGB=%0d PCM samples=%0d PHY words=%0d",pixels,samples,words);

@@ -35,7 +35,7 @@ module tb_picture_requests;
     wire committed_valid, committed_ready, media_update, media_enable;
     integer sent=0, received=0, cues=0;
     reg [1:0] expected [0:255];
-    media_commit_cdc cdc(.src_clk(clk),.dst_clk(pixel_clk),.rst(rst),
+    media_commit_cdc cdc(.src_clk(clk),.dst_clk(pixel_clk),.src_rst(rst),.dst_rst(rst),
       .src_image(committed_image),.src_valid(committed_valid),.src_ready(committed_ready),
       .media_id(media_id),.media_update(media_update),.media_enable(media_enable));
     pcm_media_tone #(.CLOCK_HZ(480000)) audio_source(.clk(pixel_clk),.rst_n(!rst),

@@ -5,7 +5,8 @@ module hdmi_phy_wrapper#(
     )(
     input wire      I_pixel_clk,
     input wire      I_serial_clk,
-    input wire      I_rst,
+    input wire      I_rst, // Pixel-domain reset
+    input wire      I_serial_rst,
 
     input wire[9:0] I_tmds_channel_0,
     input wire[9:0] I_tmds_channel_1,
@@ -74,6 +75,7 @@ module hdmi_phy_wrapper#(
         .I_pixel_clk  ( I_pixel_clk     ),
         .I_serial_clk ( I_serial_clk    ),
         .I_rst        ( I_rst           ),
+        .I_serial_rst ( I_serial_rst    ),
 
         .I_data_in    ( S_tmds_data_ch0 ),
         .O_serial_out ( O_tmds_ch0_p    )
@@ -86,6 +88,7 @@ module hdmi_phy_wrapper#(
         .I_pixel_clk  ( I_pixel_clk     ),
         .I_serial_clk ( I_serial_clk    ),
         .I_rst        ( I_rst           ),
+        .I_serial_rst ( I_serial_rst    ),
         
         .I_data_in    ( S_tmds_data_ch1 ),
         .O_serial_out ( O_tmds_ch1_p    )
@@ -98,6 +101,7 @@ module hdmi_phy_wrapper#(
         .I_pixel_clk  ( I_pixel_clk     ),
         .I_serial_clk ( I_serial_clk    ),
         .I_rst        ( I_rst           ),
+        .I_serial_rst ( I_serial_rst    ),
         
         .I_data_in    ( S_tmds_data_ch2 ),
         .O_serial_out ( O_tmds_ch2_p    )
@@ -110,6 +114,7 @@ module hdmi_phy_wrapper#(
         .I_pixel_clk  ( I_pixel_clk     ),
         .I_serial_clk ( I_serial_clk    ),
         .I_rst        ( I_rst           ),
+        .I_serial_rst ( I_serial_rst    ),
         
         .I_data_in    ( S_tmds_data_clk ),
         .O_serial_out ( O_tmds_clk_p    )

@@ -1,4 +1,4 @@
-param([ValidateSet('s6','s7','s8')][string]$Stage = 's6')
+param([ValidateSet('s6','s7','s8','s9')][string]$Stage = 's6')
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $simTools = 'D:/modelsim/win64'
@@ -14,19 +14,20 @@ try {
     }
     $rtl = @(Get-ChildItem user_source/hdl_source/hdmi_audio -Filter '*.v' | ForEach-Object {$_.FullName})
     & "$simTools/vlog.exe" -sv -work $lib '+incdir+user_source/hdl_source/SD' -l "$simDir/compile.log" @rtl `
-        user_source/hdl_source/audio/media_commit_cdc.v user_source/hdl_source/audio/pcm_media_tone.v user_source/hdl_source/audio/pcm_test_tone.v user_source/hdl_source/SD/color_bar.v `
+        user_source/hdl_source/reset_sync.v user_source/hdl_source/audio/media_commit_cdc.v user_source/hdl_source/audio/pcm_media_tone.v user_source/hdl_source/audio/pcm_test_tone.v user_source/hdl_source/SD/color_bar.v `
         user_source/hdl_source/SD/video_timing_data.v user_source/hdl_source/SD/video_delay.v `
         user_source/hdl_source/hdmi_phy_warpper.v user_source/hdl_source/lane_lvds_10_1.v `
         "$vendor/eg_logic_io.v" "$vendor/eg_phy_glbl.v" diagnostics/tb_hdmi_packets.sv diagnostics/tb_hdmi_s6_phy.sv diagnostics/tb_pcm_media_tone.sv diagnostics/tb_media_commit_cdc.sv
     if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
     Push-Location $simDir
     try {
-        $tests = if ($Stage -eq 's8') { @('tb_hdmi_packets','tb_hdmi_s6_phy','tb_pcm_media_tone','tb_media_commit_cdc') } else { @('tb_hdmi_packets','tb_hdmi_s6_phy') }
+        $tests = if ($Stage -in @('s8','s9')) { @('tb_hdmi_packets','tb_hdmi_s6_phy','tb_pcm_media_tone','tb_media_commit_cdc') } else { @('tb_hdmi_packets','tb_hdmi_s6_phy') }
         foreach ($test in $tests) {
             $simOptions = @()
             $silence = if ($Stage -eq 's6') { 1 } else { 0 }
             if ($test -in @('tb_hdmi_packets','tb_hdmi_s6_phy')) { $simOptions += "-gSILENCE=$silence" }
-            if ($Stage -eq 's8' -and $test -in @('tb_hdmi_packets','tb_hdmi_s6_phy')) { $simOptions += "-gMEDIA=1" }
+            if ($Stage -in @('s8','s9') -and $test -in @('tb_hdmi_packets','tb_hdmi_s6_phy')) { $simOptions += "-gMEDIA=1" }
+            if ($Stage -eq 's9' -and $test -eq 'tb_hdmi_s6_phy') { $simOptions += '-gLOCAL_RESET=1' }
             & "$simTools/vsim.exe" -c -quiet -voptargs=+acc -lib $lib $test glbl @simOptions -l "$simDir/$test.log" -do 'run -all; quit -f'
             $log = Get-Content "$simDir/$test.log" -Raw
             if ($LASTEXITCODE -ne 0 -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS ' -or $log -notmatch 'Errors: 0, Warnings: 0') {

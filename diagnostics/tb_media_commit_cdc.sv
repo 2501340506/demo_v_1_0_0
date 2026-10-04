@@ -5,7 +5,7 @@ module tb_media_commit_cdc;
  always #5 src=~src;
  always #19 dst=~dst;
  wire ready,update,enable;wire [1:0] image;
- media_commit_cdc dut(.src_clk(src),.dst_clk(dst),.rst(rst),
+ media_commit_cdc dut(.src_clk(src),.dst_clk(dst),.src_rst(rst),.dst_rst(rst),
  .src_image(id),.src_valid(valid),.src_ready(ready),
  .media_id(image),.media_update(update),.media_enable(enable));
  integer sent=0,received=0,blocked=0,i;

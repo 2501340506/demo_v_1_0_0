@@ -31,9 +31,9 @@ module top(
 parameter MEM_DATA_BITS = 32;
 parameter ADDR_BITS     = 21;
 parameter BUSRT_BITS    = 10;
-parameter FRAME_PIXELS  = 24'd307200;   // 640*480
-parameter BUF0_ADDR     = 24'd0;
-parameter BUF1_ADDR     = FRAME_PIXELS;
+parameter [ADDR_BITS-1:0] FRAME_PIXELS = 307200;   // 640*480
+parameter [ADDR_BITS-1:0] BUF0_ADDR = 0;
+parameter [ADDR_BITS-1:0] BUF1_ADDR = FRAME_PIXELS;
 
 wire Sdr_init_done;
 wire Sdr_init_ref_vld;
@@ -48,7 +48,7 @@ wire hdmi_5x_clk;
 wire hs;
 wire vs;
 wire de;
-wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the future HDMI core.
+wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the HDMI core.
 
 wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
@@ -92,46 +92,29 @@ wire vs_0;
 wire de_0;
 wire [9:0] video_x_0;
 
-// HDMI 1.4b 音频发射相关
-wire        audio_pll_lock;
-wire        audio_mclk;
-wire        audio_i2s_bclk;
-wire        audio_i2s_lrck;
-wire        audio_i2s_dout;
-wire        audio_valid;
-wire [23:0] audio_left_data;
-wire [23:0] audio_right_data;
-wire        acr_valid;
-wire [19:0] acr_cts;
-wire [19:0] acr_n;
-
-wire        axis_s_user;
-wire        axis_s_valid;
-wire        axis_s_last;
-wire [23:0] axis_s_data;
-wire        axis_s_ready;
-
-wire        edid_trig;
-wire        edid_valid;
-wire [7:0]  edid_data;
-
 wire [9:0]  tmds_ch0_data;
 wire [9:0]  tmds_ch1_data;
 wire [9:0]  tmds_ch2_data;
 wire [9:0]  tmds_clk_data;
 
-// 统一复位：TF 图像链路 + HDMI 音频链路
-wire rst_all;
-assign rst_all = ~rst_n | ~audio_pll_lock;
+// Both clock trees must lock. Each consumer releases reset on its own clock.
+wire sys_pll_lock, video_pll_lock;
+wire reset_request = ~rst_n | ~sys_pll_lock | ~video_pll_lock;
+wire rst_panel, rst_sd, rst_mem, rst_video, rst_serial;
+reset_sync u_reset_panel (.clk(clk), .async_rst(reset_request), .rst(rst_panel));
+reset_sync u_reset_sd (.clk(sd_card_clk), .async_rst(reset_request), .rst(rst_sd));
+reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_mem));
+reset_sync u_reset_video (.clk(video_clk), .async_rst(reset_request), .rst(rst_video));
+reset_sync u_reset_serial (.clk(hdmi_5x_clk), .async_rst(reset_request), .rst(rst_serial));
 
 // Mode and key routing share the SD control clock. Synchronize mode for panel display.
 wire [1:0] switch_mode;
 reg [1:0] mode_panel_sync0, mode_panel_sync1;
 switch_mode_control #(.CLK_FREQ_HZ(100_000_000)) u_switch_mode_control (
-    .clk(sd_card_clk), .rst(rst_all), .switches({sw2, sw1}), .mode(switch_mode)
+    .clk(sd_card_clk), .rst(rst_sd), .switches({sw2, sw1}), .mode(switch_mode)
 );
-always @(posedge clk or posedge rst_all) begin
-    if (rst_all) begin
+always @(posedge clk or posedge rst_panel) begin
+    if (rst_panel) begin
         mode_panel_sync0 <= 0;
         mode_panel_sync1 <= 0;
     end else begin
@@ -141,8 +124,8 @@ always @(posedge clk or posedge rst_all) begin
 end
 
 // The mode indicator crosses from SD control to the 50 MHz scan clock.
-always @(posedge clk or posedge rst_all) begin
-    if (rst_all)
+always @(posedge clk or posedge rst_panel) begin
+    if (rst_panel)
         auto_indicator_sync <= 2'b00;
     else
         auto_indicator_sync <= {auto_indicator_sync[0], auto_play_indicator};
@@ -154,6 +137,7 @@ sys_pll sys_pll_m0(
     .clk0_out   (sd_card_clk),
     .clk1_out   (ext_mem_clk),
     .clk2_out   (ext_mem_clk_sft),
+    .locked     (sys_pll_lock),
     .reset      (1'b0)
 );
 
@@ -161,22 +145,13 @@ video_pll video_pll_m0(
     .refclk     (clk),
     .clk0_out   (video_clk),
     .clk1_out   (hdmi_5x_clk),
+    .locked     (video_pll_lock),
     .reset      (1'b0)
 );
 
-// 复用你 I2S->HDMI 工程里的 PLL，只取 12.288MHz 音频主时钟
-PLL_HDMI_AUDIO u_audio_pll(
-    .refclk     (clk),
-    .reset      (1'b0),
-    .extlock    (audio_pll_lock),
-    .clk0_out   (),
-    .clk1_out   (),
-    .clk2_out   (audio_mclk)
-);
-
 // mem_clk 域把 write_finish 单拍转成 toggle，供 sd_card_clk 域可靠同步
-always @(posedge ext_mem_clk or posedge rst_all) begin
-    if (rst_all)
+always @(posedge ext_mem_clk or posedge rst_mem) begin
+    if (rst_mem)
         frame_write_toggle_mem <= 1'b0;
     else if (frame_write_finish)
         frame_write_toggle_mem <= ~frame_write_toggle_mem;
@@ -190,7 +165,7 @@ sd_card_bmp #(
     .SCAN_TARGET_COUNT (3'd4)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
-    .rst               (rst_all),
+    .rst               (rst_sd),
     .key1              (key1),
     .key2              (key2),
     .key4              (key4),
@@ -223,7 +198,7 @@ sd_card_bmp #(
 
 seg7_panel seg7_panel_m0(
     .clk               (clk),
-    .rst_n             (rst_n),
+    .rst_n             (~rst_panel),
     .mode              (mode_panel_sync1),
     .state_code        (state_code),
     .combo_event_count (combo_event_count),
@@ -236,7 +211,7 @@ seg7_panel seg7_panel_m0(
 // ===================== 原图像时序与帧缓存 =====================
 video_timing_data video_timing_data_m0(
     .video_clk         (video_clk),
-    .rst               (rst_all),
+    .rst               (rst_video),
     .read_req          (video_read_req),
     .read_req_ack      (video_read_req_ack),
     .hs                (hs_0),
@@ -247,7 +222,7 @@ video_timing_data video_timing_data_m0(
 
 video_delay video_delay_m0(
     .video_clk         (video_clk),
-    .rst               (rst_all),
+    .rst               (rst_video),
     .read_en           (video_read_en),
     .read_data         (video_read_data[31:8]),
     .hs                (hs_0),
@@ -270,7 +245,7 @@ frame_read_write #(
     .FRAME_HEIGHT     (480)
 ) frame_read_write_m0(
     .mem_clk           (ext_mem_clk),
-    .rst               (rst_all),
+    .rst               (rst_mem),
     .Sdr_init_done     (Sdr_init_done),
     .Sdr_init_ref_vld  (Sdr_init_ref_vld),
     .Sdr_busy          (Sdr_busy),
@@ -286,8 +261,8 @@ frame_read_write #(
     .read_finish       (),
     .read_addr_0       (BUF0_ADDR),
     .read_addr_1       (BUF1_ADDR),
-    .read_addr_2       (24'd0),
-    .read_addr_3       (24'd0),
+    .read_addr_2       ({ADDR_BITS{1'b0}}),
+    .read_addr_3       ({ADDR_BITS{1'b0}}),
     .read_addr_index   (disp_buf_idx),
     .display_commit_request(display_commit_request),
     .display_commit_ack(display_commit_ack),
@@ -306,8 +281,8 @@ frame_read_write #(
     .write_finish      (frame_write_finish),
     .write_addr_0      (BUF0_ADDR),
     .write_addr_1      (BUF1_ADDR),
-    .write_addr_2      (24'd0),
-    .write_addr_3      (24'd0),
+    .write_addr_2      ({ADDR_BITS{1'b0}}),
+    .write_addr_3      ({ADDR_BITS{1'b0}}),
     .write_addr_index  (write_buf_idx),
     .write_len         (FRAME_PIXELS),
     .write_en          (sd_card_write_en),
@@ -317,7 +292,7 @@ frame_read_write #(
 sdram U3(
     .Clk               (ext_mem_clk),
     .Clk_sft           (ext_mem_clk_sft),
-    .Rst               (rst_all),
+    .Rst               (rst_mem),
     .Sdr_init_done     (Sdr_init_done),
     .Sdr_init_ref_vld  (Sdr_init_ref_vld),
     .Sdr_busy          (Sdr_busy),
@@ -331,70 +306,22 @@ sdram U3(
     .Sdr_rd_dout       (Sdr_rd_dout)
 );
 
-// ===================== 音频：内部 I2S 测试音 =====================
-hdmi_audio_tone_i2s_64fs #(
-    .PHASE_INC (32'd39370534),
-    .AMP       (24'sd2000000)
-) u_hdmi_audio_tone_i2s_64fs (
-    .I_mclk      (audio_mclk),
-    .I_rst       (rst_all),
-    .O_i2s_BCLK  (audio_i2s_bclk),
-    .O_i2s_LRCK  (audio_i2s_lrck),
-    .O_i2s_DOUT  (audio_i2s_dout)
-);
-
-I2S_receiver u_I2S_receiver(
-    .I_clk              (video_clk),
-    .I_rst              (rst_all),
-    .I_i2s_BCLK         (audio_i2s_bclk),
-    .I_i2s_LRCK         (audio_i2s_lrck),
-    .I_i2s_DOUT         (audio_i2s_dout),
-    .O_audio_valid      (audio_valid),
-    .O_audio_left_data  (audio_left_data),
-    .O_audio_right_data (audio_right_data)
-);
-
-audio_arc_calculate #(
-    .ACR_N         (6144)
-) u_audio_arc_calculate (
-    .I_clk         (video_clk),
-    .I_rst         (rst_all),
-    .I_audio_valid (audio_valid),
-    .O_acr_valid   (acr_valid),
-    .O_acr_cts     (acr_cts),
-    .O_acr_n       (acr_n)
-);
-
-// ===================== RGB/DE 转 AXIS 视频 =====================
-video_rgb_to_axis_640x480 u_video_rgb_to_axis_640x480(
-    .I_clk         (video_clk),
-    .I_rst         (rst_all),
-    .I_vs          (vs),
-    .I_de          (de),
-    .I_rgb         (vout_data),
-    .O_video_user  (axis_s_user),
-    .O_video_valid (axis_s_valid),
-    .O_video_last  (axis_s_last),
-    .O_video_data  (axis_s_data)
-);
-
 // S8: melody changes only after the display handoff has completed.
 media_commit_cdc u_media_commit_cdc (
- .src_clk(sd_card_clk), .dst_clk(video_clk), .rst(rst_all),
+ .src_clk(sd_card_clk), .dst_clk(video_clk), .src_rst(rst_sd), .dst_rst(rst_video),
  .src_image(committed_image), .src_valid(committed_valid), .src_ready(committed_ready),
  .media_id(audio_image), .media_update(audio_update), .media_enable(audio_enable)
 );
-// The old audio PLL still owns reset.
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
 pcm_media_tone u_pcm_clock (
-    .clk(video_clk), .rst_n(~rst_all), .enable(audio_enable),
+    .clk(video_clk), .rst_n(~rst_video), .enable(audio_enable),
     .media_id(audio_image), .media_update(audio_update), .volume(8'd128),
     .sample_valid(pcm_valid), .sample_ready(pcm_ready),
     .sample_left(pcm_left), .sample_right(pcm_right), .blip_active(), .overflow(pcm_overflow)
 );
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
-    .pixel_clk(video_clk), .pixel_rst_n(~rst_all),
+    .pixel_clk(video_clk), .pixel_rst_n(~rst_video),
     .video_hsync(hs), .video_vsync(vs), .video_de(de),
     .video_x(video_x), .video_rgb(vout_data),
     .select_media(1'b1), .test_valid(1'b0), .test_ready(),
@@ -414,7 +341,8 @@ hdmi_phy_wrapper #(
 ) u_hdmi2phy_wrapper(
     .I_pixel_clk        (video_clk),
     .I_serial_clk       (hdmi_5x_clk),
-    .I_rst              (rst_all),
+    .I_rst              (rst_video),
+    .I_serial_rst       (rst_serial),
     .I_tmds_channel_0   (tmds_ch0_data),
     .I_tmds_channel_1   (tmds_ch1_data),
     .I_tmds_channel_2   (tmds_ch2_data),
