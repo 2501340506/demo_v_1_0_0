@@ -2,7 +2,7 @@
 
 已验收版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。当前开发分支：`feature/hdmi-audio-v0.3.0`，不自动合并main。
 
-HDMI音频升级已开始，当前仅完成S0工程基线：[固定上板候选与检查步骤](releases/v0.3.0-s0-local.1/README.md)，本地标签`v0.3.0-s0-local.1`。TD构建和拨码/面板专项通过，等待用户上板确认后才推送GitHub并进入S1。完整[阶段计划](docx/HDMI音频分阶段修改计划.md)存放在docx目录。正弦音、新HDMI核心及独立EDID尚未实现。
+HDMI音频升级S0工程基线已获用户上板确认，板级标签`v0.3.0-s0-board.1`：[固定产物与验收记录](releases/v0.3.0-s0-local.1/README.md)。记录并推送S0后进入S1回归补齐。完整[阶段计划](docx/HDMI音频分阶段修改计划.md)存放在docx目录。正弦音、新HDMI核心及独立EDID尚未实现。
 
 基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz测试音。本版增加拨码模式显示与独立三键控制。
 
@@ -43,6 +43,6 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 验证状态与范围
 
-v0.2.0的模式功能阶段1至3已有用户板级确认。当前音频S0重新执行TD构建及拨码/面板仿真并通过，板级待确认；完整集成回归待S1补齐。Setup WNS −6.699ns，Hold WNS +0.003ns，时序未完全收敛。[具体验证边界](docs/VALIDATION_STATUS.md)。
+v0.2.0的模式功能阶段1至3已有用户板级确认。音频S0重新执行TD构建及拨码/面板仿真并通过，用户已确认“S0通过”；完整集成回归待S1补齐。Setup WNS −6.699ns，Hold WNS +0.003ns，时序未完全收敛。[具体验证边界](docs/VALIDATION_STATUS.md)。
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。

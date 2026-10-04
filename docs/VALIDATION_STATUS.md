@@ -1,6 +1,6 @@
 ﻿# 当前验证状态
 
-更新：2026-10-04。音频升级S0（`v0.3.0-s0-local.1`）TD综合、布局布线和bitgen通过；拨码/面板专项重新运行通过，编译和仿真均0 errors、0 warnings。S0尚待用户上板确认，未推送GitHub，S1—S9未开始。[产物和本次证据](../releases/v0.3.0-s0-local.1/README.md)。
+更新：2026-10-04。音频升级S0（本地`v0.3.0-s0-local.1`、板级`v0.3.0-s0-board.1`）TD综合、布局布线和bitgen通过；拨码/面板专项重新运行通过，编译和仿真均0 errors、0 warnings。用户已反馈“S0通过”，记录并推送后开始S1；S2—S9未开始。[产物和本次证据](../releases/v0.3.0-s0-local.1/README.md)。
 
 本次Setup WNS −6.699ns、TNS −295.899ns；Hold WNS +0.003ns、TNS 0ns；STA覆盖95.86%，时序未收敛。LUT 4190、寄存器3867、BRAM 20、PLL 3。
 
