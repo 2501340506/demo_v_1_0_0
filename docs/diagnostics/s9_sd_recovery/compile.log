@@ -1,0 +1,10 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 01:30:44 on Oct 05,2026
+vlog -sv -work diagnostics/modelsim_sd_recovery_analysis/work -l diagnostics/modelsim_sd_recovery_analysis/compile.log user_source/hdl_source/SD/sd_card_cmd.v diagnostics/tb_sd_recovery_gaps.sv 
+-- Compiling module sd_card_cmd
+-- Compiling module tb_sd_recovery_gaps
+
+Top level modules:
+	tb_sd_recovery_gaps
+End time: 01:30:44 on Oct 05,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
