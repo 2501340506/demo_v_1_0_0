@@ -1,10 +1,10 @@
-﻿# 安路 EG4 HDMI 图片播放器
+# 安路 EG4 HDMI 图片播放器
 
 已验收版本：**[v0.2.0](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/v0.2.0)**，2026-10-04。当前开发分支：`feature/hdmi-audio-v0.3.0`，不自动合并main。
 
-HDMI音频升级S0工程基线已获用户上板确认，板级标签`v0.3.0-s0-board.1`：[S0验收记录](releases/v0.3.0-s0-local.1/README.md)。S0推送遇到GitHub网络连接失败，尚未上传；本地继续完成S1回归与最小修复，[S1上板候选](releases/v0.3.0-s1-local.1/README.md)需单独验收。完整[阶段计划](docx/HDMI音频分阶段修改计划.md)存放在docx目录。正弦音、新HDMI核心及独立EDID尚未实现。
+当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消，S2及后续尚未在当前分支重新实施。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
 
-基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz测试音。本版增加拨码模式显示与独立三键控制。
+基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和旧I2S测试音（现有音频PLL约12.295082MHz，不作为精确48kHz基准）。本版增加拨码模式显示与独立三键控制。
 
 ## 使用方式
 
@@ -35,14 +35,14 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-- [已验收的固定bitstream](releases/v0.2.0/demo.bit)
+- [当前S1恢复用固定bitstream](releases/v0.3.0-s1-local.1/demo.bit)
 - [中文版本说明及构建报告](releases/v0.2.0/README.md)
 - [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/V0_2_0_MERGE_REVIEW.md)
 
-使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，固定版本使用 `releases/v0.2.0/demo.bit`，不使用旧 `best_result` 产物。
+使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，当前恢复使用 `releases/v0.3.0-s1-local.1/demo.bit`，不使用旧 `best_result` 产物。
 
 ## 验证状态与范围
 
-用户已确认音频升级“S0通过”。S1已补齐当前三键图片集成测试，六个控制测试、拨码/面板及三组异步双缓冲回归通过；因修复了RTL，仍需用户独立上板确认。完整HDMI/物理SDRAM硬件不由这些行为模型覆盖，TD时序结果及[具体验证边界](docs/VALIDATION_STATUS.md)单独记录。
+用户已确认S0/S1通过，当前源代码恢复S1基线。S1控制/图片/面板/异步缓冲回归及板级证据保留；本轮只修改计划，不重新宣称仿真、构建或上板。详见[验证状态](docs/VALIDATION_STATUS.md)。
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
