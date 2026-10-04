@@ -1,6 +1,6 @@
 # S8 图片音调联动候选
 
-版本 `v0.3.0-r2-s8-local.1`，2026-10-05，仅本地，待用户上板。最近已验收为S7。固定 bit：[demo.bit](demo.bit)，629624 字节，生成于 2026-10-05 00:30:58（Asia/Shanghai），与TD输出逐字节一致。
+版本 `v0.3.0-r2-s8-local.1`，2026-10-05，已获用户上板确认。最近已验收为S7。固定 bit：[demo.bit](demo.bit)，629624 字节，生成于 2026-10-05 00:30:58（Asia/Shanghai），与TD输出逐字节一致。
 
 ## 行为
 
@@ -29,3 +29,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1
 ## 上板
 
 执行[BOARD_VALIDATION.md](BOARD_VALIDATION.md)。用户确认后再记录板级标签、推送已验收节点并进入S9；当前不推送候选，不合并main。
+
+## S8板级反馈
+
+2026-10-05用户确认“S8通过，开始下一阶段”。记录整体上板通过，未额外提供逐项设备、运行时长或测量数据；固定bit和时序限制保留。
+
+板级标签：`v0.3.0-r2-s8-board.1`。按计划推送已验收节点，开始S9。
