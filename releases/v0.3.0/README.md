@@ -12,7 +12,7 @@ S9清理旧I2S/音频PLL/官方加密HDMI/AXIS依赖，保留历史源；系统/
 
 [demo.bit](demo.bit)，629624字节，沿用用户已验收S9构建（2026-10-05 01:02:06），逐字节一致。本次只更新版本文档、归档和标签，没有修改生产RTL、工程或约束，没有重新构建。
 
-[S9完整仿真/构建证据](../v0.3.0-r2-s9-local.1/README.md) · [上板步骤及用户反馈](../v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md) · [结项归档](../../docx/history/2026-10-05/HDMI音频升级/README.md)。S9为用户整体通过结论，不补造逐项测量。
+[S9完整仿真/构建证据](../v0.3.0-r2-s9-local.1/README.md) · [上板步骤及用户反馈](../v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md) · [结项归档](../../docs/history/2026-10-05/HDMI音频升级/README.md)。S9为用户整体通过结论，不补造逐项测量。
 
 ## 已知问题与范围
 

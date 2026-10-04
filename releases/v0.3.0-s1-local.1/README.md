@@ -24,9 +24,9 @@
 复现命令（仓库根目录，PowerShell）：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_control_tests.ps1 -Prefix audio_s1_final
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_mode_tests.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_buffer_handoff.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_control_tests.ps1 -Prefix audio_s1_final
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_mode_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_buffer_handoff.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName audio_s1_final
 ```
 

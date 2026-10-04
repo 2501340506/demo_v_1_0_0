@@ -38,9 +38,9 @@ frame_read_write 原来 9 位 FIFO 用量直接连接 10 位控制器输入，�
 
 ## 重跑与证据
 
-- `./diagnostics/run_control_tests.ps1`：原功能及延迟 ack 回归。
-- `./diagnostics/run_buffer_handoff.ps1`：三组修复版异步交接测试，独立 ModelSim 库，避免行为模型覆盖真实 BMP 测试库。
-- `./diagnostics/run_buffer_handoff.ps1 -Baseline`：从 v0.1.7 取旧控制器，仅适配新端口（request 固定 0，忽略 ack），保留其立即释放行为；使用相同读写控制和 FIFO 模型。前两组预期失败，第三组预期通过。
+- `./diagnostics/history/v0.3.0/run_control_tests.ps1`：原功能及延迟 ack 回归。
+- `./diagnostics/history/v0.3.0/run_buffer_handoff.ps1`：三组修复版异步交接测试，独立 ModelSim 库，避免行为模型覆盖真实 BMP 测试库。
+- `./diagnostics/history/v0.3.0/run_buffer_handoff.ps1 -Baseline`：从 v0.1.7 取旧控制器，仅适配新端口（request 固定 0，忽略 ack），保留其立即释放行为；使用相同读写控制和 FIFO 模型。前两组预期失败，第三组预期通过。
 - 日志：diagnostics/modelsim_check/stage4_suite.log、stage4_handoff_suite.log、stage4_baseline_suite.log 和各场景日志。
 
 ## 构建与板级验收

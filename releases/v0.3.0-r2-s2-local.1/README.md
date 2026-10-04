@@ -10,7 +10,7 @@
 
 ## 本轮验证
 
-运行：`powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_audio_tests.ps1`。
+运行：`powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_audio_tests.ps1`。
 
 ModelSim SE-64 10.6e，2026-10-04 22:47（Asia/Shanghai），编译/仿真均0 errors、0 warnings，五组PASS：
 

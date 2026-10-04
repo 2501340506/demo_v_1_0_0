@@ -1,17 +1,19 @@
 # 项目归档索引
 
+目录整理（2026-10-05）：原docx并入docs；[文档入口](README.md) · [诊断归档](../diagnostics/README.md) · [旧本地结果与迁移记录](../diagnostics/history/2026-10-05/README.md)。课程来源保留于[HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md)。
+
 更新：2026-10-05。R2 HDMI音频计划已获S9验收并发布v0.3.0；SD恢复问题按用户要求延期且暂不修改。历史EDID仍取消，原归档保留。
 
-- [Git回退与R2重规划归档](../docx/history/2026-10-04/HDMI音频升级/方案重规划/README.md)
-- [HDMI音频当前阶段计划](../docx/HDMI音频分阶段修改计划.md)
+- [Git回退与R2重规划归档](history/2026-10-04/HDMI音频升级/方案重规划/README.md)
+- [HDMI音频当前阶段计划](HDMI音频分阶段修改计划.md)
 - [S0固定候选和验收说明](../releases/v0.3.0-s0-local.1/README.md)
 - [S1固定候选和验收说明](../releases/v0.3.0-s1-local.1/README.md)
-- [S1开始前交接快照](../docx/history/2026-10-04/HDMI音频升级/HANDOFF_before_S1.md)
-- [音频升级开始前交接快照](../docx/history/2026-10-04/HDMI音频升级/HANDOFF_before_S0.md)
+- [S1开始前交接快照](history/2026-10-04/HDMI音频升级/HANDOFF_before_S1.md)
+- [音频升级开始前交接快照](history/2026-10-04/HDMI音频升级/HANDOFF_before_S0.md)
 
 音频升级已结项，正式产物沿用S9固定bit。
 
-- [R2结项归档](../docx/history/2026-10-05/HDMI音频升级/README.md)
+- [R2结项归档](history/2026-10-05/HDMI音频升级/README.md)
 - [v0.3.0正式版本](../releases/v0.3.0/README.md)
 - [延期SD问题分析](diagnostics/s9_sd_recovery/analysis.md)
 
@@ -19,7 +21,7 @@
 - [当前交接](../HANDOFF.md)
 - [中文版本说明与固定产物](../releases/v0.2.0/README.md)
 - [验证边界](VALIDATION_STATUS.md)
-- [合并审核说明](V0_2_0_MERGE_REVIEW.md)
+- [合并审核说明](history/2026-10-04/V0_2_0_MERGE_REVIEW.md)
 - [版本演进](../CHANGELOG.md)
 - [模式功能历史](history/2026-10-04/MODE_ARCHIVE.md)
 - [10月4日早期归档](history/2026-10-04/README.md)

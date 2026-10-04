@@ -4,7 +4,7 @@
 
 ## 实现与修正
 
-保存[课程14份原件及来源](../../reference/hdmi_audio_lesson3/README.md)。活动实现为10个HDMI封装/调度/BCH/TERC4/TMDS模块及带外部双PCM源选择接口的bridge；S2测试音作为仿真源，媒体旋律和图片控制留待S8。
+保存[课程14份原件及来源](../../docs/HDMI_AUDIO_SOURCES.md)。活动实现为10个HDMI封装/调度/BCH/TERC4/TMDS模块及带外部双PCM源选择接口的bridge；S2测试音作为仿真源，媒体旋律和图片控制留待S8。
 
 本轮发现并修正课程原件的BCH字节内位序和ACR保留字节位置；视频前导及保护带限制在下一有效行前，不在垂直消隐行误报有效视频。原件对照的[独立参考失败](course_reference_failure.log)明确报告BCH和ACR两个错误，修正版通过同一参考。
 
@@ -18,7 +18,7 @@
 
 ## 验证与结果
 
-运行：`powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_hdmi_packet_tests.ps1`。
+运行：`powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_hdmi_packet_tests.ps1`。
 
 ModelSim SE-64 10.6e，2026-10-04约23:18（Asia/Shanghai）。编译及三个仿真运行均0 errors、0 warnings；Python独立参考全部通过。
 

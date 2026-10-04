@@ -27,9 +27,9 @@ ModelSim SE-64 10.6e，2026-10-04 23:53—23:54（Asia/Shanghai）。编译、�
 复现：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_hdmi_s6_tests.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_control_tests.ps1 -Prefix audio_r2_s6
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_mode_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_hdmi_s6_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_control_tests.ps1 -Prefix audio_r2_s6
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_mode_tests.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName audio_r2_s6_final
 ```
 

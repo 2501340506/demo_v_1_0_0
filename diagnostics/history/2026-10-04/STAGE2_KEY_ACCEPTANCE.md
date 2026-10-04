@@ -17,7 +17,7 @@
 
 ModelSim 10.6e：6 个顶层均通过，编译、仿真 0 errors、0 warnings。原 14 项、第一阶段 4 组、路由/播放/显示专项、新增手势 5 组。精确验证稳定沿到长按为 1000 个缩放周期，阈值两侧 999/1001 分类，组合期间屏蔽轮播，以及手势结束后完整等待 3000 周期再接受自动请求。
 
-重跑：`./diagnostics/run_control_tests.ps1`。日志：`diagnostics/modelsim_check/stage2_tb_*.log`。
+重跑：`./diagnostics/history/v0.3.0/run_control_tests.ps1`。日志：`diagnostics/modelsim_check/stage2_tb_*.log`。
 
 TD 6.2 综合、布局布线、bitgen 完成；工程及本地构建清单已加入新模块，综合日志确认实际使用。Setup WNS -6.699 ns，TNS -293.576 ns；Hold WNS +0.003 ns。保留 SDRAM 位置调整和局部时钟布线警告，时序问题仍未收敛。本阶段未修改约束或底层驱动。
 

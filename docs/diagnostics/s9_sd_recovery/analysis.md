@@ -38,7 +38,7 @@
 
 ## 验证范围
 
-- 现有两项缺陷复现：diagnostics/tb_sd_recovery_gaps.sv，ModelSim10.6e编译和仿真0错误0警告；PASS REPRO仅代表缺陷成功复现，绝不是恢复修复通过。
+- 现有两项缺陷复现：diagnostics/history/sd_recovery/tb_sd_recovery_gaps.sv，ModelSim10.6e编译和仿真0错误0警告；PASS REPRO仅代表缺陷成功复现，绝不是恢复修复通过。
 - 后续至少覆盖：发送命令时的残留字节、CMD0无响应后恢复、初始化延迟、token缺失、数据区中断/CRC失败、在命令/数据中途KEY3复位、重插后首次有效图片及单次提示。使用保留卡侧状态的SD模型，不能随FPGA复位把卡也一起恢复。
 - 上板复现用户三种操作，多轮复位和读图中复位，记录超时能否到E、自动重试及重插KEY3能否恢复。用已验收S8固定bit做同操作对照，可区分原有缺陷与S9触发概率变化。
 - 原S9顶层测试只对PLL/复位/音频路径做行为模型验证，SD MISO固定空闲，未验证真实SD卡热复位和拔卡。先前五组复位PASS不能证明这三种场景通过。

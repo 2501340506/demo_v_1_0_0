@@ -18,13 +18,13 @@
 
 显示专项增加复位/首图前关闭、正常开启/关闭、加载中保持、组合提示共存、诊断模式关闭检查。真实按键集成测试同时核对开启/关闭轮播时的提示输出。顶层将提示经两级同步送到 50 MHz 扫描域，连接图片编号位 bit7（低有效小数点）；引脚 A6，沿用现有约束。顶层接线由 TD 构建检查，实际亮灭与物理位置由板级验收确认。
 
-运行 `./diagnostics/run_control_tests.ps1` 重跑当前全部测试。以下阶段内容均保留为历史验证说明，当前最终基线为 v0.1.8，后续修改暂停。
+运行 `./diagnostics/history/v0.3.0/run_control_tests.ps1` 重跑当前全部测试。以下阶段内容均保留为历史验证说明，当前最终基线为 v0.1.8，后续修改暂停。
 
 ## 历史实施记录：第二阶段
 
 2026-10-04，第一阶段 v0.1.5 已获用户板级功能验收并上传原开发分支。当前第二阶段改为稳定按下后计时，增加手势活动接口。6 个仿真顶层通过：原 14 项图片回归、4 组真实组合窗口集成检查、路由/播放/显示专项以及 5 组手势专项。日志为 `modelsim_check/stage2_tb_*.log`。
 
-运行 `./diagnostics/run_control_tests.ps1` 可重新编译并执行全部 6 个顶层。脚本检查 Fatal/Error、PASS 和零错误警告摘要，不只检查进程退出码。`tb_key_gesture_control` 使用真实同步/消抖、默认等效 100 ms 窗口和实际播放控制，验证稳定沿后 1000 周期长按、999/1001 周期分类、自动到期与稳定沿/组合等待冲突、组合部分释放、完整 3000 周期重新计时、超窗重叠及复位恢复。到期碰撞通过设置播放计数器定位，其余按键从真实输入驱动。
+运行 `./diagnostics/history/v0.3.0/run_control_tests.ps1` 可重新编译并执行全部 6 个顶层。脚本检查 Fatal/Error、PASS 和零错误警告摘要，不只检查进程退出码。`tb_key_gesture_control` 使用真实同步/消抖、默认等效 100 ms 窗口和实际播放控制，验证稳定沿后 1000 周期长按、999/1001 周期分类、自动到期与稳定沿/组合等待冲突、组合部分释放、完整 3000 周期重新计时、超窗重叠及复位恢复。到期碰撞通过设置播放计数器定位，其余按键从真实输入驱动。
 
 ## 课程对照改进：阶段一
 
@@ -36,7 +36,7 @@
 
 v0.1.0（2026-10-03）建立了下列 14 项回归；目前已随第二阶段重新执行并通过，最新结果以上方说明为准。
 
-测试入口为 [tb_picture_requests.sv](tb_picture_requests.sv)。旧诊断过程已归档至 [历史记录](../docs/history/2026-10-03/DIAGNOSTICS_HISTORY.md)，后续以本文件说明为准。
+测试入口为 [tb_picture_requests.sv](../v0.3.0/tb_picture_requests.sv)。旧诊断过程已归档至 [历史记录](../../../docs/history/2026-10-03/DIAGNOSTICS_HISTORY.md)，后续以本文件说明为准。
 
 ## 验证范围
 
@@ -84,7 +84,7 @@ $rtlFiles = @(
     'user_source/hdl_source/SD/sd_card_sec_read_write.v'
     'user_source/hdl_source/SD/sd_card_cmd.v'
     'user_source/hdl_source/SD/spi_master.v'
-    'diagnostics/tb_picture_requests.sv'
+    'diagnostics/history/v0.3.0/tb_picture_requests.sv'
 )
 & "$simTools/vlog.exe" -work $simLib -sv @rtlFiles
 if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
@@ -105,7 +105,7 @@ if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
 ## Media control extraction (2026-10-03)
 The 14 integration cases pass using the extracted controller. Hierarchical injection
 now targets u_media_player_control; no legacy pending registers remain.
-Compile diagnostics/tb_media_player_control.sv with the same RTL list and run
+Compile diagnostics/history/v0.3.0/tb_media_player_control.sv with the same RTL list and run
  tb_media_player_control for acceptance, current committed index, direction priority,
 same-cycle capture, single-image wrapping, and exact autoplay boundary checks.
 Latest logs: modelsim_check/control_fixed.log and control_unit_fixed.log.

@@ -18,9 +18,9 @@ SD控制域在显示交接应答后发布已提交图片编号和valid；独立�
 ## 复现
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_control_tests.ps1 -Prefix s8
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_buffer_handoff.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_hdmi_s6_tests.ps1 -Stage s8
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_control_tests.ps1 -Prefix s8
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_buffer_handoff.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_hdmi_s6_tests.ps1 -Stage s8
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName audio_r2_s8_local1
 ```
 

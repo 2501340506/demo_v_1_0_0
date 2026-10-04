@@ -20,9 +20,9 @@ ModelSim SE-64 10.6e，2026-10-04 22:56—22:57（Asia/Shanghai），编译和�
 复现：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_video_alignment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_control_tests.ps1 -Prefix audio_r2_s4
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_mode_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_video_alignment.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_control_tests.ps1 -Prefix audio_r2_s4
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_mode_tests.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName audio_r2_s4_local1
 ```
 

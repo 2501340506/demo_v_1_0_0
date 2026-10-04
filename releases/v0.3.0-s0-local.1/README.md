@@ -12,7 +12,7 @@
 
 - 补回工作区TD工程中缺失的switch_mode_control、seg7_panel、key_press_debounce、mode_key_control四个源文件条目，恢复为原有完整清单。
 - 新增[TD构建脚本](../../diagnostics/run_td_build.ps1)，从demo.al刷新syn_1/phy_1工程，使用明确的绝对源文件路径。
-- 建立[音频阶段计划](../../docx/HDMI音频分阶段修改计划.md)并保存[原交接快照](../../docx/history/2026-10-04/HDMI音频升级/HANDOFF_before_S0.md)。
+- 建立[音频阶段计划](../../docs/HDMI音频分阶段修改计划.md)并保存[原交接快照](../../docs/history/2026-10-04/HDMI音频升级/HANDOFF_before_S0.md)。
 - 本次没有修改RTL、引脚、时序约束或测试逻辑，声音仍为原I2S测试音；正弦音和独立EDID尚未实施。
 
 ## 固定产物与构建
@@ -39,7 +39,7 @@
 | BRAM / PLL | 20 / 3 |
 | 用户上板 | 2026-10-04用户确认“S0通过” |
 
-[专项仿真日志](mode_panel.log)、[时序状态](demo_phy.ts)、[完整时序报告](demo_pr.timing)、[资源报告](demo_phy.area)。仿真命令：`powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_mode_tests.ps1`。
+[专项仿真日志](mode_panel.log)、[时序状态](demo_phy.ts)、[完整时序报告](demo_pr.timing)、[资源报告](demo_phy.area)。仿真命令：`powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_mode_tests.ps1`。
 
 最差Setup、Hold及TNS与v0.2.0记录一致，不能推断所有路径完全相同。时序尚未收敛。完整图片集成、异步双缓冲及模式变化与AUTO到期同拍回归属于S1，本次未宣称通过。
 

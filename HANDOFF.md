@@ -1,37 +1,36 @@
 # 当前交接记录
 
-更新2026-10-05，分支feature/hdmi-audio-v0.3.0。当前任务：用户确认S9通过，明确SD复位/拔卡问题不在本版本修改且暂不开展修改；执行R2计划最后的v0.3.0发布和结项归档。
+更新2026-10-05。当前任务：整理reference、合并docx/docs、归档diagnostics。文档迁移、链接修复和诊断归档已完成；用户已手动删除_cleanup，已核实目录不存在。本轮整理在当前开发分支提交，并推送同名远端分支。
 
 ## 已完成
 
-- S9已按用户最新结论记为上板通过。未补造设备、次数、运行时长等逐项结果；先前“未通过/暂停发布”为旧临时状态，已由用户新指令取代。
-- HDMI音频R2计划完成：S2/S5模块验证，S4/S6/S7/S8/S9集成验收；S3独立EDID取消，不计为已实现。
-- v0.3.0沿用releases/v0.3.0-r2-s9-local.1/demo.bit，629624字节，构建时间2026-10-05 01:02:06。发布副本逐字节一致，生产RTL、TD工程、约束无变化；不重复构建/仿真。
-- 保存v0.3.0正式目录、S9验收记录、CHANGELOG、README及验证状态；完成方案/验收/交接快照归档到docx/history/2026-10-05/HDMI音频升级/，更新docs/ARCHIVE_INDEX.md。
-- 建立v0.3.0-r2-s9-board.1和v0.3.0标签，连同已验收S9本地标签及开发分支推送；不合并main。发布方式沿用本仓库Git标签和固定产物，不额外创建GitHub Release页面。
-- 前轮SD分析与两项缺陷复现保留为延期问题资料，未接入工程或自动回归，不含修复代码。
+- 原docx的11份文档并入docs及对应history日期，无冲突覆盖；docs/README.md为入口。v0.2.0合并审查移入docs/history/2026-10-04。
+- reference没有活动工程/仿真依赖。课程来源保留在docs/HDMI_AUDIO_SOURCES.md，用户已有备份的14份原件及原说明移到_cleanup/reference。
+- diagnostics根部只保留README、run_td_build.ps1、history和output。8个仿真入口、16个testbench、2个Python参考放在history/v0.3.0，脚本适配新路径，运行输出统一diagnostics/output。
+- 延期SD问题复现testbench单独归入history/sd_recovery，仅存档，不接入正常回归，不开启修复。
+- 299个旧日志/报告/生成源码/bit等压缩到diagnostics/history/2026-10-05/local_results.zip（约2MB），已校验可读并逐条与原件比对一致；inventory.json记录迁移。851份其余缓存未纳入归档，可重建。
+- 旧运行目录、空EDID目录和合并后空的docx目录树移至_cleanup；没有批量删除文件。output和_cleanup加入Git忽略。
+- 历史文档及发布README的链接/复现路径同步，失效本地链接修复；原始工具日志不改。
+- 迁移后的8个仿真入口全部通过。testbench/Python代码未改变，生产RTL/TD工程/正式时序资源报告无Git差异，正式bit与发布节点逐字节一致。未重新构建TD，也未修改SD恢复逻辑。
 
-## 限制与延期问题
+## 卡点与待操作
 
-用户报告：复位偶发卡0；首图扫描/读头显示2时拔卡一直2；连续下一张期间KEY3复位有概率卡0。明确“本版本不修改，也先不修改”，后续代理不得据旧分析建议自动启动修复。问题未解决，不阻塞本次用户授权的版本验收。
-
-源码分析发现命令未发完即判断R1、token无超时和恢复链路缺失等；两项字节级仿真复现只证明缺陷存在，不能锁定每次板级故障的唯一原因。详见docs/diagnostics/s9_sd_recovery/analysis.md。
-
-S9时序：Setup−6.565ns/TNS−294.439ns，Hold+0.004ns，STA覆盖99.86%，64个SDRAM接口违例仍在，写侧较S8退化0.133ns。像素→串行+6.376ns，2 PLL/3301 LUT/2590寄存器/4 BRAM/1 DSP。板级IO delay不完整；验收通过不等于时序收敛。
+无目录整理阻塞。遵守用户禁止批量删除的要求，助手仅迁移和归档；暂存目录由用户手动删除，已核实清理完成。
 
 ## 下一步
 
-本计划没有S10；v0.3.0发布归档后任务结项。等待用户明确新的功能或维护范围。暂不修SD恢复问题，不扩大到OSD/图像处理，不自动合并main。
+目录整理完成后维持当前版本，等待用户安排后续工作。不重写既有版本标签，不自动启动新功能或SD修复。后续诊断输出放在diagnostics/output，历史资料从docs/README.md和diagnostics/README.md进入。
 
-正式下载releases/v0.3.0/demo.bit；必要时保留S8固定bit作对照。既有releases及历史源不可覆盖。
+## 版本与延期问题
+
+v0.3.0/S9已获用户确认并发布，固定下载releases/v0.3.0/demo.bit。SD复位偶发卡0、扫描/读头拔卡卡2、密集翻图中KEY3复位卡0仍按用户指令暂不修改。Setup−6.565ns/TNS−294.439ns，Hold+0.004ns，64个SDRAM接口违例仍在。
 
 ## 踩过的坑
 
-- 用户最新范围优先：历史问题分析中的“停留S9修复”和“暂缓发布”不再是当前执行指令；已知缺陷保留但不擅自开工。
-- 首图前数码管显示流程状态，首图后显示1～4图片编号，不能混用。
-- SD卡不会随FPGA复位断电，S9行为模型复位测试不是SD热复位/拔卡测试；不能宣称延期问题已通过。
-- IP重新生成时保留sys_pll/video_pll导出的locked端口。双端CDC复位来自同一异步请求，不得任意独立复位。
-- 原始工具日志保留空格；文本检查排除工具产物。UTF-8无BOM写Verilog。
-- 禁止批量删除、不强推、不写摘要校验值；发布只做逐字节比较。
+- 脚本迁移需同时调整PSScriptRoot、testbench/Python路径和输出位置；不能让新缓存进入历史源码目录。
+- 历史快照混用根相对/文件相对路径，本轮统一检查可达性；工具日志里的旧路径属于原始证据，不改写。
+- SD复现的PASS REPRO表示观察到旧缺陷，不是修复成功，不能并入正常回归。
+- _cleanup原为待删暂存，现已由用户删除；不得通过循环逐文件删除规避禁止批量删除要求。
+- Windows所有迁移源/目标已确认在工作区内且目标不冲突。Git对文本有CRLF转换，文本一致性与bit逐字节一致性分别检查。
 
-[正式版本](releases/v0.3.0/README.md) · [结项归档](docx/history/2026-10-05/HDMI音频升级/README.md) · [延期问题](docs/diagnostics/s9_sd_recovery/analysis.md)
+[统一文档](docs/README.md) · [诊断入口](diagnostics/README.md) · [迁移归档](diagnostics/history/2026-10-05/README.md) · [正式版本](releases/v0.3.0/README.md)

@@ -1,8 +1,10 @@
 # 安路 EG4 HDMI 图片播放器
 
+目录入口：[统一文档](docs/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
+
 已验收版本：**[v0.3.0](releases/v0.3.0/README.md)**，2026-10-05。开发分支`feature/hdmi-audio-v0.3.0`，不自动合并main。
 
-R2 HDMI音频计划已结项：S0/S1、S4、S6、S7、S8、S9获用户上板确认，S2/S5独立模块验证完成，S3独立EDID取消。[完整阶段记录](docx/HDMI音频分阶段修改计划.md) · [结项归档](docx/history/2026-10-05/HDMI音频升级/README.md)。
+R2 HDMI音频计划已结项：S0/S1、S4、S6、S7、S8、S9获用户上板确认，S2/S5独立模块验证完成，S3独立EDID取消。[完整阶段记录](docs/HDMI音频分阶段修改计划.md) · [结项归档](docs/history/2026-10-05/HDMI音频升级/README.md)。
 
 基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz双声道图片琶音。实际显示提交后触发一次提示音，音量固定128。本版移除旧音频PLL/I2S/AXIS及官方加密HDMI依赖，保留系统/视频两颗PLL，五个时钟域各自同步释放复位；最近已验收节点为S9。
 
@@ -43,7 +45,7 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 - [S4已验收恢复产物](releases/v0.3.0-r2-s4-local.1/demo.bit)
 - [S1恢复用固定bitstream](releases/v0.3.0-s1-local.1/demo.bit)
 - [中文版本说明及构建报告](releases/v0.2.0/README.md)
-- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/V0_2_0_MERGE_REVIEW.md)
+- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/history/2026-10-04/V0_2_0_MERGE_REVIEW.md)
 
 使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，正式下载使用 `releases/v0.3.0/demo.bit`，不使用旧 `best_result` 产物。
 

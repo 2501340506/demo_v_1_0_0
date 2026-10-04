@@ -26,7 +26,7 @@ TD 6.2.168116 已从本次 RTL 重新综合、布局布线并成功 bitgen。新
 
 当前任务：结合课程文档 2.9 和最新上板反馈执行下一版计划。已完成第一批 HDL 修改，并完成四 sector/延迟应答 ModelSim 回归；尚未重新综合或构建。
 
-已完成：核对 2.9、当前 sd_card_bmp.v、bmp_read.v、frame_fifo_write.v 及现有测试。已在 sd_card_bmp.v 增加 DIAG_DISPLAY、write_req_ack 两级同步、pending-only 加载入口，并取消首图分支清除 next pending。使用 D:\modelsim\win64\ModelSim 10.6e 编译并运行 diagnostics/tb_picture_requests.sv；测试扫描 4 个 sector 并生成不同像素数据，write_req 应答延迟 4 个时钟：0 errors、0 warnings，7 个 PASS 场景全部通过。课程 KEY2/KEY3 映射与本工程不同，不搬入组合键、亮度、Flash 保存或独立控制模块。
+已完成：核对 2.9、当前 sd_card_bmp.v、bmp_read.v、frame_fifo_write.v 及现有测试。已在 sd_card_bmp.v 增加 DIAG_DISPLAY、write_req_ack 两级同步、pending-only 加载入口，并取消首图分支清除 next pending。使用 D:\modelsim\win64\ModelSim 10.6e 编译并运行 diagnostics/history/v0.3.0/tb_picture_requests.sv；测试扫描 4 个 sector 并生成不同像素数据，write_req 应答延迟 4 个时钟：0 errors、0 warnings，7 个 PASS 场景全部通过。课程 KEY2/KEY3 映射与本工程不同，不搬入组合键、亮度、Flash 保存或独立控制模块。
 
 当前问题：上一轮改善连续 KEY1，但首图黑屏和混合操作仍未关闭。普通显示的 1 可能是 BMP 空闲，也可能是首图编号，不能证明提交成功。pending 尚未被证明存在永久阻塞问题。已有测试应答与控制器同钟，只有两张图片，未充分覆盖自动轮播边界与方向执行顺序。
 
@@ -38,7 +38,7 @@ TD 6.2.168116 已从本次 RTL 重新综合、布局布线并成功 bitgen。新
 4. 仲裁语义：首图优先，其后下一张→上一张→自动。每方向只挂起一次，不承诺按时间排序。旧 pending 被消费的同拍若有同方向新事件，则保留一个新 pending；另一方向独立保留。新事件可以下一拍启动，自动分支必须同时检查本拍事件和已有 pending。扫描完成前不缓存切图；扫描完成后、首图加载及重试期间收到的请求保留到首图提交后，首图启动不得单独清除 next pending。
 5. 自动轮播：有 next/prev 事件或 pending 时不启动自动加载，已有加载继续完成。手动请求、加载忙态和 KEY2 短按切换均重置计时；手动请求排空、最终加载提交后，从空闲开始重新计满 3 秒。手动切图不关闭轮播。
 6. 失败退出：保留 write_started_seen。源端忙过再返回空闲且未发写请求才释放任务；保持原显示和未消费请求。已发起写入的任务仍等待双方完成，不用超时强制提交或释放。失败的已消费请求不自动重新入队；首图继续原有重试。
-7. 验证：扩展 diagnostics/tb_picture_requests.sv 至四张可区分图片，记录实际 load_idx/sector、启动顺序和提交结果。覆盖自动到期前/同拍、加载启动和提交边界的 KEY1；连续 KEY1 后 KEY2 长按只执行一次上一张；pending 消费同拍新事件；首图加载期间请求保留；短按关闭自动与到期同拍。以独立时钟应答模型加入应答延迟、完成延迟，并核对不提前提交、pending 不丢失及两种完成顺序。注入一次图头失败后混合操作仍恢复，保留原有连续加载回归。RTL 仿真不能证明物理跨域或真实 SDRAM 显示正常。
+7. 验证：扩展 diagnostics/history/v0.3.0/tb_picture_requests.sv 至四张可区分图片，记录实际 load_idx/sector、启动顺序和提交结果。覆盖自动到期前/同拍、加载启动和提交边界的 KEY1；连续 KEY1 后 KEY2 长按只执行一次上一张；pending 消费同拍新事件；首图加载期间请求保留；短按关闭自动与到期同拍。以独立时钟应答模型加入应答延迟、完成延迟，并核对不提前提交、pending 不丢失及两种完成顺序。注入一次图头失败后混合操作仍恢复，保留原有连续加载回归。RTL 仿真不能证明物理跨域或真实 SDRAM 显示正常。
 8. 交付：测试通过后 TD 综合、布局布线并生成正常/诊断可辨识的本地构建，记录配置、文件路径、时间和时序结果；更新 diagnostics/README.md、BLACK_SCREEN_POSTMORTEM.md 和本文件。时序违例本轮不调整。等待上板审核，不提交、不推送。
 
 上板记录：反复复位，记录首图是否出现、黑屏时诊断码、KEY1/KEY2 操作顺序及轮播开关。若稳定停在 8 且黑屏，下一步调查 SDRAM 读出、显示缓冲切换和 display_valid 至输出门控链路；若停在 5/7，分别查应答/写完成。短暂出现 8 不等于后续加载已完成。
@@ -136,6 +136,6 @@ TD 6.2.168116 已从本次 RTL 重新综合、布局布线并成功 bitgen。新
 
 已恢复终端和文件编辑工具，并在 `sd_card_bmp.v` 做了小范围事件边界修正：KEY2 长按事件明确限定为消抖稳定按下且达到阈值后的单次事件；KEY1/KEY2 同方向 pending 置位增加已有 pending 判断，避免重复覆盖。未加入诊断码，未修改加载完成汇合、写应答同步和失败退出逻辑。
 
-ModelSim 10.6e 已重新编译实际 HDL 和 `diagnostics/tb_picture_requests.sv`，编译 0 errors、0 warnings；仿真 7 个场景全部 PASS，包括首图失败重试、同键合并、双向请求、20 轮连续加载、失败恢复、pending 保留和延迟写完成。
+ModelSim 10.6e 已重新编译实际 HDL 和 `diagnostics/history/v0.3.0/tb_picture_requests.sv`，编译 0 errors、0 warnings；仿真 7 个场景全部 PASS，包括首图失败重试、同键合并、双向请求、20 轮连续加载、失败恢复、pending 保留和延迟写完成。
 
 当前仍未重新综合或生成 bitstream，也未上板验证 KEY2；下一步应在 TD 中重新构建后重点复测 KEY2 短按、长按和短按后长按组合。临时仿真目录 `diagnostics/modelsim_check` 为本轮验证产物，未删除。

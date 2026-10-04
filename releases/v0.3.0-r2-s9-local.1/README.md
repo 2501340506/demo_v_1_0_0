@@ -35,14 +35,14 @@ ModelSim 10.6e全部本轮编译及仿真零错误零警告；TD 6.2.168116完�
 ## 复现
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_s9_reset_tests.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_control_tests.ps1 -Prefix s9
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_mode_tests.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_buffer_handoff.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_audio_tests.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_hdmi_packet_tests.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_video_alignment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_hdmi_s6_tests.ps1 -Stage s9
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_s9_reset_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_control_tests.ps1 -Prefix s9
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_mode_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_buffer_handoff.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_audio_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_hdmi_packet_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_video_alignment.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_hdmi_s6_tests.ps1 -Stage s9
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName audio_r2_s9_local1
 ```
 

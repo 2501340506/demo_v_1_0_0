@@ -82,6 +82,6 @@ PASS diagnostic complete; this fault injection does not prove the on-board trigg
 - `user_source/hdl_source/SD/sd_card_sec_read_write.v`
 - `user_source/hdl_source/SD/sd_card_cmd.v`
 - `user_source/hdl_source/SD/spi_master.v`
-- `diagnostics/tb_picture_requests.sv`
+- `diagnostics/history/v0.3.0/tb_picture_requests.sv`
 
 执行 `vsim -c -voptargs=+acc work.tb_picture_requests -do "run -all; quit -f"`。应检查完整 PASS/REPRODUCED 输出及 Errors 行，不能只看进程退出码。

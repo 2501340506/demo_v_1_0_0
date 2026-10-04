@@ -14,7 +14,7 @@
 
 6 个 ModelSim 顶层全部通过，编译及仿真 0 errors、0 warnings。显示专项检查首图前、正常开启/关闭、加载中保持、组合共存、诊断模式关闭和复位；真实按键集成测试核对轮播启停与提示输出。其余图片加载、长按和组合回归全部通过。
 
-运行 `./diagnostics/run_control_tests.ps1`；日志 `diagnostics/modelsim_check/stage3_tb_*.log`，完整日志 `stage3_suite.log`。
+运行 `./diagnostics/history/v0.3.0/run_control_tests.ps1`；日志 `diagnostics/modelsim_check/stage3_tb_*.log`，完整日志 `stage3_suite.log`。
 
 TD 综合、布局布线、bitgen 完成。文件 `TD_project/demo_Runs/phy_1/demo.bit`，2026-10-04 00:39:15（北京时间），629624 字节。Setup WNS -6.699 ns，TNS -293.790 ns；Hold WNS +0.004 ns。时序仍未收敛，按约定暂缓；保留既有 SDRAM 位置调整、局部时钟布线等警告。构建日志分别位于 syn_1/build_stage3.log 和 phy_1/build_stage3.log。当时阶段基线为 `releases/v0.1.6/demo.bit`；最终归档使用 releases/v0.1.8。
 
