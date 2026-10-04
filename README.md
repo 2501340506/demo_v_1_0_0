@@ -4,7 +4,7 @@
 
 当前开发分支已通过Git回退到已验收的`v0.3.0-s1-board.1`。S0/S1均已上板通过并推送；独立EDID取消；R2 S2独立PCM已恢复并通过ModelSim复核，尚未接顶层；S4视频坐标对齐已完成仿真及TD构建，[已上板通过](releases/v0.3.0-r2-s4-local.1/README.md)。[R2完整阶段计划](docx/HDMI音频分阶段修改计划.md)保留正弦音、可读HDMI封装和图片音调联动目标，不再以EDID或ChipWatcher为前置条件。
 
-基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频。当前S6候选使用新核心输出48kHz静音；已验收S4恢复版本仍为旧I2S测试音。本版增加拨码模式显示与独立三键控制。
+基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频。当前S7候选使用新核心输出48kHz采样的440Hz双声道正弦音；最近已验收S6为静音版本。本版增加拨码模式显示与独立三键控制。
 
 ## 使用方式
 
@@ -35,7 +35,8 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-- [S6待上板静音候选](releases/v0.3.0-r2-s6-local.1/demo.bit)
+- [S7待上板正弦音候选](releases/v0.3.0-r2-s7-local.1/demo.bit)
+- [S6已验收静音恢复产物](releases/v0.3.0-r2-s6-local.1/demo.bit)
 - [S4已验收恢复产物](releases/v0.3.0-r2-s4-local.1/demo.bit)
 - [S1恢复用固定bitstream](releases/v0.3.0-s1-local.1/demo.bit)
 - [中文版本说明及构建报告](releases/v0.2.0/README.md)
@@ -45,10 +46,10 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 验证状态与范围
 
-用户已确认S0/S1通过，当前源码已包含S6新核心静音集成；最近已验收节点为S4。S1控制/图片/面板/异步缓冲回归及板级证据保留；S2模块已通过；本轮S4视频、控制及面板仿真零错误零警告，TD构建完成。全局Setup WNS −6.699ns，时序未收敛；用户已确认S4通过，S5封装模块验证已通过，S6新核心静音候选已构建，等待上板。详见[验证状态](docs/VALIDATION_STATUS.md)。
+用户已确认S0/S1通过，当前源码已包含S7正弦音，最近已验收节点为S6。S1控制/图片/面板/异步缓冲回归及板级证据保留；S2模块已通过；本轮S4视频、控制及面板仿真零错误零警告，TD构建完成。全局Setup WNS −6.699ns，时序未收敛；用户已确认S4通过，S5封装模块验证已通过，S6用户已确认通过，S7正弦音候选待上板。详见[验证状态](docs/VALIDATION_STATUS.md)。
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
 
 S5独立封装及双PCM源接口已完成，详见[模块交付与仿真证据](releases/v0.3.0-r2-s5-local.1/README.md)。S5无新bit或上板要求；S6已接入新核心，预期正常图片及静音，详见[上板验证文档](releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。
 
-S6仿真及TD构建完成，尚无板级反馈。Setup WNS −6.699ns，全局未收敛；控制和内存域退化见[S6时序对比](releases/v0.3.0-r2-s6-local.1/timing_comparison.md)。
+S6已获用户上板确认；S7仿真及TD构建完成，等待双声道和连续10分钟验证。全局时序未收敛，详见[S7交付](releases/v0.3.0-r2-s7-local.1/README.md)与[上板文档](releases/v0.3.0-r2-s7-local.1/BOARD_VALIDATION.md)。

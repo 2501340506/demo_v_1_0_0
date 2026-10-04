@@ -1,5 +1,6 @@
 `timescale 1ns/1ps
 module tb_hdmi_s6_phy;
+    parameter integer SILENCE = 1;
     reg clk=0,serial=0,rst=1;
     always #20 clk=~clk;
     initial begin #1;forever #4 serial=~serial;end
@@ -24,14 +25,14 @@ module tb_hdmi_s6_phy;
         end
     end
     wire valid,ready,overflow,tap,sequence_error;
-    wire signed [15:0] tap_l,tap_r;
+    wire signed [15:0] tap_l,tap_r,source_l,source_r;
     pcm_test_tone pacing(.clk(clk),.rst_n(~rst),.enable(1'b1),
-        .sample_valid(valid),.sample_ready(ready),.sample_left(),.sample_right(),
+        .sample_valid(valid),.sample_ready(ready),.sample_left(source_l),.sample_right(source_r),
         .sample_tick(),.overflow(overflow));
     media_hdmi_audio_bridge bridge(.pixel_clk(clk),.pixel_rst_n(~rst),
         .video_hsync(hs),.video_vsync(vs),.video_de(de),.video_x(x),.video_rgb(rgb),
         .select_media(1'b0),.test_valid(valid),.test_ready(ready),
-        .test_left(16'sd0),.test_right(16'sd0),.media_valid(1'b0),.media_ready(),
+        .test_left(SILENCE ? 16'sd0 : source_l),.test_right(SILENCE ? 16'sd0 : source_r),.media_valid(1'b0),.media_ready(),
         .media_left(16'sd0),.media_right(16'sd0),
         .channel0_symbol(c0),.channel1_symbol(c1),.channel2_symbol(c2),
         .sequence_error(sequence_error),.pcm_tap_valid(tap),.pcm_tap_left(tap_l),.pcm_tap_right(tap_r));
@@ -56,7 +57,8 @@ module tb_hdmi_s6_phy;
             next_de=de;next_rgb=rgb;
             cycles=cycles+1;
             if(tap) begin
-                if(tap_l!==0 || tap_r!==0) $fatal(1,"nonzero silent PCM");
+                if(SILENCE && (tap_l!==0 || tap_r!==0)) $fatal(1,"nonzero silent PCM");
+                if(!SILENCE && (tap_l!==source_l || tap_r!==source_r)) $fatal(1,"tone PCM mismatch");
                 samples=samples+1;
             end
             #1;
@@ -106,11 +108,11 @@ module tb_hdmi_s6_phy;
         repeat(5) @(negedge clk);rst=0;
         repeat(850000) @(negedge clk);
         if(pixels<614400 || samples<1600 || words<840000) $fatal(1,"S6 coverage incomplete");
-        $display("PASS S6 real raster RGB=%0d zero samples=%0d serialized words=%0d, all lanes LSB-first and clock 0000011111",pixels,samples,words);
+        $display("PASS S6 real raster RGB=%0d PCM samples=%0d serialized words=%0d, all lanes LSB-first and clock 0000011111",pixels,samples,words);
         rst=1;repeat(5) @(negedge clk);rst=0;
         repeat(450000) @(negedge clk);
         if(pixels<307200 || words<440000) $fatal(1,"restart coverage incomplete");
-        $display("PASS S6 reset/restart RGB=%0d zero samples=%0d PHY words=%0d",pixels,samples,words);
+        $display("PASS S6 reset/restart RGB=%0d PCM samples=%0d PHY words=%0d",pixels,samples,words);
         $finish;
     end
 endmodule

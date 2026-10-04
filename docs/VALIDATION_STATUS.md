@@ -6,7 +6,7 @@ S0/S1均由用户上板确认，相关验收节点已推送。S1六个控制测�
 
 原S1时序：Setup WNS−6.699ns/TNS−296.363ns，Hold+0.003ns，控制域−0.044ns。时序未收敛，板级通过不抹除STA限制。
 
-R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6已完成仿真/TD构建，待上板；S7—S9未开始。
+R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6用户已确认通过；S7仿真/构建完成待上板，S8—S9未开始。
 
 [R2方案](../docx/HDMI音频分阶段修改计划.md) · [回退与归档说明](../docx/history/2026-10-04/HDMI音频升级/方案重规划/README.md)
 
@@ -16,7 +16,7 @@ R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 wa
 
 TD 6.2.168116综合/布局布线/bitgen通过。Setup WNS −6.699ns/TNS −293.242ns、Hold +0.003ns；视频同域+27.772ns、控制域+0.203ns。剩余64个违例端点位于两组SDRAM接口路径，全局时序未收敛；未改约束。坐标尚无旧HDMI消费者，可被综合裁剪，不能宣称验证了新HDMI核心集成时序。
 
-[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；当前S6待上板。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
+[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；S6已验收，S7待上板。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
 
 ## R2 S5 独立模块
 
@@ -31,3 +31,11 @@ ModelSim 10.6e编译、静音包及实际S4时序/延迟/新bridge/原PHY仿真�
 TD综合/布局布线/bitgen完成。全局Setup−6.699ns/TNS−295.870ns、Hold+0.004ns。视频同域+25.367ns，控制域−0.387ns（BMP解析3端点）、内存内部−0.219ns（帧缓存4端点），另64个SDRAM接口端点违例。清理被裁剪audio_mclk的失效rename与异步组，原像素/串行exclusive关系保留，不宣称完整跨域STA已收敛。资源2809 LUT/2264寄存器/4 BRAM/3 PLL。
 
 [S6固定候选](../releases/v0.3.0-r2-s6-local.1/README.md) · [上板验证步骤](../releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。2026-10-05用户确认S6通过并授权S7，固定bit不变。
+
+## R2 S7 正弦音
+
+2026-10-05，ModelSim编译/符号包及实际视频PHY两项仿真零错误零警告。3200个48kHz/440Hz双声道样本与独立实数正弦参考一致、峰值±12000，并逐样本匹配三路TMDS解出的实际发送PCM；无丢样/溢出。两帧视频及复位后一帧、厂商ODDR逐位验证通过。控制/面板未改，沿用S6验收，不宣称本轮重跑。
+
+TD 6.2.168116构建完成：Setup−6.699ns/TNS−295.004ns，Hold+0.025ns。新视频同域+26.444ns、控制+0.189ns、内存同域+0.178ns；剩余64个SDRAM接口端点违例，写侧较S6退化0.101ns。资源3230 LUT/2535寄存器/4 BRAM/3 PLL。时序约束未变，像素/串行exclusive覆盖限制仍在。
+
+[固定候选及证据](../releases/v0.3.0-r2-s7-local.1/README.md) · [上板文档](../releases/v0.3.0-r2-s7-local.1/BOARD_VALIDATION.md)。双声道实听及10分钟运行尚待用户确认，不进入S8。

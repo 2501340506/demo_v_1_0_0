@@ -374,20 +374,21 @@ video_rgb_to_axis_640x480 u_video_rgb_to_axis_640x480(
     .O_video_data  (axis_s_data)
 );
 
-// S6: retain the accepted picture/control path, send continuous 48 kHz
-// zero PCM through the new symbol core. The old audio PLL still owns reset.
+// S7: feed the S2 440 Hz stereo PCM into the accepted S6 symbol path.
+// The old audio PLL still owns reset.
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
+wire signed [15:0] pcm_left, pcm_right;
 pcm_test_tone u_pcm_clock (
     .clk(video_clk), .rst_n(~rst_all), .enable(1'b1),
     .sample_valid(pcm_valid), .sample_ready(pcm_ready),
-    .sample_left(), .sample_right(), .sample_tick(), .overflow(pcm_overflow)
+    .sample_left(pcm_left), .sample_right(pcm_right), .sample_tick(), .overflow(pcm_overflow)
 );
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
     .pixel_clk(video_clk), .pixel_rst_n(~rst_all),
     .video_hsync(hs), .video_vsync(vs), .video_de(de),
     .video_x(video_x), .video_rgb(vout_data),
     .select_media(1'b0), .test_valid(pcm_valid), .test_ready(pcm_ready),
-    .test_left(16'sd0), .test_right(16'sd0),
+    .test_left(pcm_left), .test_right(pcm_right),
     .media_valid(1'b0), .media_ready(),
     .media_left(16'sd0), .media_right(16'sd0),
     .channel0_symbol(tmds_ch0_data), .channel1_symbol(tmds_ch1_data),

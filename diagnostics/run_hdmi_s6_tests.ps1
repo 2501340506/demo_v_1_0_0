@@ -1,9 +1,10 @@
+param([ValidateSet('s6','s7')][string]$Stage = 's6')
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $simTools = 'D:/modelsim/win64'
 $vendor = 'D:/TD/anlogic/TD6.2.1/sim_release/eg4'
-$simDir = Join-Path $PSScriptRoot 'modelsim_hdmi_r2_s6'
-$lib = (Join-Path $simDir 's6_work').Replace('\','/')
+$simDir = Join-Path $PSScriptRoot "modelsim_hdmi_r2_$Stage"
+$lib = (Join-Path $simDir "${Stage}_work").Replace('\','/')
 New-Item -ItemType Directory -Path $simDir -Force | Out-Null
 Push-Location $repoRoot
 try {
@@ -22,7 +23,8 @@ try {
     try {
         foreach ($test in @('tb_hdmi_packets','tb_hdmi_s6_phy')) {
             $simOptions = @()
-            if ($test -eq 'tb_hdmi_packets') { $simOptions += '-gSILENCE=1' }
+            $silence = if ($Stage -eq 's6') { 1 } else { 0 }
+            $simOptions += "-gSILENCE=$silence"
             & "$simTools/vsim.exe" -c -quiet -voptargs=+acc -lib $lib $test glbl @simOptions -l "$simDir/$test.log" -do 'run -all; quit -f'
             $log = Get-Content "$simDir/$test.log" -Raw
             if ($LASTEXITCODE -ne 0 -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS ' -or $log -notmatch 'Errors: 0, Warnings: 0') {
@@ -31,8 +33,13 @@ try {
         }
         & python -X utf8 "$repoRoot/diagnostics/check_hdmi_packets.py" tone_packets.txt
         if ($LASTEXITCODE -ne 0) { throw 'S6 packet reference failed' }
-        $nonzero = Get-Content tone_packets.txt | Where-Object { $_ -like 'A *' -and $_ -ne 'A 0000 0000' }
-        if ($nonzero) { throw 'S6 PCM is not silent' }
-        Write-Output 'PASS S6 all accepted and decoded PCM samples are zero'
+        if ($Stage -eq 's6') {
+            $nonzero = Get-Content tone_packets.txt | Where-Object { $_ -like 'A *' -and $_ -ne 'A 0000 0000' }
+            if ($nonzero) { throw 'S6 PCM is not silent' }
+            Write-Output 'PASS S6 all accepted and decoded PCM samples are zero'
+        } else {
+            & python -X utf8 "$repoRoot/diagnostics/check_s7_tone.py" tone_packets.txt
+            if ($LASTEXITCODE -ne 0) { throw 'S7 independent tone reference failed' }
+        }
     } finally { Pop-Location }
 } finally { Pop-Location }
