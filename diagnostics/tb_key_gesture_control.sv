@@ -16,7 +16,7 @@ module tb_key_gesture_control;
     media_player_control #(.AUTO_PLAY_CYCLES(3000)) player (
         .clk(clk), .rst(rst), .enable(enable), .scan_done(1'b1), .display_valid(1'b1),
         .load_busy(1'b0), .first_image_committed(1'b1), .manual_activity(activity),
-        .request_accept(request), .image_count(3'd4), .current_image(2'd0),
+        .request_accept(request), .image_count(3'd4), .current_image(2'd0), .mode(2'd0),
         .next_event(next_event), .previous_event(prev_event), .auto_toggle_event(short_event),
         .auto_play_en(auto_en), .next_pending(next_pending), .previous_pending(prev_pending),
         .auto_tick(auto_tick), .load_request(request), .next_load_request(next_req),

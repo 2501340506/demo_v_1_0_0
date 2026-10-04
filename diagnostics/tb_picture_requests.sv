@@ -1,9 +1,10 @@
 `timescale 1ns/1ps
 // Actual controller + BMP reader; SD sectors and SDRAM acknowledgement are modeled.
-module tb_picture_requests #(parameter TEST_CHORD = 0);
+module tb_picture_requests;
     reg clk = 0;
     always #5 clk = ~clk;
-    reg rst = 1, key_next = 1, key_auto = 1, finish_toggle = 0;
+    reg rst = 1, key1 = 1, key2 = 1, key4 = 1, finish_toggle = 0;
+    reg [1:0] mode = 0;
     reg ack = 0, init_done = 0, data_valid = 0, sector_end = 0;
     reg [3:0] ack_pipe = 0;
     reg [7:0] sector_data = 0;
@@ -16,7 +17,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
     wire [31:0] pixel;
     wire [1:0] wb, db;
     integer pixels = 0, commits = 0;
-    integer next_events = 0, prev_events = 0, short_events = 0;
+    integer next_events = 0, prev_events = 0, toggle_events = 0;
     integer starts = 0;
     reg [1:0] started_idx [0:255];
     always @(posedge clk) if (!rst) begin
@@ -24,17 +25,16 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
             started_idx[starts] = dut.load_idx;
             starts = starts + 1;
         end
-        if (dut.u_key_gesture_control.key1_press_event) next_events = next_events + 1;
-        if (dut.prev_event) prev_events = prev_events + 1;
-        if (dut.short_event) short_events = short_events + 1;
+        if (dut.media_next_request) next_events = next_events + 1;
+        if (dut.media_previous_request) prev_events = prev_events + 1;
+        if (dut.media_auto_toggle_request) toggle_events = toggle_events + 1;
     end
     reg old_busy = 0;
     reg bad_header = 0;
     reg hold_finish = 0, finish_pending = 0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .SCAN_MAX_SECTOR(4),
-                  .SCAN_TARGET_COUNT(4), .LONG_PRESS_MS(1000),
-                  .AUTO_PLAY_MS(3000), .COMBO_WINDOW_MS(TEST_CHORD ? 100 : 1)) dut (
-        .clk(clk), .rst(rst), .key_next(key_next), .key_auto(key_auto),
+                  .SCAN_TARGET_COUNT(4), .AUTO_PLAY_MS(3000)) dut (
+        .clk(clk), .rst(rst), .key1(key1), .key2(key2), .key4(key4), .mode(mode),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
         .combo_event_count(), .combo_debug_active(),
         .auto_play_indicator(auto_indicator),
@@ -114,7 +114,7 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
         repeat(n) @(negedge clk);
     endtask
     task next_key;
-        key_next = 0; tick(25); key_next = 1; tick(25);
+        key2 = 0; tick(25); key2 = 1; tick(25);
     endtask
     task drain;
         integer n;
@@ -127,211 +127,179 @@ module tb_picture_requests #(parameter TEST_CHORD = 0);
             tick(2);
         end
     endtask
-    integer i, before_count, ne, pe, se, start_base;
+    task previous_key;
+        key1 = 0; tick(25); key1 = 1; tick(25);
+    endtask
+    task toggle_key;
+        key4 = 0; tick(25); key4 = 1; tick(25);
+    endtask
+    integer i, before_count, ne, pe, te, start_base;
     reg [1:0] saved_idx, saved_buf;
     initial begin
         tick(5); rst = 0; init_done = 1;
         wait(dut.scan_done);
-        if (TEST_CHORD) begin
-            wait(valid); tick(3);
-            if (auto_indicator !== 1'b0) $fatal(1, "initial manual indicator");
-            // Real debounce and 100 ms chord window, with 1 cycle = 1 ms.
-            key_auto = 0; tick(50); key_auto = 1; tick(30);
-            if (short_events !== 1 || dut.u_media_player_control.auto_play_en !== 1'b1 || dut.u_key_gesture_control.key2_held !== 0)
-                $fatal(1, "quick KEY2 tap lost or left HELD state");
-            if (auto_indicator !== 1'b1) $fatal(1, "autoplay indicator not enabled by real key");
-            key_auto = 0; tick(50); key_auto = 1; tick(30);
-            if (short_events !== 2 || dut.u_media_player_control.auto_play_en !== 1'b0)
-                $fatal(1, "quick KEY2 tap did not rearm");
-            if (auto_indicator !== 1'b0) $fatal(1, "autoplay indicator not disabled by real key");
-            $display("PASS real-window quick KEY2 taps toggle and rearm");
-            for (i = 0; i < 2; i = i + 1) begin
-                start_base = starts; se = short_events; pe = prev_events;
-                if (i == 0) key_next = 0; else key_auto = 0;
-                tick(50);
-                key_next = 0; key_auto = 0; tick(1200);
-                key_next = 1; key_auto = 1; tick(30);
-                if (starts !== start_base || short_events !== se || prev_events !== pe || dut.u_key_gesture_control.key2_held !== 0)
-                    $fatal(1, "chord leaked single-key action");
-            end
-            if (dut.combo_event_count !== 8'd2) $fatal(1, "chord count");
-            $display("PASS both chord orders suppress single-key actions");
-            // KEY2 already classified as single, then KEY1 overlaps outside window.
-            se = short_events; pe = prev_events; start_base = starts;
-            key_auto = 0; tick(180); key_next = 0; tick(50);
-            key_auto = 1; key_next = 1; tick(30);
-            if (short_events !== se + 1 || prev_events !== pe || dut.combo_event_count !== 8'd2 || dut.u_key_gesture_control.key2_held !== 0)
-                $fatal(1, "late KEY1 became chord or lost KEY2 release");
-            key_auto = 0; tick(50); key_auto = 1; tick(30); drain();
-            if (starts !== start_base + 1 || dut.u_media_player_control.auto_play_en !== 0)
-                $fatal(1, "late KEY1 action or subsequent short tap failed");
-            // Reverse order, then release independently.
-            se = short_events; start_base = starts;
-            key_next = 0; tick(180); key_auto = 0; tick(50);
-            key_next = 1; tick(30); key_auto = 1; tick(30);
-            if (short_events !== se + 1 || dut.combo_event_count !== 8'd2 || dut.u_key_gesture_control.key2_held !== 0)
-                $fatal(1, "late KEY2 single gesture failed");
-            key_auto = 0; tick(50); key_auto = 1; tick(30); drain();
-            if (starts !== start_base + 1) $fatal(1, "late overlap repeated KEY1");
-            $display("PASS outside-window overlaps remain independent and rearm");
-            // Long/short exclusion must survive the preceding chord gestures.
-            se = short_events; pe = prev_events;
-            key_auto = 0; tick(1200); key_auto = 1; tick(30); drain();
-            if (prev_events !== pe + 1 || short_events !== se || dut.u_key_gesture_control.key2_held !== 0)
-                $fatal(1, "long hold after chord gestures failed");
-            $display("PASS long hold after chord gestures remains exclusive");
-            $finish;
-        end else begin
         bad_header = 1; tick(1200);
         if (valid || dut.first_image_committed) $fatal(1, "bad first image was displayed");
         bad_header = 0;
         wait(valid); tick(3);
+        if (auto_indicator !== 0) $fatal(1, "reset should select MAN");
         $display("PASS first image retries after header rejection and commits only on success");
+
         before_count = commits;
-        next_key();
-        repeat(8) next_key();
-        drain();
+        next_key(); repeat(8) next_key(); drain();
         if (commits - before_count != 2) $fatal(1, "same direction did not coalesce");
-        $display("PASS rapid same-key requests coalesce into current + one pending load");
-        before_count = commits;
-        next_key();
-        key_auto = 0; tick(1030); key_auto = 1; tick(25);
-        next_key();
-        if (!dut.u_media_player_control.previous_pending || !dut.u_media_player_control.next_pending)
-            $fatal(1, "opposite pending request lost");
+        $display("PASS rapid KEY2 requests coalesce into current plus one pending load");
+
+        before_count = commits; start_base = starts; saved_idx = dut.img_idx;
+        next_key(); previous_key(); next_key();
+        if (!dut.ctrl_prev_pending || !dut.ctrl_next_pending) $fatal(1, "opposite pending lost");
         drain();
-        if (commits - before_count != 3 || dut.u_media_player_control.auto_play_en)
-            $fatal(1, "next/previous arbitration or long/short exclusion failed");
-        $display("PASS both directions drain with next priority; long hold leaves autoplay off");
-        for (i = 0; i < 20; i = i + 1) begin
-            next_key(); next_key(); drain();
-        end
-        $display("PASS 20 rounds of back-to-back loads");
+        if (commits != before_count + 3 || starts != start_base + 3 ||
+            started_idx[start_base] != ((saved_idx + 1) % 4) ||
+            started_idx[start_base+1] != ((saved_idx + 2) % 4) ||
+            started_idx[start_base+2] != ((saved_idx + 1) % 4) || dut.ctrl_auto_play_en)
+            $fatal(1, "four-image next/next/previous priority failed");
+        $display("PASS independent KEY1/KEY2 requests use committed index and next priority");
+
+        // Four steps in each direction must return to the same displayed image.
+        saved_idx = dut.img_idx;
+        repeat(4) begin next_key(); drain(); end
+        if (dut.img_idx != saved_idx) $fatal(1, "next wrap failed");
+        repeat(4) begin previous_key(); drain(); end
+        if (dut.img_idx != saved_idx) $fatal(1, "previous wrap failed");
+        for (i=0; i<20; i=i+1) begin next_key(); next_key(); drain(); end
+        $display("PASS four-image wrap and 20 rounds of back-to-back loads");
+
         saved_idx = dut.img_idx; saved_buf = db; before_count = commits;
-        bad_header = 1;
-        next_key(); tick(2500);
-        if (dut.load_busy || !dut.bmp_ready || !valid ||
-            dut.img_idx != saved_idx || db != saved_buf || commits != before_count)
-            $fatal(1, "header rejection did not release busy and preserve image");
-        repeat(3) next_key();
-        drain();
+        bad_header = 1; next_key(); tick(2500);
+        if (dut.load_busy || !dut.bmp_ready || !valid || dut.img_idx != saved_idx ||
+            db != saved_buf || commits != before_count)
+            $fatal(1, "header rejection failed to preserve displayed image");
+        repeat(3) next_key(); drain();
         if (commits != before_count || db != saved_buf) $fatal(1, "failed load committed");
         bad_header = 0; next_key(); drain();
-        if (commits != before_count + 1) $fatal(1, "good load after rejection failed");
-        $display("PASS rejected headers release busy, preserve image, and allow later keys");
-        // First load fails; next request is already pending and must survive failure.
+        if (commits != before_count+1) $fatal(1, "recovery after rejection failed");
         before_count = commits;
-        bad_header = 1; next_key(); next_key(); bad_header = 0;
-        drain();
-        if (commits != before_count + 1) $fatal(1, "pending request lost on failure");
-        $display("PASS pending request survives header rejection");
-        // A real write in flight must NOT be aborted just because source is idle.
+        bad_header = 1; next_key(); next_key(); bad_header = 0; drain();
+        if (commits != before_count+1) $fatal(1, "pending request lost on failure");
+        $display("PASS rejected headers preserve image and pending requests, then recover");
+
         before_count = commits; saved_buf = db;
         hold_finish = 1; next_key(); tick(2500);
         if (!dut.load_busy || !dut.source_done_seen || !dut.write_started_seen ||
-            commits != before_count || db != saved_buf)
-            $fatal(1, "in-flight write was released early");
+            commits != before_count || db != saved_buf) $fatal(1, "write released early");
         hold_finish = 0; drain();
-        if (commits != before_count + 1) $fatal(1, "delayed write did not commit");
+        if (commits != before_count+1) $fatal(1, "delayed write did not commit");
         $display("PASS real writes wait for SDRAM completion");
+
         ne = next_events; before_count = commits;
-        key_next = 0; tick(2000); key_next = 1; tick(25); drain();
-        if (next_events != ne + 1 || commits != before_count + 1)
-            $fatal(1, "held KEY1 repeated");
+        key2 = 0; tick(2000); key2 = 1; tick(25); drain();
+        if (next_events != ne+1 || commits != before_count+1) $fatal(1, "held KEY2 repeated");
         next_key(); drain();
-        if (next_events != ne + 2) $fatal(1, "KEY1 failed to rearm");
-        $display("PASS KEY1 two-second equivalent hold and release/repress");
-        pe = prev_events; se = short_events;
-        key_auto = 0; tick(998); key_auto = 1; tick(25);
-        if (short_events != se + 1 || prev_events != pe || !dut.u_media_player_control.auto_play_en)
-            $fatal(1, "below-threshold release classification");
-        key_auto = 0; tick(25); key_auto = 1; tick(25);
-        if (short_events != se + 2 || dut.u_media_player_control.auto_play_en)
-            $fatal(1, "short press did not toggle exactly once");
-        se = short_events; pe = prev_events; before_count = commits;
-        key_auto = 0; tick(1025); key_auto = 1; tick(25); drain();
-        if (prev_events != pe + 1 || short_events != se || dut.u_media_player_control.auto_play_en || commits != before_count + 1)
-            $fatal(1, "above-threshold long/short exclusion");
-        $display("PASS KEY2 threshold boundaries and short/long exclusion");
-        before_count = commits; pe = prev_events; se = short_events;
+        if (next_events != ne+2) $fatal(1, "KEY2 failed to rearm");
+        pe = prev_events; te = toggle_events; before_count = commits;
         hold_finish = 1; next_key();
-        key_auto = 0; tick(2100); key_auto = 1; tick(25);
-        if (!dut.u_media_player_control.previous_pending || prev_events != pe + 1 || short_events != se)
-            $fatal(1, "busy long press lost or repeated");
+        key1 = 0; tick(2100); key1 = 1; tick(25);
+        if (!dut.ctrl_prev_pending || prev_events != pe+1 || toggle_events != te)
+            $fatal(1, "busy held KEY1 lost or repeated");
         hold_finish = 0; drain();
-        if (commits != before_count + 2) $fatal(1, "busy previous request execution count");
-        $display("PASS held KEY2 queues exactly one request during delayed completion");
-        // Arrange an expiry on the actual stable KEY1 edge, without forcing the event.
-        key_auto = 0; tick(25); key_auto = 1; tick(25);
-        key_next = 0;
-        wait(dut.key1_single_press_event); @(negedge clk);
-        dut.u_media_player_control.auto_count = 2999;
-        @(posedge clk); #1;
-        if (dut.load_start_pulse || !dut.u_media_player_control.next_pending)
-            $fatal(1, "autoplay stole manual event cycle");
-        @(negedge clk); key_next = 1; tick(25); drain();
-        key_auto = 0; tick(25); key_auto = 1; tick(25);
-        if (dut.u_media_player_control.auto_play_en) $fatal(1, "autoplay shutdown failed");
-        $display("PASS autoplay expiry yields to stable manual edge");
-        before_count = commits; start_base = starts; saved_idx = dut.img_idx;
-        hold_finish = 1;
-        next_key(); next_key();
-        key_auto = 0; tick(1030); key_auto = 1; tick(25);
+        if (commits != before_count+2) $fatal(1, "busy previous execution count");
+        $display("PASS held direction keys fire once, rearm and queue while busy");
+
+        // Mode changes gate new events, not requests already queued.
+        before_count = commits; hold_finish = 1;
+        next_key(); next_key(); previous_key(); mode = 1; tick(2);
+        ne = next_events; pe = prev_events;
+        next_key(); previous_key();
+        if (next_events != ne || prev_events != pe || !dut.ctrl_next_pending || !dut.ctrl_prev_pending)
+            $fatal(1, "mode change dropped queued requests or accepted new ones");
         hold_finish = 0; drain();
-        if (starts != start_base + 3 || commits != before_count + 3 ||
-            started_idx[start_base] != ((saved_idx + 1) % 4) ||
-            started_idx[start_base+1] != ((saved_idx + 2) % 4) ||
-            started_idx[start_base+2] != ((saved_idx + 1) % 4))
-            $fatal(1, "four-image direction priority/order failed");
-        $display("PASS four-image next/next/previous execution order");
-        // Isolate arbitration collision: old pending is consumed while a new event arrives.
-        @(negedge clk); dut.u_media_player_control.next_pending = 1;
-        force dut.key1_single_press_event = 1;
+        if (commits != before_count+3) $fatal(1, "mode change prevented queued drain");
+        for (i=1; i<4; i=i+1) begin
+            mode = i; tick(2); before_count = starts;
+            previous_key(); next_key(); tick(100);
+            if (starts != before_count) $fatal(1, "non-picture mode generated direction load");
+            te = toggle_events;
+            key4 = 0; tick(2000); key4 = 1; tick(25);
+            if (toggle_events != te+1 || !dut.ctrl_auto_play_en || !auto_indicator)
+                $fatal(1, "KEY4 held toggle failed");
+            toggle_key();
+            if (toggle_events != te+2 || dut.ctrl_auto_play_en || auto_indicator)
+                $fatal(1, "KEY4 release/repress failed");
+        end
+        mode=0; tick(2);
+        $display("PASS all reserved modes gate new direction loads and KEY4 toggles once");
+
+        // Toggle back to MAN while loading: do not cancel in-flight/queued requests.
+        before_count = commits; hold_finish=1;
+        next_key(); next_key(); toggle_key(); toggle_key();
+        if (dut.ctrl_auto_play_en || !dut.load_busy || !dut.ctrl_next_pending)
+            $fatal(1, "MAN transition cancelled requests");
+        hold_finish=0; drain();
+        if (commits != before_count+2) $fatal(1, "MAN transition load count");
+        $display("PASS switching back to MAN preserves current and pending manual loads");
+
+        // Align expiry with a REAL debounced KEY2 event; only the timer is positioned.
+        toggle_key(); key2=0;
+        wait(dut.media_next_request); @(negedge clk);
+        dut.u_media_player_control.auto_count=2999;
         @(posedge clk); #1;
-        if (!dut.load_start_pulse || !dut.u_media_player_control.next_pending)
-            $fatal(1, "same-cycle next capture lost");
-        @(negedge clk); release dut.key1_single_press_event; drain();
-        @(negedge clk); dut.u_media_player_control.previous_pending = 1;
-        force dut.prev_event = 1;
+        if (dut.load_start_pulse || !dut.ctrl_next_pending)
+            $fatal(1, "AUTO stole manual event cycle");
+        @(negedge clk); key2=1; tick(25); drain(); toggle_key();
+        if (dut.ctrl_auto_play_en) $fatal(1, "AUTO shutdown failed");
+        $display("PASS AUTO expiry yields to real debounced direction press");
+
+        // Arbitration-only collision: consume an old request and capture a new one.
+        @(negedge clk); dut.u_media_player_control.next_pending=1;
+        force dut.media_next_request=1;
         @(posedge clk); #1;
-        if (!dut.load_start_pulse || !dut.u_media_player_control.previous_pending)
-            $fatal(1, "same-cycle previous capture lost");
-        @(negedge clk); release dut.prev_event; tick(2); drain();
+        if (!dut.load_start_pulse || !dut.ctrl_next_pending) $fatal(1, "same-cycle next lost");
+        @(negedge clk); release dut.media_next_request; drain();
+        @(negedge clk); dut.u_media_player_control.previous_pending=1;
+        force dut.media_previous_request=1;
+        @(posedge clk); #1;
+        if (!dut.load_start_pulse || !dut.ctrl_prev_pending) $fatal(1, "same-cycle previous lost");
+        @(negedge clk); release dut.media_previous_request; tick(2); drain();
         $display("PASS simultaneous pending consumption and new event capture");
-        // Expiry at the long-event production edge must not preempt the registered event.
-        key_auto = 0; tick(25); key_auto = 1; tick(25);
-        key_auto = 0;
-        wait(dut.u_key_gesture_control.key2_long_due); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
+
+        toggle_key(); key4=0;
+        wait(dut.media_auto_toggle_request); @(negedge clk);
+        dut.u_media_player_control.auto_count=2999;
         @(posedge clk); #1;
-        if (dut.load_start_pulse || !dut.prev_event)
-            $fatal(1, "autoplay preempted KEY2 threshold");
-        tick(25); key_auto = 1; tick(25); drain();
-        key_auto = 0; tick(25); key_auto = 1;
-        wait(dut.u_key_gesture_control.key2_single_release_event); @(negedge clk); dut.u_media_player_control.auto_count = 2999;
+        if (dut.load_start_pulse || dut.ctrl_auto_play_en || dut.u_media_player_control.auto_count != 0)
+            $fatal(1, "KEY4 at expiry did not cancel AUTO");
+        @(negedge clk); key4=1; tick(25);
+        $display("PASS KEY4 wins over AUTO expiry and returns to MAN");
+
+        // Natural expiry, with mode changed before the edge accepting the request.
+        toggle_key(); before_count=starts;
+        wait(dut.u_media_player_control.auto_count==2999); @(negedge clk);
+        mode=1; #1;
+        if (dut.ctrl_request_accept) $fatal(1, "mode change still offered expired AUTO load");
         @(posedge clk); #1;
-        if (dut.load_start_pulse) $fatal(1, "autoplay preempted short release");
-        tick(3);
-        if (dut.u_media_player_control.auto_play_en || dut.u_media_player_control.auto_count != 0) $fatal(1, "short release did not reset autoplay");
-        $display("PASS autoplay expiry at KEY2 threshold and short release");
-        // Source and SDRAM completion cannot release the buffer before display ack.
-        before_count = commits; start_base = starts; saved_idx = dut.img_idx;
-        hold_commit_ack = 1;
+        if (dut.load_start_pulse || dut.u_media_player_control.auto_count != 0 || !dut.ctrl_auto_play_en)
+            $fatal(1, "mode/expiry collision started a load or disabled AUTO");
+        @(negedge clk); tick(2998);
+        if (starts != before_count || dut.load_busy) $fatal(1, "AUTO restarted too early after mode change");
+        wait(dut.load_start_pulse); tick(2);
+        if (starts != before_count+1) $fatal(1, "AUTO did not resume in reserved mode");
+        toggle_key(); drain(); mode=0; tick(2);
+        $display("PASS mode change cancels coincident expiry and AUTO resumes after full interval");
+
+        before_count=commits; start_base=starts; saved_idx=dut.img_idx;
+        hold_commit_ack=1;
         next_key(); wait(dut.commit_pending); next_key(); tick(200);
         if (!dut.load_busy || dut.img_idx !== saved_idx || commits !== before_count ||
-            starts !== start_base + 1 || !dut.u_media_player_control.next_pending)
-            $fatal(1, "display wait released ownership, index or pending request");
-        hold_commit_ack = 0; drain();
-        if (commits !== before_count + 2 || starts !== start_base + 2 ||
-            started_idx[start_base] !== ((saved_idx + 1) % 4) ||
-            started_idx[start_base+1] !== ((saved_idx + 2) % 4))
-            $fatal(1, "display ack did not release queued request using new index");
+            starts !== start_base+1 || !dut.ctrl_next_pending)
+            $fatal(1, "display wait released ownership or index");
+        hold_commit_ack=0; drain();
+        if (commits !== before_count+2 || starts !== start_base+2 ||
+            started_idx[start_base] !== ((saved_idx+1)%4) ||
+            started_idx[start_base+1] !== ((saved_idx+2)%4))
+            $fatal(1, "display ack failed to release queued request at new index");
         $display("PASS delayed display ack preserves old image and drains pending after adoption");
         $finish;
-        end
     end
     initial begin #3000000; $fatal(1, "simulation watchdog"); end
-endmodule
-
-module tb_picture_chord_integration;
-    tb_picture_requests #(.TEST_CHORD(1)) test();
 endmodule
