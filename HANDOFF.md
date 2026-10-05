@@ -1,22 +1,19 @@
 # 当前交接记录
 
-2026-10-05。feature/flash-boot-v0.5.0。**S2用户确认通过，S3进行中：已有S2 Flash编程/校验成功日志，待用户脱离下载器冷启动确认。未进入S4，全部本任务提交和标签仅本地，S5才统一上传。**
+2026-10-05。分支`feature/flash-boot-v0.5.0`。**S3用户整体确认通过，进入S4，等待固定Flash候选最终长稳验收。所有本任务提交与标签仍仅本地，S5才统一上传。**
 
 ## 已完成
 
-- 用户回复“确认通过，进入 S3”，按S2整体板级通过记录，不补造逐项次数/设备。建立本地v0.5.0-s2-board.1，沿用S2固定bit，629624字节；前交接见docs/flash_boot/HANDOFF_before_S3.md。
-- 已读取本机TD官方SWUG110 BitWizard指南，确认Tools→BitWriter、bw.exe、Program Flash和Verify Flash流程。完成[S3指南](docs/flash_boot/S3_FLASH_GUIDE.md)与[验收记录](docs/flash_boot/s3/BOARD_VALIDATION.md)。
-- 通过UI Automation只读检查当前打开BitWriter并保存信息栏[日志](docs/flash_boot/s3/bitwriter_observed.log)。其中最后一组S2固定路径对应program_spi、verify_spi及Downloading succeeded，状态PROGRAM_FLASH success。工具识别EG4S20BG256，下载器AL-LINK，转换频率5MHz。助手本轮没有点击Run、未重复烧写。
-- S3不改RTL、ADC/SDC、工程、bit，不重跑仿真或TD；已核对候选bit与S2 local标签内容一致。
-- 项目README、版本入口、CHANGELOG、验证状态、阶段计划已更新。S3仅程序/校验部分有日志，不标记整阶段通过，不建立S3 board标签，不结项归档。
+- 用户最新回复“确认通过，进入 S4”，按S3整体通过记录，结合既有BitWriter编程/校验成功日志确认S3完成；不补造测试次数、Flash后缀或跳线位置。
+- 本地验收标签`v0.5.0-s3-board.1`；前交接保存在[HANDOFF_before_S4](docs/flash_boot/HANDOFF_before_S4.md)。
+- 已准备[S4验收清单](docs/flash_boot/s4/BOARD_VALIDATION.md)，更新S3记录、活动计划、README、版本入口、CHANGELOG及验证状态。
+- S4继续引用`releases/v0.5.0/v0.5.0-s2-local.1/demo.bit`，629624字节。不改RTL/工程/约束，不重建、不重复烧写、不重跑仿真。
 
-## 待确认与下一步
+## 当前卡点与下一步
 
-用户按指南关闭板电源、移除下载器JTAG连接、正常供电重新上电，不运行下载，确认自动首图、编号及提示音/旋律。至少一次独立冷启动正常才算S3通过。此前S2“确认通过”不自动代表做过该操作。
+无本地实施阻塞，等待用户完成实物长稳测试：10轮独立断电重启、10轮运行中复位、AUTO连续30分钟、100次有效翻图及MAN/AUTO模式切换。当前未取得S4通过结论，不建立S4 board或正式版本标签。
 
-已向用户询问实际工具识别/Flash后缀/启动设置，随后只读界面已解决FPGA和下载器信息，并发现已有编程校验成功。完整Flash后缀与跳线位置未提供；已成功编程不要求为补文档重复烧写。若独立启动成功则记录实际现状，无需猜或改跳线。
-
-用户确认S3后沿用同一bit建立本地v0.5.0-s3-board.1，进入S4（10次断电、10次复位、30分钟AUTO、100次有效翻图）。S4结论到达后才S5发布、完成归档与统一推送。
+用户反馈问题则记录并定位；生成新bit须重新验证受影响阶段及Flash启动。用户确认S4后进入S5，沿用已验收bit逐字节核对正式产物，更新文档、历史归档，再合并main和统一推送本任务分支与标签。整体反馈仅按整体确认记录。
 
 ## 踩坑与边界
 
