@@ -1,10 +1,11 @@
 # 构建与诊断归档
 
-本目录根部只保留构建入口与历史索引；已完成阶段的测试统一归档，新运行结果单独存放。
+活动验证见[stability](stability/README.md)；已完成阶段测试保留历史，新运行结果放output。
 
 ```text
 diagnostics/
   run_td_build.ps1        TD构建入口
+  stability/             v0.4.0活动测试、接口适配及固定证据
   history/
     v0.3.0/              可运行的版本回归脚本、testbench和Python参考
     sd_recovery/         延期SD问题的复现测试，仅存档

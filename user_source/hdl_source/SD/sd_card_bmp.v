@@ -45,6 +45,14 @@ wire media_next_request, media_previous_request, media_auto_toggle_request;
 wire ctrl_auto_play_en, ctrl_next_pending, ctrl_prev_pending, ctrl_auto_tick, ctrl_load_request;
 wire [1:0] ctrl_target_image;
 wire ctrl_request_accept;
+wire ctrl_auto_load_request;
+wire [3:0] normal_state_code;
+wire bmp_load_done, bmp_load_error;
+wire [2:0] bmp_error;
+reg [2:0] sticky_error;
+reg retry_used, restart_pending, recovery_chain;
+reg first_load_failed, auto_blocked;
+reg [2:0] candidates_tried;
 
 wire             sd_sec_read;
 wire [31:0]      sd_sec_read_addr;
@@ -95,11 +103,15 @@ wire write_finish_now;
 
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 
-assign ctrl_request_accept = ctrl_load_request && bmp_ready;
+assign ctrl_request_accept = ctrl_load_request && bmp_ready &&
+                             !(auto_blocked && ctrl_auto_load_request);
+assign state_code = (sticky_error == 3'd1) ? 4'he :
+                    (sticky_error == 3'd2) ? 4'hf :
+                    (sticky_error == 3'd3) ? 4'hd : normal_state_code;
 assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
-assign source_done_now = source_done_seen || (source_busy_seen && bmp_ready);
+assign source_done_now = source_done_seen || bmp_load_done;
 assign write_finish_now = write_finish_seen || write_finish_pulse;
 assign write_req_ack_sync = write_req_ack_pipe[1];
 
@@ -125,7 +137,7 @@ media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .DIAG_DISPLAY(DIAG_DISPLAY)) 
  .sd_init_done(sd_init_done), .scan_done(scan_done), .display_valid(display_valid),
  .load_busy(load_busy), .write_started_seen(write_started_seen),
  .source_done_now(source_done_now), .write_finish_now(write_finish_now),
- .img_idx(img_idx), .bmp_state_code(bmp_state_code), .state_code(state_code),
+ .img_idx(img_idx), .bmp_state_code(bmp_state_code), .state_code(normal_state_code),
  .auto_play_en(ctrl_auto_play_en), .auto_play_indicator(auto_play_indicator),
  .combo_event_count(combo_event_count), .combo_debug_active(combo_debug_active)
 );
@@ -140,7 +152,7 @@ media_player_control #(
     .previous_event(media_previous_request), .auto_toggle_event(media_auto_toggle_request),
     .request_accept(ctrl_request_accept),
     .manual_activity(manual_activity),
-    .next_load_request(), .previous_load_request(), .auto_load_request(),
+    .next_load_request(), .previous_load_request(), .auto_load_request(ctrl_auto_load_request),
     .auto_play_en(ctrl_auto_play_en), .next_pending(ctrl_next_pending),
     .previous_pending(ctrl_prev_pending), .auto_tick(ctrl_auto_tick),
     .load_request(ctrl_load_request), .target_image(ctrl_target_image)
@@ -172,6 +184,13 @@ function [1:0] next_buf_lut;
     end
 endfunction
 
+function [1:0] next_image;
+    input [1:0] current;
+    begin
+        next_image = ({1'b0, current} + 3'd1 >= img_found_count) ? 2'd0 : current + 2'd1;
+    end
+endfunction
+
 // 记录本次加载是否发出过写请求，区分读图头失败与真正的源端完成。
 always @(posedge clk or posedge rst) begin
     if (rst)
@@ -184,6 +203,13 @@ end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
+        sticky_error <= 0;
+        retry_used <= 0;
+        restart_pending <= 0;
+        recovery_chain <= 0;
+        first_load_failed <= 0;
+        auto_blocked <= 0;
+        candidates_tried <= 0;
         committed_image <= 0;
         committed_valid <= 0;
         wrfin_tgl_sync        <= 3'b000;
@@ -218,6 +244,13 @@ always @(posedge clk or posedge rst) begin
         load_start_pulse <= 1'b0;
 
         if (!sd_init_done) begin
+            sticky_error <= 0;
+            retry_used <= 0;
+            restart_pending <= 0;
+            recovery_chain <= 0;
+            first_load_failed <= 0;
+            auto_blocked <= 0;
+            candidates_tried <= 0;
             scan_kicked           <= 1'b0;
             first_image_committed <= 1'b0;
 
@@ -257,7 +290,7 @@ always @(posedge clk or posedge rst) begin
             if (load_busy && !bmp_ready)
                 source_busy_seen <= 1'b1;
 
-            if (load_busy && source_busy_seen && bmp_ready)
+            if (load_busy && bmp_load_done)
                 source_done_seen <= 1'b1;
 
             if (load_busy && write_finish_pulse)
@@ -265,8 +298,37 @@ always @(posedge clk or posedge rst) begin
 
             // Keep the old buffer owned by the reader until its frame request
             // has adopted the new base address. Data stays stable until ack.
-            if (commit_pending && commit_ack_sync[1] == display_commit_request &&
+            if (load_busy && bmp_load_error) begin
+                sticky_error <= bmp_error;
+                source_busy_seen <= 1'b0;
+                source_done_seen <= 1'b0;
+                write_finish_seen <= 1'b0;
+                if (!retry_used) begin
+                    retry_used <= 1'b1;
+                    restart_pending <= 1'b1;
+                end else if (recovery_chain && (!first_image_committed || ctrl_auto_play_en) &&
+                             candidates_tried < img_found_count) begin
+                    load_idx <= next_image(load_idx);
+                    load_sector <= sector_lut(next_image(load_idx));
+                    candidates_tried <= candidates_tried + 3'd1;
+                    retry_used <= 1'b0;
+                    restart_pending <= 1'b1;
+                end else begin
+                    load_busy <= 1'b0;
+                    restart_pending <= 1'b0;
+                    if (!first_image_committed) first_load_failed <= 1'b1;
+                    if (recovery_chain) auto_blocked <= 1'b1;
+                end
+            end else if (restart_pending && bmp_ready) begin
+                load_start_pulse <= 1'b1;
+                restart_pending <= 1'b0;
+                source_busy_seen <= 1'b0;
+                source_done_seen <= 1'b0;
+                write_finish_seen <= 1'b0;
+            end else if (commit_pending && commit_ack_sync[1] == display_commit_request &&
                 (!committed_valid || committed_ready)) begin
+                sticky_error <= 0;
+                auto_blocked <= 0;
                 committed_image <= load_idx;
                 committed_valid <= 1;
                 commit_pending        <= 1'b0;
@@ -277,13 +339,6 @@ always @(posedge clk or posedge rst) begin
                 img_idx               <= load_idx;
                 display_valid         <= 1'b1;
                 first_image_committed <= 1'b1;
-            end else if (!commit_pending && load_busy && source_done_now && !write_started_seen && !write_req) begin
-                // bmp_read 忙过后返回空闲，但未发写请求：图头被拒绝。
-                // 释放加载任务，保持已显示图片和挂起请求；首图失败会再次尝试加载。
-                load_busy             <= 1'b0;
-                source_busy_seen      <= 1'b0;
-                source_done_seen      <= 1'b0;
-                write_finish_seen     <= 1'b0;
             end else if (!commit_pending && load_busy && source_done_now && write_finish_now) begin
                 commit_pending        <= 1'b1;
                 display_commit_request <= ~display_commit_request;
@@ -310,7 +365,10 @@ always @(posedge clk or posedge rst) begin
                 write_finish_seen     <= 1'b0;
             end else begin
                 // First image loading stays local.
-                if (scan_done && !first_image_committed && bmp_ready && !load_busy && (img_found_count != 3'd0)) begin
+                if (scan_done && !first_image_committed && !first_load_failed && bmp_ready && !load_busy && (img_found_count != 3'd0)) begin
+                    retry_used <= 1'b0;
+                    recovery_chain <= 1'b1;
+                    candidates_tried <= 3'd1;
                     load_idx         <= 2'd0;
                     load_sector      <= img_sector0;
                     pending_buf_idx  <= 2'd0;
@@ -324,6 +382,10 @@ always @(posedge clk or posedge rst) begin
                 end
                 // Accept request and index together; write to the inactive buffer.
                 else if (ctrl_request_accept) begin
+                    retry_used <= 1'b0;
+                    recovery_chain <= ctrl_auto_load_request;
+                    candidates_tried <= 3'd1;
+                    if (!ctrl_auto_load_request) auto_blocked <= 1'b0;
                     load_idx <= ctrl_target_image;
                     load_sector <= sector_lut(ctrl_target_image);
                     pending_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
@@ -355,6 +417,9 @@ bmp_read bmp_read_m0(
 
     .load_start             (load_start_pulse),
     .load_sector            (load_sector),
+    .load_done              (bmp_load_done),
+    .load_error             (bmp_load_error),
+    .bmp_error              (bmp_error),
 
     .sd_init_done           (sd_init_done),
     .state_code             (bmp_state_code),

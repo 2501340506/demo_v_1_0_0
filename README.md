@@ -1,6 +1,6 @@
 # 安路 EG4 HDMI 图片播放器
 
-当前开发：**v0.4.0系统稳定性增强**，S0基线本地通过，尚未发布或推送。正式上板版本仍为v0.3.0。[阶段计划](docs/系统稳定性分阶段修改计划.md) · [来源与边界](docs/SYSTEM_STABILITY_SOURCES.md)。
+当前开发：**v0.4.0系统稳定性增强**，S0已完成，**S1本地候选待上板**，尚未发布或推送。正式上板版本仍为v0.3.0。[S1固定候选](releases/v0.4.0-s1-local.1/README.md) · [S1上板步骤](releases/v0.4.0-s1-local.1/BOARD_VALIDATION.md)。[阶段计划](docs/系统稳定性分阶段修改计划.md) · [来源与边界](docs/SYSTEM_STABILITY_SOURCES.md)。
 
 目录入口：[统一文档](docs/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
 

@@ -1,5 +1,7 @@
 # 项目归档索引
 
+进行中：[系统稳定性计划](系统稳定性分阶段修改计划.md)。仅保留[实施前交接快照](history/2026-10-05/系统稳定性增强/HANDOFF_before_S0.md)，S1待上板，尚未最终结项归档。
+
 目录整理（2026-10-05）：原docx并入docs；[文档入口](README.md) · [诊断归档](../diagnostics/README.md) · [旧本地结果与迁移记录](../diagnostics/history/2026-10-05/README.md)。课程来源保留于[HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md)。
 
 更新：2026-10-05。R2 HDMI音频计划已获S9验收并发布v0.3.0；SD恢复问题按用户要求延期且暂不修改。历史EDID仍取消，原归档保留。
