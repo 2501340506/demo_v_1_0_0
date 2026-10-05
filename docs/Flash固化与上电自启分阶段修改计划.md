@@ -78,8 +78,8 @@
 
 ## 当前交付
 
-S1用户确认通过，建立本地v0.5.0-s1-board.1。S2：[版本说明](../releases/v0.5.0/v0.5.0-s2-local.1/README.md) · [上板步骤](../releases/v0.5.0/v0.5.0-s2-local.1/BOARD_VALIDATION.md)。
+S2已由用户整体确认通过，本地v0.5.0-s2-board.1。S3：[固化与独立启动指南](flash_boot/S3_FLASH_GUIDE.md) · [验收记录](flash_boot/s3/BOARD_VALIDATION.md)。
 
-S2两拍同步SDRAM就绪并门控首次扫描；四场景启动专项、门控负对照、五轮复位专项及完整稳定性/异步缓冲/音视频回归通过，正向零错误零警告。TD最终flash_boot_s2_local4，3926 LUT/2902寄存器/4 BRAM/4 DSP/2 PLL；SD+0.170ns、新增同步所在内存→SD组+0.725ns。全局Setup−6.565ns/TNS−251.158ns、Hold+0.003ns，原64个SDRAM接口负端点外，未改frame_fifo_read本轮有3个−0.084ns端点；未全局收敛。固定候选待用户SRAM上板，不进入S3、不推送。
+用户确认S2通过，已建立本地v0.5.0-s2-board.1。S3沿用S2固定bit，无RTL/约束/构建变化。本轮只读提取已打开BitWriter日志，发现S2 program_spi及verify_spi均成功；并非助手本轮重新烧写。现待用户断电、移除下载器后独立上电，确认首图/编号/音频。日志flashsize 128与用户W25Q64/64Mbit资料差异已记录，后续重烧按实际容量选择。未进入S4、未上传。
 
-实施补充：新启动逻辑没有负端点；旧内部路径受布局影响，评估官方物理优化参数后保留3个轻微负端点并明确披露，不改变旧帧缓存RTL或放宽SDC。最终命令须包含-HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high。
+S2的67个负端点边界继续保留：64个原SDRAM接口与3个旧内存内部端点。S3不改代码/约束，不重新构建或重复仿真。独立上电通过后才进入S4长稳；全部结项后归档完成计划并统一推送。

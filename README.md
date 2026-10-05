@@ -8,7 +8,7 @@
 
 当前开发任务：[v0.5.0 Flash固化与上电自启](docs/Flash固化与上电自启分阶段修改计划.md)。逐阶段上板验收，最终统一上传；正式可用版本仍为v0.4.0。
 
-S1已由用户确认通过。当前交付：[S2候选说明](releases/v0.5.0/v0.5.0-s2-local.1/README.md) · [S2上板步骤](releases/v0.5.0/v0.5.0-s2-local.1/BOARD_VALIDATION.md)。本版尚未固化Flash。
+S2已由用户确认通过。当前S3：[Flash固化与独立启动指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [验收记录](docs/flash_boot/s3/BOARD_VALIDATION.md)。BitWriter已有S2编程/校验成功日志，等待脱离下载器冷启动确认。
 
 基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；两颗PLL、五个时钟域分别同步释放复位。
 

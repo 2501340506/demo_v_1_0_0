@@ -27,3 +27,5 @@
 ## 清理完成
 
 用户已手动删除根目录`_cleanup`，并已确认目录不存在。原reference、合并后空的docx目录树和旧诊断缓存清理完成；需要保留的资料已归档。
+
+当前S3：[Flash固化与独立上电](flash_boot/S3_FLASH_GUIDE.md) · [验收状态](flash_boot/s3/BOARD_VALIDATION.md)。S2已验收，固化日志已核对，待独立冷启动反馈。

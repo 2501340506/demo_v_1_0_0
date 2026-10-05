@@ -1,0 +1,47 @@
+>>
+RUN-1002 : start command "download -bit ..\..\..\..\My_Program\anlogic_program\demo_v_0_0\releases\v0.5.0\v0.5.0-s1-local.1\demo.bit -mode program_spi -v -spd 7 -cable 0 -flashsize 128"
+PRG-2014 : Chip validation success: EG4S20BG256
+PRG-1001 : SPI Flash ID is:  ef
+RUN-1002 : start command "bit_to_vec -chip EG4S20BG256 -m program_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s1-local.1/demo.bit"
+RUN-1003 : finish command "bit_to_vec -chip EG4S20BG256 -m program_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s1-local.1/demo.bit" in  1.241525s wall, 0.328125s user + 0.093750s system = 0.421875s CPU (34.0%)
+
+RUN-1004 : used memory is 371 MB, reserved memory is 320 MB, peak memory is 380 MB
+RUN-1002 : start command "program_spi -cable 0 -spd 7 -chip EG4S20BG256"
+RUN-1003 : finish command "program_spi -cable 0 -spd 7 -chip EG4S20BG256" in  65.913099s wall, 0.031250s user + 0.031250s system = 0.062500s CPU (0.1%)
+
+RUN-1004 : used memory is 372 MB, reserved memory is 321 MB, peak memory is 380 MB
+RUN-1002 : start command "bit_to_vec -chip EG4S20BG256 -m verify_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s1-local.1/demo.bit"
+RUN-1003 : finish command "bit_to_vec -chip EG4S20BG256 -m verify_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s1-local.1/demo.bit" in  0.345094s wall, 0.031250s user + 0.000000s system = 0.031250s CPU (9.1%)
+
+RUN-1004 : used memory is 296 MB, reserved memory is 242 MB, peak memory is 380 MB
+RUN-1002 : start command "program -cable 0 -spd 7"
+RUN-1003 : finish command "program -cable 0 -spd 7" in  7.297868s wall, 0.000000s user + 0.000000s system = 0.000000s CPU (n/a%)
+
+RUN-1004 : used memory is 324 MB, reserved memory is 271 MB, peak memory is 380 MB
+RUN-1003 : finish command "download -bit ..\..\..\..\My_Program\anlogic_program\demo_v_0_0\releases\v0.5.0\v0.5.0-s1-local.1\demo.bit -mode program_spi -v -spd 7 -cable 0 -flashsize 128" in  77.310227s wall, 0.515625s user + 0.140625s system = 0.656250s CPU (0.8%)
+
+RUN-1004 : used memory is 324 MB, reserved memory is 271 MB, peak memory is 380 MB
+GUI-1001 : Downloading succeeded!
+RUN-1002 : start command "download -bit ..\..\..\..\My_Program\anlogic_program\demo_v_0_0\releases\v0.5.0\v0.5.0-s2-local.1\demo.bit -mode program_spi -v -spd 7 -cable 0 -flashsize 128"
+PRG-2014 : Chip validation success: EG4S20BG256
+PRG-1001 : SPI Flash ID is:  ef
+RUN-1002 : start command "bit_to_vec -chip EG4S20BG256 -m program_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s2-local.1/demo.bit"
+RUN-1003 : finish command "bit_to_vec -chip EG4S20BG256 -m program_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s2-local.1/demo.bit" in  1.049209s wall, 0.062500s user + 0.015625s system = 0.078125s CPU (7.4%)
+
+RUN-1004 : used memory is 372 MB, reserved memory is 322 MB, peak memory is 382 MB
+RUN-1002 : start command "program_spi -cable 0 -spd 7 -chip EG4S20BG256"
+RUN-1003 : finish command "program_spi -cable 0 -spd 7 -chip EG4S20BG256" in  66.744744s wall, 0.390625s user + 0.062500s system = 0.453125s CPU (0.7%)
+
+RUN-1004 : used memory is 374 MB, reserved memory is 323 MB, peak memory is 382 MB
+RUN-1002 : start command "bit_to_vec -chip EG4S20BG256 -m verify_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s2-local.1/demo.bit"
+RUN-1003 : finish command "bit_to_vec -chip EG4S20BG256 -m verify_spi -freq 5.000000 -bit ../../../../My_Program/anlogic_program/demo_v_0_0/releases/v0.5.0/v0.5.0-s2-local.1/demo.bit" in  0.461576s wall, 0.093750s user + 0.015625s system = 0.109375s CPU (23.7%)
+
+RUN-1004 : used memory is 298 MB, reserved memory is 244 MB, peak memory is 382 MB
+RUN-1002 : start command "program -cable 0 -spd 7"
+RUN-1003 : finish command "program -cable 0 -spd 7" in  7.442702s wall, 0.046875s user + 0.031250s system = 0.078125s CPU (1.0%)
+
+RUN-1004 : used memory is 326 MB, reserved memory is 273 MB, peak memory is 382 MB
+RUN-1003 : finish command "download -bit ..\..\..\..\My_Program\anlogic_program\demo_v_0_0\releases\v0.5.0\v0.5.0-s2-local.1\demo.bit -mode program_spi -v -spd 7 -cable 0 -flashsize 128" in  78.270365s wall, 0.718750s user + 0.140625s system = 0.859375s CPU (1.1%)
+
+RUN-1004 : used memory is 326 MB, reserved memory is 274 MB, peak memory is 382 MB
+GUI-1001 : Downloading succeeded!
