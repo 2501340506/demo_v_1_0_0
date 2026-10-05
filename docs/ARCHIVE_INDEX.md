@@ -1,6 +1,6 @@
 # 项目归档索引
 
-进行中：[系统稳定性计划](系统稳定性分阶段修改计划.md)。仅保留[实施前交接快照](history/2026-10-05/系统稳定性增强/HANDOFF_before_S0.md)，S1已上板通过并推送，S2待上板，尚未最终结项归档。另存[进入S2前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S2.md)。
+进行中：[系统稳定性计划](系统稳定性分阶段修改计划.md)。仅保留[实施前交接快照](history/2026-10-05/系统稳定性增强/HANDOFF_before_S0.md)，S1已上板通过并推送，S2已通过、S3待上板，尚未最终结项归档。另存[进入S2前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S2.md)。
 
 目录整理（2026-10-05）：原docx并入docs；[文档入口](README.md) · [诊断归档](../diagnostics/README.md) · [旧本地结果与迁移记录](../diagnostics/history/2026-10-05/README.md)。课程来源保留于[HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md)。
 
@@ -30,3 +30,5 @@
 - [10月3日归档](history/2026-10-03/README.md)
 
 v0.1.8为缓冲所有权版本；v0.1.9为数码管面板模块化版本；v0.2.0为拨码与新按键版本。历史原文中的“当前”“待验收”和完整回归结论，均以当前交接和验证说明为准。
+
+- [进入S3前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S3.md)。v0.4.0仍进行中，最终完成归档未执行。

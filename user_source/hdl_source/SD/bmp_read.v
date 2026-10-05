@@ -75,8 +75,43 @@ reg [1:0]  bmp_byte_idx;
 wire header_match;
 wire bmp_data_valid;
 reg [31:0] file_sector_count;
-reg [31:0] next_scan_sector_if_match;
+reg [32:0] next_scan_sector_if_match;
 wire [31:0] next_scan_sector_if_miss;
+reg [18:0] candidate_row_bytes;
+reg [34:0] candidate_data_bytes;
+reg [35:0] candidate_end;
+reg candidate_structure_ok, candidate_length_ok, candidate_span_ok;
+wire skip_candidate = candidate_structure_ok && candidate_length_ok &&
+                      candidate_span_ok && (rd_cnt >= 10'd54);
+
+// Conservative fast path for ordinary contiguous, uncompressed 24/32-bit BMPs.
+// Unknown formats or untrustworthy lengths retain the one-sector search.
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        candidate_row_bytes <= 0;
+        candidate_data_bytes <= 0;
+        candidate_end <= 0;
+        candidate_structure_ok <= 0;
+        candidate_length_ok <= 0;
+        candidate_span_ok <= 0;
+    end else begin
+        candidate_row_bytes <= (bit_count == 16'd32) ?
+                               {1'b0, width[15:0], 2'b00} :
+                               (({3'b000, width[15:0]} * 19'd3 + 19'd3) & 19'h7fffc);
+        candidate_data_bytes <= {16'd0, candidate_row_bytes} * {19'd0, height[15:0]};
+        candidate_end <= {4'd0, pixel_offset} + {1'b0, candidate_data_bytes};
+        candidate_structure_ok <= (header_0 == "B") && (header_1 == "M") &&
+                                  (dib_size >= 40) && (planes == 1) &&
+                                  (width[31:16] == 0) && (width[15:0] != 0) &&
+                                  (height[31:16] == 0) && (height[15:0] != 0) &&
+                                  ((bit_count == 24) || (bit_count == 32)) && (compression == 0);
+        candidate_length_ok <= ({1'b0, pixel_offset} >= dib_end) &&
+                               (pixel_offset < file_len) && ({4'd0, file_len} >= candidate_end);
+        candidate_span_ok <= (file_sector_count != 0) &&
+                             (next_scan_sector_if_match > {1'b0, scan_sector}) &&
+                             (next_scan_sector_if_match <= ({1'b0, scan_max_sector} + 33'd1));
+    end
+end
 
 assign ready = (state == ST_IDLE);
 assign header_match = header_format_ok && header_bounds_ok && (rd_cnt >= 10'd54);
@@ -114,8 +149,8 @@ always @(posedge clk or posedge rst) begin
         file_sector_count <= 32'd1;
         next_scan_sector_if_match <= 32'd0;
     end else begin
-        file_sector_count <= (file_len == 32'd0) ? 32'd1 : ((file_len + 32'd511) >> 9);
-        next_scan_sector_if_match <= scan_sector + file_sector_count;
+        file_sector_count <= (file_len == 32'd0) ? 32'd1 : (({1'b0, file_len} + 33'd511) >> 9);
+        next_scan_sector_if_match <= {1'b0, scan_sector} + {1'b0, file_sector_count};
     end
 end
 assign next_scan_sector_if_miss  = scan_sector + 32'd1;
@@ -314,11 +349,19 @@ always @(posedge clk or posedge rst) begin
                         if ((scan_found_total + 3'd1 >= scan_target_count) || (next_scan_sector_if_match > scan_max_sector)) begin
                             scan_done        <= 1'b1;
                             state            <= ST_IDLE;
-                            sd_sec_read_addr <= next_scan_sector_if_match;
-                            scan_sector      <= next_scan_sector_if_match;
+                            sd_sec_read_addr <= next_scan_sector_if_match[31:0];
+                            scan_sector      <= next_scan_sector_if_match[31:0];
                         end else begin
-                            sd_sec_read_addr <= next_scan_sector_if_match;
-                            scan_sector      <= next_scan_sector_if_match;
+                            sd_sec_read_addr <= next_scan_sector_if_match[31:0];
+                            scan_sector      <= next_scan_sector_if_match[31:0];
+                        end
+                    end else if (skip_candidate) begin
+                        if (next_scan_sector_if_match > {1'b0, scan_max_sector}) begin
+                            scan_done <= 1'b1;
+                            state <= ST_IDLE;
+                        end else begin
+                            sd_sec_read_addr <= next_scan_sector_if_match[31:0];
+                            scan_sector <= next_scan_sector_if_match[31:0];
                         end
                     end else begin
                         if (scan_sector >= scan_max_sector) begin
