@@ -1,6 +1,6 @@
 # 项目归档索引
 
-进行中：[系统稳定性计划](系统稳定性分阶段修改计划.md)。保留[实施前交接快照](history/2026-10-05/系统稳定性增强/HANDOFF_before_S0.md)，S1已上板通过并推送，S2/S3已通过，S4已上板通过并推送，S5本地通过待上板，尚未最终结项归档。另存[进入S2前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S2.md)。
+进行中：[系统稳定性计划](系统稳定性分阶段修改计划.md)。保留[实施前交接快照](history/2026-10-05/系统稳定性增强/HANDOFF_before_S0.md)，S1已上板通过并推送，S2/S3已通过，S4已上板通过并推送，S5已上板通过，进入S6，尚未最终结项归档。另存[进入S2前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S2.md)。
 
 目录整理（2026-10-05）：原docx并入docs；[文档入口](README.md) · [诊断归档](../diagnostics/README.md) · [旧本地结果与迁移记录](../diagnostics/history/2026-10-05/README.md)。课程来源保留于[HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md)。
 
@@ -37,4 +37,4 @@ v0.1.8为缓冲所有权版本；v0.1.9为数码管面板模块化版本；v0.2.
 - [S4本地候选及证据](../releases/v0.4.0-s4-local.1/README.md)（已上板通过，整体尚未结项）
 
 - [S4验收后交接](history/2026-10-05/系统稳定性增强/HANDOFF_S4_board_accepted.md)
-- [S5本地候选及证据](../releases/v0.4.0-s5-local.1/README.md)（待上板，整体尚未结项）
+- [S5候选及证据](../releases/v0.4.0-s5-local.1/README.md)（已上板通过，整体尚未结项）
