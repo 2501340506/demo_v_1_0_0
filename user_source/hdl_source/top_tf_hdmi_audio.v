@@ -138,7 +138,7 @@ sys_pll sys_pll_m0(
     .clk1_out   (ext_mem_clk),
     .clk2_out   (ext_mem_clk_sft),
     .locked     (sys_pll_lock),
-    .reset      (1'b0)
+    .reset      (~rst_n) // External button only; never feed lock-derived reset back to PLL.
 );
 
 video_pll video_pll_m0(
@@ -146,7 +146,7 @@ video_pll video_pll_m0(
     .clk0_out   (video_clk),
     .clk1_out   (hdmi_5x_clk),
     .locked     (video_pll_lock),
-    .reset      (1'b0)
+    .reset      (~rst_n)
 );
 
 // mem_clk 域把 write_finish 单拍转成 toggle，供 sd_card_clk 域可靠同步

@@ -1,6 +1,7 @@
 param(
     [string]$BuildName = 'audio_s0_local1',
-    [string]$TdRoot = 'D:/TD/anlogic/TD6.2.1'
+    [string]$TdRoot = 'D:/TD/anlogic/TD6.2.1',
+    [switch]$HighFanoutOptimization
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
@@ -40,6 +41,9 @@ foreach ($run in @('syn_1', 'phy_1')) {
         "set run_type syn`nset start_step read_design`nset end_step opt_gate`n"
     } else {
         "set run_type phy`nset parent ../syn_1`nset start_step opt_place`nset end_step bitgen`nset arr_filter false`nset drHoldFix on`n"
+    }
+    if ($run -eq 'phy_1' -and $HighFanoutOptimization) {
+        $runSettings += "set phyWildParams {place hfn_opt_effort high}`n"
     }
     [IO.File]::WriteAllText((Join-Path $runDir 'settings.cfg'), "$commonSettings`n$runSettings", $utf8)
 }

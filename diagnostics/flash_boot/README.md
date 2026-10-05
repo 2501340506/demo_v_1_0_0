@@ -4,8 +4,17 @@
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/flash_boot/run_baseline.ps1 -Stage s0
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/flash_boot/run_reset_tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/flash_boot/run_reset_tests.ps1 -BaselineTop
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName flash_boot_s1_local5 -HighFanoutOptimization
 ```
 
 基线脚本复用当前稳定性七项解析器/控制专项、真实解析器异步缓冲三配置及八个旧入口（当前控制/缓冲版本）。输出到`diagnostics/output/flash_boot_s0`，固定证据在本目录evidence。不要并行执行会共用仿真工作库的旧入口。
 
 S1仅改顶层PLL复位，新增专项验证模型必须实际响应reset并等待重新锁定；其他生产模块不变时复用本轮S0证据，不反复执行无关回归。ModelSim行为PLL/存储不证明实际冷启动，用户SRAM上板通过后才进入S2。
+
+`tb_flash_reset.sv`基于既有S9顶层测试扩展，不改历史原件。新模型用参考时钟计数重锁，reset撤销旧锁定并停止输出；两个时钟树可分别停钟。五轮覆盖系统先锁、视频先锁、两个PLL各自停钟恢复及在途提交中复位，逐域检查三拍释放，复位后静音且新提交只产生一次提示音。锁定周期为测试参数，不代表实际PLL模拟特性。
+
+`-BaselineTop`使用S0顶层执行相同测试，必须在“两颗PLL未接收到按键复位”断言处失败；该负对照日志中的一次Fatal是预期结果，不混入正向通过统计。测试曾把toggle请求位为1误当作在途条件，已改为检查ready变低（请求与应答不一致），不修改产品握手逻辑。
+
+最终构建使用TD的place hfn_opt_effort=high，解决默认布局出现的两个SD复位recovery负端点。复位RTL属性尝试均已撤回。旧调用不带开关仍用默认medium；GUI复现必须手动设置同一物理参数。最终证据见releases/v0.5.0/v0.5.0-s1-local.1，未上板。

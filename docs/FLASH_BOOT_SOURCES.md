@@ -30,3 +30,5 @@
 ## 已知验证限制
 
 v0.4.0仍有64个SDRAM接口负端点，板级IO延时尚不完整。只审查本次改动与逐组差异，不用扩大路径排除换取漂亮报告。ModelSim中PLL、FIFO和存储为行为模型，不能替代Flash配置、电气时序和实际板级验证。
+
+S1首次TD构建新增两个SD复位recovery负端点（−0.273ns）。TD综合指南SWUG106的max_fanout/keep属性尝试未改善最终物理结果，已撤回，不增加reset_sync参数。改用物理布局高扇出优化，依据TD_User_Guide_V6.2.pdf第282页（正文281页），place hfn_opt_effort high。构建时显式启用，原SDC及三拍行为不变；诊断证据保留，不把综合识别属性误写为最终生效。

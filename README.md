@@ -8,6 +8,8 @@
 
 当前开发任务：[v0.5.0 Flash固化与上电自启](docs/Flash固化与上电自启分阶段修改计划.md)。逐阶段上板验收，最终统一上传；正式可用版本仍为v0.4.0。
 
+[S1固定候选与说明](releases/v0.5.0/v0.5.0-s1-local.1/README.md) · [S1上板步骤](releases/v0.5.0/v0.5.0-s1-local.1/BOARD_VALIDATION.md)：本地通过，等待用户确认，尚未固化Flash。
+
 基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；两颗PLL、五个时钟域分别同步释放复位。
 
 上一正式版本：[v0.3.0](releases/v0.3.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
