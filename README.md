@@ -1,8 +1,8 @@
 # 安路 EG4 HDMI 图片播放器
 
-S3交付：[固定候选](releases/v0.4.0-s3-local.1/README.md) · [同卡对比上板步骤](releases/v0.4.0-s3-local.1/BOARD_VALIDATION.md)。S3尚未推送。
+S3交付：[固定候选](releases/v0.4.0-s3-local.1/README.md) · [同卡对比上板步骤](releases/v0.4.0-s3-local.1/BOARD_VALIDATION.md)。S3已验收，板级标签v0.4.0-s3-board.1。
 
-当前开发：**v0.4.0系统稳定性增强**，S0已完成，**S1已上板通过并推送，S2已上板通过并推送，S3本地候选待上板**。[S2固定候选](releases/v0.4.0-s2-local.1/README.md) · [S2上板步骤](releases/v0.4.0-s2-local.1/BOARD_VALIDATION.md)。正式上板版本仍为v0.3.0。[S1固定候选](releases/v0.4.0-s1-local.1/README.md) · [S1上板步骤](releases/v0.4.0-s1-local.1/BOARD_VALIDATION.md)。[阶段计划](docs/系统稳定性分阶段修改计划.md) · [来源与边界](docs/SYSTEM_STABILITY_SOURCES.md)。
+当前开发：**v0.4.0系统稳定性增强**，S0已完成，**S1已上板通过并推送，S2已上板通过并推送，S3已上板通过**。[S2固定候选](releases/v0.4.0-s2-local.1/README.md) · [S2上板步骤](releases/v0.4.0-s2-local.1/BOARD_VALIDATION.md)。正式上板版本仍为v0.3.0。[S1固定候选](releases/v0.4.0-s1-local.1/README.md) · [S1上板步骤](releases/v0.4.0-s1-local.1/BOARD_VALIDATION.md)。[阶段计划](docs/系统稳定性分阶段修改计划.md) · [来源与边界](docs/SYSTEM_STABILITY_SOURCES.md)。
 
 目录入口：[统一文档](docs/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
 

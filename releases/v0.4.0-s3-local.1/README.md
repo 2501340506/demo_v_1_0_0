@@ -1,6 +1,6 @@
 # S3可信BMP快速跳过
 
-2026-10-05。**本地候选待上板，未推送S3、不进入S4。** 标签`v0.4.0-s3-local.1`；下载[demo.bit](demo.bit)。S2已由用户确认全部测试通过并推送。
+2026-10-05。**用户已确认S3上板通过，板级标签v0.4.0-s3-board.1；固定bit不变。** 标签`v0.4.0-s3-local.1`；下载[demo.bit](demo.bit)。S2已由用户确认全部测试通过并推送。
 
 ## 行为
 
@@ -17,3 +17,7 @@
 - TD综合/布局布线/bitgen通过，3739 LUT、2846寄存器、4 BRAM、4 DSP、2 PLL。新增扫描域+0.106ns；全局Setup−6.565ns/TNS−296.409ns，Hold+0.003ns。64个SDRAM接口和3个未修改内存域负端点（最差−0.332ns）仍在，未全局收敛。[时序对比](timing_comparison.md)。
 
 [上板步骤](BOARD_VALIDATION.md) · [6张测试图片](board_samples.zip) · [源清单](source_inventory.md) · [活动测试入口](../../diagnostics/stability/README.md)。失败时恢复已验收[S2 bit](../v0.4.0-s2-local.1/demo.bit)。
+
+## 板级结果
+
+2026-10-05用户逐项确认S3通过：正常翻图、AUTO及提示音没问题；6图测试卡仅显示4张good图、无缺图；同卡S3首图等待比S2约快3～4秒；无其他异常。速度为用户直观估计，未提供精确计时或测试轮数。
