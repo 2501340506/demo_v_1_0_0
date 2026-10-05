@@ -10,7 +10,7 @@
 |---|---|---|
 | S0 | 基线、文档、版本起点 | 本地通过；v0.5.0-plan.1 |
 | S1 | 两颗PLL接外部复位 | 用户确认通过；v0.5.0-s1-board.1 |
-| S2 | SDRAM就绪后扫描 | 执行中 |
+| S2 | SDRAM就绪后扫描 | 本地完成，待上板；v0.5.0-s2-local.1 |
 | S3 | W25Q64固化及首次独立启动 | 未开始 |
 | S4 | 固定Flash候选长稳验收 | 未开始 |
 | S5 | 正式发布、统一上传、历史归档 | 未开始 |
@@ -78,4 +78,8 @@
 
 ## 当前交付
 
-S1固定候选：[版本说明](../releases/v0.5.0/v0.5.0-s1-local.1/README.md) · [上板步骤](../releases/v0.5.0/v0.5.0-s1-local.1/BOARD_VALIDATION.md)。最终TD采用-HighFanoutOptimization，SD+0.147ns、内存同域+0.266ns；仍有原64个SDRAM接口负端点。仅本地，等待用户确认后进入S2。
+S1用户确认通过，建立本地v0.5.0-s1-board.1。S2：[版本说明](../releases/v0.5.0/v0.5.0-s2-local.1/README.md) · [上板步骤](../releases/v0.5.0/v0.5.0-s2-local.1/BOARD_VALIDATION.md)。
+
+S2两拍同步SDRAM就绪并门控首次扫描；四场景启动专项、门控负对照、五轮复位专项及完整稳定性/异步缓冲/音视频回归通过，正向零错误零警告。TD最终flash_boot_s2_local4，3926 LUT/2902寄存器/4 BRAM/4 DSP/2 PLL；SD+0.170ns、新增同步所在内存→SD组+0.725ns。全局Setup−6.565ns/TNS−251.158ns、Hold+0.003ns，原64个SDRAM接口负端点外，未改frame_fifo_read本轮有3个−0.084ns端点；未全局收敛。固定候选待用户SRAM上板，不进入S3、不推送。
+
+实施补充：新启动逻辑没有负端点；旧内部路径受布局影响，评估官方物理优化参数后保留3个轻微负端点并明确披露，不改变旧帧缓存RTL或放宽SDC。最终命令须包含-HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high。

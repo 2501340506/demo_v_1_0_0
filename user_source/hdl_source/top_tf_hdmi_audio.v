@@ -107,6 +107,14 @@ reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_m
 reset_sync u_reset_video (.clk(video_clk), .async_rst(reset_request), .rst(rst_video));
 reset_sync u_reset_serial (.clk(hdmi_5x_clk), .async_rst(reset_request), .rst(rst_serial));
 
+// SDRAM and TF initialization run independently. Only the first scan waits
+// for memory readiness; keep the SD controller out of this dependency loop.
+(* ASYNC_REG = "TRUE" *) reg [1:0] sdram_ready_sync;
+always @(posedge sd_card_clk or posedge rst_sd) begin
+    if (rst_sd) sdram_ready_sync <= 2'b00;
+    else sdram_ready_sync <= {sdram_ready_sync[0], Sdr_init_done};
+end
+
 // Mode and key routing share the SD control clock. Synchronize mode for panel display.
 wire [1:0] switch_mode;
 reg [1:0] mode_panel_sync0, mode_panel_sync1;
@@ -166,6 +174,7 @@ sd_card_bmp #(
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_sd),
+    .sdram_ready       (sdram_ready_sync[1]),
     .key1              (key1),
     .key2              (key2),
     .key4              (key4),

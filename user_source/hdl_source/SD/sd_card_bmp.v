@@ -10,6 +10,7 @@ module sd_card_bmp #(
 )(
     input                       clk,
     input                       rst,
+    input                       sdram_ready, // Synchronized into clk; gates first scan only.
     input                       key1,
     input                       key2,
     input                       key4,
@@ -376,7 +377,7 @@ always @(posedge clk or posedge rst) begin
             end
 
             // 上电后自动发起一次“扫描前 4 张 BMP”
-            if (!scan_kicked && bmp_ready) begin
+            if (!scan_kicked && bmp_ready && sdram_ready) begin
                 scan_start_pulse      <= 1'b1;
                 scan_kicked           <= 1'b1;
                 first_image_committed <= 1'b0;

@@ -1,8 +1,8 @@
-param([switch]$BaselineTop)
+param([switch]$BaselineTop, [ValidateSet('reset','startup')][string]$Suite='reset', [switch]$BypassReady)
 $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $simTools = 'D:/modelsim/win64'
-$simDir = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../output'))) $(if ($BaselineTop) { 'flash_boot_s1_negative' } else { 'flash_boot_s1_reset' })
+$simDir = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../output'))) $(if ($BaselineTop) { 'flash_boot_s1_negative' } elseif ($BypassReady) { 'flash_boot_startup_negative' } else { "flash_boot_${Suite}" })
 $lib = (Join-Path $simDir 'reset_work').Replace('\','/')
 New-Item -ItemType Directory -Path $simDir -Force | Out-Null
 Push-Location $repoRoot
@@ -27,16 +27,25 @@ try {
         $rtl = @($rtl | Where-Object { (Split-Path $_ -Leaf) -ne 'top_tf_hdmi_audio.v' }) + @($oldTop)
     }
     & "$simTools/vlog.exe" -sv -work $lib '+incdir+user_source/hdl_source/SD' -l "$simDir/compile.log" @rtl `
-        D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_logic_io.v D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_glbl.v diagnostics/flash_boot/tb_flash_reset.sv
+        D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_logic_io.v D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_glbl.v diagnostics/flash_boot/tb_flash_reset.sv diagnostics/flash_boot/tb_startup.sv
     if ($LASTEXITCODE -ne 0) { throw 'reset top compile failed' }
-    & "$simTools/vsim.exe" -c -quiet -voptargs=+acc -lib $lib tb_flash_reset glbl -l "$simDir/reset.log" -do 'run -all; quit -f'
+    $test = if ($Suite -eq 'startup') { 'tb_startup' } else { 'tb_flash_reset' }
+    $pass = if ($Suite -eq 'startup') { 'PASS FLASH S2' } else { 'PASS FLASH S1' }
+    $simArgs = @()
+    if ($BypassReady) { $simArgs += '+BYPASS_READY' }
+    & "$simTools/vsim.exe" -c -quiet -voptargs=+acc -lib $lib $test glbl @simArgs -l "$simDir/reset.log" -do 'run -all; quit -f'
     $log = Get-Content "$simDir/reset.log" -Raw
-    if ($BaselineTop) {
+    if ($BypassReady) {
+        if ($log -notmatch 'scan before both initialization completions' -or $log -match 'PASS FLASH S2') {
+            throw 'Readiness negative control did not fail at the intended startup gate'
+        }
+        Write-Output 'PASS negative control: bypassed memory readiness rejected'
+    } elseif ($BaselineTop) {
         if ($log -notmatch 'button must reach both PLL resets and discard locks' -or $log -match 'PASS FLASH S1') {
             throw 'Negative control did not fail at the intended PLL reset check'
         }
         Write-Output 'PASS negative control: old top rejected for unconnected PLL reset'
-    } elseif ($LASTEXITCODE -ne 0 -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS FLASH S1' -or $log -notmatch 'Errors: 0, Warnings: 0') {
+    } elseif ($LASTEXITCODE -ne 0 -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch $pass -or $log -notmatch 'Errors: 0, Warnings: 0') {
         throw 'reset top simulation failed'
     }
 } finally { Pop-Location }

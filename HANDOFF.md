@@ -1,31 +1,25 @@
-2026-10-05最新：用户确认S1通过并授权进入S2。沿用S1固定bit建立本地board标签，不推送；下方S1待验收文字为此前记录，S2完成时重写当前交接。
-
 # 当前交接记录
 
-2026-10-05。分支`feature/flash-boot-v0.5.0`。**S0完成；S1本地通过，固定候选待用户SRAM上板。S1用户确认前不得进入S2。所有本任务提交和标签仅本地，最终S5才统一上传。**
+2026-10-05。分支feature/flash-boot-v0.5.0。**S1用户已确认通过；S2本地完成，固定候选待用户SRAM上板。确认S2前不得进入S3，所有本任务提交/标签仅本地，S5才统一上传。**
 
-## 当前任务与已完成
+## 已完成
 
-- [分阶段计划](docs/Flash固化与上电自启分阶段修改计划.md)与[课程对照](docs/FLASH_BOOT_SOURCES.md)已落盘；README下载及验证状态已修正，正式版本仍为v0.4.0。
-- S0七项稳定性、真实解析器异步交接三配置、八个既有入口通过，零错误零警告；固定证据diagnostics/flash_boot/evidence/s0。本地标签v0.5.0-plan.1，无新bit。
-- S1生产RTL仅顶层两处PLL reset接~rst_n；reset_sync、其他模块、PLL配置、工程清单、ADC、SDC保持原样。构建脚本增加显式-HighFanoutOptimization开关，旧调用默认不变。
-- S1最终真实顶层五轮专项通过：两种锁定顺序、两时钟树停钟恢复、按钮使PLL重新锁定、在途提交清空、五域三拍释放、静音与首图提示。正向编译/仿真零错误零警告。旧顶层负对照在未连接PLL按键复位处失败，属预期结果。
-- TD最终flash_boot_s1_local5通过，place hfn_opt_effort=high。3951 LUT/2900寄存器/4 BRAM/4 DSP/2 PLL；SD+0.147ns、内存同域+0.266ns、像素→串行+6.222ns。全局Setup−6.565ns/TNS−250.840ns、Hold+0.004ns，原64个SDRAM接口负端点仍在，未全局收敛。
-- [候选v0.5.0-s1-local.1](releases/v0.5.0/v0.5.0-s1-local.1/README.md)含629624字节固定bit，与最终运行产物逐字节一致，含源清单、工程/约束/构建设置快照、仿真及TD报告。未烧Flash、未上板、未推送。
-- 前任务交接保存在[任务前快照](docs/flash_boot/HANDOFF_before_S0.md)。v0.5.0尚未结项，不做完成归档。
+- 用户回复“确认通过，进入 S2”，按S1整体通过记录，不补造次数/设备；本地v0.5.0-s1-board.1已建立，固定S1 bit不变。先前交接保存docs/flash_boot/HANDOFF_before_S2.md。
+- S2生产改动仅top的Sdr_init_done两拍同步/连接及sd_card_bmp新增sdram_ready、首次扫描条件；rst_sd清零同步级，TF/SDRAM初始化并行，等待不复位SD。其他RTL、PLL、ADC/SDC和TD清单不变。
+- 七个直接实例测试显式接sdram_ready=1（含两个历史可执行入口），历史证据快照不修改。
+- 真实top四场景启动专项通过：TF先就绪、内存先就绪、近同时、等待期间复位；两拍同步独立参考、未就绪无业务活动、就绪后只扫描一次。绕过门控的负对照按预期在提前扫描断言失败。五轮PLL/音频复位专项重新通过。
+- 七项稳定性专项（全尺寸307200 RGB等）、真实解析器异步交接三配置、八个既有音视频/控制/复位入口本轮全部通过，正向编译/仿真零错误零警告。
+- TD最终flash_boot_s2_local4通过，3926 LUT/2902寄存器/4 BRAM/4 DSP/2 PLL。SD+0.170ns、内存→SD+0.725ns、像素→串行+5.900ns。全局Setup−6.565ns/TNS−251.158ns、Hold+0.003ns；原64个SDRAM接口负端点及本轮旧frame_fifo_read内部3个负端点（最差−0.084ns）保留，总67个，未全局收敛。新增同步/启动逻辑无负端点。
+- [S2固定候选](releases/v0.5.0/v0.5.0-s2-local.1/README.md)：629624字节bit与最终运行产物逐字节一致，附源清单、工程/约束/参数、仿真与TD报告和逐组时序对比。未上板、未烧Flash、未推送，未做最终结项归档。
 
 ## 阻塞与下一步
 
-唯一阶段门槛是用户完成[S1上板步骤](releases/v0.5.0/v0.5.0-s1-local.1/BOARD_VALIDATION.md)：SRAM下载固定bit，5轮复位后首图恢复、手动切图、AUTO及音频正常。等待实际反馈，不补造次数或设备。出现SD初始化卡住先对照v0.4.0，不自动扩大为底层协议修复。
+等待用户按[S2上板步骤](releases/v0.5.0/v0.5.0-s2-local.1/BOARD_VALIDATION.md)SRAM下载固定bit，检查首图、四图、MAN/AUTO、音频、5轮复位。仅有整体通过回复就仅记录整体结论。通过后建立本地v0.5.0-s2-board.1，进入S3按实际TD工具核实W25Q64启动设置与固化流程；S3/S4复用已验收S2 bit。
 
-确认通过后沿用固定bit，记录验收、建立本地v0.5.0-s1-board.1并进入S2（SDRAM就绪同步及扫描门控）。S3核实实际启动模式并固化W25Q64，S4最终长稳，S5发布/归档/统一推送。当前不推送、不合并main。
+## 踩坑与范围
 
-## 踩坑与边界
-
-- 默认布局产生两个SD复位recovery负端点−0.273ns、扇出690。线网max_fanout、寄存器max_fanout/keep尝试最终均未改善，全部撤回；诊断证据保存于diagnostics/flash_boot/evidence/s1_build1至s1_build4。物理高扇出优化实际生效后两个新增端点消失，未放宽SDC。
-- 同参数复现必须使用-HighFanoutOptimization；GUI打开工程快照后需手动将Phy/Place/hfn_opt_effort设high，快照默认仍medium。正式上板使用固定候选，不使用会覆盖的TD运行目录。
-- PLL reset只接~rst_n，不能接含未锁定条件的reset_request，避免闭环；保留三拍释放。
-- request是toggle，不能用电平1判断在途；专项已改检查ready=0。测试提交为注入事件，PLL/FIFO/存储行为模型不等于实际TF/Flash上板验证。
-- 课程40/80/125MHz描述不一致，当前内存125MHz。W25Q64及配置引脚由用户确认，启动跳线留到S3核实；不新增业务Flash接口。
-- 既有SD初始化、免复位热插拔和板级IO约束边界保留。TD存在既有警告类型，不宣称零警告。
-- UTF-8读写及PowerShell到Python管道编码；rg通配模式用-g。用户releases/v0.3.0/demo.al原修改保留且不提交；不批量删除文件或目录。
+- S2首次沿用S1物理参数出现3个SD扫描负端点−0.071ns；opt_timing high仍有SD/内存负端点；ultra消除SD违例，post_place_opt high没有进一步改善原frame_fifo_read的3个内部负端点。各轮诊断见diagnostics/flash_boot/evidence/s2_build1至s2_build3。按用户选定的时序审查范围披露旧路径变化，不扩展帧缓存整改或掩盖违例。
+- 最终复现：diagnostics/run_td_build.ps1 -BuildName flash_boot_s2_local4 -HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high。GUI需设置Phy/Place hfn_opt_effort=high、opt_timing=ultra、post_place_opt=high；demo.al快照仍保留原默认，不能直接以默认构建代表同参数复现。
+- ModelSim初始化完成电平注入、行为PLL/FIFO/存储不替代物理TF/SDRAM/Flash验证。原SD初始化及免复位热插拔限制不变。TD既有警告及板级IO约束边界保留。
+- PLL reset只接外部~rst_n，不接未锁定组合复位；首扫描等待SDRAM就绪，不能反过来复位SD初始化。request为toggle，不以电平1判断在途。
+- 用户releases/v0.3.0/demo.al原修改未提交；UTF-8读写中文，不批量删除任何文件/目录。最终S5才归档完成计划并统一上传。

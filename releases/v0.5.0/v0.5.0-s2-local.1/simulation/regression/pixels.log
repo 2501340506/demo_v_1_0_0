@@ -1,0 +1,45 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 20:57:31 on Oct 05,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/stability_pixels/work -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\stability_pixels/compile.log user_source/hdl_source/SD/bmp_read.v diagnostics/stability/sim_bmp_sectors.sv diagnostics/stability/tb_bmp_pixels.sv 
+-- Compiling module bmp_read
+-- Compiling module sim_bmp_sectors
+-- Compiling module tb_bmp_pixels
+
+Top level modules:
+	sim_bmp_sectors
+	tb_bmp_pixels
+End time: 20:57:31 on Oct 05,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/stability_pixels/work tb_bmp_pixels -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\stability_pixels/test.log -do "run -all; quit -f" 
+# Start time: 20:57:32 on Oct 05,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS trailing file bytes ignored; no extra tail-sector reads
+# PASS last RGB byte and sector end same cycle at byte 512
+# PASS RGB triplet spans sector boundary with valid gaps
+# PASS short pixel sector rejects partial final RGB
+# PASS full pixel count cannot excuse short sector
+# PASS short middle sector aborts before requesting next
+# PASS short header never opens write request
+# PASS normal reload after errors without reset
+# ** Note: $finish    : diagnostics/stability/tb_bmp_pixels.sv(105)
+#    Time: 80470 ns  Iteration: 1  Instance: /tb_bmp_pixels
+# End time: 20:57:32 on Oct 05,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

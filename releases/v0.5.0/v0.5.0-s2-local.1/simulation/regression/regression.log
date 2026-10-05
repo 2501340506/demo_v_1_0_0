@@ -1,0 +1,8 @@
+PASS flash_boot_s2 run_control_tests
+PASS flash_boot_s2 run_mode_tests
+PASS flash_boot_s2 run_buffer_handoff
+PASS flash_boot_s2 run_audio_tests
+PASS flash_boot_s2 run_hdmi_packet_tests
+PASS flash_boot_s2 run_video_alignment
+PASS flash_boot_s2 run_hdmi_s6_tests
+PASS flash_boot_s2 run_s9_reset_tests
