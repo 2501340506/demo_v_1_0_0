@@ -15,7 +15,7 @@
 - 新增`diagnostics/run_td_build.ps1`，每次根据demo.al同步syn_1/phy_1的demo.prj和settings.cfg，再依次综合、布局布线和bitgen。
 - TD 6.2.168116完整构建通过，2026-10-04 20:09:36生成629624字节bitstream；固定文件与本次生成文件逐字节比较一致。
 - ModelSim 10.6e拨码/面板专项通过，编译与仿真均0 errors、0 warnings。
-- [固定产物与上板检查](../../../../releases/v0.3.0-s0-local.1/README.md)包含日志、时序、资源报告、构建清单及本地标签说明。
+- [固定产物与上板检查](../../../../releases/v0.3.0/v0.3.0-s0-local.1/README.md)包含日志、时序、资源报告、构建清单及本地标签说明。
 
 ## 当前卡点与未完成问题
 
@@ -43,7 +43,7 @@
 ## 入口
 
 - [阶段计划](../../../HDMI音频分阶段修改计划.md)
-- [S0候选和检查步骤](../../../../releases/v0.3.0-s0-local.1/README.md)
+- [S0候选和检查步骤](../../../../releases/v0.3.0/v0.3.0-s0-local.1/README.md)
 - [当前验证状态](../../../VALIDATION_STATUS.md)
 - [已验收v0.2.0](../../../../releases/v0.2.0/README.md)
 - [归档索引](../../../ARCHIVE_INDEX.md)

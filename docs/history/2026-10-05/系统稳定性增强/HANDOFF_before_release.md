@@ -4,14 +4,14 @@
 
 ## 当前任务与已完成
 
-- 本轮S6重新运行全部生产旧/新专项、真实异步交接3配置及8个既有入口，零错误零警告；日志固定在releases/v0.4.0-s6-local.1/simulation。生产RTL、工程/约束与S5候选无差异，无新构建，使用S5固定bit及TD报告。
-- 最终步骤在releases/v0.4.0-s6-local.1/BOARD_VALIDATION.md；项目文档、计划、CHANGELOG、验证状态和历史索引同步。
+- 本轮S6重新运行全部生产旧/新专项、真实异步交接3配置及8个既有入口，零错误零警告；日志固定在releases/v0.4.0/v0.4.0-s6-local.1/simulation。生产RTL、工程/约束与S5候选无差异，无新构建，使用S5固定bit及TD报告。
+- 最终步骤在releases/v0.4.0/v0.4.0-s6-local.1/BOARD_VALIDATION.md；项目文档、计划、CHANGELOG、验证状态和历史索引同步。
 
 - 用户确认“S4通过，可以进入下一阶段”。S4整体验收记录已提交，local/board两个明确标签随开发分支推送；没有补造测试轮数/时长/设备，未改S4 bit。
 - S5只改bmp_read和sd_card_bmp生产RTL。默认100MHz、500ms按无进展计时，覆盖扫描/读头/写应答/像素等待。有效字节、扇区结束或相应写应答重新计时。scan_error独立；超时停止态锁存至复位，撤销请求、屏蔽迟到数据/完成、新加载和提交，末位F、保留旧图。
 - ModelSim：8解析器超时、6上层超时；完整307200像素、8恢复、22头、14扫描、8像素、S2旧解析器对照、真实异步缓冲3配置及全部8既有回归通过，零错误零警告。行为SD/FIFO/存储模型；专项阈值缩短为32周期，不代替物理卡测试。
 - TD一次完整构建stability_s5_local1通过，3944 LUT/2890寄存器/4 BRAM/4 DSP/2 PLL；SD域+0.133ns，内存域+0.021ns，内部无负端点。全局Setup−6.565ns/TNS−294.297ns、Hold+0.004ns，64个原SDRAM接口负端点仍在，约束未改。S4内存模块3个负端点本次布局消失，但未修改内存RTL，不宣称独立修复。
-- 固定releases/v0.4.0-s5-local.1：bit逐字节比对通过，工程/约束、TD报告、仿真日志、源清单、版本说明、上板步骤齐备。项目README/文档入口/计划/验证状态/CHANGELOG/归档索引同步。S4验收后交接存于docs/history/2026-10-05/系统稳定性增强/HANDOFF_S4_board_accepted.md，原有快照全部保留。
+- 固定releases/v0.4.0/v0.4.0-s5-local.1：bit逐字节比对通过，工程/约束、TD报告、仿真日志、源清单、版本说明、上板步骤齐备。项目README/文档入口/计划/验证状态/CHANGELOG/归档索引同步。S4验收后交接存于docs/history/2026-10-05/系统稳定性增强/HANDOFF_S4_board_accepted.md，原有快照全部保留。
 
 ## 阻塞与下一步
 

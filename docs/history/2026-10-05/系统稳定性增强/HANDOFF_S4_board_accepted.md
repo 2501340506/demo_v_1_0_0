@@ -9,7 +9,7 @@
 - ModelSim全尺寸307200 RGB核对、8像素、8恢复、22头、14扫描通过；真实解析器与异步frame_read_write三配置均20次提交、5次预期错误、0冲突/混合帧。全部8既有回归入口通过，零错误零警告。
 - TD首轮SD域−0.331ns出在恢复决策到load_sector宽寄存器，改由load_idx直接译码，最终stability_s4_local2的SD域+0.107ns。修改后复跑恢复、真实异步交接、控制和原缓冲，均通过。
 - 最终TD综合/布局布线/bitgen通过，3817 LUT/2861寄存器/4 BRAM/4 DSP/2 PLL；全局Setup−6.565ns/TNS−295.994ns，Hold+0.011ns。64个SDRAM接口违例和3个未改内存模块负端点（最差−0.138ns）保留。端点位置较S3变化，不能称完全相同；约束未改，未全局收敛。
-- 候选releases/v0.4.0-s4-local.1保存bit（逐字节比对通过）、工程/约束、报告、仿真日志、说明及上板步骤。README、阶段计划、验证状态、CHANGELOG、归档索引同步；阶段前交接存于docs/history/2026-10-05/系统稳定性增强/HANDOFF_S3_board_accepted.md。
+- 候选releases/v0.4.0/v0.4.0-s4-local.1保存bit（逐字节比对通过）、工程/约束、报告、仿真日志、说明及上板步骤。README、阶段计划、验证状态、CHANGELOG、归档索引同步；阶段前交接存于docs/history/2026-10-05/系统稳定性增强/HANDOFF_S3_board_accepted.md。
 
 ## 阻塞与下一步
 

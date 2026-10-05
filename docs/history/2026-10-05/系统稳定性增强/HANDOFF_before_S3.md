@@ -8,12 +8,12 @@
 - 用户原话“通过，可以进入S2”，按S1整体通过记录，未补造设备/次数/时长。已推送验收提交和v0.4.0-plan.1、plan.2、s1-local.1、s1-board.1；实施前交接保存至docs/history/2026-10-05/系统稳定性增强/HANDOFF_before_S2.md。
 - S2生产RTL只修改bmp_read：新增DIB/planes读取、32位宽高匹配、像素偏移与DIB结束/文件长度比较、完整像素区声明长度校验；计算保留扩展位宽并分拍。扫描/加载共用，无公共接口变化。
 - 20组头样本分别扫描/加载，加错误后正常加载、混合坏图/好图扫描共22组PASS；307200像素独立RGB参考、7组恢复、6控制回归通过，零错误零警告。
-- TD构建stability_s2_local1通过。候选固定releases/v0.4.0-s2-local.1/demo.bit，版本标签v0.4.0-s2-local.1，附报告/工程/约束/仿真证据/上板说明/board_samples.zip。
+- TD构建stability_s2_local1通过。候选固定releases/v0.4.0/v0.4.0-s2-local.1/demo.bit，版本标签v0.4.0-s2-local.1，附报告/工程/约束/仿真证据/上板说明/board_samples.zip。
 - Python样图生成器仅写本机diagnostics/output/stability_s2_samples，不操作TF卡。三张有效红/绿/蓝分别标准/V4/V5头；黄planes错误、紫offset重叠应被拒绝。
 
 ## 当前阻塞与边界
 
-等待用户S2上板确认，步骤见releases/v0.4.0-s2-local.1/BOARD_VALIDATION.md。
+等待用户S2上板确认，步骤见releases/v0.4.0/v0.4.0-s2-local.1/BOARD_VALIDATION.md。
 
 TD资源3566 LUT、2806寄存器、4 BRAM、2 DSP、2 PLL；SD同域+0.146ns、内存同域+0.035ns。Setup−6.565ns/TNS−294.439ns，Hold+0.025ns，64个SDRAM接口违例，未全局收敛。S1帧缓存内部−0.180ns本轮消失，但没有修改内存结构或放宽约束。
 

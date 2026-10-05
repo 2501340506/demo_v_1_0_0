@@ -14,7 +14,7 @@
 
 本地标签v0.4.0-s6-local.1，等待用户至少5轮正常上电/复位和连续30分钟音视频结果；未发布v0.4.0，不提前归档结项。
 
-[S6候选说明](../releases/v0.4.0-s6-local.1/README.md) · [最终验收](../releases/v0.4.0-s6-local.1/BOARD_VALIDATION.md)。
+[S6候选说明](../releases/v0.4.0/v0.4.0-s6-local.1/README.md) · [最终验收](../releases/v0.4.0/v0.4.0-s6-local.1/BOARD_VALIDATION.md)。
 
 ## S5上板通过，进入S6
 
@@ -30,7 +30,7 @@
 - TD综合/布局布线/bitgen通过，3944 LUT/2890寄存器/4 BRAM/4 DSP/2 PLL；SD域+0.133ns、内存域+0.021ns。全局Setup−6.565ns/TNS−294.297ns、Hold+0.004ns，原64个SDRAM接口违例保留，未全局收敛。
 - 固定本地候选，待上板；未推送S5，不进入S6。初始化、热插拔恢复以及源解析结束后的最终写完成/显示确认等待不在本阶段范围。
 
-[S5候选及证据](../releases/v0.4.0-s5-local.1/README.md) · [上板步骤](../releases/v0.4.0-s5-local.1/BOARD_VALIDATION.md)。下方保留历史记录。
+[S5候选及证据](../releases/v0.4.0/v0.4.0-s5-local.1/README.md) · [上板步骤](../releases/v0.4.0/v0.4.0-s5-local.1/BOARD_VALIDATION.md)。下方保留历史记录。
 
 ## S4上板通过，进入S5
 
@@ -43,7 +43,7 @@
 - TD最终构建stability_s4_local2通过，SD域+0.107ns；3817 LUT/2861寄存器/4 BRAM/4 DSP/2 PLL。全局Setup−6.565ns/TNS−295.994ns、Hold+0.011ns。64个SDRAM接口及3个未改内存模块负端点仍在（内存最差−0.138ns），约束未改，未全局收敛。
 - 首轮SD域−0.331ns已修正并留存诊断证据；候选固定，未推送，等待板级确认后才能进入S5。原始扇区无文件EOF的边界及SD底层延期不变。
 
-[S4候选与证据](../releases/v0.4.0-s4-local.1/README.md) · [上板步骤](../releases/v0.4.0-s4-local.1/BOARD_VALIDATION.md)。下方为历史阶段记录。
+[S4候选与证据](../releases/v0.4.0/v0.4.0-s4-local.1/README.md) · [上板步骤](../releases/v0.4.0/v0.4.0-s4-local.1/BOARD_VALIDATION.md)。下方为历史阶段记录。
 
 ## v0.4.0-s3-board.1 — S3上板通过
 
@@ -57,7 +57,7 @@ S2用户确认全部测试符合预期，无图黑屏且数码管0→2→1；S2 
 
 S3真实解析器14扫描专项、S2真实旧解析器3组扇区数对照、22头专项、307200像素比对、7组恢复及6控制通过，零错误零警告。未改子系统沿用此前验证，没有本轮全量重跑。
 
-TD完成，新增扫描SD域+0.106ns；全局Setup−6.565ns/TNS−296.409ns，Hold+0.003ns，64个SDRAM接口及3个原内存域负端点（最差−0.332ns）。约束未改，未全局收敛。[S3完整证据](../releases/v0.4.0-s3-local.1/README.md)。S3未验板、不推送、不进入S4。
+TD完成，新增扫描SD域+0.106ns；全局Setup−6.565ns/TNS−296.409ns，Hold+0.003ns，64个SDRAM接口及3个原内存域负端点（最差−0.332ns）。约束未改，未全局收敛。[S3完整证据](../releases/v0.4.0/v0.4.0-s3-local.1/README.md)。S3未验板、不推送、不进入S4。
 
 ## S2上板通过，进入S3
 
@@ -71,7 +71,7 @@ S1已按用户反馈验收、建立board标签并推送。S2新增头校验22组
 
 TD构建完成，3566 LUT、2806寄存器、4 BRAM、2 DSP、2 PLL。SD控制域+0.146ns、内存同域+0.035ns，无新增校验负端点；全局Setup−6.565ns/TNS−294.439ns，Hold+0.025ns，64个SDRAM接口违例仍在。约束未改，未全局收敛。
 
-[S2候选与证据](../releases/v0.4.0-s2-local.1/README.md) · [上板步骤](../releases/v0.4.0-s2-local.1/BOARD_VALIDATION.md)。S2未获用户板级确认，不推送、不进入S3。以下按历史顺序保留旧节点记录。
+[S2候选与证据](../releases/v0.4.0/v0.4.0-s2-local.1/README.md) · [上板步骤](../releases/v0.4.0/v0.4.0-s2-local.1/BOARD_VALIDATION.md)。S2未获用户板级确认，不推送、不进入S3。以下按历史顺序保留旧节点记录。
 
 ## S1上板通过，进入S2
 
@@ -83,7 +83,7 @@ TD构建完成，3566 LUT、2806寄存器、4 BRAM、2 DSP、2 PLL。SD控制域
 
 S0完成，S1真实解析器/上层恢复专项7组、完整帧307200像素独立比对和8个既有入口通过，ModelSim零错误零警告。最终扫描加法分拍后重跑完整帧、恢复专项及6控制测试；其余同轮回归结果沿用。TD最终构建完成，3382 LUT/2655寄存器/4 BRAM/1 DSP/2 PLL。
 
-SD域+0.150ns，新增恢复逻辑无负裕量；全局Setup−6.565ns/TNS−295.033ns，Hold+0.011ns。64个SDRAM接口违例仍在，未修改帧缓存内部路径新增1个−0.180ns端点；全局未收敛。详细证据与范围见[S1候选](../releases/v0.4.0-s1-local.1/README.md)。
+SD域+0.150ns，新增恢复逻辑无负裕量；全局Setup−6.565ns/TNS−295.033ns，Hold+0.011ns。64个SDRAM接口违例仍在，未修改帧缓存内部路径新增1个−0.180ns端点；全局未收敛。详细证据与范围见[S1候选](../releases/v0.4.0/v0.4.0-s1-local.1/README.md)。
 
 S1未获用户板级确认，未推送、不进入S2；v0.3.0仍为正式版本。SD底层初始化/拔卡卡死继续延期；S2严格头校验、S3快跳、S4像素完整性、S5超时尚未实施。以下旧版本记录保留历史背景。
 
@@ -97,11 +97,11 @@ S1未获用户板级确认，未推送、不进入S2；v0.3.0仍为正式版本�
 
 更新：2026-10-04。当前分支直接Git回退到v0.3.0-s1-board.1后，完成R2规划、S2独立PCM及S4视频坐标对齐。S4仿真及TD构建已完成，TD清单/约束沿用S1，用户于2026-10-04反馈“S4通过”。
 
-S0/S1均由用户上板确认，相关验收节点已推送。S1六个控制测试、面板及三组异步缓冲回归通过，模式变化与AUTO到期同拍修复通过；完整物理SDRAM/HDMI不由行为模型替代。[S1固定产物及证据](../releases/v0.3.0-s1-local.1/README.md)。
+S0/S1均由用户上板确认，相关验收节点已推送。S1六个控制测试、面板及三组异步缓冲回归通过，模式变化与AUTO到期同拍修复通过；完整物理SDRAM/HDMI不由行为模型替代。[S1固定产物及证据](../releases/v0.3.0/v0.3.0-s1-local.1/README.md)。
 
 原S1时序：Setup WNS−6.699ns/TNS−296.363ns，Hold+0.003ns，控制域−0.044ns。时序未收敛，板级通过不抹除STA限制。
 
-R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6用户已确认通过；S7已上板通过，S8仿真/构建完成待上板，S9未开始。
+R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 warnings，五组PASS，覆盖100ms内4800次采样、每25000周期48次使能、间隔520/521周期、独立正弦参考、440Hz双声道±12000、背压稳定和有序恢复、满时同时收发、溢出保持、禁用重启与复位。模块尚未集成HDMI，不代表实际新音频已上板。[本轮日志](../releases/v0.3.0/v0.3.0-r2-s2-local.1/README.md)。S3独立EDID已被用户取消，旧诊断结果仅归档，不计验收，不要求继续采集。S4已上板通过，S5独立模块已通过，S6用户已确认通过；S7已上板通过，S8仿真/构建完成待上板，S9未开始。
 
 [R2方案](HDMI音频分阶段修改计划.md) · [回退与归档说明](history/2026-10-04/HDMI音频升级/方案重规划/README.md)
 
@@ -111,13 +111,13 @@ R2 S2已恢复PCM模块及测试。ModelSim 10.6e编译/仿真均0 errors、0 wa
 
 TD 6.2.168116综合/布局布线/bitgen通过。Setup WNS −6.699ns/TNS −293.242ns、Hold +0.003ns；视频同域+27.772ns、控制域+0.203ns。剩余64个违例端点位于两组SDRAM接口路径，全局时序未收敛；未改约束。坐标尚无旧HDMI消费者，可被综合裁剪，不能宣称验证了新HDMI核心集成时序。
 
-[固定候选、完整证据与上板步骤](../releases/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；S6已验收，S7待上板。[上板验证记录](../releases/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
+[固定候选、完整证据与上板步骤](../releases/v0.3.0/v0.3.0-r2-s4-local.1/README.md)。用户已确认S4通过，固定产物不变；S6已验收，S7待上板。[上板验证记录](../releases/v0.3.0/v0.3.0-r2-s4-local.1/BOARD_VALIDATION.md)。
 
 ## R2 S5 独立模块
 
 ModelSim 10.6e编译及基础、48kHz、双源三组仿真均0 errors、0 warnings；Python独立多项式参考与符号解码通过。3200个48kHz样本及800个双源样本全数按序解码，覆盖4+2有效视频帧；四组音频、192帧状态、BCH、奇偶校验、InfoFrame、固定N/CTS、数据前导/保护带、视频RGB及调度锁定均通过。原课程BCH及ACR错误对照已保存。
 
-[详细证据及边界](../releases/v0.3.0-r2-s5-local.1/README.md)。未改板级top/TD清单或约束，无新bit、资源或时序结果。新核心PHY/实际显示器验收在S6执行。
+[详细证据及边界](../releases/v0.3.0/v0.3.0-r2-s5-local.1/README.md)。未改板级top/TD清单或约束，无新bit、资源或时序结果。新核心PHY/实际显示器验收在S6执行。
 
 ## R2 S6 静音集成
 
@@ -125,7 +125,7 @@ ModelSim 10.6e编译、静音包及实际S4时序/延迟/新bridge/原PHY仿真�
 
 TD综合/布局布线/bitgen完成。全局Setup−6.699ns/TNS−295.870ns、Hold+0.004ns。视频同域+25.367ns，控制域−0.387ns（BMP解析3端点）、内存内部−0.219ns（帧缓存4端点），另64个SDRAM接口端点违例。清理被裁剪audio_mclk的失效rename与异步组，原像素/串行exclusive关系保留，不宣称完整跨域STA已收敛。资源2809 LUT/2264寄存器/4 BRAM/3 PLL。
 
-[S6固定候选](../releases/v0.3.0-r2-s6-local.1/README.md) · [上板验证步骤](../releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。2026-10-05用户确认S6通过并授权S7，固定bit不变。
+[S6固定候选](../releases/v0.3.0/v0.3.0-r2-s6-local.1/README.md) · [上板验证步骤](../releases/v0.3.0/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。2026-10-05用户确认S6通过并授权S7，固定bit不变。
 
 ## R2 S7 正弦音
 
@@ -133,7 +133,7 @@ TD综合/布局布线/bitgen完成。全局Setup−6.699ns/TNS−295.870ns、Hol
 
 TD 6.2.168116构建完成：Setup−6.699ns/TNS−295.004ns，Hold+0.025ns。新视频同域+26.444ns、控制+0.189ns、内存同域+0.178ns；剩余64个SDRAM接口端点违例，写侧较S6退化0.101ns。资源3230 LUT/2535寄存器/4 BRAM/3 PLL。时序约束未变，像素/串行exclusive覆盖限制仍在。
 
-[固定候选及证据](../releases/v0.3.0-r2-s7-local.1/README.md) · [上板文档](../releases/v0.3.0-r2-s7-local.1/BOARD_VALIDATION.md)。双声道实听及10分钟运行尚待用户确认，不进入S8。
+[固定候选及证据](../releases/v0.3.0/v0.3.0-r2-s7-local.1/README.md) · [上板文档](../releases/v0.3.0/v0.3.0-r2-s7-local.1/BOARD_VALIDATION.md)。双声道实听及10分钟运行尚待用户确认，不进入S8。
 
 - 2026-10-05用户确认“S7通过，开始下一阶段”，建立S7板级标签并按计划推送已验收节点，开始S8。上板为整体通过反馈，未另行提供逐项测量记录。
 
@@ -153,7 +153,7 @@ S8已上板通过，本轮活动工程移除旧音频PLL、I2S/ACR、加密HDMI�
 
 ModelSim本轮编译和仿真均0 errors、0 warnings。新增实际top复位测试覆盖5组启动/锁定顺序、停钟/失锁、运行中复位及在途提交清除，复位后静音与新首图提示正常。PLL、存储用行为模型，此项不代替实际上电。其余完整回归：6控制+面板、3组异步缓冲、独立PCM、基础封装与双源包、三帧视频对齐、4组旋律307381样本/24事件CDC、3200媒体PCM包、真实视频614400+307200像素及厂商ODDR 849995+449995字全部通过。S9 PHY测试明确LOCAL_RESET=1/MEDIA=1。
 
-TD综合、布局布线、bitgen完成，固定releases/v0.3.0-r2-s9-local.1及独立BOARD_VALIDATION.md。3301 LUT/2590寄存器/4 BRAM/1 DSP/2 PLL；Setup WNS−6.565ns/TNS−294.439ns，Hold+0.004ns。取消像素/串行exclusive，像素→串行+6.376ns，STA覆盖99.86%；旧BMP解析违例本轮消失。仍有64个SDRAM接口违例（写侧−2.920ns，较S8退化0.133ns），全局未收敛，板级IO delay仍未完整定义。
+TD综合、布局布线、bitgen完成，固定releases/v0.3.0/v0.3.0-r2-s9-local.1及独立BOARD_VALIDATION.md。3301 LUT/2590寄存器/4 BRAM/1 DSP/2 PLL；Setup WNS−6.565ns/TNS−294.439ns，Hold+0.004ns。取消像素/串行exclusive，像素→串行+6.376ns，STA覆盖99.86%；旧BMP解析违例本轮消失。仍有64个SDRAM接口违例（写侧−2.920ns，较S8退化0.133ns），全局未收敛，板级IO delay仍未完整定义。
 
 当前等待用户完成至少5轮上电/复位、图片操作及10分钟音视频。S9通过前不发布v0.3.0、不推送候选、不做完成归档。恢复使用已验收S8固定bit。
 

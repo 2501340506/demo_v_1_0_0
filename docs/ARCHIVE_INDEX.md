@@ -8,8 +8,8 @@
 
 - [Git回退与R2重规划归档](history/2026-10-04/HDMI音频升级/方案重规划/README.md)
 - [HDMI音频当前阶段计划](HDMI音频分阶段修改计划.md)
-- [S0固定候选和验收说明](../releases/v0.3.0-s0-local.1/README.md)
-- [S1固定候选和验收说明](../releases/v0.3.0-s1-local.1/README.md)
+- [S0固定候选和验收说明](../releases/v0.3.0/v0.3.0-s0-local.1/README.md)
+- [S1固定候选和验收说明](../releases/v0.3.0/v0.3.0-s1-local.1/README.md)
 - [S1开始前交接快照](history/2026-10-04/HDMI音频升级/HANDOFF_before_S1.md)
 - [音频升级开始前交接快照](history/2026-10-04/HDMI音频升级/HANDOFF_before_S0.md)
 
@@ -34,10 +34,10 @@ v0.1.8为缓冲所有权版本；v0.1.9为数码管面板模块化版本；v0.2.
 - [进入S3前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S3.md)。v0.4.0仍进行中，最终完成归档未执行。
 
 - [进入S4前交接](history/2026-10-05/系统稳定性增强/HANDOFF_S3_board_accepted.md)
-- [S4本地候选及证据](../releases/v0.4.0-s4-local.1/README.md)（已上板通过，整体尚未结项）
+- [S4本地候选及证据](../releases/v0.4.0/v0.4.0-s4-local.1/README.md)（已上板通过，整体尚未结项）
 
 - [S4验收后交接](history/2026-10-05/系统稳定性增强/HANDOFF_S4_board_accepted.md)
-- [S5候选及证据](../releases/v0.4.0-s5-local.1/README.md)（已上板通过，整体尚未结项）
+- [S5候选及证据](../releases/v0.4.0/v0.4.0-s5-local.1/README.md)（已上板通过，整体尚未结项）
 
 - [进入S6前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S6.md)
-- [S6本地全回归与最终验收入口](../releases/v0.4.0-s6-local.1/README.md)（已整体验收并结项）
+- [S6本地全回归与最终验收入口](../releases/v0.4.0/v0.4.0-s6-local.1/README.md)（已整体验收并结项）

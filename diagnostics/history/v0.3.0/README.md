@@ -21,4 +21,4 @@
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/history/v0.3.0/run_hdmi_s6_tests.ps1 -Stage s9
 ```
 
-S6/S7/S8参数、缓冲Baseline对照等历史入口保留；它们的范围以脚本为准。末轮固定证据见[已验收S9](../../../releases/v0.3.0-r2-s9-local.1/README.md)。SD缺陷复现已分离至[延期问题存档](../sd_recovery/README.md)，不属于正常回归通过项。
+S6/S7/S8参数、缓冲Baseline对照等历史入口保留；它们的范围以脚本为准。末轮固定证据见[已验收S9](../../../releases/v0.3.0/v0.3.0-r2-s9-local.1/README.md)。SD缺陷复现已分离至[延期问题存档](../sd_recovery/README.md)，不属于正常回归通过项。

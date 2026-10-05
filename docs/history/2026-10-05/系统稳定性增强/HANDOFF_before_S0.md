@@ -33,4 +33,4 @@ v0.3.0/S9已获用户确认并发布，固定下载releases/v0.3.0/demo.bit。SD
 - _cleanup原为待删暂存，现已由用户删除；不得通过循环逐文件删除规避禁止批量删除要求。
 - Windows所有迁移源/目标已确认在工作区内且目标不冲突。Git对文本有CRLF转换，文本一致性与bit逐字节一致性分别检查。
 
-[统一文档](docs/README.md) · [诊断入口](diagnostics/README.md) · [迁移归档](diagnostics/history/2026-10-05/README.md) · [正式版本](releases/v0.3.0/README.md)
+[统一文档](../../../README.md) · [诊断入口](../../../../diagnostics/README.md) · [迁移归档](../../../../diagnostics/history/2026-10-05/README.md) · [正式版本](../../../../releases/v0.3.0/README.md)

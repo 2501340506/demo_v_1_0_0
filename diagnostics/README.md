@@ -18,7 +18,7 @@ diagnostics/
 - [早期诊断记录](history/2026-10-04/README.md)
 - [旧运行结果归档](history/2026-10-05/README.md)
 - [SD问题复现存档](history/sd_recovery/README.md)，不表示启动修复
-- [正式版本的固定验收证据](../releases/v0.3.0-r2-s9-local.1/README.md)
+- [正式版本的固定验收证据](../releases/v0.3.0/v0.3.0-r2-s9-local.1/README.md)
 
 从项目根目录构建：
 

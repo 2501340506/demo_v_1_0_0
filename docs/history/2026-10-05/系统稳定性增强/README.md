@@ -7,8 +7,8 @@
 - [验证状态快照](VALIDATION_STATUS_结项.md)
 - [最终板级验收](S6_BOARD_VALIDATION.md)
 - [正式固定产物](../../../../releases/v0.4.0/README.md)
-- [S5构建与逐项板级反馈](../../../../releases/v0.4.0-s5-local.1/README.md)
-- [S6最终全回归证据](../../../../releases/v0.4.0-s6-local.1/README.md)
+- [S5构建与逐项板级反馈](../../../../releases/v0.4.0/v0.4.0-s5-local.1/README.md)
+- [S6最终全回归证据](../../../../releases/v0.4.0/v0.4.0-s6-local.1/README.md)
 
 正式bit复用已验收S5构建，逐字节相同；发布只更新文档/固定产物/标签，不重建、不合并main。旧阶段快照保留，历史“待验收”描述以最终结项为准。64个SDRAM接口时序违例、SD初始化/命令和免复位热插拔恢复、原始扇区EOF边界均保留，不宣称额外修复。未删除任何历史资料。
 

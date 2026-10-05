@@ -10,11 +10,11 @@
 - E头错误保持到成功显示或复位，F/d仅预留。S2～S5未实施；SD底层延期问题未改。
 - S1七组真实解析/控制恢复专项、全尺寸RGB参考及8入口回归通过；历史控制/缓冲测试复制到活动目录适配，历史原件未改。
 - 首次TD新增SD域负裕量，不作候选；扫描两次加法分拍后完整帧/恢复/6控制再次通过。首次构建证据保存在diagnostics/stability/evidence/s1_build1。
-- 最终TD构建名stability_s1_local2，固定releases/v0.4.0-s1-local.1/demo.bit及报告/约束/工程/仿真证据/上板文档；候选标签v0.4.0-s1-local.1。
+- 最终TD构建名stability_s1_local2，固定releases/v0.4.0/v0.4.0-s1-local.1/demo.bit及报告/约束/工程/仿真证据/上板文档；候选标签v0.4.0-s1-local.1。
 
 ## 当前卡点与验证边界
 
-等用户完成releases/v0.4.0-s1-local.1/BOARD_VALIDATION.md。尚无S1板级结论，不能宣称v0.4.0完成或热插拔恢复。
+等用户完成releases/v0.4.0/v0.4.0-s1-local.1/BOARD_VALIDATION.md。尚无S1板级结论，不能宣称v0.4.0完成或热插拔恢复。
 
 TD：3382 LUT、2655寄存器、4 BRAM、1 DSP、2 PLL；SD控制域+0.150ns。全局Setup−6.565ns/TNS−295.033ns，Hold+0.011ns。64个SDRAM接口及1个未修改帧缓存内部负端点（−0.180ns）；约束未改，时序未全局收敛。
 

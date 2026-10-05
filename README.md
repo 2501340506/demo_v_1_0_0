@@ -2,9 +2,9 @@
 
 当前正式版本：**[v0.4.0 — 系统稳定性增强](releases/v0.4.0/README.md)**，2026-10-05用户确认S6通过，S0–S6已结项。覆盖BMP校验、有限恢复、坏图快跳、像素完整性与加载超时；沿用已验收S5 bit。
 
-[下载固定bit](releases/v0.4.0/demo.bit) · [最终验收](releases/v0.4.0-s6-local.1/BOARD_VALIDATION.md) · [结项归档](docs/history/2026-10-05/系统稳定性增强/README.md) · [完成计划](docs/系统稳定性分阶段修改计划.md)。2026-10-05已按用户要求将feature/system-stability-v0.4.0合并到main。
+[下载固定bit](releases/v0.4.0/demo.bit) · [最终验收](releases/v0.4.0/v0.4.0-s6-local.1/BOARD_VALIDATION.md) · [结项归档](docs/history/2026-10-05/系统稳定性增强/README.md) · [完成计划](docs/系统稳定性分阶段修改计划.md)。2026-10-05已按用户要求将feature/system-stability-v0.4.0合并到main。
 
-目录入口：[统一文档](docs/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
+目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
 
 上一正式版本：**[v0.3.0](releases/v0.3.0/README.md)**，2026-10-05。已按用户要求将`feature/hdmi-audio-v0.3.0`合并到主分支`main`，包含文档统一和诊断归档。
 
@@ -12,7 +12,7 @@ R2 HDMI音频计划已结项：S0/S1、S4、S6、S7、S8、S9获用户上板确�
 
 基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz双声道图片琶音。实际显示提交后触发一次提示音，音量固定128。本版移除旧音频PLL/I2S/AXIS及官方加密HDMI依赖，保留系统/视频两颗PLL，五个时钟域各自同步释放复位；最近已验收节点为S9。
 
-上一版产物：[v0.3.0固定bit与说明](releases/v0.3.0/README.md) · [S9上板验收记录](releases/v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md)。SD复位/拔卡恢复问题已记录，用户明确本版本不修、暂不修改。全局时序仍未收敛。
+上一版产物：[v0.3.0固定bit与说明](releases/v0.3.0/README.md) · [S9上板验收记录](releases/v0.3.0/v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md)。SD复位/拔卡恢复问题已记录，用户明确本版本不修、暂不修改。全局时序仍未收敛。
 
 ## 使用方式
 
@@ -44,10 +44,10 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 ## 下载与构建
 
 - [v0.3.0已验收图片音调版本](releases/v0.3.0/demo.bit)
-- [S8已验收恢复产物](releases/v0.3.0-r2-s8-local.1/demo.bit)
-- [S6已验收静音恢复产物](releases/v0.3.0-r2-s6-local.1/demo.bit)
-- [S4已验收恢复产物](releases/v0.3.0-r2-s4-local.1/demo.bit)
-- [S1恢复用固定bitstream](releases/v0.3.0-s1-local.1/demo.bit)
+- [S8已验收恢复产物](releases/v0.3.0/v0.3.0-r2-s8-local.1/demo.bit)
+- [S6已验收静音恢复产物](releases/v0.3.0/v0.3.0-r2-s6-local.1/demo.bit)
+- [S4已验收恢复产物](releases/v0.3.0/v0.3.0-r2-s4-local.1/demo.bit)
+- [S1恢复用固定bitstream](releases/v0.3.0/v0.3.0-s1-local.1/demo.bit)
 - [中文版本说明及构建报告](releases/v0.2.0/README.md)
 - [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/history/2026-10-04/V0_2_0_MERGE_REVIEW.md)
 
@@ -59,6 +59,6 @@ S9已获用户整体上板确认，v0.3.0沿用其固定bit。S9完整ModelSim�
 
 本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
 
-S5独立封装及双PCM源接口已完成，详见[模块交付与仿真证据](releases/v0.3.0-r2-s5-local.1/README.md)。S5无新bit或上板要求；S6已接入新核心，预期正常图片及静音，详见[上板验证文档](releases/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。
+S5独立封装及双PCM源接口已完成，详见[模块交付与仿真证据](releases/v0.3.0/v0.3.0-r2-s5-local.1/README.md)。S5无新bit或上板要求；S6已接入新核心，预期正常图片及静音，详见[上板验证文档](releases/v0.3.0/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。
 
 S6静音、S7正弦音、S8图片联动、S9清理均已获用户确认；正式发布使用S9产物。

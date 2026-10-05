@@ -4,7 +4,7 @@
 
 ## 下载文件
 
-[固定demo.bit](../../../../releases/v0.3.0-r2-s9-local.1/demo.bit)：`D:/My_Program/anlogic_program/demo_v_0_0/releases/v0.3.0-r2-s9-local.1/demo.bit`。
+[固定demo.bit](../../../../releases/v0.3.0/v0.3.0-r2-s9-local.1/demo.bit)：`D:/My_Program/anlogic_program/demo_v_0_0/releases/v0.3.0/v0.3.0-r2-s9-local.1/demo.bit`。
 
 沿用S8验证过的板卡、TF图片、HDMI线和接收设备，SW2 SW1=00。保留S8恢复文件。若bit只下载到SRAM，断电后按现有方式重新下载本文件；本轮不新增Flash烧写要求。
 
@@ -18,7 +18,7 @@
 
 ## 异常恢复
 
-下载已通过S8的`D:/My_Program/anlogic_program/demo_v_0_0/releases/v0.3.0-r2-s8-local.1/demo.bit`，应恢复同样的图片旋律功能。记录异常出现于第几轮上电/复位、当时手动或AUTO、画面和声音现象，以及恢复S8后是否正常。停留S9修复，不发布v0.3.0。
+下载已通过S8的`D:/My_Program/anlogic_program/demo_v_0_0/releases/v0.3.0/v0.3.0-r2-s8-local.1/demo.bit`，应恢复同样的图片旋律功能。记录异常出现于第几轮上电/复位、当时手动或AUTO、画面和声音现象，以及恢复S8后是否正常。停留S9修复，不发布v0.3.0。
 
 ## 已知限制
 

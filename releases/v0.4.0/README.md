@@ -2,7 +2,7 @@
 
 2026-10-05用户确认S6整体通过，阶段计划结项。正式标签`v0.4.0`，分支`feature/system-stability-v0.4.0`。沿用仓库发布惯例：Git标签与固定产物，不另建GitHub Release页面。2026-10-05已按用户要求将开发分支合并到main；既有正式标签与固定bit不变。
 
-[下载demo.bit](demo.bit) · [最终验收记录](../v0.4.0-s6-local.1/BOARD_VALIDATION.md) · [结项归档](../../docs/history/2026-10-05/系统稳定性增强/README.md)。
+[下载demo.bit](demo.bit) · [最终验收记录](v0.4.0-s6-local.1/BOARD_VALIDATION.md) · [结项归档](../../docs/history/2026-10-05/系统稳定性增强/README.md)。
 
 ## 修改
 
@@ -18,7 +18,7 @@
 
 bit为629624字节，直接复制已验收S5候选并逐字节比较一致；生产RTL、工程及约束与S5候选一致，无重新构建。工程/约束、源清单、TD报告随本目录保存；其中源清单和时序对比保留S5构建来源。
 
-[S6全回归证据](../v0.4.0-s6-local.1/README.md)：全尺寸RGB参考及头/扫描/像素/恢复/超时专项、真实异步缓冲3配置、8个既有入口全部通过，零错误零警告。SD/FIFO/存储使用行为模型。
+[S6全回归证据](v0.4.0-s6-local.1/README.md)：全尺寸RGB参考及头/扫描/像素/恢复/超时专项、真实异步缓冲3配置、8个既有入口全部通过，零错误零警告。SD/FIFO/存储使用行为模型。
 
 TD资源3944 LUT、2890寄存器、4 BRAM、4 DSP、2 PLL。SD域+0.133ns、内存域+0.021ns；全局Setup−6.565ns/TNS−294.297ns、Hold+0.004ns，64个SDRAM接口违例仍在，全局未收敛。见[timing_comparison](timing_comparison.md)。
 
