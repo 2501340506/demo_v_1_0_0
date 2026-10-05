@@ -1,5 +1,7 @@
 # 项目归档索引
 
+系统稳定性增强已于2026-10-05结项，发布v0.4.0：[结项归档](history/2026-10-05/系统稳定性增强/README.md) · [完成计划](系统稳定性分阶段修改计划.md) · [正式产物](../releases/v0.4.0/README.md)。下方阶段条目保留历史背景。
+
 目录整理（2026-10-05）：原docx并入docs；[文档入口](README.md) · [诊断归档](../diagnostics/README.md) · [旧本地结果与迁移记录](../diagnostics/history/2026-10-05/README.md)。课程来源保留于[HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md)。
 
 更新：2026-10-05。R2 HDMI音频计划已获S9验收并发布v0.3.0；SD恢复问题按用户要求延期且暂不修改。历史EDID仍取消，原归档保留。
@@ -28,3 +30,14 @@
 - [10月3日归档](history/2026-10-03/README.md)
 
 v0.1.8为缓冲所有权版本；v0.1.9为数码管面板模块化版本；v0.2.0为拨码与新按键版本。历史原文中的“当前”“待验收”和完整回归结论，均以当前交接和验证说明为准。
+
+- [进入S3前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S3.md)。v0.4.0仍进行中，最终完成归档未执行。
+
+- [进入S4前交接](history/2026-10-05/系统稳定性增强/HANDOFF_S3_board_accepted.md)
+- [S4本地候选及证据](../releases/v0.4.0-s4-local.1/README.md)（已上板通过，整体尚未结项）
+
+- [S4验收后交接](history/2026-10-05/系统稳定性增强/HANDOFF_S4_board_accepted.md)
+- [S5候选及证据](../releases/v0.4.0-s5-local.1/README.md)（已上板通过，整体尚未结项）
+
+- [进入S6前交接](history/2026-10-05/系统稳定性增强/HANDOFF_before_S6.md)
+- [S6本地全回归与最终验收入口](../releases/v0.4.0-s6-local.1/README.md)（已整体验收并结项）

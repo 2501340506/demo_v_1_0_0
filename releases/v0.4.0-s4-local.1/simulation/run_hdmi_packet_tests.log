@@ -1,0 +1,107 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 18:30:30 on Oct 05,2026
+vlog -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_hdmi_r2_s5/hdmi_work -sv -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_hdmi_r2_s5/hdmi_compile.log D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_audio_acr_packetizer.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_audio_infoframe_packetizer.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_audio_packet_scheduler.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_audio_sample_packetizer.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_audio_symbol_core.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_bch8.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_data_island_mapper.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_data_island_scheduler.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_terc4_encoder.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\hdmi_tmds_channel_encoder.v D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\hdmi_audio\media_hdmi_audio_bridge.v user_source/hdl_source/audio/pcm_test_tone.v diagnostics/history/v0.3.0/tb_hdmi_packets.sv diagnostics/history/v0.3.0/tb_hdmi_primitives.sv 
+-- Compiling module hdmi_audio_acr_packetizer
+-- Compiling module hdmi_audio_infoframe_packetizer
+-- Compiling module hdmi_audio_packet_scheduler
+-- Compiling module hdmi_audio_sample_packetizer
+-- Compiling module hdmi_audio_symbol_core
+-- Compiling module hdmi_bch8
+-- Compiling module hdmi_data_island_mapper
+-- Compiling module hdmi_data_island_scheduler
+-- Compiling module hdmi_terc4_encoder
+-- Compiling module hdmi_tmds_channel_encoder
+-- Compiling module media_hdmi_audio_bridge
+-- Compiling module pcm_test_tone
+-- Compiling module tb_hdmi_packets
+-- Compiling module tb_hdmi_primitives
+
+Top level modules:
+	tb_hdmi_packets
+	tb_hdmi_primitives
+End time: 18:30:31 on Oct 05,2026, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_hdmi_r2_s5/hdmi_work tb_hdmi_primitives -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_hdmi_r2_s5/primitives.log -do "run -all; quit -f" 
+# Start time: 18:30:31 on Oct 05,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS packet claim holds audio across higher priority arrivals; ACR then InfoFrame priority
+# PASS primitive vectors generated
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/history/v0.3.0/tb_hdmi_primitives.sv(70)
+#    Time: 44221 ns  Iteration: 0  Instance: /tb_hdmi_primitives
+# End time: 18:30:32 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_hdmi_r2_s5/hdmi_work tb_hdmi_packets -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_hdmi_r2_s5/hdmi_pattern_0.log -do "run -all; quit -f" -gPATTERN=0 
+# Start time: 18:30:33 on Oct 05,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt1
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS HDMI symbols: pattern=0 accepted=3200 packets=871 pixels=1228800
+# PASS coverage: stalled selection changes=0 higher priority arrivals while audio locked=0
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/history/v0.3.0/tb_hdmi_packets.sv(212)
+#    Time: 68000165 ns  Iteration: 0  Instance: /tb_hdmi_packets
+# End time: 18:30:38 on Oct 05,2026, Elapsed time: 0:00:05
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_hdmi_r2_s5/hdmi_work tb_hdmi_packets -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_hdmi_r2_s5/hdmi_pattern_1.log -do "run -all; quit -f" -gPATTERN=1 
+# Start time: 18:30:39 on Oct 05,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt2
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS HDMI symbols: pattern=1 accepted=800 packets=236 pixels=614400
+# PASS coverage: stalled selection changes=81618 higher priority arrivals while audio locked=0
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/history/v0.3.0/tb_hdmi_packets.sv(212)
+#    Time: 34000165 ns  Iteration: 0  Instance: /tb_hdmi_packets
+# End time: 18:30:41 on Oct 05,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0
+PASS primitives: 256 BCH vectors at both lengths; fixed ACR bytes; 1024 TMDS video vectors and all control/TERC4/guard symbols
+PASS tone_packets.txt: 3200 samples, 16 IEC blocks, packets {1: 66, 2: 800, 132: 5}; BCH, stereo order, 24-bit alignment, parity, N/CTS, InfoFrame
+PASS pattern_packets.txt: 800 samples, 4 IEC blocks, packets {1: 33, 2: 200, 132: 3}; BCH, stereo order, 24-bit alignment, parity, N/CTS, InfoFrame

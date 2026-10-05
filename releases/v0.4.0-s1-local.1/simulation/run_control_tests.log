@@ -1,0 +1,215 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 15:52:58 on Oct 05,2026
+vlog -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work -sv user_source/hdl_source/SD/media_display_control.v user_source/hdl_source/SD/media_player_control.v user_source/hdl_source/SD/media_policy.v user_source/hdl_source/SD/dual_key_event_router.v user_source/hdl_source/SD/key_gesture_control.v user_source/hdl_source/SD/key_press_debounce.v user_source/hdl_source/SD/mode_key_control.v user_source/hdl_source/SD/sd_card_bmp.v user_source/hdl_source/SD/bmp_read.v user_source/hdl_source/SD/sd_card_top.v user_source/hdl_source/SD/sd_card_sec_read_write.v user_source/hdl_source/SD/sd_card_cmd.v user_source/hdl_source/SD/spi_master.v user_source/hdl_source/audio/media_commit_cdc.v user_source/hdl_source/audio/pcm_media_tone.v diagnostics/stability/tb_picture_requests.sv diagnostics/history/v0.3.0/tb_mode_key_control.sv diagnostics/history/v0.3.0/tb_dual_key_event_router.sv diagnostics/history/v0.3.0/tb_media_player_control.sv diagnostics/history/v0.3.0/tb_media_display_control.sv diagnostics/history/v0.3.0/tb_key_gesture_control.sv 
+-- Compiling module media_display_control
+-- Compiling module media_player_control
+-- Compiling module media_policy
+-- Compiling module dual_key_event_router
+-- Compiling module key_gesture_control
+-- Compiling module key_press_debounce
+-- Compiling module mode_key_control
+-- Compiling module sd_card_bmp
+-- Compiling module bmp_read
+-- Compiling module sd_card_top
+-- Compiling module sd_card_sec_read_write
+-- Compiling module sd_card_cmd
+-- Compiling module spi_master
+-- Compiling module media_commit_cdc
+-- Compiling module pcm_media_tone
+-- Compiling module tb_picture_requests
+-- Compiling module tb_mode_key_control
+-- Compiling module tb_dual_key_event_router
+-- Compiling module tb_media_player_control
+-- Compiling module tb_media_display_control
+-- Compiling module tb_key_gesture_control
+
+Top level modules:
+	media_policy
+	tb_picture_requests
+	tb_mode_key_control
+	tb_dual_key_event_router
+	tb_media_player_control
+	tb_media_display_control
+	tb_key_gesture_control
+End time: 15:52:58 on Oct 05,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work tb_picture_requests -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_check\stage4_tb_picture_requests.log -do "run -all; quit -f" 
+# Start time: 15:52:59 on Oct 05,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "bmp_read(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "sd_card_cmd(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "sd_card_sec_read_write(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "spi_master(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS first image retries after header rejection and commits only on success
+# PASS rapid KEY2 requests coalesce into current plus one pending load
+# PASS independent KEY1/KEY2 requests use committed index and next priority
+# PASS four-image wrap and 20 rounds of back-to-back loads
+# PASS rejected headers preserve image and pending requests, then recover
+# PASS real writes wait for SDRAM completion
+# PASS held direction keys fire once, rearm and queue while busy
+# PASS all reserved modes gate new direction loads and KEY4 toggles once
+# PASS switching back to MAN preserves current and pending manual loads
+# PASS AUTO expiry yields to real debounced direction press
+# PASS simultaneous pending consumption and new event capture
+# PASS KEY4 wins over AUTO expiry and returns to MAN
+# PASS mode change cancels coincident expiry and AUTO resumes after full interval
+# PASS delayed display ack preserves old image and drains pending after adoption
+# PASS S8 75 display commits delivered once with matching picture and cue
+# ** Note: $finish    : diagnostics/stability/tb_picture_requests.sv(330)
+#    Time: 1841410 ns  Iteration: 1  Instance: /tb_picture_requests
+# End time: 15:53:00 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work tb_mode_key_control -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_check\stage4_tb_mode_key_control.log -do "run -all; quit -f" 
+# Start time: 15:53:01 on Oct 05,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS mode-gated single press events and KEY4
+# ** Note: $finish    : diagnostics/history/v0.3.0/tb_mode_key_control.sv(24)
+#    Time: 2830 ns  Iteration: 1  Instance: /tb_mode_key_control
+# End time: 15:53:02 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work tb_dual_key_event_router -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_check\stage4_tb_dual_key_event_router.log -do "run -all; quit -f" 
+# Start time: 15:53:02 on Oct 05,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "dual_key_event_router(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS dual-key chord window and single-event exclusion
+# ** Note: $finish    : diagnostics/history/v0.3.0/tb_dual_key_event_router.sv(79)
+#    Time: 475 ns  Iteration: 1  Instance: /tb_dual_key_event_router
+# End time: 15:53:03 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work tb_media_player_control -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_check\stage4_tb_media_player_control.log -do "run -all; quit -f" 
+# Start time: 15:53:04 on Oct 05,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS control handshake, committed index, priority, capture, single image and autoplay
+# ** Note: $finish    : diagnostics/history/v0.3.0/tb_media_player_control.sv(51)
+#    Time: 290 ns  Iteration: 1  Instance: /tb_media_player_control
+# End time: 15:53:05 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work tb_media_display_control -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_check\stage4_tb_media_display_control.log -do "run -all; quit -f" 
+# Start time: 15:53:06 on Oct 05,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS display states, combo duration/retrigger/saturation/reset and autoplay indicator
+# ** Note: $finish    : diagnostics/history/v0.3.0/tb_media_display_control.sv(49)
+#    Time: 2881 ns  Iteration: 0  Instance: /tb_media_display_control
+# End time: 15:53:07 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+Reading D:/modelsim/tcl/vsim/pref.tcl
+
+# 10.6e
+
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/modelsim_check/work tb_key_gesture_control -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\modelsim_check\stage4_tb_key_gesture_control.log -do "run -all; quit -f" 
+# Start time: 15:53:07 on Oct 05,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "dual_key_event_router(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS stable-edge long threshold is exactly 1000 cycles and fires once
+# PASS real-window threshold sides and quick tap recovery
+# PASS stable edge, chord wait and partial release block autoplay then resume
+# PASS outside-window overlap keeps independent exact long timing
+# PASS reset cancels pending gesture and rearms
+# ** Note: $finish    : diagnostics/history/v0.3.0/tb_key_gesture_control.sv(108)
+#    Time: 103090 ns  Iteration: 1  Instance: /tb_key_gesture_control
+# End time: 15:53:08 on Oct 05,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

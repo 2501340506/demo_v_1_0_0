@@ -1,0 +1,12 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 19:06:16 on Oct 05,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/stability_timeout/work -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\stability_timeout/compile.log user_source/hdl_source/SD/bmp_read.v diagnostics/stability/sim_bmp_sectors.sv diagnostics/stability/tb_bmp_timeout.sv 
+-- Compiling module bmp_read
+-- Compiling module sim_bmp_sectors
+-- Compiling module tb_bmp_timeout
+
+Top level modules:
+	sim_bmp_sectors
+	tb_bmp_timeout
+End time: 19:06:16 on Oct 05,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
