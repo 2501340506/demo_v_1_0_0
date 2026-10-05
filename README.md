@@ -6,13 +6,11 @@
 
 目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
 
-上一正式版本：**[v0.3.0](releases/v0.3.0/README.md)**，2026-10-05。已按用户要求将`feature/hdmi-audio-v0.3.0`合并到主分支`main`，包含文档统一和诊断归档。
+当前开发任务：[v0.5.0 Flash固化与上电自启](docs/Flash固化与上电自启分阶段修改计划.md)。逐阶段上板验收，最终统一上传；正式可用版本仍为v0.4.0。
 
-R2 HDMI音频计划已结项：S0/S1、S4、S6、S7、S8、S9获用户上板确认，S2/S5独立模块验证完成，S3独立EDID取消。[完整阶段记录](docs/HDMI音频分阶段修改计划.md) · [结项归档](docs/history/2026-10-05/HDMI音频升级/README.md)。
+基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；两颗PLL、五个时钟域分别同步释放复位。
 
-基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz双声道图片琶音。实际显示提交后触发一次提示音，音量固定128。本版移除旧音频PLL/I2S/AXIS及官方加密HDMI依赖，保留系统/视频两颗PLL，五个时钟域各自同步释放复位；最近已验收节点为S9。
-
-上一版产物：[v0.3.0固定bit与说明](releases/v0.3.0/README.md) · [S9上板验收记录](releases/v0.3.0/v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md)。SD复位/拔卡恢复问题已记录，用户明确本版本不修、暂不修改。全局时序仍未收敛。
+上一正式版本：[v0.3.0](releases/v0.3.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 使用方式
 
@@ -43,22 +41,16 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-- [v0.3.0已验收图片音调版本](releases/v0.3.0/demo.bit)
-- [S8已验收恢复产物](releases/v0.3.0/v0.3.0-r2-s8-local.1/demo.bit)
-- [S6已验收静音恢复产物](releases/v0.3.0/v0.3.0-r2-s6-local.1/demo.bit)
-- [S4已验收恢复产物](releases/v0.3.0/v0.3.0-r2-s4-local.1/demo.bit)
-- [S1恢复用固定bitstream](releases/v0.3.0/v0.3.0-s1-local.1/demo.bit)
-- [中文版本说明及构建报告](releases/v0.2.0/README.md)
-- [交接记录](HANDOFF.md)、[归档索引](docs/ARCHIVE_INDEX.md)、[合并审核说明](docs/history/2026-10-04/V0_2_0_MERGE_REVIEW.md)
+当前正式下载：[v0.4.0固定bit](releases/v0.4.0/demo.bit) · [版本说明](releases/v0.4.0/README.md)。开发候选需按独立上板说明验收，不替代正式版本。
 
-使用Tang Dynasty 6.2打开 `TD_project/demo.al`，选择器件EG4S20BG256、顶层 `top`，依次综合、布局布线、生成bitstream。运行产物 `TD_project/demo_Runs/phy_1/demo.bit` 会被后续构建覆盖，正式下载使用 `releases/v0.3.0/demo.bit`，不使用旧 `best_result` 产物。
+使用Tang Dynasty 6.2打开`TD_project/demo.al`，器件EG4S20BG256、顶层top，依次综合、布局布线、生成bitstream。命令行入口为`diagnostics/run_td_build.ps1`。运行目录`TD_project/demo_Runs/phy_1/demo.bit`会被新构建覆盖，上板使用版本目录中的固定文件。
+
+[交接记录](HANDOFF.md) · [验证状态](docs/VALIDATION_STATUS.md) · [诊断入口](diagnostics/README.md) · [历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 验证状态与范围
 
-S9已获用户整体上板确认，v0.3.0沿用其固定bit。S9完整ModelSim回归及TD构建证据保留；PLL为2个，STA覆盖99.86%，像素→串行+6.376ns，Setup−6.565ns，仍有64个SDRAM接口违例。已知SD恢复问题按用户决定延期，未作修复。详见[验证状态](docs/VALIDATION_STATUS.md)。
+v0.4.0已经用户整体上板确认；最终仿真证据及沿用S5的TD报告见版本目录。资源3944 LUT、2890寄存器、4 BRAM、4 DSP、2 PLL；Setup −6.565ns、Hold +0.004ns，64个SDRAM接口负端点仍在，未全局收敛。
 
-本版不包含OSD、B/C调节和图像处理、缩放。B初值0、范围−128..127；C初值128、范围0..256、至少9位，仅记录为后续需求。
+500ms无进展超时覆盖扫描、读头、写应答和像素等待；SD初始化、源解析结束后的最终内存写完成/显示确认、免复位热插拔恢复仍不在该范围。用户曾报告的SD初始化/复位问题仍按历史边界保留；不宣称Flash启动改造已解决SD协议恢复。
 
-S5独立封装及双PCM源接口已完成，详见[模块交付与仿真证据](releases/v0.3.0/v0.3.0-r2-s5-local.1/README.md)。S5无新bit或上板要求；S6已接入新核心，预期正常图片及静音，详见[上板验证文档](releases/v0.3.0/v0.3.0-r2-s6-local.1/BOARD_VALIDATION.md)。
-
-S6静音、S7正弦音、S8图片联动、S9清理均已获用户确认；正式发布使用S9产物。
+本版不包含OSD、亮度/对比度调节或缩放。预留参数B初值0、范围−128..127；C初值128、范围0..256、至少9位，作为后续需求记录。

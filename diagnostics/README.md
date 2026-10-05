@@ -1,5 +1,7 @@
 # 构建与诊断归档
 
+当前开发验证：[Flash与启动](flash_boot/README.md)。
+
 活动验证见[stability](stability/README.md)；已完成阶段测试保留历史，新运行结果放output。
 
 ```text
