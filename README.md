@@ -1,18 +1,18 @@
 # 安路 EG4 HDMI 图片播放器
 
-S6整体验收：[候选说明](releases/v0.4.0-s6-local.1/README.md) · [最终验收步骤](releases/v0.4.0-s6-local.1/BOARD_VALIDATION.md)。全回归通过，继续使用已验收S5 bit，待至少5轮启动与30分钟运行确认。
+当前正式版本：**[v0.4.0 — 系统稳定性增强](releases/v0.4.0/README.md)**，2026-10-05用户确认S6通过，S0–S6已结项。覆盖BMP校验、有限恢复、坏图快跳、像素完整性与加载超时；沿用已验收S5 bit。
 
-当前开发：**v0.4.0系统稳定性增强**，S0已完成，**S1已上板通过并推送，S2已上板通过并推送，S3已上板通过并推送；S4已上板通过并推送；S5已上板通过并推送；S6本地通过待最终验收**。[S2固定候选](releases/v0.4.0-s2-local.1/README.md) · [S2上板步骤](releases/v0.4.0-s2-local.1/BOARD_VALIDATION.md)。正式上板版本仍为v0.3.0。[S1固定候选](releases/v0.4.0-s1-local.1/README.md) · [S1上板步骤](releases/v0.4.0-s1-local.1/BOARD_VALIDATION.md)。[阶段计划](docs/系统稳定性分阶段修改计划.md) · [来源与边界](docs/SYSTEM_STABILITY_SOURCES.md)。
+[下载固定bit](releases/v0.4.0/demo.bit) · [最终验收](releases/v0.4.0-s6-local.1/BOARD_VALIDATION.md) · [结项归档](docs/history/2026-10-05/系统稳定性增强/README.md) · [完成计划](docs/系统稳定性分阶段修改计划.md)。分支feature/system-stability-v0.4.0，本轮发布不合并main。
 
 目录入口：[统一文档](docs/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
 
-已验收版本：**[v0.3.0](releases/v0.3.0/README.md)**，2026-10-05。已按用户要求将`feature/hdmi-audio-v0.3.0`合并到主分支`main`，包含文档统一和诊断归档。
+上一正式版本：**[v0.3.0](releases/v0.3.0/README.md)**，2026-10-05。已按用户要求将`feature/hdmi-audio-v0.3.0`合并到主分支`main`，包含文档统一和诊断归档。
 
 R2 HDMI音频计划已结项：S0/S1、S4、S6、S7、S8、S9获用户上板确认，S2/S5独立模块验证完成，S3独立EDID取消。[完整阶段记录](docs/HDMI音频分阶段修改计划.md) · [结项归档](docs/history/2026-10-05/HDMI音频升级/README.md)。
 
 基于 Anlogic EG4S20BG256，从TF卡读取BMP图片，使用SDRAM双缓冲输出640×480 HDMI视频和48kHz双声道图片琶音。实际显示提交后触发一次提示音，音量固定128。本版移除旧音频PLL/I2S/AXIS及官方加密HDMI依赖，保留系统/视频两颗PLL，五个时钟域各自同步释放复位；最近已验收节点为S9。
 
-正式产物：[v0.3.0固定bit与说明](releases/v0.3.0/README.md) · [S9上板验收记录](releases/v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md)。SD复位/拔卡恢复问题已记录，用户明确本版本不修、暂不修改。全局时序仍未收敛。
+上一版产物：[v0.3.0固定bit与说明](releases/v0.3.0/README.md) · [S9上板验收记录](releases/v0.3.0-r2-s9-local.1/BOARD_VALIDATION.md)。SD复位/拔卡恢复问题已记录，用户明确本版本不修、暂不修改。全局时序仍未收敛。
 
 ## 使用方式
 

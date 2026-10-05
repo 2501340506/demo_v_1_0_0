@@ -1,12 +1,12 @@
 # 文档入口
 
-活动计划：[系统稳定性分阶段修改计划](系统稳定性分阶段修改计划.md)，S0完成、S1已上板通过并推送，S2已上板通过并推送，S3已上板通过并推送，S4已上板通过并推送，S5已上板通过并推送，S6本地通过待最终验收；[课程适配](SYSTEM_STABILITY_SOURCES.md)。
+系统稳定性计划已结项：[完成计划](系统稳定性分阶段修改计划.md) · [历史归档](history/2026-10-05/系统稳定性增强/README.md) · [v0.4.0正式版本](../releases/v0.4.0/README.md)。
 
 原`docx`为笔误，内容已统一合并到本目录；按日期保存的历史记录合并保留，无覆盖。
 
 | 内容 | 入口 |
 |---|---|
-| 当前产品及下载 | [项目README](../README.md) · [v0.3.0正式版本](../releases/v0.3.0/README.md) |
+| 当前产品及下载 | [项目README](../README.md) · [v0.4.0正式版本](../releases/v0.4.0/README.md) |
 | 验证结论和边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
 | 已完成阶段计划 | [HDMI音频分阶段修改计划](HDMI音频分阶段修改计划.md) |
 | 历史归档 | [ARCHIVE_INDEX.md](ARCHIVE_INDEX.md) · [history](history) |
