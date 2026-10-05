@@ -55,6 +55,17 @@ reg [31:0] width;
 reg [31:0] height;
 reg [15:0] bit_count;
 reg [31:0] compression;
+reg [31:0] dib_size;
+reg [15:0] planes;
+
+// Header fields settle long before the 512-byte sector completes. Pipeline
+// arithmetic/checks so the scan/load decision is not a wide combinational chain.
+reg [31:0] expected_pixels;
+reg [33:0] expected_bytes;
+reg [33:0] required_end;
+reg [32:0] dib_end;
+reg header_format_ok;
+reg header_bounds_ok;
 
 reg [31:0] scan_sector;
 reg [31:0] load_sector_latched;
@@ -68,12 +79,30 @@ reg [31:0] next_scan_sector_if_match;
 wire [31:0] next_scan_sector_if_miss;
 
 assign ready = (state == ST_IDLE);
-assign header_match = (header_0 == "B") &&
-                      (header_1 == "M") &&
-                      (width[15:0]  == bmp_width) &&
-                      (height[15:0] == bmp_height) &&
-                      (bit_count    == 16'd24) &&
-                      (compression  == 32'd0);
+assign header_match = header_format_ok && header_bounds_ok && (rd_cnt >= 10'd54);
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        expected_pixels <= 0;
+        expected_bytes <= 0;
+        required_end <= 0;
+        dib_end <= 0;
+        header_format_ok <= 0;
+        header_bounds_ok <= 0;
+    end else begin
+        expected_pixels <= {16'd0, bmp_width} * {16'd0, bmp_height};
+        expected_bytes <= {2'b00, expected_pixels} * 34'd3;
+        required_end <= {2'b00, pixel_offset} + expected_bytes;
+        dib_end <= {1'b0, dib_size} + 33'd14;
+        header_format_ok <= (header_0 == "B") && (header_1 == "M") &&
+                            (dib_size >= 32'd40) && (planes == 16'd1) &&
+                            (width == {16'd0, bmp_width}) &&
+                            (height == {16'd0, bmp_height}) &&
+                            (bit_count == 16'd24) && (compression == 32'd0);
+        header_bounds_ok <= ({1'b0, pixel_offset} >= dib_end) &&
+                            (pixel_offset < file_len) &&
+                            ({2'b00, file_len} >= required_end);
+    end
+end
 assign bmp_data_valid = (sd_sec_read_data_valid == 1'b1) &&
                         (bmp_len_cnt >= pixel_offset) &&
                         (bmp_len_cnt <  file_len);
@@ -114,6 +143,8 @@ always @(posedge clk or posedge rst) begin
         height       <= 32'd0;
         bit_count    <= 16'd0;
         compression  <= 32'd0;
+        dib_size     <= 32'd0;
+        planes       <= 16'd0;
     end else if (((state == ST_SCAN) || (state == ST_LOAD_HDR)) && sd_sec_read_data_valid) begin
         case (rd_cnt)
             10'd0 : header_0 <= sd_sec_read_data;
@@ -129,6 +160,11 @@ always @(posedge clk or posedge rst) begin
             10'd12: pixel_offset[23:16] <= sd_sec_read_data;
             10'd13: pixel_offset[31:24] <= sd_sec_read_data;
 
+            10'd14: dib_size[7:0] <= sd_sec_read_data;
+            10'd15: dib_size[15:8] <= sd_sec_read_data;
+            10'd16: dib_size[23:16] <= sd_sec_read_data;
+            10'd17: dib_size[31:24] <= sd_sec_read_data;
+
             10'd18: width[7:0] <= sd_sec_read_data;
             10'd19: width[15:8] <= sd_sec_read_data;
             10'd20: width[23:16] <= sd_sec_read_data;
@@ -138,6 +174,9 @@ always @(posedge clk or posedge rst) begin
             10'd23: height[15:8] <= sd_sec_read_data;
             10'd24: height[23:16] <= sd_sec_read_data;
             10'd25: height[31:24] <= sd_sec_read_data;
+
+            10'd26: planes[7:0] <= sd_sec_read_data;
+            10'd27: planes[15:8] <= sd_sec_read_data;
 
             10'd28: bit_count[7:0] <= sd_sec_read_data;
             10'd29: bit_count[15:8] <= sd_sec_read_data;
