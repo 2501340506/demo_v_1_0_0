@@ -1,4 +1,4 @@
-param([ValidateSet('baseline','recovery','headers','scan')][string]$Suite='baseline', [switch]$CompareS2)
+param([ValidateSet('baseline','recovery','headers','scan','pixels')][string]$Suite='baseline', [switch]$CompareS2)
 $ErrorActionPreference='Stop'
 $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $simTools='D:/modelsim/win64'
@@ -16,6 +16,7 @@ try {
     $test='tb_bmp_baseline'
     if ($Suite -eq 'headers') { $test='tb_bmp_headers' }
     if ($Suite -eq 'scan') { $test='tb_bmp_scan' }
+    if ($Suite -eq 'pixels') { $test='tb_bmp_pixels' }
     if ($Suite -eq 'recovery') {
         $rtl+=@('sd_card_bmp','media_display_control','media_player_control','mode_key_control',
             'key_press_debounce','sd_card_top','sd_card_sec_read_write','sd_card_cmd','spi_master')

@@ -73,7 +73,7 @@ reg [1:0]        write_req_ack_pipe;
 
 reg              scan_start_pulse;
 reg              load_start_pulse;
-reg [31:0]       load_sector;
+wire [31:0]      load_sector;
 reg              scan_kicked;
 reg              first_image_committed;
 reg [2:0]        img_found_count;
@@ -88,15 +88,17 @@ reg              load_busy;
 reg              commit_pending;
 reg [1:0]        commit_ack_sync;
 
-// 一次加载必须先观察到 bmp_read 进入忙态，之后返回 ready 才算源端完成
+// Source completion is the parser's explicit success, never merely ready.
 reg              source_busy_seen;
 reg              source_done_seen;
 reg              write_finish_seen;
 reg              write_started_seen;
+reg              write_epoch_active;
 
 // 同步 mem_clk 域的 write_finish_toggle
 reg [2:0]        wrfin_tgl_sync;
 wire             write_finish_pulse;
+wire             current_write_finish;
 
 wire source_done_now;
 wire write_finish_now;
@@ -112,8 +114,19 @@ assign write_en   = bmp_data_wr_en;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign source_done_now = source_done_seen || bmp_load_done;
-assign write_finish_now = write_finish_seen || write_finish_pulse;
+assign current_write_finish = write_epoch_active && !write_req_ack_sync && write_finish_pulse;
+assign write_finish_now = write_finish_seen || current_write_finish;
 assign write_req_ack_sync = write_req_ack_pipe[1];
+
+// A new request acknowledges only after the previous burst has ended and the
+// write FIFO is cleared. Discard old completion toggles through that handshake.
+always @(posedge clk or posedge rst) begin
+    if (rst) write_epoch_active <= 1'b0;
+    else if (!sd_init_done || !load_busy || load_start_pulse || bmp_load_error)
+        write_epoch_active <= 1'b0;
+    else if (write_req && write_req_ack_sync)
+        write_epoch_active <= 1'b1;
+end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -171,6 +184,10 @@ function [31:0] sector_lut;
     end
 endfunction
 
+// Decode the registered task index directly. Avoid a second wide register
+// enabled by the full retry/selection decision chain.
+assign load_sector = sector_lut(load_idx);
+
 function [1:0] next_buf_lut;
     input [1:0] cur_disp_buf;
     input       valid_now;
@@ -215,7 +232,6 @@ always @(posedge clk or posedge rst) begin
         wrfin_tgl_sync        <= 3'b000;
         scan_start_pulse      <= 1'b0;
         load_start_pulse      <= 1'b0;
-        load_sector           <= 32'd0;
         scan_kicked           <= 1'b0;
         first_image_committed <= 1'b0;
 
@@ -293,8 +309,10 @@ always @(posedge clk or posedge rst) begin
             if (load_busy && bmp_load_done)
                 source_done_seen <= 1'b1;
 
-            if (load_busy && write_finish_pulse)
+            if (load_busy && current_write_finish)
                 write_finish_seen <= 1'b1;
+            if (write_req_ack_sync)
+                write_finish_seen <= 1'b0;
 
             // Keep the old buffer owned by the reader until its frame request
             // has adopted the new base address. Data stays stable until ack.
@@ -309,7 +327,6 @@ always @(posedge clk or posedge rst) begin
                 end else if (recovery_chain && (!first_image_committed || ctrl_auto_play_en) &&
                              candidates_tried < img_found_count) begin
                     load_idx <= next_image(load_idx);
-                    load_sector <= sector_lut(next_image(load_idx));
                     candidates_tried <= candidates_tried + 3'd1;
                     retry_used <= 1'b0;
                     restart_pending <= 1'b1;
@@ -370,7 +387,6 @@ always @(posedge clk or posedge rst) begin
                     recovery_chain <= 1'b1;
                     candidates_tried <= 3'd1;
                     load_idx         <= 2'd0;
-                    load_sector      <= img_sector0;
                     pending_buf_idx  <= 2'd0;
                     write_buf_idx    <= 2'd0;
                     load_start_pulse <= 1'b1;
@@ -387,7 +403,6 @@ always @(posedge clk or posedge rst) begin
                     candidates_tried <= 3'd1;
                     if (!ctrl_auto_load_request) auto_blocked <= 1'b0;
                     load_idx <= ctrl_target_image;
-                    load_sector <= sector_lut(ctrl_target_image);
                     pending_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
                     write_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;

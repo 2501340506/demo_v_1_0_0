@@ -8,8 +8,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_st
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite headers
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite scan
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite scan -CompareS2
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_regression.ps1 -Stage s1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName stability_s1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite pixels
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_pixel_handoff.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_regression.ps1 -Stage s4
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName stability_s4_local2
 ```
 
 输出位于diagnostics/output；固定证据位于本目录evidence及对应releases候选。ModelSim位于D:/modelsim/win64，TD构建入口默认D:/TD/anlogic/TD6.2.1。
@@ -30,3 +32,13 @@ SD扇区、写应答和存储为行为模型。恢复专项的坏头在扫描结
 S2本地上板图片可运行`python diagnostics/stability/make_s2_samples.py`生成，输出到diagnostics/output/stability_s2_samples；仅写本机文件，不访问TF卡。固定候选随附同一批图片的ZIP。
 
 S3运行`python diagnostics/stability/make_s3_samples.py`生成2张可信但不支持显示的BMP及4张正常图。保持同一张卡内容不变，对比已验收S2和S3候选；具体步骤见候选BOARD_VALIDATION。
+
+## S4像素与提交验证
+
+- pixels：真实解析器8项检查，尾部附加数据不输出/不多读、末RGB与扇区结束同拍、跨扇区RGB、短像素/中间/头扇区、完整像素但短扇区仍失败、不复位恢复。
+- recovery现为8项，包含旧任务写完成在新写应答之前到达时不得记入新任务。默认模型先写完后源成功；hold_finish用例反向验证先源成功后写完。
+- run_pixel_handoff：真实bmp_read、sd_card_bmp及frame_read_write，32×32图；3组异步时钟/字节间隔，每组20次提交、5次预期错误，显示缓冲写冲突和混合帧均为0。验证部分写入失败两次、清FIFO重载、重试一次成功、全像素但短末扇区失败、旧完成事件及连续挂起请求。
+- 该集成测试模拟SD扇区、双时钟FIFO和SDRAM数据端口，不模拟物理SD协议或SDRAM电气时序。完整640×480像素数由baseline独立核对；音频CDC/提示音由原控制回归覆盖。
+- 本轮全部8个既有入口通过。最终扇区选择时序修改后复跑recovery、真实解析器异步交接、控制与原异步缓冲；其他RTL未再改变。
+
+TD第一次构建的SD域−0.331ns证据保留在[evidence/s4_build1](evidence/s4_build1)。最终将加载地址改为已登记任务编号的直接译码，解除恢复决策对宽地址寄存器的使能链，未修改时序约束。

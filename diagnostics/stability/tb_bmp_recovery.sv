@@ -16,6 +16,7 @@ module tb_bmp_recovery;
     integer attempt[0:3];
     reg [1:0] order[0:127];
     reg hold_commit=0;
+    reg hold_ack=0,inject_old_finish=0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000),.SCAN_MAX_SECTOR(3),.AUTO_PLAY_MS(100)) dut(
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'd0),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
@@ -41,7 +42,7 @@ module tb_bmp_recovery;
             starts=0;commits=0;successes=0;errors=0;old_done=0;old_error=0;
             for(j=0;j<4;j=j+1) attempt[j]=0;
         end else begin
-            ack_pipe<={ack_pipe[2:0],req};
+            if(!hold_ack) ack_pipe<={ack_pipe[2:0],req};
             if(!hold_commit) commit_pipe<={commit_pipe[2:0],commit_req};
             if(dut.load_start_pulse) begin
                 order[starts]=dut.load_idx; starts=starts+1;
@@ -53,6 +54,7 @@ module tb_bmp_recovery;
                 else pixel_count<=pixel_count+1;
             end
             if(pending_finish && !hold_finish) begin finish<=~finish;pending_finish<=0;end
+            if(inject_old_finish) finish<=~finish;
             if(dut.bmp_load_done) successes=successes+1;
             if(dut.bmp_load_error) errors=errors+1;
             if((old_done && dut.bmp_load_done)||(old_error && dut.bmp_load_error)||
@@ -134,6 +136,14 @@ module tb_bmp_recovery;
         hold_finish=0;drain();
         if(commits!=before_commits+1) $fatal(1,"late finish lost");
         $display("PASS explicit success waits for memory finish and display acknowledgement");
+        before_commits=commits;hold_ack=1;hold_finish=1;next_key();wait(req);tick(3);
+        inject_old_finish=1;tick(1);inject_old_finish=0;tick(8);
+        if(dut.write_finish_seen)$fatal(1,"old finish accepted before new write handshake");
+        hold_ack=0;wait(dut.source_done_seen);tick(12);
+        if(commits!=before_commits || !dut.load_busy)$fatal(1,"stale finish released new frame");
+        hold_finish=0;drain();
+        if(commits!=before_commits+1)$fatal(1,"fresh write finish not accepted");
+        $display("PASS stale finish before new write ack ignored; only current finish commits");
         $finish;
     end
     initial begin #2000000;$fatal(1,"recovery watchdog");end
