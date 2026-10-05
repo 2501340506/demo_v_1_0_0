@@ -9,6 +9,9 @@ module tb_bmp_scan #(parameter integer BASELINE=0);
     integer reads=0,found_count=0,i;
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(start),
       .scan_start_sector(first_sector),.scan_max_sector(limit),.scan_target_count(3'd1),
+`ifndef STABILITY_S2
+      .scan_error(),
+`endif
       .scan_done(done),.scan_found_valid(found),.scan_found_sector(found_sector),.scan_found_total(),
       .load_start(1'b0),.load_sector(32'd0),.load_done(),.load_error(),.bmp_error(),
       .sd_init_done(!rst),.state_code(),.bmp_width(16'd640),.bmp_height(16'd480),

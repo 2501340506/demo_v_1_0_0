@@ -163,14 +163,15 @@ endmodule
 
 // Source model: enumerate four images, honor write request/ack, stream a solid
 // color image. Real BMP/SPI parsing remains covered by tb_picture_requests.
-module bmp_read #(parameter integer PIXEL_GAP=2)(input clk,rst,output reg ready,
+module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500)(input clk,rst,output reg ready,
     input scan_start,input [31:0] scan_start_sector,scan_max_sector,input [2:0] scan_target_count,
-    output reg scan_done,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,
+    output wire scan_error, output reg scan_done,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,
     output reg load_done, output load_error, output [2:0] bmp_error,
     input load_start,input [31:0] load_sector,input sd_init_done,output [3:0] state_code,
     input [15:0] bmp_width,bmp_height,output reg write_req,input write_req_ack,
     output sd_sec_read,output [31:0] sd_sec_read_addr,input [7:0] sd_sec_read_data,
     input sd_sec_read_data_valid,sd_sec_read_end,output reg bmp_data_wr_en,output reg [23:0] bmp_data);
+    assign scan_error = 1'b0;
     integer state=0,count=0,pace=0;
     assign load_error=0; assign bmp_error=0;
     assign state_code=0;assign sd_sec_read=0;assign sd_sec_read_addr=0;

@@ -1,4 +1,7 @@
-module bmp_read(
+module bmp_read #(
+    parameter integer CLK_FREQ_HZ = 100_000_000,
+    parameter integer TIMEOUT_MS = 500
+)(
     input                       clk,
     input                       rst,
     output                      ready,
@@ -9,6 +12,7 @@ module bmp_read(
     input  [31:0]               scan_max_sector,
     input  [2:0]                scan_target_count,
     output reg                  scan_done,
+    output reg                  scan_error,
     output reg                  scan_found_valid,
     output reg [31:0]           scan_found_sector,
     output reg [2:0]            scan_found_total,
@@ -45,9 +49,25 @@ localparam ST_LOAD_WAIT = 3'd3;
 localparam ST_LOAD_DATA = 3'd4;
 localparam ST_LOAD_DRAIN = 3'd5;
 localparam ST_LOAD_CHECK = 3'd6;
+localparam ST_STOP = 3'd7;
 
 reg [2:0]  state;
 reg [9:0]  rd_cnt;
+
+// A no-progress deadline, not a whole-file or whole-scan deadline.
+localparam integer TIMEOUT_CYCLES = (CLK_FREQ_HZ / 1000) * TIMEOUT_MS;
+localparam integer TIMER_BITS = (TIMEOUT_CYCLES > 1) ? $clog2(TIMEOUT_CYCLES) : 1;
+reg [TIMER_BITS-1:0] wait_cycles;
+wire reading = (state == ST_SCAN) || (state == ST_LOAD_HDR) || (state == ST_LOAD_DATA);
+wire waiting = reading || (state == ST_LOAD_WAIT);
+wire progress = reading ? (sd_sec_read_data_valid || sd_sec_read_end) : write_req_ack;
+wire wait_timeout = waiting && !progress && (wait_cycles == TIMEOUT_CYCLES - 1);
+always @(posedge clk or posedge rst) begin
+    if (rst) wait_cycles <= 0;
+    else if (!sd_init_done || !waiting || progress || wait_timeout) wait_cycles <= 0;
+    else wait_cycles <= wait_cycles + 1'b1;
+end
+
 
 reg [7:0]  header_0;
 reg [7:0]  header_1;
@@ -319,11 +339,21 @@ always @(posedge clk or posedge rst) begin
         sd_sec_read_addr  <= 32'd0;
         write_req         <= 1'b0;
         scan_done         <= 1'b0;
+        scan_error        <= 1'b0;
         scan_found_valid  <= 1'b0;
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
         scan_sector       <= 32'd0;
         load_sector_latched <= 32'd0;
+    end else if (state == ST_STOP) begin
+        // Late bytes/end/ack cannot revive an outstanding timed-out transaction.
+        load_done <= 1'b0;
+        load_error <= 1'b0;
+        scan_error <= 1'b0;
+        scan_found_valid <= 1'b0;
+        sd_sec_read <= 1'b0;
+        write_req <= 1'b0;
+        state_code <= 4'hf;
     end else if (!sd_init_done) begin
         load_done         <= 1'b0;
         load_error        <= 1'b0;
@@ -334,6 +364,7 @@ always @(posedge clk or posedge rst) begin
         sd_sec_read_addr  <= 32'd0;
         write_req         <= 1'b0;
         scan_done         <= 1'b0;
+        scan_error        <= 1'b0;
         scan_found_valid  <= 1'b0;
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
@@ -343,8 +374,17 @@ always @(posedge clk or posedge rst) begin
         load_done <= 1'b0;
         load_error <= 1'b0;
         scan_found_valid <= 1'b0;
+        scan_error <= 1'b0;
 
-        case (state)
+        if (wait_timeout) begin
+            state <= ST_STOP;
+            state_code <= 4'hf;
+            bmp_error <= 3'd2;
+            scan_error <= (state == ST_SCAN);
+            load_error <= (state != ST_SCAN);
+            sd_sec_read <= 1'b0;
+            write_req <= 1'b0;
+        end else case (state)
             ST_IDLE: begin
                 state_code  <= 4'd1;
                 sd_sec_read <= 1'b0;

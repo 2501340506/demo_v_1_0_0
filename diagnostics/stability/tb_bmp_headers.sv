@@ -16,6 +16,7 @@ module tb_bmp_headers;
     integer offset=54, length=66;
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(scan_start),
       .scan_start_sector(32'd0),.scan_max_sector(scan_limit),.scan_target_count(3'd1),
+      .scan_error(),
       .scan_done(scan_done),.scan_found_valid(found),.scan_found_sector(found_sector),.scan_found_total(),
       .load_start(load_start),.load_sector(32'd0),.load_done(done),.load_error(error),.bmp_error(error_code),
       .sd_init_done(!rst),.state_code(),.bmp_width(16'd4),.bmp_height(16'd1),

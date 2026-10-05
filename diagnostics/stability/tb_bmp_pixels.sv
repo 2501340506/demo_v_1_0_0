@@ -12,6 +12,7 @@ module tb_bmp_pixels;
     reg old_done=0,old_error=0;
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(1'b0),
       .scan_start_sector(32'd0),.scan_max_sector(32'd0),.scan_target_count(3'd1),
+      .scan_error(),
       .scan_done(),.scan_found_valid(),.scan_found_sector(),.scan_found_total(),
       .load_start(start),.load_sector(32'd0),.load_done(done),.load_error(error),.bmp_error(code),
       .sd_init_done(!rst),.state_code(),.bmp_width(16'd4),.bmp_height(16'd1),

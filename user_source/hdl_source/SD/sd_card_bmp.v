@@ -5,6 +5,7 @@ module sd_card_bmp #(
     parameter [31:0]  SCAN_MAX_SECTOR   = 32'd131071,
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
     parameter integer AUTO_PLAY_MS       = 3000,
+    parameter integer LOAD_TIMEOUT_MS    = 500,
     parameter integer DIAG_DISPLAY       = 0
 )(
     input                       clk,
@@ -47,8 +48,10 @@ wire [1:0] ctrl_target_image;
 wire ctrl_request_accept;
 wire ctrl_auto_load_request;
 wire [3:0] normal_state_code;
-wire bmp_load_done, bmp_load_error;
+wire bmp_load_done, bmp_load_error, bmp_scan_error;
+reg timeout_stopped;
 wire [2:0] bmp_error;
+wire timeout_event = bmp_scan_error || (bmp_load_error && bmp_error == 3'd2);
 reg [2:0] sticky_error;
 reg retry_used, restart_pending, recovery_chain;
 reg first_load_failed, auto_blocked;
@@ -105,7 +108,7 @@ wire write_finish_now;
 
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 
-assign ctrl_request_accept = ctrl_load_request && bmp_ready &&
+assign ctrl_request_accept = ctrl_load_request && bmp_ready && !timeout_stopped && !timeout_event &&
                              !(auto_blocked && ctrl_auto_load_request);
 assign state_code = (sticky_error == 3'd1) ? 4'he :
                     (sticky_error == 3'd2) ? 4'hf :
@@ -220,6 +223,7 @@ end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
+        timeout_stopped <= 0;
         sticky_error <= 0;
         retry_used <= 0;
         restart_pending <= 0;
@@ -259,7 +263,16 @@ always @(posedge clk or posedge rst) begin
         scan_start_pulse <= 1'b0;
         load_start_pulse <= 1'b0;
 
-        if (!sd_init_done) begin
+        if (timeout_event || timeout_stopped) begin
+            timeout_stopped <= 1'b1;
+            sticky_error <= 3'd2;
+            load_busy <= 1'b0;
+            restart_pending <= 1'b0;
+            commit_pending <= 1'b0;
+            source_done_seen <= 1'b0;
+            write_finish_seen <= 1'b0;
+            auto_blocked <= 1'b1;
+        end else if (!sd_init_done) begin
             sticky_error <= 0;
             retry_used <= 0;
             restart_pending <= 0;
@@ -416,7 +429,7 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-bmp_read bmp_read_m0(
+bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
     .clk                    (clk),
     .rst                    (rst),
     .ready                  (bmp_ready),
@@ -426,6 +439,7 @@ bmp_read bmp_read_m0(
     .scan_max_sector        (SCAN_MAX_SECTOR),
     .scan_target_count      (SCAN_TARGET_COUNT),
     .scan_done              (scan_done),
+    .scan_error             (bmp_scan_error),
     .scan_found_valid       (scan_found_valid),
     .scan_found_sector      (scan_found_sector),
     .scan_found_total       (scan_found_total),

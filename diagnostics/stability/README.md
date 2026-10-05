@@ -9,9 +9,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_st
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite scan
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite scan -CompareS2
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite pixels
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite timeout
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_stability.ps1 -Suite timeout_control
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_pixel_handoff.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_regression.ps1 -Stage s4
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName stability_s4_local2
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_regression.ps1 -Stage s5
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/run_td_build.ps1 -BuildName stability_s5_local1
 ```
 
 输出位于diagnostics/output；固定证据位于本目录evidence及对应releases候选。ModelSim位于D:/modelsim/win64，TD构建入口默认D:/TD/anlogic/TD6.2.1。
@@ -42,3 +44,12 @@ S3运行`python diagnostics/stability/make_s3_samples.py`生成2张可信但不�
 - 本轮全部8个既有入口通过。最终扇区选择时序修改后复跑recovery、真实解析器异步交接、控制与原异步缓冲；其他RTL未再改变。
 
 TD第一次构建的SD域−0.331ns证据保留在[evidence/s4_build1](evidence/s4_build1)。最终将加载地址改为已登记任务编号的直接译码，解除恢复决策对宽地址寄存器的使能链，未修改时序约束。
+
+## S5等待超时验证
+
+- timeout：8项真实解析器测试，32周期缩短阈值。扫描/读头/写应答/部分像素/收完512字节却缺结束均单次超时并停止；迟到数据、结束、应答、新请求及init变化不能复活；长多扇区扫描和慢速整图超过总阈值仍成功，截止拍有效字节优先。
+- timeout_control：6项真实解析器+播放器测试。扫描超时只触发scan_error；已有画面后读头/写应答/像素停止保留画面/编号/音频事件；迟到写完成和MAN/AUTO请求不能突破停止；内存先完成但源未结束不得提交；复位恢复。
+- 本次重跑baseline/recovery/headers/scan/pixels、旧S2扫描对照、run_pixel_handoff三配置和全部8个既有入口，零错误零警告。run_pixel_handoff脚本沿用s4_handoff_*日志名，S5候选内这些日志是S5 RTL本次运行结果。
+- scan_error新增输出显式接入旧bench；CompareS2用STABILITY_S2宏保留旧模块接口；旧缓冲替身仅声明相同参数和scan_error=0，超时行为由上述真实解析器专项覆盖。
+
+500ms是无进展阈值。SD初始化阶段及解析结束后的最终内存写完成/显示确认不在本阶段计时范围。SD/存储模型不代表板级热插拔恢复，实际异常由用户反馈。

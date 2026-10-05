@@ -15,6 +15,7 @@ module tb_bmp_baseline;
     assign ack=ack_pipe[2];
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(scan_start),
         .scan_start_sector(32'd0),.scan_max_sector(32'd7203),.scan_target_count(3'd4),
+        .scan_error(),
         .scan_done(scan_done),.scan_found_valid(found),.scan_found_sector(sector),.scan_found_total(total),
         .load_start(load_start),.load_sector(32'd1801),.sd_init_done(!rst),.state_code(),
         .load_done(load_done),.load_error(load_error),.bmp_error(bmp_error),
