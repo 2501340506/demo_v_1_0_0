@@ -1,6 +1,6 @@
 # 文档入口
 
-当前开发：[v0.5.0 Flash固化与上电自启计划](Flash固化与上电自启分阶段修改计划.md) · [课程对照](FLASH_BOOT_SOURCES.md)。逐阶段验板，最终统一上传。
+已结项：[v0.5.0 Flash固化与上电自启计划](Flash固化与上电自启分阶段修改计划.md) · [课程对照](FLASH_BOOT_SOURCES.md)。[正式版本](../releases/v0.5.0/README.md) · [结项归档](history/2026-10-05/Flash固化与上电自启/README.md)。
 
 系统稳定性计划已结项：[完成计划](系统稳定性分阶段修改计划.md) · [历史归档](history/2026-10-05/系统稳定性增强/README.md) · [v0.4.0正式版本](../releases/v0.4.0/README.md)。
 
@@ -8,7 +8,7 @@
 
 | 内容 | 入口 |
 |---|---|
-| 当前产品及下载 | [项目README](../README.md) · [v0.4.0正式版本](../releases/v0.4.0/README.md) |
+| 当前产品及下载 | [项目README](../README.md) · [v0.5.0正式版本](../releases/v0.5.0/README.md) |
 | 验证结论和边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
 | 已完成阶段计划 | [HDMI音频分阶段修改计划](HDMI音频分阶段修改计划.md) |
 | 历史归档 | [ARCHIVE_INDEX.md](ARCHIVE_INDEX.md) · [history](history) |
@@ -28,4 +28,4 @@
 
 用户已手动删除根目录`_cleanup`，并已确认目录不存在。原reference、合并后空的docx目录树和旧诊断缓存清理完成；需要保留的资料已归档。
 
-当前S4：[最终长稳验收清单](flash_boot/s4/BOARD_VALIDATION.md)。S3已获用户整体确认：[固化指南](flash_boot/S3_FLASH_GUIDE.md) · [S3验收记录](flash_boot/s3/BOARD_VALIDATION.md)。全部提交及标签仍保留本地。
+S4已由用户整体确认通过，v0.5.0发布；[最终验收记录](flash_boot/s4/BOARD_VALIDATION.md) · [固化指南](flash_boot/S3_FLASH_GUIDE.md)。

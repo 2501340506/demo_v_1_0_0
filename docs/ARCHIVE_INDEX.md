@@ -1,5 +1,7 @@
 # 项目归档索引
 
+Flash固化与上电自启于2026-10-05结项，发布v0.5.0：[结项归档](history/2026-10-05/Flash固化与上电自启/README.md) · [正式版本](../releases/v0.5.0/README.md)。
+
 系统稳定性增强已于2026-10-05结项，发布v0.4.0：[结项归档](history/2026-10-05/系统稳定性增强/README.md) · [完成计划](系统稳定性分阶段修改计划.md) · [正式产物](../releases/v0.4.0/README.md)。下方阶段条目保留历史背景。
 
 目录整理（2026-10-05）：原docx并入docs；[文档入口](README.md) · [诊断归档](../diagnostics/README.md) · [旧本地结果与迁移记录](../diagnostics/history/2026-10-05/README.md)。课程来源保留于[HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md)。

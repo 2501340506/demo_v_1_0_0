@@ -1,18 +1,14 @@
 # 安路 EG4 HDMI 图片播放器
 
-当前正式版本：**[v0.4.0 — 系统稳定性增强](releases/v0.4.0/README.md)**，2026-10-05用户确认S6通过，S0–S6已结项。覆盖BMP校验、有限恢复、坏图快跳、像素完整性与加载超时；沿用已验收S5 bit。
+当前正式版本：**[v0.5.0 — Flash固化与上电自启](releases/v0.5.0/README.md)**。2026-10-05用户确认S4整体通过，完成PLL按键复位、SDRAM就绪后扫描、W25Q64固化及独立启动验收。
 
-[下载固定bit](releases/v0.4.0/demo.bit) · [最终验收](releases/v0.4.0/v0.4.0-s6-local.1/BOARD_VALIDATION.md) · [结项归档](docs/history/2026-10-05/系统稳定性增强/README.md) · [完成计划](docs/系统稳定性分阶段修改计划.md)。2026-10-05已按用户要求将feature/system-stability-v0.4.0合并到main。
+[下载固定bit](releases/v0.5.0/demo.bit) · [最终验收](docs/flash_boot/s4/BOARD_VALIDATION.md) · [固化指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [结项归档](docs/history/2026-10-05/Flash固化与上电自启/README.md) · [完成计划](docs/Flash固化与上电自启分阶段修改计划.md)。
 
-目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。原docx已合并为docs；测试入口见诊断归档。
-
-当前开发任务：[v0.5.0 Flash固化与上电自启](docs/Flash固化与上电自启分阶段修改计划.md)。逐阶段上板验收，最终统一上传；正式可用版本仍为v0.4.0。
-
-S3固化及独立启动已由用户整体确认通过，本地标签`v0.5.0-s3-board.1`。当前进入[S4最终长稳验收](docs/flash_boot/s4/BOARD_VALIDATION.md)，沿用已固化S2 bit，等待板级反馈；最终验收前不上传。
+目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。
 
 基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；两颗PLL、五个时钟域分别同步释放复位。
 
-上一正式版本：[v0.3.0](releases/v0.3.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
+上一正式版本：[v0.4.0](releases/v0.4.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 使用方式
 
@@ -43,15 +39,15 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-当前正式下载：[v0.4.0固定bit](releases/v0.4.0/demo.bit) · [版本说明](releases/v0.4.0/README.md)。开发候选需按独立上板说明验收，不替代正式版本。
+当前正式下载：[v0.5.0固定bit](releases/v0.5.0/demo.bit) · [版本说明](releases/v0.5.0/README.md)。沿用已固化候选，无需重新下载。
 
-使用Tang Dynasty 6.2打开`TD_project/demo.al`，器件EG4S20BG256、顶层top，依次综合、布局布线、生成bitstream。命令行入口为`diagnostics/run_td_build.ps1`。运行目录`TD_project/demo_Runs/phy_1/demo.bit`会被新构建覆盖，上板使用版本目录中的固定文件。
+使用Tang Dynasty 6.2打开`TD_project/demo.al`，器件EG4S20BG256、顶层top，依次综合、布局布线、生成bitstream。命令行入口为`diagnostics/run_td_build.ps1`；复现已验收布局参数见[源清单](releases/v0.5.0/source_inventory.md)，GUI默认策略不同。运行目录`TD_project/demo_Runs/phy_1/demo.bit`会被新构建覆盖，上板使用版本目录中的固定文件。
 
 [交接记录](HANDOFF.md) · [验证状态](docs/VALIDATION_STATUS.md) · [诊断入口](diagnostics/README.md) · [历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 验证状态与范围
 
-v0.4.0已经用户整体上板确认；最终仿真证据及沿用S5的TD报告见版本目录。资源3944 LUT、2890寄存器、4 BRAM、4 DSP、2 PLL；Setup −6.565ns、Hold +0.004ns，64个SDRAM接口负端点仍在，未全局收敛。
+v0.5.0已由用户整体上板确认，仿真与TD证据沿用S2候选。资源3926 LUT、2902寄存器、4 BRAM、4 DSP、2 PLL；Setup −6.565ns、Hold +0.003ns，64个SDRAM接口及3个旧内存内部负端点仍在，全局未收敛。
 
 500ms无进展超时覆盖扫描、读头、写应答和像素等待；SD初始化、源解析结束后的最终内存写完成/显示确认、免复位热插拔恢复仍不在该范围。用户曾报告的SD初始化/复位问题仍按历史边界保留；不宣称Flash启动改造已解决SD协议恢复。
 
