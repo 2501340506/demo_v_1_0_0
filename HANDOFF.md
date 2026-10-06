@@ -16,7 +16,8 @@
 
 ## 阻塞与下一步
 
-- S2 待完成 SDRAM 硬核接口与 fabric 内部路径审计。
+- S0 回归在 `tb_picture_requests` 触发既有 Fatal：`pending request lost on failure`（约 1327980 ns）。需要先定位该控制回归问题，或由用户明确将其作为已知基线豁免。
+- 在该阻塞处理前不进入 S2 SDRAM 硬核接口与 fabric 内部路径审计。
 - S3/S4 只有在审计结果明确后才修改 RTL 或约束。
 - 最终候选必须重新完成 Flash 回归并等待用户上板确认。
 
