@@ -16,7 +16,7 @@ module tb_bmp_scan #(parameter integer BASELINE=0);
       .load_start(1'b0),.load_sector(32'd0),.load_done(),.load_error(),.bmp_error(),
       .sd_init_done(!rst),.state_code(),.bmp_width(16'd640),.bmp_height(16'd480),
       .write_req(),.write_req_ack(1'b0),.sd_sec_read(req),.sd_sec_read_addr(addr),
-      .sd_sec_read_data(data),.sd_sec_read_data_valid(dv),.sd_sec_read_end(ending),
+      .sd_sec_read_data(data),.sd_sec_read_data_valid(dv),.sd_sec_read_failed(1'b0),.sd_sec_read_end(ending),
       .bmp_data_wr_en(),.bmp_data());
     always @(posedge clk) if(!rst && found) found_count=found_count+1;
     task tick(input integer n);repeat(n) @(negedge clk);endtask

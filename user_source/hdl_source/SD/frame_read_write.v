@@ -61,6 +61,8 @@ module frame_read_write
 	
 	//
 	input                            write_clk,                  // data write module clock
+	input write_cancel_req,
+    output write_cancel_ack,
 	input                            write_req,                  // data write module write request,keep '1' until read_req_ack = '1'
 	output                           write_req_ack,              // data write module write request response
 	output                           write_finish,               // data write module write request finish
@@ -129,6 +131,7 @@ frame_fifo_write_m0
 	
 	.App_wr_en					(App_wr_en),
     .App_wr_addr				(App_wr_addr),
+	.write_cancel_req(write_cancel_req), .write_cancel_ack(write_cancel_ack),
 	.write_req                  (write_req                ),
 	.write_req_ack              (write_req_ack            ),
 	.write_finish               (write_finish             ),

@@ -16,6 +16,7 @@ module tb_pixel_handoff;
     reg finish_toggle=0;
     always @(posedge mem_clk) if(rst) finish_toggle<=0; else if(wr_finish) finish_toggle<=~finish_toggle;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000)) dut (
+        .write_cancel_req(),.write_cancel_ack(1'b0),
         .sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'b00),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
@@ -84,7 +85,7 @@ module tb_pixel_handoff;
         .read_addr_index(db),.read_len(21'd1024),.read_en(read_en),.read_data(read_data),
         .display_commit_request(commit_request),.display_commit_ack(commit_ack),
         .App_wr_en(wr_en),.App_wr_addr(wr_addr),.App_wr_din(wr_data),.App_wr_dm(),
-        .write_clk(clk),.write_req(req),.write_req_ack(ack),.write_finish(wr_finish),
+        .write_cancel_req(1'b0),.write_cancel_ack(),.write_clk(clk),.write_req(req),.write_req_ack(ack),.write_finish(wr_finish),
         .write_addr_0(21'd0),.write_addr_1(21'd1024),.write_addr_2(21'd0),.write_addr_3(21'd0),
         .write_addr_index(wb),.write_len(21'd1024),.write_en(we),.write_data(data)
     );
@@ -231,12 +232,13 @@ module wfifo_32_32_512(input clkr,clkw,rst,we,re,input [31:0] di,
     assign dout=f.storage[f.rp[8:0]];
 endmodule
 
-module sd_card_top(input clk,rst,output SD_nCS,SD_DCLK,SD_MOSI,input SD_MISO,
+module sd_card_top #(parameter CLK_FREQ_HZ=100_000_000)(input clk,rst,output SD_nCS,SD_DCLK,SD_MOSI,input SD_MISO,
+    output sd_init_failed,sd_sec_read_failed,
     output sd_init_done,input sd_sec_read,input [31:0] sd_sec_read_addr,
     output [7:0] sd_sec_read_data,output sd_sec_read_data_valid,sd_sec_read_end,
     input sd_sec_write,input [31:0] sd_sec_write_addr,output [7:0] sd_sec_write_data,
     output sd_sec_write_data_req,sd_sec_write_end);
-    assign sd_init_done=!rst;assign SD_nCS=1;assign SD_DCLK=0;assign SD_MOSI=0;
+    assign sd_init_failed=0;assign sd_sec_read_failed=0;assign sd_init_done=!rst;assign SD_nCS=1;assign SD_DCLK=0;assign SD_MOSI=0;
     assign sd_sec_read_data=0;assign sd_sec_read_data_valid=0;assign sd_sec_read_end=0;
     assign sd_sec_write_data=0;assign sd_sec_write_data_req=0;assign sd_sec_write_end=0;
 endmodule

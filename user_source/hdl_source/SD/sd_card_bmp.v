@@ -26,6 +26,8 @@ module sd_card_bmp #(
     output reg                  committed_valid,
     input                       committed_ready,
 
+    output reg write_cancel_req,
+    input write_cancel_ack,
     input                       write_finish_toggle,
     input                       display_commit_ack,
     output reg                  display_commit_request,
@@ -42,6 +44,15 @@ module sd_card_bmp #(
     input                       SD_MISO
 );
 
+wire rescan_event;
+wire sd_init_failed, sd_sec_read_failed;
+reg [2:0] recovery_phase;
+reg [3:0] recovery_reset_count;
+reg [1:0] cancel_ack_sync;
+wire recovery_active = recovery_phase != 0;
+wire recovering_reset = recovery_phase >= 1 && recovery_phase <= 3;
+wire parser_rst = rst || recovering_reset;
+wire sd_local_rst = rst || recovery_phase == 2;
 wire manual_activity;
 wire media_next_request, media_previous_request, media_auto_toggle_request;
 wire ctrl_auto_play_en, ctrl_next_pending, ctrl_prev_pending, ctrl_auto_tick, ctrl_load_request;
@@ -52,7 +63,7 @@ wire [3:0] normal_state_code;
 wire bmp_load_done, bmp_load_error, bmp_scan_error;
 reg timeout_stopped;
 wire [2:0] bmp_error;
-wire timeout_event = bmp_scan_error || (bmp_load_error && bmp_error == 3'd2);
+wire timeout_event = sd_sec_read_failed || bmp_scan_error || (bmp_load_error && bmp_error == 3'd2);
 reg [2:0] sticky_error;
 reg retry_used, restart_pending, recovery_chain;
 reg first_load_failed, auto_blocked;
@@ -112,12 +123,16 @@ localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 // Consume a queued request only on the edge where this block can actually
 // start a new load.  Without the busy guard, the control block clears its
 // pending direction while the loader is still handling a prior request.
-assign ctrl_request_accept = ctrl_load_request && !load_busy && bmp_ready && !timeout_stopped && !timeout_event &&
+assign ctrl_request_accept = !recovery_active && ctrl_load_request && !load_busy && bmp_ready && !timeout_stopped && !timeout_event &&
                              !(auto_blocked && ctrl_auto_load_request);
-assign state_code = (sticky_error == 3'd1) ? 4'he :
+assign state_code = sd_init_failed ? 4'hf :
+                    recovering_reset ? 4'h0 :
+                    (recovery_active && !sd_init_done) ? 4'h0 :
+                    (sticky_error == 3'd1) ? 4'he :
                     (sticky_error == 3'd2) ? 4'hf :
-                    (sticky_error == 3'd3) ? 4'hd : normal_state_code;
-assign write_en   = bmp_data_wr_en;
+                    (sticky_error == 3'd3) ? 4'hd :
+                    recovery_active ? bmp_state_code : normal_state_code;
+assign write_en   = bmp_data_wr_en && !recovering_reset;
 assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
 assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
 assign source_done_now = source_done_seen || bmp_load_done;
@@ -129,7 +144,7 @@ assign write_req_ack_sync = write_req_ack_pipe[1];
 // write FIFO is cleared. Discard old completion toggles through that handshake.
 always @(posedge clk or posedge rst) begin
     if (rst) write_epoch_active <= 1'b0;
-    else if (!sd_init_done || !load_busy || load_start_pulse || bmp_load_error)
+    else if (recovering_reset || !sd_init_done || !load_busy || load_start_pulse || bmp_load_error)
         write_epoch_active <= 1'b0;
     else if (write_req && write_req_ack_sync)
         write_epoch_active <= 1'b1;
@@ -139,16 +154,18 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         write_req_ack_pipe <= 2'b00;
         commit_ack_sync <= 2'b00;
+        cancel_ack_sync <= 0;
     end else begin
         write_req_ack_pipe <= {write_req_ack_pipe[0], write_req_ack};
         commit_ack_sync <= {commit_ack_sync[0], display_commit_ack};
+        cancel_ack_sync <= {cancel_ack_sync[0], write_cancel_ack};
     end
 end
 
 mode_key_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control (
-    .clk(clk), .rst(rst), .enable(sd_init_done && scan_kicked),
+    .clk(clk), .rst(rst), .enable(!recovery_active && sd_init_done && scan_kicked),
     .key1(key1), .key2(key2), .key4(key4), .mode(mode),
-    .next_event(media_next_request), .previous_event(media_previous_request),
+    .rescan_event(rescan_event), .next_event(media_next_request), .previous_event(media_previous_request),
     .auto_toggle_event(media_auto_toggle_request), .manual_activity(manual_activity)
 );
 
@@ -165,7 +182,7 @@ media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .DIAG_DISPLAY(DIAG_DISPLAY)) 
 media_player_control #(
     .AUTO_PLAY_CYCLES(AUTO_PLAY_CYCLES)
 ) u_media_player_control (
-    .clk(clk), .rst(rst), .enable(sd_init_done && (scan_kicked || !bmp_ready)), .scan_done(scan_done),
+    .clk(clk), .rst(rst), .enable(!recovery_active && sd_init_done && (scan_kicked || !bmp_ready)), .scan_done(scan_done),
     .display_valid(display_valid), .load_busy(load_busy),
     .first_image_committed(first_image_committed), .image_count(img_found_count),
     .current_image(img_idx), .mode(mode), .next_event(media_next_request),
@@ -227,6 +244,7 @@ end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
+        recovery_phase <= 0; recovery_reset_count <= 0; write_cancel_req <= 0;
         timeout_stopped <= 0;
         sticky_error <= 0;
         retry_used <= 0;
@@ -267,7 +285,32 @@ always @(posedge clk or posedge rst) begin
         scan_start_pulse <= 1'b0;
         load_start_pulse <= 1'b0;
 
-        if (timeout_event || timeout_stopped) begin
+        if (rescan_event && !recovery_active) begin
+            recovery_phase <= 1;
+            write_cancel_req <= 1;
+            load_start_pulse <= 0; scan_start_pulse <= 0;
+        end else if (recovering_reset) begin
+            // Never reset the display toggle locally; first adopt an issued commit.
+            if (commit_pending && commit_ack_sync[1] == display_commit_request) begin
+                commit_pending <= 0; display_valid <= 1; img_idx <= load_idx;
+            end
+            load_busy <= 0; source_busy_seen <= 0; source_done_seen <= 0;
+            write_finish_seen <= 0; restart_pending <= 0;
+            timeout_stopped <= 0; sticky_error <= 0;
+            retry_used <= 0; recovery_chain <= 0; first_load_failed <= 0;
+            auto_blocked <= 0; candidates_tried <= 0;
+            scan_kicked <= 0; first_image_committed <= 0; img_found_count <= 0;
+            img_sector0 <= 0; img_sector1 <= 0; img_sector2 <= 0; img_sector3 <= 0;
+            if (recovery_phase == 1 && !commit_pending && cancel_ack_sync[1]) begin
+                recovery_phase <= 2; recovery_reset_count <= 0;
+            end else if (recovery_phase == 2) begin
+                if (recovery_reset_count == 7) begin
+                    recovery_phase <= 3; write_cancel_req <= 0;
+                end else recovery_reset_count <= recovery_reset_count + 1'b1;
+            end else if (recovery_phase == 3 && !cancel_ack_sync[1])
+                recovery_phase <= 4;
+        end else if (timeout_event || timeout_stopped) begin
+            recovery_phase <= 0;
             timeout_stopped <= 1'b1;
             sticky_error <= 3'd2;
             load_busy <= 1'b0;
@@ -277,7 +320,8 @@ always @(posedge clk or posedge rst) begin
             write_finish_seen <= 1'b0;
             auto_blocked <= 1'b1;
         end else if (!sd_init_done) begin
-            sticky_error <= 0;
+            sticky_error <= sd_init_failed ? 3'd2 : 3'd0;
+            if (sd_init_failed) recovery_phase <= 0;
             retry_used <= 0;
             restart_pending <= 0;
             recovery_chain <= 0;
@@ -292,7 +336,6 @@ always @(posedge clk or posedge rst) begin
             load_idx              <= 2'd0;
             pending_buf_idx       <= 2'd0;
             write_buf_idx         <= 2'd0;
-            disp_buf_idx          <= 2'd0;
             img_sector0           <= 32'd0;
             img_sector1           <= 32'd0;
             img_sector2           <= 32'd0;
@@ -303,9 +346,13 @@ always @(posedge clk or posedge rst) begin
             source_busy_seen      <= 1'b0;
             source_done_seen      <= 1'b0;
             write_finish_seen     <= 1'b0;
-            display_valid         <= 1'b0;
+
         end else begin
             // 扫描阶段缓存前 4 张图的起始 sector
+            if (scan_done && img_found_count == 0) begin
+                sticky_error <= 1; recovery_phase <= 0;
+            end
+            if (first_load_failed) recovery_phase <= 0;
             if (scan_found_valid) begin
                 case (img_found_count)
                     3'd0: img_sector0 <= scan_found_sector;
@@ -363,6 +410,7 @@ always @(posedge clk or posedge rst) begin
                 (!committed_valid || committed_ready)) begin
                 sticky_error <= 0;
                 auto_blocked <= 0;
+                recovery_phase <= 0;
                 committed_image <= load_idx;
                 committed_valid <= 1;
                 commit_pending        <= 1'b0;
@@ -390,9 +438,7 @@ always @(posedge clk or posedge rst) begin
                 load_idx              <= 2'd0;
                 pending_buf_idx       <= 2'd0;
                 write_buf_idx         <= 2'd0;
-                disp_buf_idx          <= 2'd0;
 
-                display_valid         <= 1'b0;
                 load_busy             <= 1'b0;
                 source_busy_seen      <= 1'b0;
                 source_done_seen      <= 1'b0;
@@ -404,8 +450,8 @@ always @(posedge clk or posedge rst) begin
                     recovery_chain <= 1'b1;
                     candidates_tried <= 3'd1;
                     load_idx         <= 2'd0;
-                    pending_buf_idx  <= 2'd0;
-                    write_buf_idx    <= 2'd0;
+                    pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
+                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
                     load_start_pulse <= 1'b1;
                     load_busy        <= 1'b1;
                     source_busy_seen <= 1'b0;
@@ -435,7 +481,7 @@ end
 
 bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
     .clk                    (clk),
-    .rst                    (rst),
+    .rst                    (parser_rst),
     .ready                  (bmp_ready),
 
     .scan_start             (scan_start_pulse),
@@ -464,14 +510,16 @@ bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
     .sd_sec_read_addr       (sd_sec_read_addr),
     .sd_sec_read_data       (sd_sec_read_data),
     .sd_sec_read_data_valid (sd_sec_read_data_valid),
+    .sd_sec_read_failed(sd_sec_read_failed),
     .sd_sec_read_end        (sd_sec_read_end),
     .bmp_data_wr_en         (bmp_data_wr_en),
     .bmp_data               (bmp_data)
 );
 
-sd_card_top sd_card_top_m0(
+sd_card_top #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) sd_card_top_m0(
+    .sd_init_failed(sd_init_failed),
     .clk                    (clk),
-    .rst                    (rst),
+    .rst                    (sd_local_rst),
     .SD_nCS                 (SD_nCS),
     .SD_DCLK                (SD_DCLK),
     .SD_MOSI                (SD_MOSI),
@@ -481,6 +529,7 @@ sd_card_top sd_card_top_m0(
     .sd_sec_read_addr       (sd_sec_read_addr),
     .sd_sec_read_data       (sd_sec_read_data),
     .sd_sec_read_data_valid (sd_sec_read_data_valid),
+    .sd_sec_read_failed(sd_sec_read_failed),
     .sd_sec_read_end        (sd_sec_read_end),
     .sd_sec_write           (1'b0),
     .sd_sec_write_addr      (32'd0),

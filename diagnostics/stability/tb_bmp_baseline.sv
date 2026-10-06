@@ -21,7 +21,7 @@ module tb_bmp_baseline;
         .load_done(load_done),.load_error(load_error),.bmp_error(bmp_error),
         .bmp_width(16'd640),.bmp_height(16'd480),.write_req(req),.write_req_ack(ack),
         .sd_sec_read(sd_req),.sd_sec_read_addr(addr),.sd_sec_read_data(data),
-        .sd_sec_read_data_valid(dv),.sd_sec_read_end(ending),.bmp_data_wr_en(we),.bmp_data(rgb));
+        .sd_sec_read_data_valid(dv),.sd_sec_read_failed(1'b0),.sd_sec_read_end(ending),.bmp_data_wr_en(we),.bmp_data(rgb));
     sim_bmp_sectors card(.clk(clk),.rst(rst),.request(sd_req),.address(addr),
         .bad_headers(4'd0),.data(data),.valid(dv),.sector_end(ending),.busy());
     integer found_count=0, pixels=0;

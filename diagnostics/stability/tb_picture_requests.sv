@@ -58,6 +58,7 @@ module tb_picture_requests;
     reg hold_finish = 0, finish_pending = 0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .SCAN_MAX_SECTOR(4),
                   .SCAN_TARGET_COUNT(4), .AUTO_PLAY_MS(3000)) dut (
+        .write_cancel_req(),.write_cancel_ack(1'b0),
         .sdram_ready(1'b1),
         .clk(clk), .rst(rst), .key1(key1), .key2(key2), .key4(key4), .mode(mode),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
@@ -71,6 +72,7 @@ module tb_picture_requests;
         .SD_nCS(), .SD_DCLK(), .SD_MOSI(), .SD_MISO(1'b1)
     );
     initial begin
+        force dut.sd_init_failed=0; force dut.sd_sec_read_failed=0;
         force dut.sd_init_done = init_done;
         force dut.sd_sec_read_data = sector_data;
         force dut.sd_sec_read_data_valid = data_valid;
@@ -219,7 +221,7 @@ module tb_picture_requests;
         $display("PASS real writes wait for SDRAM completion");
 
         ne = next_events; before_count = commits;
-        key2 = 0; tick(2000); key2 = 1; tick(25); drain();
+        key2 = 0; tick(1000); key2 = 1; tick(25); drain();
         if (next_events != ne+1 || commits != before_count+1) $fatal(1, "held KEY2 repeated");
         next_key(); drain();
         if (next_events != ne+2) $fatal(1, "KEY2 failed to rearm");
@@ -266,7 +268,7 @@ module tb_picture_requests;
         $display("PASS switching back to MAN preserves current and pending manual loads");
 
         // Align expiry with a REAL debounced KEY2 event; only the timer is positioned.
-        toggle_key(); key2=0;
+        toggle_key(); key2=0; tick(50); key2=1;
         wait(dut.media_next_request); @(negedge clk);
         dut.u_media_player_control.auto_count=2999;
         @(posedge clk); #1;

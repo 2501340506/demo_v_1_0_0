@@ -21,7 +21,7 @@ module tb_bmp_headers;
       .load_start(load_start),.load_sector(32'd0),.load_done(done),.load_error(error),.bmp_error(error_code),
       .sd_init_done(!rst),.state_code(),.bmp_width(16'd4),.bmp_height(16'd1),
       .write_req(req),.write_req_ack(ack_pipe[2]),.sd_sec_read(sd_req),.sd_sec_read_addr(addr),
-      .sd_sec_read_data(data),.sd_sec_read_data_valid(dv),.sd_sec_read_end(ending),
+      .sd_sec_read_data(data),.sd_sec_read_data_valid(dv),.sd_sec_read_failed(1'b0),.sd_sec_read_end(ending),
       .bmp_data_wr_en(we),.bmp_data(rgb));
     always @(posedge clk) begin
         ack_pipe <= rst ? 0 : {ack_pipe[1:0],req};

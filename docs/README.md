@@ -1,5 +1,7 @@
 # 文档入口
 
+当前正式版：[v0.5.1](../releases/v0.5.1/README.md)。当前开发：[v0.5.2 分阶段计划](v0.5.2_TF卡恢复与单PLL分阶段计划.md) · [S2 双 PLL 候选](../releases/v0.5.2/README.md)（待上板）。单 PLL 参数待定；完成后再归档。
+
 已结项：[v0.5.0 Flash固化与上电自启计划](Flash固化与上电自启分阶段修改计划.md) · [课程对照](FLASH_BOOT_SOURCES.md)。[正式版本](../releases/v0.5.0/README.md) · [结项归档](history/2026-10-05/Flash固化与上电自启/README.md)。
 
 系统稳定性计划已结项：[完成计划](系统稳定性分阶段修改计划.md) · [历史归档](history/2026-10-05/系统稳定性增强/README.md) · [v0.4.0正式版本](../releases/v0.4.0/README.md)。
@@ -8,12 +10,12 @@
 
 | 内容 | 入口 |
 |---|---|
-| 当前产品及下载 | [项目README](../README.md) · [v0.5.0正式版本](../releases/v0.5.0/README.md) |
+| 当前产品及下载 | [项目README](../README.md) · [v0.5.1正式版本](../releases/v0.5.1/README.md) · [v0.5.2候选](../releases/v0.5.2/README.md) |
 | 验证结论和边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
 | 已完成阶段计划 | [HDMI音频分阶段修改计划](HDMI音频分阶段修改计划.md) |
 | 历史归档 | [ARCHIVE_INDEX.md](ARCHIVE_INDEX.md) · [history](history) |
 | 课程来源和改写说明 | [HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md) |
-| 延期问题分析 | [SD恢复分析](diagnostics/s9_sd_recovery/analysis.md)（用户要求暂不修改） |
+| SD恢复历史分析 | [旧版SD恢复分析](diagnostics/s9_sd_recovery/analysis.md)（历史暂缓范围已由 v0.5.2 新任务接续） |
 | 构建/历史测试复现 | [diagnostics入口](../diagnostics/README.md) |
 
 `history`保存历次说明和验收快照；`diagnostics`只保存问题分析及证据。下载文件仍在`releases`，不在文档目录重复保存bit。

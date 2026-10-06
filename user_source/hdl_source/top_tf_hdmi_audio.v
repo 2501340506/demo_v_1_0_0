@@ -69,6 +69,7 @@ wire [31:0] video_read_data;
 
 wire        sd_card_write_en;
 wire [31:0] sd_card_write_data;
+wire write_cancel_req, write_cancel_ack;
 wire        sd_card_write_req;
 wire        sd_card_write_req_ack;
 wire        frame_write_finish;
@@ -195,6 +196,7 @@ sd_card_bmp #(
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
 
+    .write_cancel_req(write_cancel_req), .write_cancel_ack(write_cancel_ack),
     .write_req         (sd_card_write_req),
     .write_req_ack     (sd_card_write_req_ack),
     .write_en          (sd_card_write_en),
@@ -285,6 +287,7 @@ frame_read_write #(
     .App_wr_dm         (App_wr_dm),
 
     .write_clk         (sd_card_clk),
+    .write_cancel_req(write_cancel_req), .write_cancel_ack(write_cancel_ack),
     .write_req         (sd_card_write_req),
     .write_req_ack     (sd_card_write_req_ack),
     .write_finish      (frame_write_finish),

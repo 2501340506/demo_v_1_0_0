@@ -1,14 +1,16 @@
 # 安路 EG4 HDMI 图片播放器
 
-当前正式版本：**[v0.5.0 — Flash固化与上电自启](releases/v0.5.0/README.md)**。2026-10-05用户确认S4整体通过，完成PLL按键复位、SDRAM就绪后扫描、W25Q64固化及独立启动验收。
+当前正式版本：**[v0.5.1 — 时序审计与 Flash 回归](releases/v0.5.1/README.md)**，S5 已获整体上板确认，S6 长稳按用户决定跳过。
 
-[下载固定bit](releases/v0.5.0/demo.bit) · [最终验收](docs/flash_boot/s4/BOARD_VALIDATION.md) · [固化指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [结项归档](docs/history/2026-10-05/Flash固化与上电自启/README.md) · [完成计划](docs/Flash固化与上电自启分阶段修改计划.md)。
+开发中的 **[v0.5.2 S2 双 PLL TF 卡恢复候选](releases/v0.5.2/README.md)** 已完成本地仿真与 TD 构建，待 SRAM 上板。单 PLL 输出及 SDRAM 频率待定，尚未集成；候选未上传 GitHub。
+
+[下载正式版 bit](releases/v0.5.1/demo.bit) · [v0.5.2 候选与验收](releases/v0.5.2/v0.5.2-s2-local.1/BOARD_VALIDATION.md) · [固化指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [v0.5.1 归档](docs/history/2026-10-06/v0.5.1/README.md)。
 
 目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。
 
 基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；两颗PLL、五个时钟域分别同步释放复位。
 
-上一正式版本：[v0.4.0](releases/v0.4.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
+上一正式版本：[v0.5.0](releases/v0.5.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 使用方式
 
@@ -20,6 +22,8 @@
 | 11 | 3 缩放预留 | 不产生新请求 | 不产生新请求 |
 
 KEY4单击切换MAN/AUTO。复位默认MAN，扫描完成且图片多于一张时允许切换AUTO。三个按键20ms消抖，长按不连发；图片首尾循环。
+
+v0.5.2 开发候选中 KEY2 改为短按松手翻图；任何模式长按 2 秒重初始化及重扫，松手不翻图。恢复保留旧图，新首图完整提交后提示一次并回 MAN；初始化/扫描为 0/2、无图 E、通信失败 F，失败可再次长按。此行为尚待上板确认，正式 v0.5.1 不含此恢复功能。
 
 AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间隔包括加载时间。模式变化重新计时，S1修复模式变化恰逢AUTO到期时同拍误发翻图请求；已有手动挂起请求继续处理。图片编号位小数点表示AUTO。
 

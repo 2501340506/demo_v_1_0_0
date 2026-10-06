@@ -28,6 +28,8 @@ module frame_fifo_write
 	input                            wr_burst_data_req,          // from external memory controller,write data request ,before data 1 clock 
 	input                            wr_burst_finish,            // from external memory controller,burst write finish
 	*/
+	input write_cancel_req,
+    output reg write_cancel_ack,
 	input                            write_req,                  // data write module write request,keep '1' until read_req_ack = '1'
 	output reg                       write_req_ack,              // data write module write request response
 	output                           write_finish,               // data write module write request finish
@@ -79,11 +81,18 @@ wire								wr_burst_finish;
 reg App_wr_en_r;
 reg App_wr_en_d0;
 
+reg [1:0] cancel_sync;
+wire cancel_active = cancel_sync[1];
+localparam S_CANCEL = 6;
+always @(posedge mem_clk or posedge rst) begin
+    if (rst) cancel_sync <= 0;
+    else cancel_sync <= {cancel_sync[0], write_cancel_req};
+end
 wire into_burst;
 // Sample the asynchronous FIFO occupancy before the burst decision.  Keeping
 // the wide compare local to this clocked boundary removes the direct FIFO
 // pointer-to-state timing path while preserving the existing one-cycle check.
-assign into_burst = (((write_len_latch <= (rdusedw_latched + write_cnt))||rdusedw_latched > BURST_SIZE) && ~App_rd_busy);
+assign into_burst = !cancel_active && (((write_len_latch <= (rdusedw_latched + write_cnt))||rdusedw_latched > BURST_SIZE) && ~App_rd_busy);
 
 assign App_wr_addr = {App_wr_addr_r[ADDR_BITS - 1:0]};
 //assign O_wr_busy = (state != S_IDLE || (S_IDLE && write_req_d2));
@@ -182,6 +191,7 @@ begin
 	if(rst == 1'b1)
 	begin
 		state <= S_IDLE;
+        write_cancel_ack <= 0;
 		write_len_latch <= ZERO[ADDR_BITS - 1:0];
 		
 		//wr_burst_addr <= ZERO[ADDR_BITS - 1:0];
@@ -195,8 +205,16 @@ begin
 		
 		
 	end
-	else 
-		case(state)
+	else
+        // Finish the issued burst and its registered final write before clear.
+        if (cancel_active && state != S_WRITE_BURST && state != S_CANCEL &&
+            !App_wr_en && !App_wr_en_r && !Sdr_busy) begin
+            state <= S_CANCEL;
+            fifo_aclr <= 1;
+            write_req_ack <= 0;
+            write_cnt <= 0;
+            write_len_latch <= 0;
+        end else case(state)
 			//idle state,waiting for write write_req_d2 == '1' goto the 'S_ACK'
 			S_IDLE:
 			begin
@@ -291,6 +309,14 @@ begin
 			begin
 				state <= S_IDLE;
 			end
+            S_CANCEL: begin
+                write_cancel_ack <= 1;
+                if (!cancel_active) begin
+                    write_cancel_ack <= 0;
+                    fifo_aclr <= 0;
+                    state <= S_IDLE;
+                end
+            end
 			default:
 				state <= S_IDLE;
 		endcase

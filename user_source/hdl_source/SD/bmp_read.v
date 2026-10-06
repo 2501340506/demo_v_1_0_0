@@ -37,6 +37,7 @@ module bmp_read #(
     input  [7:0]                sd_sec_read_data,
     input                       sd_sec_read_data_valid,
     input                       sd_sec_read_end,
+    input                       sd_sec_read_failed,
 
     output reg                  bmp_data_wr_en,
     output reg [23:0]           bmp_data
@@ -376,7 +377,7 @@ always @(posedge clk or posedge rst) begin
         scan_found_valid <= 1'b0;
         scan_error <= 1'b0;
 
-        if (wait_timeout) begin
+        if (wait_timeout || (waiting && sd_sec_read_failed)) begin
             state <= ST_STOP;
             state_code <= 4'hf;
             bmp_error <= 3'd2;
