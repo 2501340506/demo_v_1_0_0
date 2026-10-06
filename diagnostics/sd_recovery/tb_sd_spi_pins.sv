@@ -1,0 +1,113 @@
+`timescale 1ns/1ps
+// Pin-level card: observes MOSI commands and drives MISO on falling SCLK.
+// No FPGA reset input: card idle/application-command state survives host reset.
+module sd_spi_card(input cs,sclk,mosi,input present,bad_crc,output reg miso=1);
+    reg [7:0] rx=0, packet[0:5], response[0:1023];
+    integer bit_count=0, packet_count=0, rp=0,wp=0,commands=0,reads=0;
+    integer idle_clocks=0,attempts=0,k;
+    reg idle=1,app=0;
+    reg [7:0] value;
+    task push(input [7:0] b); begin response[wp]=b;wp=wp+1;end endtask
+    always @(posedge cs) begin
+        bit_count=0;packet_count=0;rp=0;wp=0;miso=1;
+    end
+    always @(negedge sclk) begin
+        if(!cs && present && rp<wp) miso=response[rp][7-bit_count];
+        else miso=1;
+    end
+    always @(posedge sclk) begin
+        if(cs) begin
+            if(mosi) idle_clocks=idle_clocks+1;
+        end else begin
+            rx={rx[6:0],mosi};
+            if(bit_count==7) begin
+                bit_count=0;
+                if(rp<wp) rp=rp+1;
+                if(present) begin
+                    if(packet_count!=0 || rx[7:6]==2'b01) begin
+                        packet[packet_count]=rx;
+                        if(packet_count==5) begin
+                            packet_count=0;commands=commands+1;
+                            $display("CARD command=%0d arg=%h%h%h%h crc=%h",packet[0]&63,packet[1],packet[2],packet[3],packet[4],packet[5]);
+                            push(255);
+                            case(packet[0]&63)
+                                0:begin
+                                    if(packet[5]!=8'h95) $fatal(1,"CMD0 packet CRC");
+                                    idle=1;app=0;attempts=0;push(1);
+                                end
+                                8:begin
+                                    if(packet[5]!=8'h87 || packet[4]!=8'haa) $fatal(1,"CMD8 packet");
+                                    push(idle?1:0);push(0);push(0);push(1);push(8'haa);
+                                end
+                                55:begin app=1;push(idle?1:0);end
+                                41:begin
+                                    if(!app) $fatal(1,"ACMD41 without CMD55");
+                                    app=0;attempts=attempts+1;
+                                    if(attempts>=2) idle=0;
+                                    push(idle?1:0);
+                                end
+                                16:begin
+                                    if(idle) $fatal(1,"CMD16 before ready");
+                                    if({packet[1],packet[2],packet[3],packet[4]}!=512) $fatal(1,"CMD16 block size");
+                                    push(0);
+                                end
+                                17:begin
+                                    if(idle) $fatal(1,"CMD17 before ready");
+                                    reads=reads+1;push(0);push(255);push(8'hfe);
+                                    for(k=0;k<512;k=k+1) push(8'hff);
+                                    push(8'h7f);push(bad_crc?8'ha0:8'ha1);
+                                end
+                                default: $fatal(1,"unexpected wire command %h",packet[0]);
+                            endcase
+                        end else packet_count=packet_count+1;
+                    end
+                end
+            end else bit_count=bit_count+1;
+        end
+    end
+endmodule
+
+module tb_sd_spi_pins;
+    reg clk=0,rst=1,read_req=0,present=1,bad_crc=0;
+    wire cs,sclk,mosi,miso,done,init_failed,failed,ending,dv;
+    wire [7:0] data;
+    wire [15:0] sd_debug;
+    integer bytes=0,successes=0,errors=0;
+    always #5 clk=~clk;
+    sd_card_top #(.INIT_TIMEOUT_MS(50),.RESPONSE_TIMEOUT_MS(2),.TOKEN_TIMEOUT_MS(5)) dut(
+        .clk(clk),.rst(rst),.SD_nCS(cs),.SD_DCLK(sclk),.SD_MOSI(mosi),.SD_MISO(miso),
+        .sd_debug(sd_debug),.sd_init_done(done),.sd_init_failed(init_failed),.sd_sec_read_failed(failed),
+        .sd_sec_read(read_req),.sd_sec_read_addr(32'd0),.sd_sec_read_data(data),
+        .sd_sec_read_data_valid(dv),.sd_sec_read_end(ending),
+        .sd_sec_write(1'b0),.sd_sec_write_addr(32'd0),.sd_sec_write_data(8'd0),
+        .sd_sec_write_data_req(),.sd_sec_write_end());
+    sd_spi_card card(cs,sclk,mosi,present,bad_crc,miso);
+    always @(posedge clk) if(!rst) begin
+        if(dv) begin
+            if(data!==8'hff) $fatal(1,"wire data mismatch");
+            bytes=bytes+1;
+        end
+        if(ending) successes=successes+1;
+        if(failed) errors=errors+1;
+        if(init_failed) $fatal(1,"valid card initialization timed out; commands=%0d",card.commands);
+    end
+    task read_sector;
+        @(negedge clk);read_req=1;repeat(4)@(negedge clk);read_req=0;
+        wait(ending || failed);repeat(4)@(negedge clk);
+    endtask
+    initial begin
+        repeat(5)@(negedge clk);rst=0;
+        wait(done);
+        if(card.idle_clocks<80) $fatal(1,"idle clocks");
+        read_sector();
+        if(sd_debug!==16'h1100) $fatal(1,"wire CMD17 R1 diagnostic: %h",sd_debug);
+        if(successes!=1 || errors!=0 || bytes!=512) $fatal(1,"valid sector rejected successes=%0d errors=%0d bytes=%0d",successes,errors,bytes);
+        bad_crc=1;read_sector();
+        if(successes!=1 || errors!=1) $fatal(1,"CRC error not rejected");
+        bad_crc=0;rst=1;repeat(5)@(negedge clk);rst=0;
+        wait(done);read_sector();
+        if(successes!=2 || errors!=1 || card.reads!=3) $fatal(1,"host-only reset recovery");
+        $display("PASS pin-level SD initialization, good/bad CRC and host-only reset");$finish;
+    end
+    initial begin #60000000;$fatal(1,"pin test watchdog");end
+endmodule

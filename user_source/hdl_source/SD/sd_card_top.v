@@ -16,6 +16,7 @@ module sd_card_top
 	output           SD_MOSI,                   //SD card controller data output
 	input            SD_MISO,                   //SD card controller data input
 	output sd_init_failed, sd_sec_read_failed,
+    output reg [15:0] sd_debug,
 	output           sd_init_done,              //SD card initialization is complete
 	input            sd_sec_read,               //SD card sector read
 	input[31:0]      sd_sec_read_addr,          //SD card sector read address
@@ -52,6 +53,12 @@ wire                 spi_wr_ack;                //SPI module data request respon
 wire[7:0]            spi_data_in;               //SPI module send data
 wire[7:0]            spi_data_out;              //SPI module data returned
 wire[15:0]           clk_div;
+wire [7:0] cmd_response;
+// Retain the result when protocol_rst stops SPI after an init failure.
+always @(posedge clk or posedge rst) begin
+    if(rst) sd_debug <= 16'hffff;
+    else if(cmd_req || cmd_req_ack) sd_debug <= {2'b00, cmd[45:40], cmd_response};
+end
 sd_card_sec_read_write
 #(
 	.CLK_FREQ_HZ(CLK_FREQ_HZ), .INIT_TIMEOUT_MS(INIT_TIMEOUT_MS),
@@ -93,6 +100,7 @@ sd_card_sec_read_write_m0(
 
 sd_card_cmd #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .RESPONSE_TIMEOUT_MS(RESPONSE_TIMEOUT_MS),
     .TOKEN_TIMEOUT_MS(TOKEN_TIMEOUT_MS)) sd_card_cmd_m0(
+    .cmd_response(cmd_response),
     .block_read_error(block_read_error),
 	.sys_clk                        (clk                    ),
 	.rst                            (protocol_rst           ),

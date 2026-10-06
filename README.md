@@ -2,7 +2,7 @@
 
 当前正式版本：**[v0.5.1 — 时序审计与 Flash 回归](releases/v0.5.1/README.md)**，S5 已获整体上板确认，S6 长稳按用户决定跳过。
 
-开发中的 **[v0.5.2 S2 双 PLL TF 卡恢复候选](releases/v0.5.2/README.md)** 已完成本地仿真与 TD 构建，待 SRAM 上板。单 PLL 输出及 SDRAM 频率待定，尚未集成；候选未上传 GitHub。
+开发中的 **[v0.5.2 S2](releases/v0.5.2/README.md)**：local.1 本地测试通过但用户上板出现正常卡先 0 后 F，尚未修复；[local.2](releases/v0.5.2/v0.5.2-s2-local.2/README.md) 用于记录失败命令/R1。单 PLL 输出及 SDRAM 频率待定，尚未集成；候选未上传 GitHub。
 
 [下载正式版 bit](releases/v0.5.1/demo.bit) · [v0.5.2 候选与验收](releases/v0.5.2/v0.5.2-s2-local.1/BOARD_VALIDATION.md) · [固化指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [v0.5.1 归档](docs/history/2026-10-06/v0.5.1/README.md)。
 

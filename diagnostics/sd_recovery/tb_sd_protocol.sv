@@ -9,7 +9,7 @@ integer gap=0, bytes=0, payload=0, idle_bytes=0;
 integer scenario=0;
 sd_card_cmd #(.CLK_FREQ_HZ(1000)) dut(
  .sys_clk(clk),.rst(rst),.spi_clk_div(16'd248),
- .cmd_req(cmd_req),.cmd_req_ack(cmd_ack),.cmd_req_error(error),
+ .cmd_response(),.cmd_req(cmd_req),.cmd_req_ack(cmd_ack),.cmd_req_error(error),
  .cmd({8'd0,32'd0,8'h95}),.cmd_r1(8'h01),.cmd_data_len(16'd0),
  .block_read_req(read_req),.block_read_req_ack(read_ack),.block_read_error(read_error),
  .block_read_data(),.block_read_valid(),.block_write_req(1'b0),.block_write_data(8'd0),

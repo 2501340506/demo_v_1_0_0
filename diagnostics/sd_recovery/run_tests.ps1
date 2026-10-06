@@ -1,4 +1,4 @@
-param([string[]]$Tests = @('tb_sd_protocol','tb_rescan_key','tb_sd_initialization'))
+param([string[]]$Tests = @('tb_sd_protocol','tb_rescan_key','tb_sd_initialization','tb_sd_spi_pins'))
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out = Join-Path $root 'diagnostics/output/v052_sd_recovery'

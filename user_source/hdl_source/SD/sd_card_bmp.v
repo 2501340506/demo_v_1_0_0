@@ -16,6 +16,7 @@ module sd_card_bmp #(
     input                       key4,
     input [1:0]                 mode,
     output     [3:0]            state_code,
+    output [15:0]               sd_debug,
     output     [7:0]            combo_event_count,
     output                      combo_debug_active,
     output                      auto_play_indicator,
@@ -517,6 +518,7 @@ bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
 );
 
 sd_card_top #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) sd_card_top_m0(
+    .sd_debug(sd_debug),
     .sd_init_failed(sd_init_failed),
     .clk                    (clk),
     .rst                    (sd_local_rst),

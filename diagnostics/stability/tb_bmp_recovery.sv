@@ -19,7 +19,7 @@ module tb_bmp_recovery;
     reg hold_ack=0,inject_old_finish=0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000),.SCAN_MAX_SECTOR(3),.AUTO_PLAY_MS(100)) dut(
         .write_cancel_req(),.write_cancel_ack(1'b0),
-        .sdram_ready(1'b1),
+        .sd_debug(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'd0),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd4),.bmp_height(16'd1),.display_valid(valid),

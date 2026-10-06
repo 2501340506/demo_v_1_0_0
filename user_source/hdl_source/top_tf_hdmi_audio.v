@@ -57,6 +57,8 @@ wire [1:0] committed_image, audio_image;
 wire committed_valid, committed_ready, audio_update, audio_enable;
 
 wire [3:0]  state_code;
+wire [15:0] sd_debug;
+reg [15:0] sd_debug_panel0, sd_debug_panel1;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
 wire        auto_play_indicator;
@@ -102,6 +104,11 @@ wire [9:0]  tmds_clk_data;
 wire sys_pll_lock, video_pll_lock;
 wire reset_request = ~rst_n | ~sys_pll_lock | ~video_pll_lock;
 wire rst_panel, rst_sd, rst_mem, rst_video, rst_serial;
+// Debug value settles before F; the panel consumes the retained result.
+always @(posedge clk or posedge rst_panel) begin
+    if(rst_panel) begin sd_debug_panel0 <= 0; sd_debug_panel1 <= 0; end
+    else begin sd_debug_panel0 <= sd_debug; sd_debug_panel1 <= sd_debug_panel0; end
+end
 reset_sync u_reset_panel (.clk(clk), .async_rst(reset_request), .rst(rst_panel));
 reset_sync u_reset_sd (.clk(sd_card_clk), .async_rst(reset_request), .rst(rst_sd));
 reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_mem));
@@ -181,6 +188,7 @@ sd_card_bmp #(
     .key4              (key4),
     .mode              (switch_mode),
     .state_code        (state_code),
+    .sd_debug(sd_debug),
     .combo_event_count (combo_event_count),
     .combo_debug_active(combo_debug_active),
     .auto_play_indicator(auto_play_indicator),
@@ -208,6 +216,7 @@ sd_card_bmp #(
 );
 
 seg7_panel seg7_panel_m0(
+    .sd_debug(sd_debug_panel1),
     .clk               (clk),
     .rst_n             (~rst_panel),
     .mode              (mode_panel_sync1),

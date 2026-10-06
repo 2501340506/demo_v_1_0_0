@@ -10,6 +10,7 @@ module sd_card_cmd #(
 	input                       cmd_req,                      //SD card command request
 	output                      cmd_req_ack,                  //SD card command request response
 	output reg                  block_read_error,
+    output reg [7:0]             cmd_response,
 	output reg                  cmd_req_error,                //SD card command request error
 	input[47:0]                 cmd,                          //SD card command
 	input[7:0]                  cmd_r1,                       //SD card expect response
@@ -91,6 +92,7 @@ begin
 		cmd_req_error <= 1'b0;
 		wr_data_cnt <= 10'd0;
         wait_count <= 0; read_crc <= 0; crc_high <= 0; block_read_error <= 0;
+        cmd_response <= 8'hff;
 	end
 	else begin
         if ((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA || state == S_READ_WAIT)
@@ -144,6 +146,7 @@ begin
 			end
 			S_CMD_PRE:
 			begin
+                cmd_response <= 8'hff;
 				//before sending a command, send an byte 'ff',provide some clocks
 				if(spi_wr_ack == 1'b1)
 				begin
@@ -162,6 +165,7 @@ begin
 			begin
 				if(spi_wr_ack == 1'b1)
 				begin
+                    if(byte_cnt >= 6 && !data_recv[7]) cmd_response <= data_recv;
 					if(byte_cnt >= 6 && data_recv != cmd_r1 && data_recv[7] == 1'b0)
 					begin
 						state <= S_ERR;

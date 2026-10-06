@@ -22,7 +22,7 @@ module tb_rescan_handoff;
     always @(posedge mem_clk) if(rst) finish_toggle<=0; else if(wr_finish) finish_toggle<=~finish_toggle;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000), .SCAN_MAX_SECTOR(27)) dut (
         .write_cancel_req(cancel_req),.write_cancel_ack(cancel_ack),
-        .sdram_ready(1'b1),
+        .sd_debug(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(key2),.key4(1'b1),.mode(mode),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd32),.bmp_height(16'd32),.display_valid(valid),.committed_image(),.committed_valid(),.committed_ready(1'b1),
@@ -277,12 +277,13 @@ module wfifo_32_32_512(input clkr,clkw,rst,we,re,input [31:0] di,
 endmodule
 
 module sd_card_top #(parameter CLK_FREQ_HZ=100_000_000)(input clk,rst,output SD_nCS,SD_DCLK,SD_MOSI,input SD_MISO,
+    output [15:0] sd_debug,
     output sd_init_failed,sd_sec_read_failed,
     output sd_init_done,input sd_sec_read,input [31:0] sd_sec_read_addr,
     output [7:0] sd_sec_read_data,output sd_sec_read_data_valid,sd_sec_read_end,
     input sd_sec_write,input [31:0] sd_sec_write_addr,output [7:0] sd_sec_write_data,
     output sd_sec_write_data_req,sd_sec_write_end);
-    assign sd_init_failed=0;assign sd_sec_read_failed=0;assign sd_init_done=!rst;assign SD_nCS=1;assign SD_DCLK=0;assign SD_MOSI=0;
+    assign sd_debug=0;assign sd_init_failed=0;assign sd_sec_read_failed=0;assign sd_init_done=!rst;assign SD_nCS=1;assign SD_DCLK=0;assign SD_MOSI=0;
     assign sd_sec_read_data=0;assign sd_sec_read_data_valid=0;assign sd_sec_read_end=0;
     assign sd_sec_write_data=0;assign sd_sec_write_data_req=0;assign sd_sec_write_end=0;
 endmodule

@@ -1,5 +1,7 @@
 # v0.5.2-s2-local.1 — 双 PLL TF 卡保图恢复候选
 
+2026-10-06 后续反馈：本候选上板未通过。已知正常卡上电先 0 后 F，长按重试仍失败。转 [local.2 诊断候选](../v0.5.2-s2-local.2/README.md)，尚未确认根因。以下为生成时的本地验证记录，不代表板测通过。
+
 2026-10-06。本地 ModelSim、TD 6.2.1 构建通过，等待用户 SRAM 上板确认。保持双 PLL、SD 100 MHz、SDRAM 125 MHz、像素 25 MHz、HDMI 串行 125 MHz。未烧写 Flash、未上传、未进入 S3。
 
 [固定 bit](demo.bit) · [板级验收表](BOARD_VALIDATION.md) · [构建及源清单](BUILD.md) · [时序摘要](TIMING.md)

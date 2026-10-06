@@ -3,12 +3,13 @@ module tb_sd_initialization;
 reg clk=0,rst=1,sd_sec_read=0,card_present=0;
 wire sd_init_done,sd_init_failed,sd_sec_read_failed,sd_sec_read_end;
 wire SD_nCS,SD_DCLK,SD_MOSI;
+wire [15:0] sd_debug;
 reg ack=0; reg [7:0] rx=255;
 integer gap=0,cmd16_count=0,card_commands=0;
 always #5 clk=~clk;
 sd_card_top #(.CLK_FREQ_HZ(1000),.SPI_LOW_SPEED_DIV(0)) dut(
  .clk(clk),.rst(rst),.SD_nCS(SD_nCS),.SD_DCLK(SD_DCLK),.SD_MOSI(SD_MOSI),.SD_MISO(1'b1),
- .sd_init_done(sd_init_done),.sd_init_failed(sd_init_failed),.sd_sec_read_failed(sd_sec_read_failed),
+ .sd_debug(sd_debug),.sd_init_done(sd_init_done),.sd_init_failed(sd_init_failed),.sd_sec_read_failed(sd_sec_read_failed),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(32'd0),.sd_sec_read_data(),.sd_sec_read_data_valid(),
  .sd_sec_read_end(sd_sec_read_end),.sd_sec_write(1'b0),.sd_sec_write_addr(32'd0),
  .sd_sec_write_data(8'd0),.sd_sec_write_data_req(),.sd_sec_write_end());
@@ -38,8 +39,10 @@ initial begin
  repeat(4) @(negedge clk);rst=0;
  wait(sd_init_failed);repeat(4) @(negedge clk);
  if(sd_init_done || !SD_nCS || !SD_MOSI) $fatal(1,"init failure not idle");
+ if(sd_debug!==16'h00ff) $fatal(1,"CMD0 timeout diagnostic must survive protocol reset: %h",sd_debug);
  card_present=1;rst=1;repeat(4) @(negedge clk);rst=0;
  wait(sd_init_done);@(negedge clk);
+ if(sd_debug!==16'h1000) $fatal(1,"CMD16 success diagnostic: %h",sd_debug);
  if(dut.sd_card_sec_read_write_m0.state!=dut.sd_card_sec_read_write_m0.S_WAIT_READ_WRITE)
   $fatal(1,"init not ready for read");
  sd_sec_read=1;repeat(2) @(negedge clk);sd_sec_read=0;
