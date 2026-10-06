@@ -94,6 +94,10 @@ assign block_write_data_rd = (state == S_WRITE_DATA_0);
 assign spi_data_in = send_data;
 assign data_recv = spi_data_out;
 assign nCS_ctrl = CS_reg;
+// CMD55 may report idle (01) or ready (00): the card can finish
+// initialization between ACMD41 polls. All R1 error bits must remain clear.
+wire response_matches = (data_recv == cmd_r1) ||
+                        (cmd[45:40] == 6'd55 && cmd_r1 == 8'h01 && data_recv == 8'h00);
 always@(posedge sys_clk or posedge rst)
 begin
 	if(rst == 1'b1)
@@ -187,13 +191,13 @@ begin
 				begin
                     if(byte_cnt >= 6 && !data_recv[7]) cmd_response <= data_recv;
                     if(byte_cnt < 5) command_crc <= crc7_byte(command_crc, send_data);
-					if(byte_cnt >= 6 && data_recv != cmd_r1 && data_recv[7] == 1'b0)
+					if(byte_cnt >= 6 && !response_matches && data_recv[7] == 1'b0)
 					begin
 						state <= S_ERR;
 						spi_wr_req <= 1'b0;
 						byte_cnt <= 16'd0;
 					end
-					else if(byte_cnt >= 6 && data_recv == cmd_r1)
+					else if(byte_cnt >= 6 && response_matches)
 					begin
 						spi_wr_req <= 1'b0;
 						if(cmd_data_len != 16'd0)

@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 // Pin-level card: observes MOSI commands and drives MISO on falling SCLK.
 // No FPGA reset input: card idle/application-command state survives host reset.
-module sd_spi_card(input cs,sclk,mosi,input present,bad_crc,reject_crc_enable,output reg miso=1);
+module sd_spi_card(input cs,sclk,mosi,input present,bad_crc,reject_crc_enable,ready_between_polls,output reg miso=1);
     reg [7:0] rx=0, packet[0:5], response[0:1023];
     integer bit_count=0, packet_count=0, rp=0,wp=0,commands=0,reads=0;
     integer idle_clocks=0,attempts=0,k;
@@ -59,6 +59,9 @@ module sd_spi_card(input cs,sclk,mosi,input present,bad_crc,reject_crc_enable,ou
                                     app=0;attempts=attempts+1;
                                     if(attempts>=2) idle=0;
                                     push(idle?1:0);
+                                    // Initialization can finish after returning idle,
+                                    // before the host sends its next CMD55.
+                                    if(ready_between_polls) idle=0;
                                 end
                                 16:begin
                                     if(idle) $fatal(1,"CMD16 before ready");
@@ -90,6 +93,7 @@ endmodule
 
 module tb_sd_spi_pins;
     reg clk=0,rst=1,read_req=0,present=1,bad_crc=0,reject_crc_enable=0;
+    reg ready_between_polls=0;
     reg [31:0] read_addr=0;
     wire cs,sclk,mosi,miso,done,init_failed,failed,ending,dv;
     wire [7:0] data;
@@ -103,7 +107,7 @@ module tb_sd_spi_pins;
         .sd_sec_read_data_valid(dv),.sd_sec_read_end(ending),
         .sd_sec_write(1'b0),.sd_sec_write_addr(32'd0),.sd_sec_write_data(8'd0),
         .sd_sec_write_data_req(),.sd_sec_write_end());
-    sd_spi_card card(cs,sclk,mosi,present,bad_crc,reject_crc_enable,miso);
+    sd_spi_card card(cs,sclk,mosi,present,bad_crc,reject_crc_enable,ready_between_polls,miso);
     always @(posedge clk) if(!rst) begin
         if(dv) begin
             if(data!==((bytes*37+11)&255)) $fatal(1,"wire data mismatch byte=%0d got=%h",bytes,data);
@@ -111,7 +115,7 @@ module tb_sd_spi_pins;
         end
         if(ending) successes=successes+1;
         if(failed) errors=errors+1;
-        if(init_failed && !reject_crc_enable) $fatal(1,"valid card initialization timed out; commands=%0d",card.commands);
+        if(init_failed && !reject_crc_enable) $fatal(1,"valid card initialization timed out; commands=%0d diagnostic=%h ACMD41 attempts=%0d",card.commands,sd_debug,card.attempts);
         if(done && !card.crc_enabled) $fatal(1,"init_done before CMD59 completed");
     end
     task read_sector;
@@ -142,7 +146,11 @@ module tb_sd_spi_pins;
         rst=1;reject_crc_enable=0;repeat(5)@(negedge clk);rst=0;
         wait(done);read_sector();
         if(successes!=4 || errors!=1 || card.crc_enables!=3) $fatal(1,"CMD59 failure recovery");
+        ready_between_polls=1;rst=1;repeat(5)@(negedge clk);rst=0;
+        wait(done);read_sector();
+        if(successes!=5 || card.attempts!=2) $fatal(1,"CMD55 ready response recovery");
+        $display("PASS initialization completes between ACMD41 polls: CMD55 R1=00 accepted");
         $display("PASS pin-level CRC7, CMD59 readiness/failure/retry, good/bad CRC16 and host-only reset");$finish;
     end
-    initial begin #60000000;$fatal(1,"pin test watchdog");end
+    initial begin #90000000;$fatal(1,"pin test watchdog");end
 endmodule

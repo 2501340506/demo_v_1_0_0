@@ -3,6 +3,7 @@ module tb_sd_protocol;
 reg clk=0,rst=1,cmd_req=0,read_req=0,ack=0;
 always #5 clk=~clk;
 reg [7:0] rx=8'hff;
+reg [47:0] command_word={8'd0,32'd0,8'h95};
 wire req,cmd_ack,error,read_ack,read_error,cs;
 wire [7:0] tx;
 wire [47:0] read_debug;
@@ -11,7 +12,7 @@ integer scenario=0;
 sd_card_cmd #(.CLK_FREQ_HZ(1000)) dut(
  .sys_clk(clk),.rst(rst),.spi_clk_div(16'd248),
  .read_debug(read_debug),.cmd_response(),.cmd_req(cmd_req),.cmd_req_ack(cmd_ack),.cmd_req_error(error),
- .cmd({8'd0,32'd0,8'h95}),.cmd_r1(8'h01),.cmd_data_len(16'd0),
+ .cmd(command_word),.cmd_r1(8'h01),.cmd_data_len(16'd0),
  .block_read_req(read_req),.block_read_req_ack(read_ack),.block_read_error(read_error),
  .block_read_data(),.block_read_valid(),.block_write_req(1'b0),.block_write_data(8'd0),
  .block_write_data_rd(),.block_write_req_ack(),.nCS_ctrl(cs),.clk_div(),
@@ -28,6 +29,8 @@ always @(negedge clk) begin
   end
   if(dut.state==dut.S_CMD) begin
    if(dut.byte_cnt<6) begin bytes=bytes+1; rx=0; end
+   else if(scenario==5) rx=0;
+   else if(scenario==6) rx=4;
    else if(scenario!=1) rx=1;
   end
   if(dut.state==dut.S_READ_WAIT && scenario!=2) rx=8'hfe;
@@ -52,7 +55,7 @@ end endtask
 task command(input integer kind);
 begin
  scenario=kind;cmd_req=1;wait(cmd_ack);#1;
- if(bytes!=6 || error!=(kind==1)) $fatal(1,"command framing/timeout");
+ if(bytes!=6 || error!=(kind==1 || kind==6)) $fatal(1,"command framing/timeout/R1 error");
  cmd_req=0;repeat(4) @(posedge clk);#1;
 end endtask
 task block(input integer kind);
@@ -70,6 +73,10 @@ initial begin
  reset_host; block(2);
  reset_host; block(3);
  reset_host; command(0); block(4);
+ command_word={8'd55,32'd0,8'hff};
+ reset_host; command(5);
+ reset_host; command(6);
+ $display("PASS CMD55 ready response accepted and R1 error rejected");
  $display("PASS full command, response timeout, token timeout, CRC failure and retry");$finish;
 end
 initial begin #200000;$fatal(1,"watchdog");end
