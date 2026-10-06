@@ -109,7 +109,10 @@ wire write_finish_now;
 
 localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 
-assign ctrl_request_accept = ctrl_load_request && bmp_ready && !timeout_stopped && !timeout_event &&
+// Consume a queued request only on the edge where this block can actually
+// start a new load.  Without the busy guard, the control block clears its
+// pending direction while the loader is still handling a prior request.
+assign ctrl_request_accept = ctrl_load_request && !load_busy && bmp_ready && !timeout_stopped && !timeout_event &&
                              !(auto_blocked && ctrl_auto_load_request);
 assign state_code = (sticky_error == 3'd1) ? 4'he :
                     (sticky_error == 3'd2) ? 4'hf :

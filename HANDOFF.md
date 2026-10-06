@@ -16,8 +16,8 @@
 
 ## 阻塞与下一步
 
-- S0 回归在 `tb_picture_requests` 触发既有 Fatal：`pending request lost on failure`（约 1327980 ns）。需要先定位该控制回归问题，或由用户明确将其作为已知基线豁免。
-- 在该阻塞处理前不进入 S2 SDRAM 硬核接口与 fabric 内部路径审计。
+- `tb_picture_requests` 已修复并通过：请求消费增加 `!load_busy` 门控，专项测试等待明确错误脉冲，验证重试和挂起请求均完成。
+- 完整回归目前在 `tb_buffer_handoff` 的 ModelSim 优化阶段失败：`bmp_read` 的 `CLK_FREQ_HZ/TIMEOUT_MS` 参数覆盖与当前编译库不兼容；这与本次挂起请求修复无关，需单独修复测试入口后再宣布全回归通过。
 - 已建立 S2 只读审计记录：[S2 SDRAM 路径审计](docs/timing_closure/S2_SDRAM路径审计.md)；当前不新增约束例外、不生成新 bit。
 - S3/S4 只有在审计结果明确后才修改 RTL 或约束。
 - 最终候选必须重新完成 Flash 回归并等待用户上板确认。

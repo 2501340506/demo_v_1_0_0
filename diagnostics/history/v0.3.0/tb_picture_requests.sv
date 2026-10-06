@@ -206,8 +206,18 @@ module tb_picture_requests;
         bad_header = 0; next_key(); drain();
         if (commits != before_count+1) $fatal(1, "recovery after rejection failed");
         before_count = commits;
-        bad_header = 1; next_key(); next_key(); bad_header = 0; drain();
-        if (commits != before_count+1) $fatal(1, "pending request lost on failure");
+        bad_header = 1; next_key(); next_key();
+        // Wait for the failed request and its retry to be observed before
+        // restoring valid header data; otherwise the test races the parser
+        // and may accidentally turn both requests into successful loads.
+        wait (dut.bmp_load_error);
+        @(negedge clk);
+        wait (dut.bmp_load_error);
+        bad_header = 0;
+        drain();
+        // The first request retries once and the queued request is then
+        // serviced, so this scenario produces two successful commits.
+        if (commits != before_count+2 || db == saved_buf) $fatal(1, "pending request lost on failure");
         $display("PASS rejected headers preserve image and pending requests, then recover");
 
         before_count = commits; saved_buf = db;
