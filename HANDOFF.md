@@ -22,6 +22,8 @@
 - S2 已完成 TD 路径审计：全局 67 个负端点中 64 个为 SDRAM 硬核边界，3 个为 `ext_mem_clk` 域 fabric 内部路径；详见 [S2 审计](docs/timing_closure/S2_SDRAM路径审计.md)。
 - 下一步进入 S3，只处理一个已定位的 `ext_mem_clk` 内部路径组；不修改 SDRAM 硬核接口约束，不进行 Flash 上板。
 - S3 已完成：`frame_fifo_write` 对 `rdusedw` 增加本域采样寄存器。ModelSim 八入口和 TD 构建通过；Setup TNS 改善约 1.256 ns，负端点 67→64。下一步为剩余两个 fabric 路径的评估，仍不进入 Flash 上板。
+- S4 约束审查完成：剩余 64 个端点均在 SDRAM 硬核边界；缺少真实板级 I/O 延迟和厂商硬核窗口资料，因此不新增约束例外或猜测 delay 参数。
+- 下一步转入 S5 Flash 回归准备：沿用 S3 候选 bit，先完成候选说明和上板验收表，等待用户实际固化与独立冷启动验证。
 - S3/S4 只有在审计结果明确后才修改 RTL 或约束。
 - 最终候选必须重新完成 Flash 回归并等待用户上板确认。
 
