@@ -5,11 +5,12 @@ always #5 clk=~clk;
 reg [7:0] rx=8'hff;
 wire req,cmd_ack,error,read_ack,read_error,cs;
 wire [7:0] tx;
+wire [47:0] read_debug;
 integer gap=0, bytes=0, payload=0, idle_bytes=0;
 integer scenario=0;
 sd_card_cmd #(.CLK_FREQ_HZ(1000)) dut(
  .sys_clk(clk),.rst(rst),.spi_clk_div(16'd248),
- .cmd_response(),.cmd_req(cmd_req),.cmd_req_ack(cmd_ack),.cmd_req_error(error),
+ .read_debug(read_debug),.cmd_response(),.cmd_req(cmd_req),.cmd_req_ack(cmd_ack),.cmd_req_error(error),
  .cmd({8'd0,32'd0,8'h95}),.cmd_r1(8'h01),.cmd_data_len(16'd0),
  .block_read_req(read_req),.block_read_req_ack(read_ack),.block_read_error(read_error),
  .block_read_data(),.block_read_valid(),.block_write_req(1'b0),.block_write_data(8'd0),
@@ -59,6 +60,8 @@ begin
  scenario=kind;read_req=1;wait(read_ack);#1;
  if(read_error!=(kind==2 || kind==3) || !cs) $fatal(1,"read failure/CS");
  if(kind!=2 && payload!=514) $fatal(1,"incomplete sector");
+ if(kind==2 && read_debug!==48'h10ff00000000) $fatal(1,"token timeout diagnostic");
+ if(kind==3 && read_debug!==48'h220000000001) $fatal(1,"CRC failure diagnostic");
  read_req=0;repeat(4) @(posedge clk);#1;
 end endtask
 initial begin

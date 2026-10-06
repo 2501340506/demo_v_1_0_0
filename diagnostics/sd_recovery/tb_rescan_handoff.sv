@@ -277,7 +277,7 @@ module wfifo_32_32_512(input clkr,clkw,rst,we,re,input [31:0] di,
 endmodule
 
 module sd_card_top #(parameter CLK_FREQ_HZ=100_000_000)(input clk,rst,output SD_nCS,SD_DCLK,SD_MOSI,input SD_MISO,
-    output [15:0] sd_debug,
+    output [63:0] sd_debug,
     output sd_init_failed,sd_sec_read_failed,
     output sd_init_done,input sd_sec_read,input [31:0] sd_sec_read_addr,
     output [7:0] sd_sec_read_data,output sd_sec_read_data_valid,sd_sec_read_end,

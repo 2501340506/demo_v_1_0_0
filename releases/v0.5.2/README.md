@@ -1,5 +1,7 @@
 # v0.5.2 开发记录
 
+最新：用户 local.2 回传两次 `11000F`，已定位到 CMD17 成功之后的读阶段。[local.3 当前诊断 bit](v0.5.2-s2-local.3/demo.bit) 每 2 秒显示命令、接收 CRC、计算 CRC 和错误状态，见 [说明](v0.5.2-s2-local.3/README.md)。尚未确认根因或修复，S2 仍未通过。
+
 2026-10-06：双 PLL 恢复 local.1 本地通过，但用户 SRAM 上板发现正常卡先 0 后 F，KEY2 后仍失败。S2 未通过；当前 [local.2 临时诊断候选](v0.5.2-s2-local.2/README.md) 用于读取失败命令及 R1，根因尚未确认。不是正式发布，未上传 GitHub，未烧写 Flash。
 
 [阶段计划](../../docs/v0.5.2_TF卡恢复与单PLL分阶段计划.md) · [当前诊断 bit](v0.5.2-s2-local.2/demo.bit) · [local.1 失败记录](v0.5.2-s2-local.1/BOARD_VALIDATION.md)

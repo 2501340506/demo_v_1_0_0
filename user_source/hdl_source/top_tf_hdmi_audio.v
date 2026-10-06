@@ -57,8 +57,9 @@ wire [1:0] committed_image, audio_image;
 wire committed_valid, committed_ready, audio_update, audio_enable;
 
 wire [3:0]  state_code;
-wire [15:0] sd_debug;
-reg [15:0] sd_debug_panel0, sd_debug_panel1;
+wire [63:0] sd_debug;
+reg [63:0] sd_debug_panel0, sd_debug_panel1;
+reg [63:0] sd_debug_half;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
 wire        auto_play_indicator;
@@ -104,10 +105,16 @@ wire [9:0]  tmds_clk_data;
 wire sys_pll_lock, video_pll_lock;
 wire reset_request = ~rst_n | ~sys_pll_lock | ~video_pll_lock;
 wire rst_panel, rst_sd, rst_mem, rst_video, rst_serial;
+// Half-cycle staging gives the observed bus margin at the 50 MHz capture edge.
+// This path remains timed; no diagnostic CDC timing exception is introduced.
+always @(negedge sd_card_clk or posedge rst_sd) begin
+    if(rst_sd) sd_debug_half <= 0;
+    else sd_debug_half <= sd_debug;
+end
 // Debug value settles before F; the panel consumes the retained result.
 always @(posedge clk or posedge rst_panel) begin
     if(rst_panel) begin sd_debug_panel0 <= 0; sd_debug_panel1 <= 0; end
-    else begin sd_debug_panel0 <= sd_debug; sd_debug_panel1 <= sd_debug_panel0; end
+    else begin sd_debug_panel0 <= sd_debug_half; sd_debug_panel1 <= sd_debug_panel0; end
 end
 reset_sync u_reset_panel (.clk(clk), .async_rst(reset_request), .rst(rst_panel));
 reset_sync u_reset_sd (.clk(sd_card_clk), .async_rst(reset_request), .rst(rst_sd));

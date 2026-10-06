@@ -54,8 +54,8 @@ module sd_spi_card(input cs,sclk,mosi,input present,bad_crc,output reg miso=1);
                                 17:begin
                                     if(idle) $fatal(1,"CMD17 before ready");
                                     reads=reads+1;push(0);push(255);push(8'hfe);
-                                    for(k=0;k<512;k=k+1) push(8'hff);
-                                    push(8'h7f);push(bad_crc?8'ha0:8'ha1);
+                                    for(k=0;k<512;k=k+1) push((k*37+11)&255);
+                                    push(8'hd5);push(bad_crc?8'h95:8'h94);
                                 end
                                 default: $fatal(1,"unexpected wire command %h",packet[0]);
                             endcase
@@ -71,7 +71,7 @@ module tb_sd_spi_pins;
     reg clk=0,rst=1,read_req=0,present=1,bad_crc=0;
     wire cs,sclk,mosi,miso,done,init_failed,failed,ending,dv;
     wire [7:0] data;
-    wire [15:0] sd_debug;
+    wire [63:0] sd_debug;
     integer bytes=0,successes=0,errors=0;
     always #5 clk=~clk;
     sd_card_top #(.INIT_TIMEOUT_MS(50),.RESPONSE_TIMEOUT_MS(2),.TOKEN_TIMEOUT_MS(5)) dut(
@@ -84,7 +84,7 @@ module tb_sd_spi_pins;
     sd_spi_card card(cs,sclk,mosi,present,bad_crc,miso);
     always @(posedge clk) if(!rst) begin
         if(dv) begin
-            if(data!==8'hff) $fatal(1,"wire data mismatch");
+            if(data!==((bytes*37+11)&255)) $fatal(1,"wire data mismatch byte=%0d got=%h",bytes,data);
             bytes=bytes+1;
         end
         if(ending) successes=successes+1;
@@ -100,13 +100,18 @@ module tb_sd_spi_pins;
         wait(done);
         if(card.idle_clocks<80) $fatal(1,"idle clocks");
         read_sector();
-        if(sd_debug!==16'h1100) $fatal(1,"wire CMD17 R1 diagnostic: %h",sd_debug);
+        if(sd_debug[15:0]!==16'h1100) $fatal(1,"wire CMD17 R1 diagnostic: %h",sd_debug);
         if(successes!=1 || errors!=0 || bytes!=512) $fatal(1,"valid sector rejected successes=%0d errors=%0d bytes=%0d",successes,errors,bytes);
+        if(sd_debug!==64'h0200d594d5941100) $fatal(1,"good CRC snapshot %h",sd_debug);
         bad_crc=1;read_sector();
         if(successes!=1 || errors!=1) $fatal(1,"CRC error not rejected");
+        if(sd_debug!==64'h2200d594d5951100) $fatal(1,"bad CRC snapshot %h",sd_debug);
+        bad_crc=0;read_sector();
+        if(successes!=2 || sd_debug!==64'h2200d594d5951100)
+            $fatal(1,"first failure snapshot overwritten by a later transaction");
         bad_crc=0;rst=1;repeat(5)@(negedge clk);rst=0;
         wait(done);read_sector();
-        if(successes!=2 || errors!=1 || card.reads!=3) $fatal(1,"host-only reset recovery");
+        if(successes!=3 || errors!=1 || card.reads!=4) $fatal(1,"host-only reset recovery");
         $display("PASS pin-level SD initialization, good/bad CRC and host-only reset");$finish;
     end
     initial begin #60000000;$fatal(1,"pin test watchdog");end

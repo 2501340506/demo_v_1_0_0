@@ -16,7 +16,7 @@ module sd_card_bmp #(
     input                       key4,
     input [1:0]                 mode,
     output     [3:0]            state_code,
-    output [15:0]               sd_debug,
+    output [63:0]               sd_debug,
     output     [7:0]            combo_event_count,
     output                      combo_debug_active,
     output                      auto_play_indicator,

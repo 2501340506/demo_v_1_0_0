@@ -15,7 +15,7 @@ module tb_switch_mode_panel;
     );
     seg7_panel #(.CLK_FREQ(1200), .SCAN_FREQ(100)) panel (
         .clk(clk), .rst_n(!rst), .mode(mode), .state_code(state_code),
-        .sd_debug(16'h29ff),.combo_event_count(8'd2), .combo_debug_active(combo),
+        .sd_debug(64'h2200d594d5951100),.combo_event_count(8'd2), .combo_debug_active(combo),
         .auto_play_indicator(auto_play), .seg_sel(sel), .seg_data(data)
     );
     task tick(input integer count);
@@ -77,15 +77,28 @@ module tb_switch_mode_panel;
         expect_digit(6'b111011, 8'hff);
         expect_digit(6'b110111, 8'hff);
         @(negedge clk); state_code=4'hf; auto_play=0;
-        expect_digit(6'b111110, 8'ha4); // CMD41 = hex 29
-        expect_digit(6'b111101, 8'h90);
-        expect_digit(6'b111011, 8'h8e); // timeout/no R1 = FF
-        expect_digit(6'b110111, 8'h8e);
+        expect_digit(6'b111110, 8'hf9); // CMD17 = hex 11
+        expect_digit(6'b111101, 8'hf9);
+        expect_digit(6'b111011, 8'hc0); // R1 = 00
+        expect_digit(6'b110111, 8'hc0);
         expect_digit(6'b101111, 8'hc0);
         expect_digit(6'b011111, 8'h8e);
-        $display("PASS SD failure panel shows command/R1/mode/F as 29FF0F");
+        tick(2400);
+        expect_digit(6'b101111, 8'hf9); // received CRC page 1
+        expect_digit(6'b111110, 8'ha1); // d
+        expect_digit(6'b111101, 8'h92); // 5
+        expect_digit(6'b111011, 8'h90); // 9
+        expect_digit(6'b110111, 8'h92); // 5
+        tick(2400);
+        expect_digit(6'b101111, 8'ha4); // calculated CRC page 2
+        expect_digit(6'b110111, 8'h99); // 4
+        tick(2400);
+        expect_digit(6'b101111, 8'hb0); // error summary page 3
+        expect_digit(6'b111110, 8'ha4);
+        expect_digit(6'b111101, 8'ha4);
+        $display("PASS SD failure panel shows command/R1/mode/F as 11000F");
         $display("PASS switch modes, debounce, reset, panel mapping and legacy indicator");
         $finish;
     end
-    initial begin #100000; $fatal(1, "timeout"); end
+    initial begin #200000; $fatal(1, "timeout"); end
 endmodule
