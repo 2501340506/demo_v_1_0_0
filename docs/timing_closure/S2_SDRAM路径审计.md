@@ -31,3 +31,7 @@
 ## 门禁
 
 S2 不新增 `set_false_path`、`set_max_delay` 或 `set_clock_uncertainty`，不生成用于上板的 Flash bit。下一阶段只处理上述 3 个 fabric 内部端点中的一个路径组，并在修改前建立专项仿真。
+
+## S3 结果
+
+S3 在 `frame_fifo_write` 中对 FIFO `rdusedw` 做本域寄存器采样，再由采样值参与 `into_burst` 判断。ModelSim 八个回归入口全部通过；TD 综合、布局布线和 bitgen 通过。全局 Setup WNS 保持 −6.565 ns，TNS 从 −251.158 ns 改善为 −249.902 ns，负端点从 67 降为 64；Hold WNS 为 +0.037 ns。该阶段未修改 SDRAM 硬核约束，也未进行 Flash 上板。
