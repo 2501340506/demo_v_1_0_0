@@ -17,7 +17,8 @@
 ## 阻塞与下一步
 
 - `tb_picture_requests` 已修复并通过：请求消费增加 `!load_busy` 门控，专项测试等待明确错误脉冲，验证重试和挂起请求均完成。
-- 完整回归目前在 `tb_buffer_handoff` 的 ModelSim 优化阶段失败：`bmp_read` 的 `CLK_FREQ_HZ/TIMEOUT_MS` 参数覆盖与当前编译库不兼容；这与本次挂起请求修复无关，需单独修复测试入口后再宣布全回归通过。
+- `tb_buffer_handoff` 已修复：行为模型补齐当前 `bmp_read` 的参数和状态端口，专项三组异步缓冲场景全部通过。
+- S0 完整回归已通过：控制、模式、异步缓冲、音频、HDMI 封装、视频对齐和 S9 复位入口均 PASS。
 - 已建立 S2 只读审计记录：[S2 SDRAM 路径审计](docs/timing_closure/S2_SDRAM路径审计.md)；当前不新增约束例外、不生成新 bit。
 - S3/S4 只有在审计结果明确后才修改 RTL 或约束。
 - 最终候选必须重新完成 Flash 回归并等待用户上板确认。

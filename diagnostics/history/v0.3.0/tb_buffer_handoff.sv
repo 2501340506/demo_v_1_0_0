@@ -164,10 +164,11 @@ endmodule
 
 // Source model: enumerate four images, honor write request/ack, stream a solid
 // color image. Real BMP/SPI parsing remains covered by tb_picture_requests.
-module bmp_read #(parameter integer PIXEL_GAP=2)(input clk,rst,output reg ready,
+module bmp_read #(parameter integer PIXEL_GAP=2, parameter integer CLK_FREQ_HZ=1000, parameter integer TIMEOUT_MS=500)(input clk,rst,output reg ready,
     input scan_start,input [31:0] scan_start_sector,scan_max_sector,input [2:0] scan_target_count,
-    output reg scan_done,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,
-    input load_start,input [31:0] load_sector,input sd_init_done,output [3:0] state_code,
+    output reg scan_done,scan_error,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,
+    input load_start,input [31:0] load_sector,output reg load_done,load_error,output reg [2:0] bmp_error,
+    input sd_init_done,output [3:0] state_code,
     input [15:0] bmp_width,bmp_height,output reg write_req,input write_req_ack,
     output sd_sec_read,output [31:0] sd_sec_read_addr,input [7:0] sd_sec_read_data,
     input sd_sec_read_data_valid,sd_sec_read_end,output reg bmp_data_wr_en,output reg [23:0] bmp_data);
@@ -176,9 +177,9 @@ module bmp_read #(parameter integer PIXEL_GAP=2)(input clk,rst,output reg ready,
     always @(posedge clk) begin
         if(rst) begin
             ready<=1;scan_done<=0;scan_found_valid<=0;scan_found_total<=0;
-            scan_found_sector<=0;write_req<=0;bmp_data_wr_en<=0;bmp_data<=0;state<=0;count<=0;pace<=0;
+            scan_found_sector<=0;scan_error<=0;load_done<=0;load_error<=0;bmp_error<=0;write_req<=0;bmp_data_wr_en<=0;bmp_data<=0;state<=0;count<=0;pace<=0;
         end else begin
-            scan_found_valid<=0;bmp_data_wr_en<=0;
+            scan_found_valid<=0;scan_error<=0;load_done<=0;load_error<=0;bmp_data_wr_en<=0;
             case(state)
                 0: if(scan_start) begin state<=1;ready<=0;count<=0;end
                    else if(load_start) begin
@@ -197,7 +198,7 @@ module bmp_read #(parameter integer PIXEL_GAP=2)(input clk,rst,output reg ready,
                         if(count==1023) state<=5;
                     end else pace<=pace+1;
                 end
-                5: begin ready<=1;state<=0;end
+                5: begin ready<=1;load_done<=1;state<=0;end
             endcase
         end
     end
