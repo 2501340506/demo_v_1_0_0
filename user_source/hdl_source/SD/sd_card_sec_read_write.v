@@ -1,6 +1,8 @@
 
 module sd_card_sec_read_write
 #(
+	parameter integer CLK_FREQ_HZ = 100_000_000,
+    parameter integer INIT_TIMEOUT_MS = 2000,
 	parameter  SPI_LOW_SPEED_DIV = 248,         // spi clk speed = clk speed /((SPI_LOW_SPEED_DIV + 2) * 2 )
 	parameter  SPI_HIGH_SPEED_DIV = 0           // spi clk speed = clk speed /((SPI_HIGH_SPEED_DIV + 2) * 2 )
 )
@@ -8,6 +10,8 @@ module sd_card_sec_read_write
 	input            clk,
 	input            rst,
 	output reg       sd_init_done,
+    output reg sd_init_failed,
+    output reg sd_sec_read_failed,
 	input            sd_sec_read,
 	input[31:0]      sd_sec_read_addr,
 	output[7:0]      sd_sec_read_data,
@@ -30,6 +34,7 @@ module sd_card_sec_read_write
 	input            block_read_valid,
 	input[7:0]       block_read_data,
 	input            block_read_req_ack,
+    input block_read_error,
 	output reg       block_write_req,
 	output[7:0]      block_write_data,
 	input            block_write_data_rd,
@@ -37,6 +42,7 @@ module sd_card_sec_read_write
 );
 reg[7:0] read_data;
 reg[31:0] timer;
+localparam integer INIT_CYCLES = (CLK_FREQ_HZ / 1000) * INIT_TIMEOUT_MS;
 
 localparam S_IDLE               = 0;
 localparam S_CMD0               = 1;
@@ -76,9 +82,15 @@ begin
 		block_read_req <= 1'b0;
 		sec_addr <= 32'd0;
 		sd_init_done <= 1'b0;
+        timer <= 0; sd_init_failed <= 0; sd_sec_read_failed <= 0;
 	end
-	else
-		case(state)
+	else begin
+        sd_sec_read_failed <= 0;
+        if (!sd_init_done && state != S_ERR) timer <= timer + 1'b1;
+        if (!sd_init_done && state != S_ERR && timer >= INIT_CYCLES - 1) begin
+            state <= S_ERR; sd_init_failed <= 1;
+            cmd_req <= 0; block_read_req <= 0;
+        end else case(state)
 			S_IDLE:
 			begin
 				state <= S_CMD0;
@@ -136,8 +148,6 @@ begin
 				begin
 					state <= S_CMD16;
 					cmd_req <= 1'b0;
-					sd_init_done <= 1'b1;
-					spi_clk_div <= SPI_HIGH_SPEED_DIV[15:0];
 				end
 				else if(cmd_req_ack)
 				begin
@@ -185,7 +195,7 @@ begin
 					sec_addr <= sd_sec_read_addr;
 				end
 
-				spi_clk_div <= 16'd0;
+				spi_clk_div <= SPI_HIGH_SPEED_DIV[15:0];
 			end
 			S_CMD24:
 			begin
@@ -220,6 +230,9 @@ begin
 					state <= S_READ;
 					cmd_req <= 1'b0;
 				end
+                else if (cmd_req_ack) begin
+                    cmd_req <= 0; sd_sec_read_failed <= 1; state <= S_WAIT_READ_WRITE;
+                end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -232,7 +245,10 @@ begin
 			begin
 				if(block_read_req_ack)
 				begin
-					state <= S_READ_END;
+					if (block_read_error) begin
+                        state <= S_WAIT_READ_WRITE;
+                        sd_sec_read_failed <= 1;
+                    end else state <= S_READ_END;
 					block_read_req <= 1'b0;
 				end
 				else
@@ -248,8 +264,10 @@ begin
 			begin
 				state <= S_WAIT_READ_WRITE;
 			end
+			S_ERR: begin cmd_req <= 0; block_read_req <= 0; end
 			default:
 				state <= S_IDLE;
 		endcase
+    end
 end
 endmodule

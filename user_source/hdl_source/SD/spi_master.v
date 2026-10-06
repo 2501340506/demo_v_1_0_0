@@ -112,7 +112,7 @@ end
 always@(posedge sys_clk or posedge rst)
 begin
 	if(rst)
-		MOSI_shift <= 8'd0;
+		MOSI_shift <= 8'hff;
 	else if(state == IDLE && wr_req)
 		MOSI_shift <= data_in;
 	else if(state == DCLK_EDGE)

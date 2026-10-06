@@ -1,6 +1,10 @@
 
 module sd_card_top
 #(
+	parameter integer CLK_FREQ_HZ = 100_000_000,
+    parameter integer INIT_TIMEOUT_MS = 2000,
+    parameter integer RESPONSE_TIMEOUT_MS = 100,
+    parameter integer TOKEN_TIMEOUT_MS = 250,
 	parameter  SPI_LOW_SPEED_DIV = 248,         // SD card low speed mode frequency division parameter,spi clk speed = clk speed /((SPI_LOW_SPEED_DIV + 2) * 2 )
 	parameter  SPI_HIGH_SPEED_DIV = 0           // SD card high speed mode frequency division parameter,spi clk speed = clk speed /((SPI_HIGH_SPEED_DIV + 2) * 2 )
 )
@@ -11,6 +15,7 @@ module sd_card_top
 	output           SD_DCLK,                   //SD card clock
 	output           SD_MOSI,                   //SD card controller data output
 	input            SD_MISO,                   //SD card controller data input
+	output sd_init_failed, sd_sec_read_failed,
 	output           sd_init_done,              //SD card initialization is complete
 	input            sd_sec_read,               //SD card sector read
 	input[31:0]      sd_sec_read_addr,          //SD card sector read address
@@ -23,6 +28,8 @@ module sd_card_top
 	output           sd_sec_write_data_req,     //SD card sector write data next clock is valid
 	output           sd_sec_write_end           //SD card sector write end
 );
+wire block_read_error;
+wire protocol_rst = rst || sd_init_failed;
 wire[15:0]           spi_clk_div;               //SPI module clock division parameter
 wire                 cmd_req;                   //SD card command request
 wire                 cmd_req_ack;               //SD card command request response
@@ -47,12 +54,15 @@ wire[7:0]            spi_data_out;              //SPI module data returned
 wire[15:0]           clk_div;
 sd_card_sec_read_write
 #(
+	.CLK_FREQ_HZ(CLK_FREQ_HZ), .INIT_TIMEOUT_MS(INIT_TIMEOUT_MS),
 	.SPI_LOW_SPEED_DIV(SPI_LOW_SPEED_DIV),
 	.SPI_HIGH_SPEED_DIV(SPI_HIGH_SPEED_DIV)
 )
 sd_card_sec_read_write_m0(
 	.clk                            (clk                    ),
 	.rst                            (rst                    ),
+	.sd_init_failed(sd_init_failed), .sd_sec_read_failed(sd_sec_read_failed),
+    .block_read_error(block_read_error),
 	.sd_init_done                   (sd_init_done           ),
 	.sd_sec_read                    (sd_sec_read            ),
 	.sd_sec_read_addr               (sd_sec_read_addr       ),
@@ -81,9 +91,11 @@ sd_card_sec_read_write_m0(
 	.block_write_req_ack            (block_write_req_ack    )
 );
 
-sd_card_cmd sd_card_cmd_m0(
+sd_card_cmd #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .RESPONSE_TIMEOUT_MS(RESPONSE_TIMEOUT_MS),
+    .TOKEN_TIMEOUT_MS(TOKEN_TIMEOUT_MS)) sd_card_cmd_m0(
+    .block_read_error(block_read_error),
 	.sys_clk                        (clk                    ),
-	.rst                            (rst                    ),
+	.rst                            (protocol_rst           ),
 	.spi_clk_div                    (spi_clk_div            ),
 	.cmd_req                        (cmd_req                ),
 	.cmd_req_ack                    (cmd_req_ack            ),
@@ -110,7 +122,7 @@ sd_card_cmd sd_card_cmd_m0(
 
 spi_master spi_master_m0(
 	.sys_clk                        (clk                    ),
-	.rst                            (rst                    ),
+	.rst                            (protocol_rst           ),
 	.nCS                            (SD_nCS                 ),
 	.DCLK                           (SD_DCLK                ),
 	.MOSI                           (SD_MOSI                ),

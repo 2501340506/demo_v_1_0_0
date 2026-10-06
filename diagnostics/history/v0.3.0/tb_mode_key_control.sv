@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module tb_mode_key_control;
  reg clk=0,rst=1,enable=1,key1=1,key2=1,key4=1; reg [1:0] mode=0;
- wire next_event,previous_event,auto_toggle_event,manual_activity;
+ wire next_event,previous_event,auto_toggle_event,manual_activity,rescan_event;
  mode_key_control #(.CLK_FREQ_HZ(1000)) dut(.*);
  always #5 clk=~clk;
  reg seen_next, seen_prev, seen_auto;

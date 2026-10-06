@@ -1,10 +1,15 @@
 
-module sd_card_cmd(
+module sd_card_cmd #(
+    parameter integer CLK_FREQ_HZ = 100_000_000,
+    parameter integer RESPONSE_TIMEOUT_MS = 100,
+    parameter integer TOKEN_TIMEOUT_MS = 250
+)(
 	input                       sys_clk,
 	input                       rst,
 	input[15:0]                 spi_clk_div,                  //SPI module clock division parameter
 	input                       cmd_req,                      //SD card command request
 	output                      cmd_req_ack,                  //SD card command request response
+	output reg                  block_read_error,
 	output reg                  cmd_req_error,                //SD card command request error
 	input[47:0]                 cmd,                          //SD card command
 	input[7:0]                  cmd_r1,                       //SD card expect response
@@ -43,6 +48,22 @@ parameter S_WRITE_ACK    = 15;
 parameter S_ERR          = 16;
 parameter S_END          = 17;
 
+localparam integer RESPONSE_CYCLES = (CLK_FREQ_HZ / 1000) * RESPONSE_TIMEOUT_MS;
+localparam integer TOKEN_CYCLES = (CLK_FREQ_HZ / 1000) * TOKEN_TIMEOUT_MS;
+reg [31:0] wait_count;
+reg [15:0] read_crc;
+reg [7:0] crc_high;
+function [15:0] crc16_byte;
+    input [15:0] prior;
+    input [7:0] value;
+    integer k;
+    reg [15:0] c;
+    begin
+        c = prior ^ {value, 8'd0};
+        for (k=0;k<8;k=k+1) c = c[15] ? (c << 1) ^ 16'h1021 : c << 1;
+        crc16_byte = c;
+    end
+endfunction
 reg[4:0]                      state;
 reg                           CS_reg;
 reg[15:0]                     byte_cnt;
@@ -69,9 +90,17 @@ begin
 		state <= S_IDLE;
 		cmd_req_error <= 1'b0;
 		wr_data_cnt <= 10'd0;
+        wait_count <= 0; read_crc <= 0; crc_high <= 0; block_read_error <= 0;
 	end
-	else
-		case(state)
+	else begin
+        if ((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA || state == S_READ_WAIT)
+            wait_count <= wait_count + 1'b1;
+        else wait_count <= 0;
+        if (((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA) && wait_count >= RESPONSE_CYCLES - 1) begin
+            state <= S_ERR; spi_wr_req <= 0; CS_reg <= 1;
+        end else if (state == S_READ_WAIT && wait_count >= TOKEN_CYCLES - 1) begin
+            state <= S_READ_ACK; block_read_error <= 1; spi_wr_req <= 0; CS_reg <= 1;
+        end else case(state)
 			S_IDLE:
 			begin
 				state <= S_INIT;
@@ -89,7 +118,7 @@ begin
 						spi_wr_req <= 1'b0;
 						state <= S_WAIT;
 					end
-					begin
+					else begin
 						byte_cnt <= byte_cnt + 16'd1;
 					end
 				end
@@ -102,6 +131,7 @@ begin
 			S_WAIT:
 			begin
 				cmd_req_error <= 1'b0;
+                block_read_error <= 0; read_crc <= 0;
 				wr_data_cnt <= 10'd0;
 				//wait for  instruction
 				if(cmd_req == 1'b1)
@@ -132,13 +162,13 @@ begin
 			begin
 				if(spi_wr_ack == 1'b1)
 				begin
-					if((byte_cnt == 16'hffff) || (data_recv != cmd_r1 && data_recv[7] == 1'b0))
+					if(byte_cnt >= 6 && data_recv != cmd_r1 && data_recv[7] == 1'b0)
 					begin
 						state <= S_ERR;
 						spi_wr_req <= 1'b0;
 						byte_cnt <= 16'd0;
 					end
-					else if(data_recv == cmd_r1)
+					else if(byte_cnt >= 6 && data_recv == cmd_r1)
 					begin
 						spi_wr_req <= 1'b0;
 						if(cmd_data_len != 16'd0)
@@ -153,7 +183,7 @@ begin
 						end
 					end
 					else
-						byte_cnt <=  byte_cnt + 16'd1;
+						byte_cnt <= (byte_cnt < 6) ? byte_cnt + 16'd1 : 16'd6;
 				end
 				else
 				begin
@@ -214,9 +244,13 @@ begin
 			begin
 				if(spi_wr_ack == 1'b1)
 				begin
+                    if (byte_cnt < 512) read_crc <= crc16_byte(read_crc, data_recv);
+                    if (byte_cnt == 512) crc_high <= data_recv;
 					if(byte_cnt == 16'd513)
 					begin
 						state <= S_READ_ACK;
+                        block_read_error <= ({crc_high, data_recv} != read_crc);
+                        CS_reg <= 1;
 						spi_wr_req <= 1'b0;
 						byte_cnt <= 16'd0;
 					end
@@ -323,6 +357,7 @@ begin
 			begin
 				state <= S_END;
 				cmd_req_error <= 1'b1;
+                CS_reg <= 1; spi_wr_req <= 0;
 			end
 			S_READ_ACK,S_WRITE_ACK,S_END:
 			begin
@@ -331,6 +366,7 @@ begin
 			default:
 				state <= S_IDLE;
 		endcase
+    end
 end
 always@(posedge sys_clk or posedge rst)
 begin
