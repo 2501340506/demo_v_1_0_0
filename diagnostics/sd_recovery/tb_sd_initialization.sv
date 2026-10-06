@@ -5,7 +5,7 @@ wire sd_init_done,sd_init_failed,sd_sec_read_failed,sd_sec_read_end;
 wire SD_nCS,SD_DCLK,SD_MOSI;
 wire [63:0] sd_debug;
 reg ack=0; reg [7:0] rx=255;
-integer gap=0,cmd16_count=0,card_commands=0;
+integer gap=0,cmd16_count=0,cmd59_count=0,card_commands=0;
 always #5 clk=~clk;
 sd_card_top #(.CLK_FREQ_HZ(1000),.SPI_LOW_SPEED_DIV(0)) dut(
  .clk(clk),.rst(rst),.SD_nCS(SD_nCS),.SD_DCLK(SD_DCLK),.SD_MOSI(SD_MOSI),.SD_MISO(1'b1),
@@ -23,17 +23,18 @@ always @(negedge clk) begin
    if(dut.sd_card_cmd_m0.byte_cnt==0) begin
     card_commands=card_commands+1;
     if(dut.cmd[45:40]==16) cmd16_count=cmd16_count+1;
+    if(dut.cmd[45:40]==59) cmd59_count=cmd59_count+1;
    end
    if(dut.sd_card_cmd_m0.byte_cnt>=6)
     case(dut.cmd[45:40])
      0,8,55: rx=1;
-     41,16: rx=0;
+     41,16,59: rx=0;
      default: rx=255;
     endcase
   end
  end
 end
-always @(posedge clk) if(sd_init_done && cmd16_count==0) $fatal(1,"early init_done");
+always @(posedge clk) if(sd_init_done && (cmd16_count==0 || cmd59_count==0)) $fatal(1,"early init_done");
 initial begin
  force dut.spi_wr_ack=ack; force dut.spi_data_out=rx;
  repeat(4) @(negedge clk);rst=0;
@@ -42,14 +43,14 @@ initial begin
  if(sd_debug[15:0]!==16'h00ff) $fatal(1,"CMD0 timeout diagnostic must survive protocol reset: %h",sd_debug);
  card_present=1;rst=1;repeat(4) @(negedge clk);rst=0;
  wait(sd_init_done);@(negedge clk);
- if(sd_debug[15:0]!==16'h1000) $fatal(1,"CMD16 success diagnostic: %h",sd_debug);
+ if(sd_debug[15:0]!==16'h3b00) $fatal(1,"CMD59 success diagnostic: %h",sd_debug);
  if(dut.sd_card_sec_read_write_m0.state!=dut.sd_card_sec_read_write_m0.S_WAIT_READ_WRITE)
   $fatal(1,"init not ready for read");
  sd_sec_read=1;repeat(2) @(negedge clk);sd_sec_read=0;
  wait(sd_sec_read_failed);if(sd_sec_read_end) $fatal(1,"failed read reported success");
  rst=1;repeat(4) @(negedge clk);rst=0;
  wait(sd_init_done);
- if(cmd16_count!=2) $fatal(1,"card state/reset test");
+ if(cmd16_count!=2 || cmd59_count!=2) $fatal(1,"card state/reset test");
  $display("PASS initialization deadline, readiness, read failure, host-only reinitialization");$finish;
 end
 initial begin #100000;$fatal(1,"watchdog");end

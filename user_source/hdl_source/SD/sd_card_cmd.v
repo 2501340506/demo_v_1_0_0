@@ -56,6 +56,19 @@ reg [31:0] wait_count;
 reg [15:0] read_crc;
 reg [7:0] crc_high;
 reg [7:0] last_token;
+reg [6:0] command_crc;
+function [6:0] crc7_byte;
+    input [6:0] prior;
+    input [7:0] value;
+    integer k;
+    reg [6:0] c;
+    begin
+        c = prior;
+        for (k=7;k>=0;k=k-1)
+            c = {c[5:0],1'b0} ^ ((c[6] ^ value[k]) ? 7'h09 : 7'h00);
+        crc7_byte = c;
+    end
+endfunction
 function [15:0] crc16_byte;
     input [15:0] prior;
     input [7:0] value;
@@ -96,6 +109,7 @@ begin
         wait_count <= 0; read_crc <= 0; crc_high <= 0; block_read_error <= 0;
         cmd_response <= 8'hff;
         read_debug <= 0; last_token <= 8'hff;
+        command_crc <= 0;
 	end
 	else begin
         if ((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA || state == S_READ_WAIT)
@@ -149,9 +163,10 @@ begin
 					state <= S_WRITE_TOKEN;
 				clk_div <= spi_clk_div;
 			end
-			S_CMD_PRE:
+            S_CMD_PRE:
 			begin
                 cmd_response <= 8'hff;
+                command_crc <= 0;
 				//before sending a command, send an byte 'ff',provide some clocks
 				if(spi_wr_ack == 1'b1)
 				begin
@@ -171,6 +186,7 @@ begin
 				if(spi_wr_ack == 1'b1)
 				begin
                     if(byte_cnt >= 6 && !data_recv[7]) cmd_response <= data_recv;
+                    if(byte_cnt < 5) command_crc <= crc7_byte(command_crc, send_data);
 					if(byte_cnt >= 6 && data_recv != cmd_r1 && data_recv[7] == 1'b0)
 					begin
 						state <= S_ERR;
@@ -209,7 +225,7 @@ begin
 					else if(byte_cnt == 16'd4)
 						send_data <= cmd[15:8];
 					else if(byte_cnt == 16'd5)
-						send_data <= cmd[7:0];
+						send_data <= {command_crc,1'b1};
 					else
 						send_data <= 8'hff;
 				end

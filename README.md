@@ -2,7 +2,7 @@
 
 当前正式版本：**[v0.5.1 — 时序审计与 Flash 回归](releases/v0.5.1/README.md)**，S5 已获整体上板确认，S6 长稳按用户决定跳过。
 
-开发中的 **[v0.5.2 S2](releases/v0.5.2/README.md)**：local.1 上板出现正常卡先 0 后 F；local.2 实测 `11000F` 已定位到 CMD17 成功后的读阶段。[local.3](releases/v0.5.2/v0.5.2-s2-local.3/README.md) 采集读错误与 CRC，尚未确认根因或修复。单 PLL 输出及 SDRAM 频率待定，尚未集成；候选未上传 GitHub。
+开发中的 **[v0.5.2 S2](releases/v0.5.2/README.md)**：local.3 板测已定位到 CRC 不一致（接收 0000、计算 AEBC）。[local.4](releases/v0.5.2/v0.5.2-s2-local.4/README.md) 增加 CMD59 与命令 CRC7，等待 SRAM 验证，尚未确认真实卡修复。单 PLL 输出及 SDRAM 频率待定，尚未集成；候选未上传 GitHub。
 
 [下载正式版 bit](releases/v0.5.1/demo.bit) · [v0.5.2 候选与验收](releases/v0.5.2/v0.5.2-s2-local.1/BOARD_VALIDATION.md) · [固化指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [v0.5.1 归档](docs/history/2026-10-06/v0.5.1/README.md)。
 

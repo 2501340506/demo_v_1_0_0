@@ -125,7 +125,10 @@ localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
 // start a new load.  Without the busy guard, the control block clears its
 // pending direction while the loader is still handling a prior request.
 assign ctrl_request_accept = !recovery_active && ctrl_load_request && !load_busy && bmp_ready && !timeout_stopped && !timeout_event &&
-                             !(auto_blocked && ctrl_auto_load_request);
+                             (ctrl_next_pending || ctrl_prev_pending || !auto_blocked);
+// With load_request asserted, pending directions select manual requests;
+// AUTO requires both pending flags clear. Avoid feeding the full AUTO request
+// availability cone back through acceptance just to distinguish the source.
 assign state_code = sd_init_failed ? 4'hf :
                     recovering_reset ? 4'h0 :
                     (recovery_active && !sd_init_done) ? 4'h0 :

@@ -1,0 +1,16 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 18:48:07 on Oct 06,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/v052_sd_recovery/work -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\v052_sd_recovery/tb_sd_initialization_compile.log user_source/hdl_source/SD/sd_card_cmd.v user_source/hdl_source/SD/sd_card_sec_read_write.v user_source/hdl_source/SD/sd_card_top.v user_source/hdl_source/SD/spi_master.v user_source/hdl_source/SD/mode_key_control.v user_source/hdl_source/SD/key_press_debounce.v diagnostics/sd_recovery/tb_sd_initialization.sv 
+-- Compiling module sd_card_cmd
+-- Compiling module sd_card_sec_read_write
+-- Compiling module sd_card_top
+-- Compiling module spi_master
+-- Compiling module mode_key_control
+-- Compiling module key_press_debounce
+-- Compiling module tb_sd_initialization
+
+Top level modules:
+	mode_key_control
+	tb_sd_initialization
+End time: 18:48:07 on Oct 06,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
