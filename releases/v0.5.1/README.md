@@ -1,6 +1,6 @@
 # v0.5.1 — 时序收敛与 Flash 启动回归
 
-当前状态：计划与 S0/S1 基线建立，等待 S2 路径审计。尚未生成新 bit，尚未进行新的 Flash 固化，也尚未上传 GitHub。
+当前状态：S0–S4 本地完成，S5 固定候选已准备，等待用户执行 Flash 固化和独立上电验证；尚未上传 GitHub。
 
 ## 范围
 
@@ -11,5 +11,7 @@
 - 基线报告：`docs/timing_closure/BASELINE_v0.5.1.md`
 - 活动计划：`docs/timing_closure/v0.5.1_时序收敛与Flash回归分阶段计划.md`
 - v0.5.0 固定产物和 Flash 验收：`../v0.5.0/README.md`
+- S5 板级步骤：[BOARD_VALIDATION.md](BOARD_VALIDATION.md)
+- 当前候选：[demo.bit](demo.bit)
 
 用户板级确认前不建立正式标签、不合并主分支、不上传 GitHub。
