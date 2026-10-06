@@ -1,6 +1,6 @@
 # v0.5.1 S2 SDRAM 路径审计
 
-状态：审计进行中。当前基线控制回归仍有 `tb_picture_requests` 的既有失败，因此本阶段暂不修改 RTL 或放宽约束。
+状态：完成。当前阶段未修改 RTL 或放宽约束。
 
 ## 已确认
 
@@ -17,6 +17,17 @@
 3. SDRAM 端口是否由厂商硬核自动携带 I/O window；若是，应记录为工具/IP 约束边界。
 4. 其余 3 个内存内部负路径的 RTL 层级和是否属于可安全分拍的 fabric 路径。
 
+## v0.5.1 S2 构建结果
+
+使用固定参数 `HighFanoutOptimization`、`opt_timing ultra`、`post_place_opt high` 完成 TD 综合、布局布线和 bitgen。报告位于 `TD_project/demo_Runs/phy_1/final_timing.rpt`，构建日志为 `build_v0.5.1_s2_audit.log`。
+
+- 全局 Setup WNS −6.565 ns、TNS −251.158 ns、67 个负端点；Hold WNS +0.003 ns、无 Hold 负端点。
+- 内存内部路径组为 3 个负端点，Setup WNS −0.084 ns、TNS −0.114 ns。
+- 代表性路径一：`frame_read_write_m0/write_buf/rd_addr_reg[4]` → `frame_read_write_m0/frame_fifo_read_m0/state_reg[5]`，同属 `ext_mem_clk`，经过 `frame_fifo_write` 的 `rdusedw`、突发计数和状态逻辑。
+- 代表性路径二：`frame_read_write_m0/write_buf/rd_addr_reg[4]` → `frame_read_write_m0/write_buf/ram_inst/ramread0_syn_25.addrb[4]`，同属 `ext_mem_clk`，经过异步 FIFO 读地址逻辑。
+- SDRAM 硬核相关时钟为 `U3/u2_ram/SDRAM_CLK` 和 `U3/u2_ram/u1_init_ref/Sdr_clk`，均由 `sys_pll_m0` 输出并由 TD 识别为时钟网。
+- 64 个 SDRAM 接口负端点仍属于硬核/IP 边界，当前资料不足以安全添加例外或 I/O delay。
+
 ## 门禁
 
-完成上述核对并恢复基线控制回归后，才进入 S3。S2 不新增 `set_false_path`、`set_max_delay` 或 `set_clock_uncertainty`，不生成新的 Flash bit。
+S2 不新增 `set_false_path`、`set_max_delay` 或 `set_clock_uncertainty`，不生成用于上板的 Flash bit。下一阶段只处理上述 3 个 fabric 内部端点中的一个路径组，并在修改前建立专项仿真。
