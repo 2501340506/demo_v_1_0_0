@@ -1,5 +1,5 @@
 .gitattributes	9
-BOARD_VALIDATION.md	801
+BOARD_VALIDATION.md	1011
 BUILD.md	1186
 changes/diagnostics/stability/tb_bmp_baseline.sv	2869
 changes/diagnostics/stability/tb_bmp_headers.sv	6735
@@ -16,7 +16,7 @@ changes/user_source/hdl_source/SD/sd_card_bmp.v	26545
 changes/user_source/hdl_source/uart/uart_event_logger.v	6146
 CHANGES.txt	648
 demo.bit	629624
-README.md	2350
+README.md	2501
 simulation/flash_boot_v054_s3/baseline.log	4092
 simulation/flash_boot_v054_s3/headers.log	5996
 simulation/flash_boot_v054_s3/pixel_handoff.log	14300
