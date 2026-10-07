@@ -165,7 +165,7 @@ endmodule
 
 // Source model: enumerate four images, honor write request/ack, stream a solid
 // color image. Real BMP/SPI parsing remains covered by tb_picture_requests.
-module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500)(input clk,rst,output reg ready,
+module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500, ENABLE_SCAN_PAUSE=0)(input clk,rst,output reg ready,
     input scan_pause_request,scan_resume,output scan_paused,output [31:0] scan_resume_sector,
     input scan_start,input [31:0] scan_start_sector,scan_max_sector,input [2:0] scan_target_count,
     output wire scan_error, output reg scan_done,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,

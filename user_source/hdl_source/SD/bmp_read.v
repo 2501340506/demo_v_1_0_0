@@ -1,6 +1,7 @@
 module bmp_read #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
-    parameter integer TIMEOUT_MS = 500
+    parameter integer TIMEOUT_MS = 500,
+    parameter integer ENABLE_SCAN_PAUSE = 0
 )(
     input                       clk,
     input                       rst,
@@ -64,6 +65,7 @@ reg scan_pause_pending;
 // The low-request boundary cycle also accepts a request based on found_valid.
 always @(posedge clk or posedge rst) begin
     if (rst) scan_pause_pending <= 1'b0;
+    else if (!ENABLE_SCAN_PAUSE) scan_pause_pending <= 1'b0;
     else if (!sd_init_done || state != ST_SCAN) scan_pause_pending <= 1'b0;
     else if (scan_pause_request) scan_pause_pending <= 1'b1;
 end
@@ -414,8 +416,8 @@ always @(posedge clk or posedge rst) begin
 
                 if (scan_start) begin
                     scan_paused      <= 1'b0;
-                    scan_boundary    <= 1'b1;
-                    scan_resume_sector <= scan_start_sector;
+                    scan_boundary    <= (ENABLE_SCAN_PAUSE != 0);
+                    if (ENABLE_SCAN_PAUSE) scan_resume_sector <= scan_start_sector;
                     scan_done        <= 1'b0;
                     scan_found_total <= 3'd0;
                     sd_sec_read_addr <= scan_start_sector;
@@ -424,7 +426,7 @@ always @(posedge clk or posedge rst) begin
                     bmp_error          <= 3'd0;
                     sd_sec_read_addr    <= load_sector;
                     state               <= ST_LOAD_HDR;
-                end else if (scan_resume && scan_paused) begin
+                end else if (ENABLE_SCAN_PAUSE && scan_resume && scan_paused) begin
                     scan_paused      <= 1'b0;
                     scan_boundary    <= 1'b1;
                     sd_sec_read_addr <= scan_resume_sector;
@@ -434,7 +436,7 @@ always @(posedge clk or posedge rst) begin
 
             ST_SCAN: begin
                 state_code  <= 4'd2;
-                if (scan_boundary && (scan_pause_request || scan_pause_pending)) begin
+                if (ENABLE_SCAN_PAUSE && scan_boundary && (scan_pause_request || scan_pause_pending)) begin
                     // Count/address already include the completed sector. Loading
                     // may reuse sd_sec_read_addr without destroying this cursor.
                     sd_sec_read <= 1'b0;
@@ -448,7 +450,7 @@ always @(posedge clk or posedge rst) begin
 
                 if (sd_sec_read_end) begin
                     sd_sec_read <= 1'b0;
-                    scan_boundary <= 1'b1;
+                    scan_boundary <= (ENABLE_SCAN_PAUSE != 0);
 
                     if (header_match && sector_size_ok) begin
                         scan_found_valid  <= 1'b1;

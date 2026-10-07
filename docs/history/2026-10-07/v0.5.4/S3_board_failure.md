@@ -1,5 +1,11 @@
 # S3 local.1 首图花屏（2026-10-07）
 
+最新反馈：用户再次提供BOOT s3-local.1日志并确认“现在功能正常了”。正常加载/提交、AUTO切换、读卡ERROR/STOP E=2、重扫RECOVERED均有记录。原候选与对照bit的BOOT行相同，尚待确认本次下载文件，因此暂不改写原S3板测失败结论。此次只更新工作区；上板对象明确确认前不commit、不打标签、不push。
+
+后续确认：用户明确选择“对照文件 S2_parser_S3_banner.bit”。因此对照上板功能正常，原S3 local.1仍为失败候选。该结果缩小到暂停接口改动及其综合/布局影响，不能证明具体物理根因。
+
+正在准备local.2：新增编译期参数ENABLE_SCAN_PAUSE，生产显式关闭、专项显式开启；默认关闭时逐拍对比S2，开启时验证暂停/加载/续扫。PLL、SDRAM、约束和构建参数不改。local.2上板确认前只改工作区，不commit、不打标签、不push；对照通过不作为local.2通过。
+
 用户报告“花屏了”，进一步确认：首图显示就花屏，UART为BOOT v0.5.4-s3-local.1；重新下载已验收S2 local.2原bit后恢复正常。
 
 结论：S3 local.1板测失败，不上传、不建立board标签、不进入S4。旧候选bit和标签保留作为失败证据。S2 local.2原bit是当前可用回退版本。
@@ -23,3 +29,11 @@ S3生产暂停和续扫输入均固定0。与S2相比，生产源码仅解析器
 下一步：用户只需下载该对照bit，确认首图是否正常；无需重复整套板测。启动行故意仍为BOOT v0.5.4-s3-local.1，请按独立路径确认下载文件。调查尚未确定根因，当前建议日常使用已验收S2原bit。对照不建立正式候选/board标签，不上传GitHub。
 
 证据：[逐拍对比](s3_failure_evidence/parser_cycle_compare.log)、[全帧SDRAM补测](s3_failure_evidence/full_sdram_data.log)。完整对照源码/工程/时序在diagnostics/output/v054_s3_uart_only_probe，未放入releases全量备份。
+
+## local.2本地结果
+
+编译期生产关闭、专项开启均通过；完整回归和TD通过，+0.121/+0.014ns。候选目录releases/v0.5.4/v0.5.4-s3-local.2，待上板；未commit、打标签或push。具体根因尚未证实，不能宣称仅靠此次构建消除板上花屏。
+
+## 后续验收
+
+用户已对local.2明确确认“功能正常”，附件BOOT版本匹配。原local.1失败记录不撤销；具体物理根因仍未证明。local.2原bit通过后才提交和发布阶段标签，详见[S3验收](S3_board_validation.md)。

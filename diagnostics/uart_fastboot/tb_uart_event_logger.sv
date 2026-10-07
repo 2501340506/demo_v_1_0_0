@@ -47,7 +47,7 @@ initial begin
     // Mutate context while the first record is still serializing.
     repeat(3) @(negedge clk); debug=0; image=0; error=0;
     wait(n==5);
-    if(lines[0]!="BOOT v0.5.4-s3-local.1") $fatal(1,"banner [%s]",lines[0]);
+    if(lines[0]!="BOOT v0.5.4-s3-local.2") $fatal(1,"banner [%s]",lines[0]);
     check(1,"INIT_OK   "," I=0 S=12345678 E=0 P=2 A=0 D=0000000000000000");
     check(2,"RETRY     "," I=2 S=12345678 E=2 P=3 A=1 D=1122334455667788");
     check(3,"ERROR     "," I=2 S=12345678 E=2 P=3 A=1 D=1122334455667788");

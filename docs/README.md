@@ -1,8 +1,6 @@
-> 当前故障：S3 local.1首图花屏，回退S2 local.2恢复正常。S3不予验收、不上传，正在定位；下方仿真/TD通过仅是本地证据。
+# 当前入口：S3已验收，下一阶段S4
 
-# 当前开发入口：v0.5.4 S3
-
-[阶段计划](v0.5.4_UART与快速启动分阶段计划.md) · [接口约定](S3_SCAN_RESUME.md) · [S3候选](../releases/v0.5.4/v0.5.4-s3-local.1/README.md) · [验证状态](VALIDATION_STATUS.md)。S2已验收上传；S3本地通过但板测首图花屏；S4未实施。
+[S3验收与原始日志](history/2026-10-07/v0.5.4/S3_board_validation.md) · [接口](S3_SCAN_RESUME.md) · [阶段计划](v0.5.4_UART与快速启动分阶段计划.md)。local.2用户确认功能正常，S4尚未实施。
 
 # 文档入口
 

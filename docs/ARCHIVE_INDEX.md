@@ -56,3 +56,7 @@ v0.1.8为缓冲所有权版本；v0.1.9为数码管面板模块化版本；v0.2.
 [S2修正版板测通过](history/2026-10-07/v0.5.4/S2_board_validation.md) · [S3本地交付记录](history/2026-10-07/v0.5.4/S3_local_summary.md)，S3待上板，v0.5.4未结项。
 
 [S3首图花屏调查](history/2026-10-07/v0.5.4/S3_board_failure.md)：local.1板测失败，S2回退正常，未结项。
+
+S3调查进展：对照bit用户确认正常，local.2编译期关闭版本待上板，工作区未提交。见[故障与修订记录](history/2026-10-07/v0.5.4/S3_board_failure.md)。
+
+[S3 local.2已上板验收](history/2026-10-07/v0.5.4/S3_board_validation.md)，原始附件归档；S4/S5待实施，v0.5.4未结项。

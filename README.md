@@ -1,8 +1,6 @@
-> 当前故障：S3 local.1首图花屏，回退S2 local.2恢复正常。S3不予验收、不上传，正在定位；下方仿真/TD通过仅是本地证据。
+# 当前进度：S3 local.2已上板验收
 
-# 当前开发：v0.5.4 S3 扫描暂停/续扫
-
-[S3候选bit](releases/v0.5.4/v0.5.4-s3-local.1/demo.bit) · [版本与板测](releases/v0.5.4/v0.5.4-s3-local.1/README.md) · [阶段计划](docs/v0.5.4_UART与快速启动分阶段计划.md)。S2 local.2已上板验收并上传；S3本地验证完成，板测首图花屏，未上传。生产暂停控制关闭，启动仍先完整扫描，快速显示在S4接入。
+[S3已验收bit](releases/v0.5.4/v0.5.4-s3-local.2/demo.bit) · [验收记录](docs/history/2026-10-07/v0.5.4/S3_board_validation.md) · [阶段计划](docs/v0.5.4_UART与快速启动分阶段计划.md)。用户确认local.2功能正常，原bit不重建；生产暂停仍编译期关闭，S4首图快启待实施。
 
 以下为历史已验收版本。
 

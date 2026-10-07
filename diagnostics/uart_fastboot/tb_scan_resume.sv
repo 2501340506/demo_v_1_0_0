@@ -12,7 +12,7 @@ wire [2:0] total,error_code;
 integer i,scan_reads=0,found_count=0,completed=0,failed=0,pixels=0;
 integer trace[0:31],baseline[0:31],images[0:7];
 wire pixel_valid;
-bmp_read #(.CLK_FREQ_HZ(1000),.TIMEOUT_MS(1000)) dut(
+bmp_read #(.CLK_FREQ_HZ(1000),.TIMEOUT_MS(1000),.ENABLE_SCAN_PAUSE(1)) dut(
  .clk(clk),.rst(rst),.ready(ready),.scan_start(start),
  .scan_start_sector(first),.scan_max_sector(last),.scan_target_count(target),
  .scan_pause_request(pause_pulse || (pause_on_found && found)),

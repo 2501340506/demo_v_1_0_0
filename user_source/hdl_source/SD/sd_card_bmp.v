@@ -547,7 +547,8 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS),
+           .ENABLE_SCAN_PAUSE(0)) bmp_read_m0(
     .clk                    (clk),
     .rst                    (parser_rst),
     .ready                  (bmp_ready),

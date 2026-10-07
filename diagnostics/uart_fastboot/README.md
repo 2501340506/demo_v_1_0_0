@@ -1,6 +1,6 @@
 # v0.5.4 UART与快速启动复现
 
-S2 修正版 local.2 已验收上传；当前为 S3 local.1 待上板。真实事务观察位于 `sd_card_bmp.v`，顶层直接接入诊断包；不能用数码管复用显示码代替事件。S3接口已完成，生产固定关闭。
+S2及S3 local.2已获用户上板确认；S4尚未实施。真实事务观察位于 `sd_card_bmp.v`，顶层直接接入诊断包；不能用数码管复用显示码代替事件。S3接口已完成，生产编译期关闭。
 
 本次复现命令（重新运行时使用新的输出名）：
 
@@ -30,3 +30,7 @@ UART引脚异步于PC接收端。SDC仅对FPGA TX寄存器到引脚定义10ns工
 `run_scan_resume.ps1 -RunName v054_s3_scan_resume_release`验证接口；`run_sim.ps1 -RunName v054_s3_uart`检查UART。全回归为`diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s3`，另运行`diagnostics/sd_recovery/run_handoff.ps1`；最后`run_td.ps1 -BuildName v054_s3_final`。重新构建使用新BuildName。
 
 `package_stage.py`以`--baseline v0.5.4-s2-board.2`只封装新增/修改代码；不覆盖现有候选。详见[固定候选](../../releases/v0.5.4/v0.5.4-s3-local.1/README.md)。S3生产仍先完整扫描，暂停控制关闭。
+
+## S3 local.2复现
+
+开启专项`run_scan_resume.ps1 -RunName v054_s3r2_scan`；关闭对比`run_s3_disabled_compare.ps1 -RunName v054_s3r2_compare`；UART用`run_sim.ps1 -RunName v054_s3r2_uart`；全回归`diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s3r2`及重扫`diagnostics/sd_recovery/run_handoff.ps1`；TD为`run_td.ps1 -BuildName v054_s3r2_final`。新运行使用新输出名。local.2已上板确认；后续新候选仍须上板通过后才commit/打标签/push。
