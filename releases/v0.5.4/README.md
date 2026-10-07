@@ -1,6 +1,8 @@
 # v0.5.4 UART可观测性与首图快速显示
 
-当前：S0/S1实施中。只实施到S1本地候选，等待用户上板后才上传GitHub并进入S2。
+当前：S0完成，S1本地验证通过，等待用户上板后才上传GitHub并进入S2。
+
+[固定候选bit](v0.5.4-s1-local.1/demo.bit) · [S1说明](v0.5.4-s1-local.1/README.md) · [板测表](v0.5.4-s1-local.1/BOARD_VALIDATION.md)。Setup +0.177ns、Hold +0.011ns；七套BMP、三组异步交接、八项回归及UART专项通过。未建立board/正式标签。
 
 [阶段计划](../../docs/v0.5.4_UART与快速启动分阶段计划.md) · [复现](../../diagnostics/uart_fastboot/README.md)
 

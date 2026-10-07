@@ -1,6 +1,8 @@
 # 当前开发：v0.5.4 UART与快速启动
 
-S0/S1实施中，尚未上板或上传。见[阶段计划](docs/v0.5.4_UART与快速启动分阶段计划.md)及[版本说明](releases/v0.5.4/README.md)。v0.5.3作为本轮源码基线，其历史验收文档存在冲突，见[核对说明](docs/history/2026-10-07/v0.5.3/README.md)。下方v0.5.2下载是已明确记录的历史验收入口。
+S0完成，S1本地通过，等待上板，未上传。下载[S1固定bit](releases/v0.5.4/v0.5.4-s1-local.1/demo.bit)，按[板测表](releases/v0.5.4/v0.5.4-s1-local.1/BOARD_VALIDATION.md)验证。D12输出115200/8N1启动行；Setup +0.177ns、Hold +0.011ns。完整事件日志与快速启动尚未实现。
+
+见[阶段计划](docs/v0.5.4_UART与快速启动分阶段计划.md)及[版本说明](releases/v0.5.4/README.md)。v0.5.3作为本轮源码基线，其历史验收文档存在冲突，见[核对说明](docs/history/2026-10-07/v0.5.3/README.md)。下方v0.5.2下载是已明确记录的历史验收入口。
 
 # 安路 EG4 HDMI 图片播放器
 

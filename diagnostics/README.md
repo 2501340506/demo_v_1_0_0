@@ -1,6 +1,6 @@
 # 构建与诊断归档
 
-当前开发验证：[Flash与启动](flash_boot/README.md)。
+当前开发验证：[v0.5.4 UART与快速启动](uart_fastboot/README.md)，S1本地通过、待上板。既有[Flash与启动](flash_boot/README.md)测试继续复用。
 
 v0.5.2 发布后证据补测：`single_pll/run_evidence.ps1`；[结果与范围](../releases/v0.5.2/evidence-2026-10-07/README.md)。完整帧行为测试通过，实际控制器刷新测试失败；脚本保留失败日志并返回错误，不代表全部通过。
 

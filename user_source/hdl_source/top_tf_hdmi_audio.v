@@ -25,10 +25,13 @@ module top(
     output                      sd_ncs,
     output                      sd_dclk,
     output                      sd_mosi,
-    input                       sd_miso
+    input                       sd_miso,
+    output                      uart_tx
 );
 
 parameter MEM_DATA_BITS = 32;
+parameter integer UART_CLK_FREQ_HZ = 100_000_000;
+parameter integer UART_BAUD_RATE = 115200;
 parameter ADDR_BITS     = 21;
 parameter BUSRT_BITS    = 10;
 parameter [ADDR_BITS-1:0] FRAME_PIXELS = 307200;   // 640*480
@@ -121,6 +124,10 @@ reset_sync u_reset_sd (.clk(sd_card_clk), .async_rst(reset_request), .rst(rst_sd
 reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_mem));
 reset_sync u_reset_video (.clk(video_clk), .async_rst(reset_request), .rst(rst_video));
 reset_sync u_reset_serial (.clk(hdmi_5x_clk), .async_rst(reset_request), .rst(rst_serial));
+
+uart_boot_reporter #(.CLK_FREQ_HZ(UART_CLK_FREQ_HZ), .BAUD_RATE(UART_BAUD_RATE)) u_uart_boot (
+    .clk(sd_card_clk), .rst(rst_sd), .uart_tx(uart_tx)
+);
 
 // SDRAM and TF initialization run independently. Only the first scan waits
 // for memory readiness; keep the SD controller out of this dependency loop.
