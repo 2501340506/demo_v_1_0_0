@@ -1,6 +1,8 @@
-# 当前入口：S3已验收，下一阶段S4
+# 当前正式版：v0.5.4
 
-[S3验收与原始日志](history/2026-10-07/v0.5.4/S3_board_validation.md) · [接口](S3_SCAN_RESUME.md) · [阶段计划](v0.5.4_UART与快速启动分阶段计划.md)。local.2用户确认功能正常，S4尚未实施。
+[版本及下载](../releases/v0.5.4/README.md) · [验证状态](VALIDATION_STATUS.md) · [完成归档](history/2026-10-07/v0.5.4/README.md)。S5已完成，复用已验收原bit。
+
+以下为历史文档入口。
 
 # 文档入口
 

@@ -1,8 +1,8 @@
-# 当前进度：S3 local.2已上板验收
+# 当前正式版本：v0.5.4 UART可观测性
 
-[S3已验收bit](releases/v0.5.4/v0.5.4-s3-local.2/demo.bit) · [验收记录](docs/history/2026-10-07/v0.5.4/S3_board_validation.md) · [阶段计划](docs/v0.5.4_UART与快速启动分阶段计划.md)。用户确认local.2功能正常，原bit不重建；生产暂停仍编译期关闭，S4首图快启待实施。
+[下载正式bit](releases/v0.5.4/demo.bit) · [版本说明](releases/v0.5.4/README.md) · [验收与归档](docs/history/2026-10-07/v0.5.4/README.md)。复用已验收S3 local.2原bit，启动行保持BOOT v0.5.4-s3-local.2，无需重复板测。
 
-以下为历史已验收版本。
+以下为项目使用说明及历史版本背景；其中旧“当前版本/下载”以本页顶部入口为准。
 
 # 安路 EG4 HDMI 图片播放器
 
