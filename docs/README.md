@@ -1,6 +1,6 @@
-# v0.5.3 开发入口
+# 当前开发入口：v0.5.4
 
-[阶段计划](bmp_read%20LUT优化分阶段计划.md) · [候选说明](../releases/v0.5.3/README.md) · [验证状态](VALIDATION_STATUS.md) · [复现](../diagnostics/lut_bmp/README.md)。本地完成，等待上板；结项归档待用户验收后执行。
+[阶段计划](v0.5.4_UART与快速启动分阶段计划.md) · [版本](../releases/v0.5.4/README.md) · [验证状态](VALIDATION_STATUS.md)。S0/S1实施中；每阶段上板通过后才上传并进入下一阶段。
 
 # 文档入口
 

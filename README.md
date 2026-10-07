@@ -1,8 +1,6 @@
-# 开发候选 v0.5.3：bmp_read LUT 优化
+# 当前开发：v0.5.4 UART与快速启动
 
-[固定候选 bit](releases/v0.5.3/v0.5.3-local.1/demo.bit) · [版本说明](releases/v0.5.3/README.md) · [板测表](releases/v0.5.3/v0.5.3-local.1/BOARD_VALIDATION.md)
-
-本地验证通过：bmp_read 布局 LUT 减少 14.4%，顶层 4571 LUT；Setup +0.107 ns、Hold +0.004 ns。等待用户上板，未上传；下方正式入口仍为 v0.5.2。
+S0/S1实施中，尚未上板或上传。见[阶段计划](docs/v0.5.4_UART与快速启动分阶段计划.md)及[版本说明](releases/v0.5.4/README.md)。v0.5.3作为本轮源码基线，其历史验收文档存在冲突，见[核对说明](docs/history/2026-10-07/v0.5.3/README.md)。下方v0.5.2下载是已明确记录的历史验收入口。
 
 # 安路 EG4 HDMI 图片播放器
 
