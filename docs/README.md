@@ -12,6 +12,7 @@
 |---|---|
 | 当前产品及下载 | [项目README](../README.md) · [v0.5.1正式版本](../releases/v0.5.1/README.md) · [v0.5.2候选](../releases/v0.5.2/README.md) |
 | 验证结论和边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
+| v0.5.2 历史证据补测 | [完整帧通过与刷新失败证据](../releases/v0.5.2/evidence-2026-10-07/README.md) |
 | 已完成阶段计划 | [HDMI音频分阶段修改计划](HDMI音频分阶段修改计划.md) |
 | 历史归档 | [ARCHIVE_INDEX.md](ARCHIVE_INDEX.md) · [history](history) |
 | 课程来源和改写说明 | [HDMI_AUDIO_SOURCES.md](HDMI_AUDIO_SOURCES.md) |

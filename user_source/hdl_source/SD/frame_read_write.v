@@ -7,7 +7,7 @@ module frame_read_write
 	parameter WRITE_DATA_BITS        = 32,
 	parameter ADDR_BITS              = 21,
 	parameter BURST_BITS             = 9,//
-	parameter BURST_SIZE             = 256,
+	parameter BURST_SIZE             = 64,
 	parameter WRITE_V_FLIP           = 1,      // 1: vertical flip when writing TF/BMP frame into SDRAM
 	parameter FRAME_WIDTH            = 640,
 	parameter FRAME_HEIGHT           = 480

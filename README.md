@@ -2,6 +2,10 @@
 
 当前正式版本：**[v0.5.2 — 单 PLL、40 MHz SDRAM 与 TF 恢复](releases/v0.5.2/README.md)**。
 
+刷新修复：[v0.5.2-s3-board.2](releases/v0.5.2/v0.5.2-s3-board.2/README.md)，本地回归、TD 和新候选 SRAM 验收通过；同一 bit 的 S4 Flash/长稳待反馈。
+
+2026-10-07 [补测记录](releases/v0.5.2/evidence-2026-10-07/README.md)：完整帧行为仿真通过；实际 SDRAM 控制器刷新间隔专项未通过，仍待定位。已发布 bit 和用户板级验收记录保留。
+
 [下载正式 bit](releases/v0.5.2/demo.bit) · [S4 Flash 与长稳验收](releases/v0.5.2/v0.5.2-s4-board.1/README.md) · [阶段归档](docs/history/2026-10-07/v0.5.2/README.md)。
 
 目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。

@@ -2,6 +2,8 @@
 
 当前开发验证：[Flash与启动](flash_boot/README.md)。
 
+v0.5.2 发布后证据补测：`single_pll/run_evidence.ps1`；[结果与范围](../releases/v0.5.2/evidence-2026-10-07/README.md)。完整帧行为测试通过，实际控制器刷新测试失败；脚本保留失败日志并返回错误，不代表全部通过。
+
 活动验证见[stability](stability/README.md)；已完成阶段测试保留历史，新运行结果放output。
 
 ```text

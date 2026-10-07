@@ -1,0 +1,59 @@
+# vsim -c -quiet -lib ../diagnostics/output/refresh_fix_ports/work tb_full_sdram_data -l ../diagnostics/output/refresh_fix_ports/vendor_verilog.log -do "run -all; quit -f" 
+# Start time: 11:42:38 on Oct 07,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(96): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(96): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(96): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(96): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(149): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(149): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(149): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/frame_read_write.v(149): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_wrrd.enc.v(77): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# FIFO_IN n=0 return=01df0000 di=01df0000 wa=  0
+# FIFO_IN n=1 return=01df0100 di=01df0100 wa=  1
+# FIFO_IN n=2 return=01df0200 di=01df0200 wa=  2
+# FIFO_IN n=3 return=01df0300 di=01df0300 wa=  3
+# FIFO_IN n=4 return=01df0400 di=01df0400 wa=  4
+# FIFO_IN n=5 return=01df0500 di=01df0500 wa=  5
+# FIFO_IN n=6 return=01df0600 di=01df0600 wa=  6
+# FIFO_IN n=7 return=01df0700 di=01df0700 wa=  7
+# FIFO_IN n=8 return=01df0800 di=01df0800 wa=  8
+# FIFO_IN n=9 return=01df0900 di=01df0900 wa=  9
+# FIFO_IN n=10 return=01df0a00 di=01df0a00 wa= 10
+# FIFO_IN n=11 return=01df0b00 di=01df0b00 wa= 11
+# PASS real writer partial frame fails twice, d stays, old display preserved
+# PASS new request clears partial FIFO and restarts real writer without reset
+# PASS one truncated attempt then exact successful retry and one commit
+# PASS full pixel count with short final sector cannot commit; next task recovers
+# PASS AUTO two full-frame commits
+# COVERAGE visible_frames=119 visible_pixels=36556800 clocks=100/40/25MHz frame=640x480
+# PASS real BMP plus asynchronous frame reader/writer: commits=12 errors=5 collisions=0 mixed=0
+# ** Note: $finish    : ../diagnostics/single_pll/tb_full_frame_evidence.sv(215)
+#    Time: 2153708563 ns  Iteration: 1  Instance: /tb_full_sdram_data/app
+# FIFO_DEBUG first=04008000 ptr=  0 data=04007f00
+# DEBUG physical0=03df0000 physical1=03df0100 ideal0=03df0000 returned=zzzzzzzz valid=0
+# RESULT production_schedule refs=78197 min_gap=1100 max_gap=1100 violations=0 writes=4301760 reads=39321600
+# End time: 11:46:44 on Oct 07,2026, Elapsed time: 0:04:06
+# Errors: 0, Warnings: 16

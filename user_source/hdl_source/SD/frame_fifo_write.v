@@ -92,7 +92,7 @@ wire into_burst;
 // Sample the asynchronous FIFO occupancy before the burst decision.  Keeping
 // the wide compare local to this clocked boundary removes the direct FIFO
 // pointer-to-state timing path while preserving the existing one-cycle check.
-assign into_burst = !cancel_active && (((write_len_latch <= (rdusedw_latched + write_cnt))||rdusedw_latched > BURST_SIZE) && ~App_rd_busy);
+assign into_burst = !Sdr_busy && !Sdr_init_ref_vld && !cancel_active && (((write_len_latch <= (rdusedw_latched + write_cnt))||rdusedw_latched > BURST_SIZE) && ~App_rd_busy);
 
 assign App_wr_addr = {App_wr_addr_r[ADDR_BITS - 1:0]};
 //assign O_wr_busy = (state != S_IDLE || (S_IDLE && write_req_d2));

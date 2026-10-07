@@ -7,7 +7,7 @@
 
 `define DEBUG
 
-`include "D:\My_Program\anlogic_program\demo_v_0_0\user_source\hdl_source\include\global_def.v"
+`include "../user_source/hdl_source/include/global_def.v"
 
 module sdram(
     `ifdef SIMULATION
@@ -53,7 +53,14 @@ wire  [`DATA_WIDTH-1:0]	SDR_DQ ;
 wire  [`DM_WIDTH-1:0]	SDR_DM; 
 `endif
 
-sdr_as_ram  #( .self_refresh_open(1'b1))
+// 40 MHz: reserve the final 200 clocks of each 1100-clock interval.
+// A 64-word application burst drains before the single refresh request.
+wire controller_busy;
+wire refresh_request, refresh_guard;
+sdram_refresh_schedule refresh_schedule(.clk(Clk),.rst(Rst),
+    .init_done(Sdr_init_done),.guard(refresh_guard),.request(refresh_request));
+assign Sdr_busy = controller_busy | refresh_guard;
+sdr_as_ram  #( .self_refresh_open(1'b0))
 	u2_ram( 
 		.Sdr_clk(Clk),
 		.Sdr_clk_sft(Clk_sft),
@@ -61,9 +68,9 @@ sdr_as_ram  #( .self_refresh_open(1'b1))
 			  			  
 		.Sdr_init_done(Sdr_init_done),
 		.Sdr_init_ref_vld(Sdr_init_ref_vld),
-		.Sdr_busy(Sdr_busy),
+		.Sdr_busy(controller_busy),
 		
-		.App_ref_req(1'b0),
+		.App_ref_req(refresh_request),
 		
         .App_wr_en(App_wr_en), 
         .App_wr_addr(App_wr_addr),  	
@@ -88,7 +95,7 @@ sdr_as_ram  #( .self_refresh_open(1'b1))
 
 assign SDR_CKE=1'b1;
 
-//`ifndef SIMULATION
+`ifndef SIMULATION
 	EG_PHY_SDRAM_2M_32 sdram(
 		.clk(SDRAM_CLK),
 		.ras_n(SDR_RAS),
@@ -104,6 +111,19 @@ assign SDR_CKE=1'b1;
 		.dm3(SDR_DM[3]),
 		.cke(1'b1)
 		);
-//`endif
+`endif
 
-endmodule 
+endmodule
+// Frame controllers must use BURST_SIZE=64 and inhibit new bursts on Sdr_busy.
+module sdram_refresh_schedule(input clk,rst,init_done,output guard,output reg request);
+reg [10:0] slot;
+assign guard = !init_done || slot >= 11'd900;
+always @(posedge clk or posedge rst) begin
+    if(rst) begin slot<=0; request<=0; end
+    else if(!init_done) begin slot<=0; request<=0; end
+    else begin
+        slot <= slot==11'd1099 ? 11'd0 : slot+1'b1;
+        request <= slot==11'd999;
+    end
+end
+endmodule
