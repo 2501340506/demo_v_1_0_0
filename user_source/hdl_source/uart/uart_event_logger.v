@@ -36,7 +36,7 @@ always @(posedge clk or posedge rst) begin
     if(rst) pending<=0;
     else pending<={milliseconds,events,image_index,sector,error_code,phase,auto_enabled};
 end
-wire [63:0] event_debug = (pending[50] || pending[43]) ? sd_debug : 64'd0;
+wire [63:0] event_debug = ((pending[50] && pending[7:5] == 3'd2) || pending[43]) ? sd_debug : 64'd0;
 reg [153:0] queue [0:QUEUE_DEPTH-1];
 reg [PTR_BITS-1:0] wr_ptr, rd_ptr;
 reg [COUNT_BITS-1:0] count;
@@ -96,7 +96,7 @@ function [7:0] hex;
     begin hex=(value<10) ? 8'h30+{4'd0,value} : 8'h41+{4'd0,value}-8'd10; end
 endfunction
 wire [79:0] name_text=event_name(kind);
-localparam [175:0] BANNER="BOOT v0.5.4-s2-local.1";
+localparam [175:0] BANNER="BOOT v0.5.4-s2-local.2";
 reg [7:0] tx_data;
 always @* begin
     tx_data=8'h20;

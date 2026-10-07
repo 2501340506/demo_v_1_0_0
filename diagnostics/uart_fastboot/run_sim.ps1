@@ -14,4 +14,4 @@ foreach($tb in @('tb_uart_boot','tb_uart_event_logger')) {
   $log=Get-Content "$out/${tb}.log" -Raw
   if($log -notmatch 'PASS ' -or $log -match '\*\* (Error|Fatal):'){throw "UART evidence failed: $tb"}
 }
-Write-Output 'PASS UART S1'
+Write-Output 'PASS UART boot and event byte receiver'

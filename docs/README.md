@@ -1,8 +1,6 @@
-> 2026-10-07更新：用户确认S1全部通过；同一bit由v0.5.4-s1-board.1固定。S2接续开发，S1用户串口行尾r现象在S2处理。以下旧待上板描述属于候选阶段记录。
-
 # 当前开发入口：v0.5.4
 
-[阶段计划](v0.5.4_UART与快速启动分阶段计划.md) · [版本](../releases/v0.5.4/README.md) · [验证状态](VALIDATION_STATUS.md)。S0完成，S1本地通过、待上板；每阶段上板通过后才上传并进入下一阶段。
+[阶段计划](v0.5.4_UART与快速启动分阶段计划.md) · [S2 修正版](../releases/v0.5.4/v0.5.4-s2-local.2/README.md) · [验证状态](VALIDATION_STATUS.md) · [验收更正](history/2026-10-07/v0.5.4/S2_log_correction.md)。local.2 待上板，S3 暂缓。
 
 # 文档入口
 

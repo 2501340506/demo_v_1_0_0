@@ -17,6 +17,7 @@ module sd_card_bmp #(
     input [1:0]                 mode,
     output     [3:0]            state_code,
     output [63:0]               sd_debug,
+    output reg [57:0]          diagnostics,
     output     [7:0]            combo_event_count,
     output                      combo_debug_active,
     output                      auto_play_indicator,
@@ -143,6 +144,69 @@ assign source_done_now = source_done_seen || bmp_load_done;
 assign current_write_finish = write_epoch_active && !write_req_ack_sync && write_finish_pulse;
 assign write_finish_now = write_finish_seen || current_write_finish;
 assign write_req_ack_sync = write_req_ack_pipe[1];
+
+// Observation only: use real transactions, never the multiplexed panel code.
+// Packet = {events[15:0], image[1:0], sector[31:0], error[2:0], phase[3:0], auto}.
+reg diag_init_seen, diag_init_fail_seen, diag_scan_seen, diag_auto_seen;
+reg [3:0] diag_phase_seen;
+wire diag_rescan = rescan_event && !recovery_active;
+wire diag_running = !diag_rescan && !recovering_reset &&
+                    !timeout_event && !timeout_stopped && sd_init_done;
+wire diag_failure = diag_running && load_busy && bmp_load_error;
+wire diag_commit = !diag_rescan && commit_pending &&
+                   commit_ack_sync[1] == display_commit_request &&
+                   (recovering_reset || (diag_running && !bmp_load_error &&
+                   !restart_pending && (!committed_valid || committed_ready)));
+wire diag_timeout = !diag_rescan && !recovering_reset && timeout_event && !timeout_stopped;
+wire [3:0] diag_phase = (recovery_phase == 1) ? 4'd8 :
+                        (recovery_phase == 2 || recovery_phase == 3) ? 4'd9 :
+                        !sd_init_done ? 4'd0 :
+                        commit_pending ? 4'd7 :
+                        (load_busy && source_done_seen && !write_finish_seen) ? 4'd6 :
+                        !load_busy ? ((!scan_done && scan_kicked) ? 4'd2 : 4'd1) :
+                        write_req ? 4'd4 : (write_started_seen ? 4'd5 : 4'd3);
+reg [15:0] diag_events;
+reg [2:0] diag_error;
+always @* begin
+    diag_events=0;
+    diag_events[0]=sd_init_done && !diag_init_seen;
+    diag_events[1]=sd_init_failed && !diag_init_fail_seen;
+    diag_events[2]=scan_start_pulse;
+    diag_events[3]=scan_done && !diag_scan_seen;
+    diag_events[4]=load_start_pulse;
+    diag_events[5]=diag_failure && !retry_used;
+    diag_events[6]=diag_failure && retry_used && recovery_chain &&
+                    (!first_image_committed || ctrl_auto_play_en) && candidates_tried < img_found_count;
+    diag_events[7]=diag_commit;
+    diag_events[8]=diag_failure || diag_timeout;
+    diag_events[9]=diag_rescan;
+    diag_events[10]=ctrl_auto_play_en != diag_auto_seen;
+    diag_events[11]=(diag_phase != diag_phase_seen) &&
+                     ((diag_phase == 4) || (diag_phase >= 6));
+    diag_events[12]=scan_done && !diag_scan_seen && img_found_count == 0;
+    diag_events[13]=diag_timeout || (diag_failure && retry_used && !diag_events[6]);
+    diag_events[14]=diag_commit && recovery_active;
+    diag_error=0;
+    if(diag_failure) diag_error=bmp_error;
+    if(diag_events[1] || diag_timeout) diag_error=3'd2;
+end
+always @(posedge clk or posedge rst) begin
+    if(rst) begin
+        diagnostics<=0;
+        diag_init_seen<=0; diag_init_fail_seen<=0; diag_scan_seen<=0;
+        diag_auto_seen<=0; diag_phase_seen<=0;
+    end else begin
+        diag_init_seen<=sd_init_done;
+        diag_init_fail_seen<=sd_init_failed;
+        diag_scan_seen<=scan_done;
+        diag_auto_seen<=ctrl_auto_play_en;
+        diag_phase_seen<=diag_phase;
+        diagnostics<={diag_events,
+            (load_busy || load_start_pulse || diag_commit) ? load_idx : img_idx,
+            (diag_failure || load_start_pulse || diag_commit) ? load_sector : sd_sec_read_addr,
+            diag_error, diag_phase, ctrl_auto_play_en};
+    end
+end
 
 // A new request acknowledges only after the previous burst has ended and the
 // write FIFO is cleared. Discard old completion toggles through that handshake.
