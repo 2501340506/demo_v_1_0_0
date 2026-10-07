@@ -1,6 +1,6 @@
 # 文档入口
 
-当前正式版：[v0.5.2](../releases/v0.5.2/README.md) · [验证状态](VALIDATION_STATUS.md) · [v0.5.2 归档](history/2026-10-07/v0.5.2/README.md)。S4 已通过，正式产物沿用 S3 local.1。
+当前正式版：[v0.5.2](../releases/v0.5.2/README.md) · [验证状态](VALIDATION_STATUS.md) · [v0.5.2 归档](history/2026-10-07/v0.5.2/README.md)。S4 已通过，当前修复产物沿用 S3 local.2，由 S4 board.2 固定。
 
 已结项：[v0.5.0 Flash固化与上电自启计划](Flash固化与上电自启分阶段修改计划.md) · [课程对照](FLASH_BOOT_SOURCES.md)。[正式版本](../releases/v0.5.0/README.md) · [结项归档](history/2026-10-05/Flash固化与上电自启/README.md)。
 
@@ -10,7 +10,7 @@
 
 | 内容 | 入口 |
 |---|---|
-| 当前产品及下载 | [项目README](../README.md) · [v0.5.1正式版本](../releases/v0.5.1/README.md) · [v0.5.2候选](../releases/v0.5.2/README.md) |
+| 当前产品及下载 | [项目README](../README.md) · [v0.5.1正式版本](../releases/v0.5.1/README.md) · [v0.5.2当前发布](../releases/v0.5.2/README.md) |
 | 验证结论和边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
 | v0.5.2 历史证据补测 | [完整帧通过与刷新失败证据](../releases/v0.5.2/evidence-2026-10-07/README.md) |
 | 已完成阶段计划 | [HDMI音频分阶段修改计划](HDMI音频分阶段修改计划.md) |
