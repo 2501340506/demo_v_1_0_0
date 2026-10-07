@@ -1,16 +1,14 @@
 # 安路 EG4 HDMI 图片播放器
 
-当前正式版本：**[v0.5.1 — 时序审计与 Flash 回归](releases/v0.5.1/README.md)**，S5 已获整体上板确认，S6 长稳按用户决定跳过。
+当前正式版本：**[v0.5.2 — 单 PLL、40 MHz SDRAM 与 TF 恢复](releases/v0.5.2/README.md)**。
 
-开发中的 **[v0.5.2 S2](releases/v0.5.2/v0.5.2-s2-board.1/README.md)** 已完成双 PLL 恢复上板验收，固定 local.5 候选，验收标签 `v0.5.2-s2-board.1`。单 PLL 输出及 SDRAM 频率待定，尚未集成；Flash 和规定长稳留待 S4。
-
-[下载正式版 bit](releases/v0.5.1/demo.bit) · [v0.5.2 候选与验收](releases/v0.5.2/v0.5.2-s2-local.1/BOARD_VALIDATION.md) · [固化指南](docs/flash_boot/S3_FLASH_GUIDE.md) · [v0.5.1 归档](docs/history/2026-10-06/v0.5.1/README.md)。
+[下载正式 bit](releases/v0.5.2/demo.bit) · [S4 Flash 与长稳验收](releases/v0.5.2/v0.5.2-s4-board.1/README.md) · [阶段归档](docs/history/2026-10-07/v0.5.2/README.md)。
 
 目录入口：[统一文档](docs/README.md) · [版本产物规则](releases/README.md) · [构建与诊断归档](diagnostics/README.md)。
 
-基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；两颗PLL、五个时钟域分别同步释放复位。
+基于Anlogic EG4S20BG256，从TF卡读取BMP，经SDRAM双缓冲输出640×480 HDMI视频与48kHz双声道图片琶音。实际显示提交后提示一次，音量128；一颗PLL、五个时钟域分别同步释放复位。
 
-上一正式版本：[v0.5.0](releases/v0.5.0/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
+上一正式版本：[v0.5.1](releases/v0.5.1/README.md)。历史HDMI升级已结项，相关资料见[历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 使用方式
 
@@ -23,7 +21,7 @@
 
 KEY4单击切换MAN/AUTO。复位默认MAN，扫描完成且图片多于一张时允许切换AUTO。三个按键20ms消抖，长按不连发；图片首尾循环。
 
-v0.5.2 开发候选中 KEY2 改为短按松手翻图；任何模式长按 2 秒重初始化及重扫，松手不翻图。恢复保留旧图，新首图完整提交后提示一次并回 MAN；初始化/扫描为 0/2、无图 E、通信失败 F，失败可再次长按。此行为尚待上板确认，正式 v0.5.1 不含此恢复功能。
+v0.5.2 中 KEY2 改为短按松手翻图；任何模式长按 2 秒重初始化及重扫，松手不翻图。恢复保留旧图，新首图完整提交后提示一次并回 MAN；初始化/扫描为 0/2、无图 E、通信失败 F，失败可再次长按。此行为已获 S3 上板确认。
 
 AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间隔包括加载时间。模式变化重新计时，S1修复模式变化恰逢AUTO到期时同拍误发翻图请求；已有手动挂起请求继续处理。图片编号位小数点表示AUTO。
 
@@ -43,16 +41,16 @@ AUTO在四模式下保持，加载完成且空闲约3秒后再翻图，实际间
 
 ## 下载与构建
 
-当前正式下载：[v0.5.0固定bit](releases/v0.5.0/demo.bit) · [版本说明](releases/v0.5.0/README.md)。沿用已固化候选，无需重新下载。
+当前正式下载：[v0.5.2 固定 bit](releases/v0.5.2/demo.bit)，沿用 S4 已验收产物。
 
-使用Tang Dynasty 6.2打开`TD_project/demo.al`，器件EG4S20BG256、顶层top，依次综合、布局布线、生成bitstream。命令行入口为`diagnostics/run_td_build.ps1`；复现已验收布局参数见[源清单](releases/v0.5.0/source_inventory.md)，GUI默认策略不同。运行目录`TD_project/demo_Runs/phy_1/demo.bit`会被新构建覆盖，上板使用版本目录中的固定文件。
+使用Tang Dynasty 6.2打开`TD_project/demo.al`，器件EG4S20BG256、顶层top，依次综合、布局布线、生成bitstream。命令行入口为`diagnostics/run_td_build.ps1`；复现已验收布局参数见[源清单](releases/v0.5.2/source_inventory.md)，GUI默认策略不同。运行目录`TD_project/demo_Runs/phy_1/demo.bit`会被新构建覆盖，上板使用版本目录中的固定文件。
 
 [交接记录](HANDOFF.md) · [验证状态](docs/VALIDATION_STATUS.md) · [诊断入口](diagnostics/README.md) · [历史索引](docs/ARCHIVE_INDEX.md)。
 
 ## 验证状态与范围
 
-v0.5.0已由用户整体上板确认，仿真与TD证据沿用S2候选。资源3926 LUT、2902寄存器、4 BRAM、4 DSP、2 PLL；Setup −6.565ns、Hold +0.003ns，64个SDRAM接口及3个旧内存内部负端点仍在，全局未收敛。
+S4 已确认 Flash 写入校验、10 次独立冷启动、5 次拔插恢复和 30 分钟 AUTO 通过。单 PLL 为 100/40/40/25/125 MHz，C2 相位 172.8°（12 ns），面板保持外部 50 MHz。
 
-500ms无进展超时覆盖扫描、读头、写应答和像素等待；SD初始化、源解析结束后的最终内存写完成/显示确认、免复位热插拔恢复仍不在该范围。用户曾报告的SD初始化/复位问题仍按历史边界保留；不宣称Flash启动改造已解决SD协议恢复。
+TD 报告 Setup +0.168 ns、Hold +0.041 ns，覆盖率 99.89%；外部 I/O 延时及尚缺的刷新/FIFO 专项证据见[验证边界](releases/v0.5.2/README.md)。
 
 本版不包含OSD、亮度/对比度调节或缩放。预留参数B初值0、范围−128..127；C初值128、范围0..256、至少9位，作为后续需求记录。

@@ -1,13 +1,29 @@
-# v0.5.2 开发记录
+# v0.5.2 — 单 PLL、40 MHz SDRAM 与 TF 恢复
 
-**当前：S2 双 PLL 恢复已验收**，固定 local.5，见 [S2 验收记录](v0.5.2-s2-board.1/README.md)。用户确认剩余扫描/加载中恢复和换卡首图均通过。按约定上传本阶段，S3 先等待时钟方案定案；S4 未执行。以下保留验收前排查历史。
+2026-10-07 发布。用户确认 S3 全部 SRAM 项目及 S4 全部规定测试通过。
 
-最新：local.4 首图及正常长按恢复通过，但偶发首次恢复 `00` 后 F，快照为 `37FF / 0000 / 0000 / 0000`。[local.5 当前候选](v0.5.2-s2-local.5/README.md) 修正 CMD55 误拒绝合法 00 响应；原 RTL 引脚仿真复现同一快照，修正后通过，待 SRAM 复查。S2 仍未整体通过。以下为先前排查历史。
+[正式 bit](demo.bit) · [S3 验收](v0.5.2-s3-board.1/README.md) · [S4 验收](v0.5.2-s4-board.1/README.md) · [归档](../../docs/history/2026-10-07/v0.5.2/README.md)
 
-2026-10-06：双 PLL 恢复 local.1 本地通过，但用户 SRAM 上板发现正常卡先 0 后 F，KEY2 后仍失败。S2 未通过；当前 [local.2 临时诊断候选](v0.5.2-s2-local.2/README.md) 用于读取失败命令及 R1，根因尚未确认。不是正式发布，未上传 GitHub，未烧写 Flash。
+正式 bit 为 629624 字节，沿用 s3-local.1 → s3-board.1 → s4-board.1 同一产物，逐字节一致；发布未重新构建。
 
-[阶段计划](../../docs/v0.5.2_TF卡恢复与单PLL分阶段计划.md) · [当前候选 bit](v0.5.2-s2-local.5/demo.bit) · [local.1 失败记录](v0.5.2-s2-local.1/BOARD_VALIDATION.md)
+|PLL 输出|频率|相位|用途|
+|---|---|---|---|
+|C0|100 MHz|0°|SD/控制及 BUFG 外部反馈|
+|C1|40 MHz|0°|SDRAM 控制|
+|C2|40 MHz|172.8°，12 ns|SDRAM 采样|
+|C3|25 MHz|0°|像素与音频|
+|C4|125 MHz|0°|HDMI 串行|
 
-基线 `v0.5.1`；本地计划标签 `v0.5.2-plan.1`，协议/按键标签 `v0.5.2-s1-local.1`。S1 验证由 `diagnostics/sd_recovery/run_tests.ps1` 复现，日志随 S2 候选保存。
+外部输入及面板保持 50 MHz；唯一 PLL 锁定信号驱动五域三拍高有效复位，PLL reset 只接外部复位。
 
-S2 用户确认前不开始单 PLL 集成；单 PLL 输出和 SDRAM 频率仍待讨论。S4 最终验收安排 30 分钟 AUTO、10 次独立冷启动、5 次拔插恢复，当前均未执行或登记为通过。
+KEY2 短按松手翻图，任意模式长按 2 秒重初始化与重扫；恢复保留旧图，新首图提交后回 MAN 并提示一次。保留 CMD59、CRC7、CRC16 和 CMD55 合法 00/01 响应修复。不增加自动插卡检测、写卡或 Flash 参数持久化。
+
+S4：Flash 写入/校验、脱离下载器 10 次独立冷启动、5 次拔插恢复、30 分钟 AUTO 全部通过（来源：用户整体确认；未提供逐次日志、Flash 型号后缀或额外次数）。
+
+## 构建和证据边界
+
+沿用 TD 6.2.168116 attempt4，参数 `-HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high`。[完整时序](v0.5.2-s3-local.1/timing/demo_pr.timing)报告 Setup +0.168 ns、Hold +0.041 ns，无报告内负端点，覆盖率 99.89%。保持 SDRAM 硬核边界分析及像素/串行相关路径；板级 I/O 延时未指定，不能视作所有外部时序均已证明。
+
+PLL 厂商模型验证周期与相位通过，load_reg 声明冲突产生两个宽度警告。控制、SD 协议/CRC、音频、HDMI、视频、复位/启动日志见候选 simulation。`refresh_expression.log` 是修复前 period=8、refresh_macro=0 的问题复现，不能用作修复通过证据。修复后宏为 25 ns、终值 1249；真实刷新最迟服务、完整帧 100/40/25 MHz FIFO 空读和刷新竞争专项证据未齐，早先“本地验证全部完成”的表述过宽。用户板级通过单独成立，不补造这些仿真结果。
+
+源清单见 [source_inventory.md](source_inventory.md)。旧候选、旧标签与原始证据全部保留。

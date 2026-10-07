@@ -54,12 +54,11 @@ module tb_flash_reset;
   begin
    #3.3;rst_n=0;
    #1;
-   if(dut.sys_pll_m0.reset!==1 || dut.video_pll_m0.reset!==1 ||
-      dut.sys_pll_lock!==0 || dut.video_pll_lock!==0)
+   if(dut.sys_pll_m0.reset!==1 || dut.sys_pll_lock!==0)
     $fatal(1,"button must reach both PLL resets and discard locks");
    #52;rst_n=1;
    #1;
-   if(dut.sys_pll_lock!==0 || dut.video_pll_lock!==0 || !dut.reset_request)
+   if(dut.sys_pll_lock!==0 || !dut.reset_request)
     $fatal(1,"button release reused old PLL lock");
   end
  endtask
@@ -67,24 +66,20 @@ module tb_flash_reset;
   force dut.committed_valid=inject_valid;
   force dut.committed_image=inject_id;
   dut.sys_pll_m0.model.relock_cycles=3;
-  dut.video_pll_m0.model.relock_cycles=8;
   #73.3;rst_n=1;
   wait(dut.sys_pll_lock);
-  if(dut.video_pll_lock || !dut.rst_sd) $fatal(1,"first lock alone released system");
   released();
   // Reverse acquisition order after a real button reset.
   dut.sys_pll_m0.model.relock_cycles=9;
-  dut.video_pll_m0.model.relock_cycles=3;
   button_reset();
-  wait(dut.video_pll_lock);
-  if(dut.sys_pll_lock || !dut.rst_mem) $fatal(1,"video lock alone released memory");
+  wait(dut.sys_pll_lock);
   released();
   // Video clock stops while the button is not pressed; all consumers reset.
-  #3;dut.video_pll_m0.model.running=0;
+  #3;dut.sys_pll_m0.model.running=0;
   #57;
   if(!dut.rst_video || !dut.rst_serial || !dut.rst_sd || !dut.rst_mem)
    $fatal(1,"stopped video PLL did not reset all domains");
-  dut.video_pll_m0.model.running=1;
+  dut.sys_pll_m0.model.running=1;
   released();
   // System clock tree interruption, including the source side of the CDC.
   #7;dut.sys_pll_m0.model.running=0;
@@ -100,7 +95,7 @@ module tb_flash_reset;
   button_reset();
   released();
   if(rounds!=5) $fatal(1,"reset coverage incomplete");
-  $display("PASS FLASH S1: two lock orders, both PLL stop/relock paths, button resets PLLs, three-edge local release, in-flight clear, silent restart and fresh cue");
+  $display("PASS FLASH S1: single PLL variable lock delay, stop/relock paths, button resets PLL, three-edge local release, in-flight clear, silent restart and fresh cue");
   $finish;
  end
  initial begin #10000000;$fatal(1,"reset test timeout");end
@@ -115,7 +110,7 @@ module reset_observer(input clk,request,rst);
  always @(negedge rst) if(!clk) $fatal(1,"reset released off local rising edge");
 endmodule
 // Reset-aware reference-clock lock model, with independently stoppable outputs.
-module flash_pll_model #(parameter HALF0=5, HALF1=4)(
+module flash_pll_model #(parameter real HALF0=5, HALF1=12.5)(
  input refclk,reset, output reg clk0_out=0,clk1_out=0,output locked);
  reg running=1, lock_state=0;
  integer elapsed=0, relock_cycles=5;
@@ -130,14 +125,12 @@ module flash_pll_model #(parameter HALF0=5, HALF1=4)(
  always #(HALF1) if(running && !reset) clk1_out=~clk1_out;else clk1_out=0;
  assign locked=lock_state && !reset && running;
 endmodule
-module sys_pll(input refclk,reset,output clk0_out,clk1_out,clk2_out,locked);
- flash_pll_model #(.HALF0(5),.HALF1(4)) model(
-  .refclk(refclk),.reset(reset),.clk0_out(clk0_out),.clk1_out(clk1_out),.locked(locked));
- assign clk2_out=~clk1_out;
-endmodule
-module video_pll(input refclk,reset,output clk0_out,clk1_out,locked);
- flash_pll_model #(.HALF0(20),.HALF1(4)) model(
-  .refclk(refclk),.reset(reset),.clk0_out(clk0_out),.clk1_out(clk1_out),.locked(locked));
+module sys_pll_s3(input refclk,reset,output clk0_out,clk1_out,clk2_out,output reg clk3_out=0,clk4_out=0,output extlock);
+ flash_pll_model #(.HALF0(5),.HALF1(12.5)) model(
+  .refclk(refclk),.reset(reset),.clk0_out(clk0_out),.clk1_out(clk1_out),.locked(extlock));
+ assign #12 clk2_out=clk1_out;
+ always #20 if(model.running && !reset) clk3_out=~clk3_out;else clk3_out=0;
+ always #4 if(model.running && !reset) clk4_out=~clk4_out;else clk4_out=0;
 endmodule
 module sdram(input Clk,Clk_sft,Rst,output Sdr_init_done,Sdr_init_ref_vld,Sdr_busy,
  input App_wr_en,input [20:0] App_wr_addr,input [3:0] App_wr_dm,input [31:0] App_wr_din,
