@@ -9,3 +9,5 @@ Bit compared byte-for-byte against final build, 629624 bytes.
 Setup +0.168 ns; Hold +0.019 ns; STA coverage 99.92%; 5911 LUT, 3757 registers, 4 BRAM, 4 DSP, 1 PLL.
 Final timing report includes clocks and I/O checks. Existing PLL/SDRAM warnings remain; see timing/WARNINGS.md.
 Reproduction requires the repository dependencies referenced by the saved scripts. The saved TD project uses the same relative source tree.
+
+Packaging note: local.2 source tag is retained. Git initially normalized text line endings in staged snapshots. Supplemental tag v0.5.4-s2-local.2-package.1 preserves original file bytes through -text attributes and re-indexing; RTL and bit are unchanged. All 174 packaged files were checked against staged bytes before the packaging documentation update.

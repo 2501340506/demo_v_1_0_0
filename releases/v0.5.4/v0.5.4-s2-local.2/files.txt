@@ -1,6 +1,6 @@
 .gitattributes	8
 BOARD_VALIDATION.md	1053
-BUILD.md	798
+BUILD.md	1157
 demo.bit	629624
 README.md	2451
 simulation/flash_boot_v054_s2fix/baseline.log	3920
