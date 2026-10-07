@@ -1,3 +1,7 @@
+# v0.5.3 开发入口
+
+[阶段计划](bmp_read%20LUT优化分阶段计划.md) · [候选说明](../releases/v0.5.3/README.md) · [验证状态](VALIDATION_STATUS.md) · [复现](../diagnostics/lut_bmp/README.md)。本地完成，等待上板；结项归档待用户验收后执行。
+
 # 文档入口
 
 当前正式版：[v0.5.2](../releases/v0.5.2/README.md) · [验证状态](VALIDATION_STATUS.md) · [v0.5.2 归档](history/2026-10-07/v0.5.2/README.md)。S4 已通过，当前修复产物沿用 S3 local.2，由 S4 board.2 固定。
