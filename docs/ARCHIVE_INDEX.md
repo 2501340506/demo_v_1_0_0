@@ -52,3 +52,5 @@ v0.1.8为缓冲所有权版本；v0.1.9为数码管面板模块化版本；v0.2.
 # v0.5.1 时序收敛与 Flash 启动回归于 2026-10-06 结项：用户确认 S5 上板通过并明确跳过 S6。[结项归档](history/2026-10-06/v0.5.1/README.md) · [正式版本](../releases/v0.5.1/README.md)。
 
 [S2 日志验收更正与原文存档](history/2026-10-07/v0.5.4/S2_log_correction.md)，过程记录，未结项。
+
+[S2修正版板测通过](history/2026-10-07/v0.5.4/S2_board_validation.md) · [S3本地交付记录](history/2026-10-07/v0.5.4/S3_local_summary.md)，S3待上板，v0.5.4未结项。

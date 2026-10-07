@@ -8,6 +8,9 @@ module tb_bmp_scan #(parameter integer BASELINE=0);
     wire [31:0] addr,found_sector;
     integer reads=0,found_count=0,i;
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(start),
+      `ifndef STABILITY_S2
+      .scan_pause_request(1'b0),.scan_resume(1'b0),.scan_paused(),.scan_resume_sector(),
+`endif
       .scan_start_sector(first_sector),.scan_max_sector(limit),.scan_target_count(3'd1),
 `ifndef STABILITY_S2
       .scan_error(),

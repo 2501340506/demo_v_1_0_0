@@ -556,6 +556,11 @@ bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
     .scan_start_sector      (SCAN_START_SECTOR),
     .scan_max_sector        (SCAN_MAX_SECTOR),
     .scan_target_count      (SCAN_TARGET_COUNT),
+    // S3 interface is verified independently; production keeps full-scan boot.
+    .scan_pause_request     (1'b0),
+    .scan_resume            (1'b0),
+    .scan_paused            (),
+    .scan_resume_sector     (),
     .scan_done              (scan_done),
     .scan_error             (bmp_scan_error),
     .scan_found_valid       (scan_found_valid),

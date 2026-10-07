@@ -11,6 +11,10 @@ module bmp_read #(
     input  [31:0]               scan_start_sector,
     input  [31:0]               scan_max_sector,
     input  [2:0]                scan_target_count,
+    input                       scan_pause_request,
+    input                       scan_resume,
+    output reg                  scan_paused,
+    output reg [31:0]           scan_resume_sector,
     output reg                  scan_done,
     output reg                  scan_error,
     output reg                  scan_found_valid,
@@ -54,6 +58,15 @@ localparam ST_STOP = 3'd7;
 
 reg [2:0]  state;
 reg [9:0]  rd_cnt;
+reg scan_boundary;
+reg scan_pause_pending;
+// A pulse during a sector is remembered until that sector is fully consumed.
+// The low-request boundary cycle also accepts a request based on found_valid.
+always @(posedge clk or posedge rst) begin
+    if (rst) scan_pause_pending <= 1'b0;
+    else if (!sd_init_done || state != ST_SCAN) scan_pause_pending <= 1'b0;
+    else if (scan_pause_request) scan_pause_pending <= 1'b1;
+end
 
 // A no-progress deadline, not a whole-file or whole-scan deadline.
 localparam integer TIMEOUT_CYCLES = (CLK_FREQ_HZ / 1000) * TIMEOUT_MS;
@@ -350,6 +363,9 @@ always @(posedge clk or posedge rst) begin
         scan_found_valid  <= 1'b0;
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
+        scan_paused       <= 1'b0;
+        scan_resume_sector <= 32'd0;
+        scan_boundary     <= 1'b0;
     end else if (state == ST_STOP) begin
         // Late bytes/end/ack cannot revive an outstanding timed-out transaction.
         load_done <= 1'b0;
@@ -373,6 +389,9 @@ always @(posedge clk or posedge rst) begin
         scan_found_valid  <= 1'b0;
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
+        scan_paused       <= 1'b0;
+        scan_resume_sector <= 32'd0;
+        scan_boundary     <= 1'b0;
     end else begin
         load_done <= 1'b0;
         load_error <= 1'b0;
@@ -394,6 +413,9 @@ always @(posedge clk or posedge rst) begin
                 write_req   <= 1'b0;
 
                 if (scan_start) begin
+                    scan_paused      <= 1'b0;
+                    scan_boundary    <= 1'b1;
+                    scan_resume_sector <= scan_start_sector;
                     scan_done        <= 1'b0;
                     scan_found_total <= 3'd0;
                     sd_sec_read_addr <= scan_start_sector;
@@ -402,15 +424,31 @@ always @(posedge clk or posedge rst) begin
                     bmp_error          <= 3'd0;
                     sd_sec_read_addr    <= load_sector;
                     state               <= ST_LOAD_HDR;
+                end else if (scan_resume && scan_paused) begin
+                    scan_paused      <= 1'b0;
+                    scan_boundary    <= 1'b1;
+                    sd_sec_read_addr <= scan_resume_sector;
+                    state            <= ST_SCAN;
                 end
             end
 
             ST_SCAN: begin
                 state_code  <= 4'd2;
-                sd_sec_read <= 1'b1;
+                if (scan_boundary && (scan_pause_request || scan_pause_pending)) begin
+                    // Count/address already include the completed sector. Loading
+                    // may reuse sd_sec_read_addr without destroying this cursor.
+                    sd_sec_read <= 1'b0;
+                    scan_paused <= 1'b1;
+                    scan_resume_sector <= sd_sec_read_addr;
+                    state <= ST_IDLE;
+                end else begin
+                    scan_boundary <= 1'b0;
+                    sd_sec_read <= 1'b1;
+                end
 
                 if (sd_sec_read_end) begin
                     sd_sec_read <= 1'b0;
+                    scan_boundary <= 1'b1;
 
                     if (header_match && sector_size_ok) begin
                         scan_found_valid  <= 1'b1;

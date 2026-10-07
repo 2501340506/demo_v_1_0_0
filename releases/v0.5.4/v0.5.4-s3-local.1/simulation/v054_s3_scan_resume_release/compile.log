@@ -1,0 +1,10 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 21:07:59 on Oct 07,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/v054_s3_scan_resume_release/work -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\v054_s3_scan_resume_release/compile.log D:\My_Program\anlogic_program\demo_v_0_0/user_source/hdl_source/SD/bmp_read.v D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\uart_fastboot/tb_scan_resume.sv 
+-- Compiling module bmp_read
+-- Compiling module tb_scan_resume
+
+Top level modules:
+	tb_scan_resume
+End time: 21:07:59 on Oct 07,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

@@ -1,7 +1,11 @@
-> 当前状态：S2 local.2 用户已确认通过，进入 S3；以下候选期“待上板”已由本次确认更新。
+# 当前验证：v0.5.4-s3-local.1
 
-# 当前验证：v0.5.4-s2-local.2
+S2 local.2已由用户确认UART和其他功能通过，原bit建立board.2并上传。S3为当前本地候选，尚未上板、未上传。
 
-UART独立接收、播放器事件计分板、三组重扫、七套BMP、三组像素交接及八项既有回归通过。TD Setup +0.168ns、Hold +0.019ns，无新增负时序和警告类型。75个源码/约束及bit逐字节核对通过。
+S3专项对比连续扫描与暂停/真实加载/续扫的全部读地址、图片位置及数量；成功/失败加载、快跳、边界结束、新扫描和暂停时复位均通过。七套BMP、三组像素异步交接、三组真实解析器重扫交接、八项既有回归和UART独立接收全部通过。相关最终ModelSim日志无错误、无警告。
 
-[候选证据](../releases/v0.5.4/v0.5.4-s2-local.2/README.md) · [板测表](../releases/v0.5.4/v0.5.4-s2-local.2/BOARD_VALIDATION.md)。本候选待上板，未上传。S1已验收；旧S2播放反馈保留，事件日志验收撤回，详见[更正](history/2026-10-07/v0.5.4/S2_log_correction.md)。S3/S4未交付。旧验证记录见[原文存档](history/2026-10-07/v0.5.4/before_s2_log_correction/docs/VALIDATION_STATUS.md)，不代表当前状态。
+TD Setup +0.100ns、Hold +0.019ns，STA覆盖99.92%，无新增负时序和警告类型。5901 LUT/3747寄存器，4 BRAM/4 DSP/1 PLL；既有PLL/SDRAM警告保留。75个构建输入和bit逐字节核对，发布包只保留13个改动代码/测试/脚本。
+
+[候选及原始证据](../releases/v0.5.4/v0.5.4-s3-local.1/README.md) · [板测表](../releases/v0.5.4/v0.5.4-s3-local.1/BOARD_VALIDATION.md) · [S2板测](history/2026-10-07/v0.5.4/S2_board_validation.md)。S3生产控制关闭，不能将本阶段结果称为快速启动已完成。全尺寸快启调度端到端测试留S4。
+
+历史验证和旧日志结论更正见[归档索引](ARCHIVE_INDEX.md)，不覆盖既往失败证据。

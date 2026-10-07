@@ -1,6 +1,6 @@
 # v0.5.4 UART与快速启动复现
 
-当前为 S2 修正版 local.2，待上板。真实事务观察位于 `sd_card_bmp.v`，顶层直接接入诊断包；不能用数码管复用显示码代替事件。S3 暂停续扫尚未交付。
+S2 修正版 local.2 已验收上传；当前为 S3 local.1 待上板。真实事务观察位于 `sd_card_bmp.v`，顶层直接接入诊断包；不能用数码管复用显示码代替事件。S3接口已完成，生产固定关闭。
 
 本次复现命令（重新运行时使用新的输出名）：
 
@@ -24,3 +24,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/uart_fastboot/ru
 每次TD构建使用新的BuildName，完整快照在diagnostics/output/<BuildName>。归档工程可在TD打开，新UART文件仅加入隔离工程，不覆盖用户TD_project/demo.al及best_result。
 
 UART引脚异步于PC接收端。SDC仅对FPGA TX寄存器到引脚定义10ns工程传播预算，不声称接收端同步setup/hold验证；协议采样由独立UART接收模型检查。原有SPI/HDMI约束保留。
+
+## S3复现
+
+`run_scan_resume.ps1 -RunName v054_s3_scan_resume_release`验证接口；`run_sim.ps1 -RunName v054_s3_uart`检查UART。全回归为`diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s3`，另运行`diagnostics/sd_recovery/run_handoff.ps1`；最后`run_td.ps1 -BuildName v054_s3_final`。重新构建使用新BuildName。
+
+`package_stage.py`以`--baseline v0.5.4-s2-board.2`只封装新增/修改代码；不覆盖现有候选。详见[固定候选](../../releases/v0.5.4/v0.5.4-s3-local.1/README.md)。S3生产仍先完整扫描，暂停控制关闭。

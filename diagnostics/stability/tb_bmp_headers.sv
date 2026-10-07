@@ -15,6 +15,9 @@ module tb_bmp_headers;
     integer i, pixels=0, successes=0,errors=0,found_count=0,requests=0;
     integer offset=54, length=66;
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(scan_start),
+      `ifndef STABILITY_S2
+      .scan_pause_request(1'b0),.scan_resume(1'b0),.scan_paused(),.scan_resume_sector(),
+`endif
       .scan_start_sector(32'd0),.scan_max_sector(scan_limit),.scan_target_count(3'd1),
       .scan_error(),
       .scan_done(scan_done),.scan_found_valid(found),.scan_found_sector(found_sector),.scan_found_total(),

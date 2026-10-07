@@ -11,6 +11,9 @@ module tb_bmp_timeout;
     integer pixels=0,successes=0,errors=0,scan_errors=0;
     bmp_read #(.CLK_FREQ_HZ(1000),.TIMEOUT_MS(32)) dut(
       .clk(clk),.rst(rst),.ready(ready),.scan_start(scan),
+      `ifndef STABILITY_S2
+      .scan_pause_request(1'b0),.scan_resume(1'b0),.scan_paused(),.scan_resume_sector(),
+`endif
       .scan_start_sector(32'd0),.scan_max_sector(max_sector),.scan_target_count(3'd4),
       .scan_done(scan_done),.scan_error(scan_error),.scan_found_valid(),.scan_found_sector(),.scan_found_total(found),
       .load_start(start),.load_sector(32'd0),.load_done(done),.load_error(error),.bmp_error(code),

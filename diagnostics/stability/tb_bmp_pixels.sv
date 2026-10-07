@@ -11,6 +11,9 @@ module tb_bmp_pixels;
     integer offset=54,file_size=66,pixels=0,successes=0,errors=0,reads=0;
     reg old_done=0,old_error=0;
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(1'b0),
+      `ifndef STABILITY_S2
+      .scan_pause_request(1'b0),.scan_resume(1'b0),.scan_paused(),.scan_resume_sector(),
+`endif
       .scan_start_sector(32'd0),.scan_max_sector(32'd0),.scan_target_count(3'd1),
       .scan_error(),
       .scan_done(),.scan_found_valid(),.scan_found_sector(),.scan_found_total(),
