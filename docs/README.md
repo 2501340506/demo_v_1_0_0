@@ -1,6 +1,8 @@
 # 文档入口
 
-当前正式版：[v0.5.1](../releases/v0.5.1/README.md)。当前开发：[v0.5.2 分阶段计划](v0.5.2_TF卡恢复与单PLL分阶段计划.md) · [S2 双 PLL 已验收](../releases/v0.5.2/v0.5.2-s2-board.1/README.md)，固定 local.5。单 PLL 参数待定，S4 长稳未执行；版本完成后再归档。
+S3 操作：[TD 单 PLL 生成指南](S3_TD单PLL生成指南.md)（用户生成指定 PLL 后交回集成）。
+
+当前正式版：[v0.5.1](../releases/v0.5.1/README.md)。当前开发：[S3–S5 接续计划](v0.5.2_S3-S5单PLL与Flash后续实施计划.md) · [原分阶段计划](v0.5.2_TF卡恢复与单PLL分阶段计划.md) · [S2 双 PLL 已验收](../releases/v0.5.2/v0.5.2-s2-board.1/README.md)，固定 local.5。用户已确定单 PLL 100/40/40/25/125 MHz，尚未完成集成；[SDRAM 刷新预审](S3_SDRAM刷新预审.md)。S4 长稳未执行，版本完成后再归档。
 
 已结项：[v0.5.0 Flash固化与上电自启计划](Flash固化与上电自启分阶段修改计划.md) · [课程对照](FLASH_BOOT_SOURCES.md)。[正式版本](../releases/v0.5.0/README.md) · [结项归档](history/2026-10-05/Flash固化与上电自启/README.md)。
 

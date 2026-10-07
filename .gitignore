@@ -27,3 +27,4 @@ work/
 # Directory cleanup staging and regenerated diagnostic output
 /_cleanup/
 /diagnostics/output/
+/diagnostics/local_tools/

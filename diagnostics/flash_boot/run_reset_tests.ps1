@@ -12,7 +12,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'vlib failed' }
     }
     [xml]$project = (Get-Content TD_project/demo.al -Raw).Replace('UsedInP&R','UsedInP&amp;R')
-    $modeled = @('sys_pll.v','video_pll.v','sdram.v','afifo_16_32_256.v','afifo_32_16_256.v',
+    $modeled = @('sys_pll_s3.v','sys_pll.v','video_pll.v','sdram.v','afifo_16_32_256.v','afifo_32_16_256.v',
         'sdr_as_ram.enc.v','sdr_init_ref.enc.v','sdr_wrrd.enc.v')
     $rtl = @($project.SelectNodes('/Project/Source_Files/Verilog/File') | ForEach-Object {
         $path = $_.GetAttribute('Path')

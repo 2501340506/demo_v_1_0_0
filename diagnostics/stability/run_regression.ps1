@@ -11,6 +11,10 @@ foreach ($test in $tests) {
         $script=Join-Path $PSScriptRoot "$test.ps1"
     }
     $arguments=@('-NoProfile','-ExecutionPolicy','Bypass','-File',$script)
+    if ($Stage -ne 's0' -and $test -eq 'run_s9_reset_tests') {
+        $script=Join-Path $repoRoot 'diagnostics/flash_boot/run_reset_tests.ps1'
+        $arguments=@('-NoProfile','-ExecutionPolicy','Bypass','-File',$script)
+    }
     if ($test -eq 'run_hdmi_s6_tests') { $arguments+=@('-Stage','s9') }
     & powershell @arguments *> (Join-Path $outDir "$test.log")
     if ($LASTEXITCODE -ne 0) { throw "$test failed; see $outDir" }

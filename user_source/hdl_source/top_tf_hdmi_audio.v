@@ -102,8 +102,8 @@ wire [9:0]  tmds_ch2_data;
 wire [9:0]  tmds_clk_data;
 
 // Both clock trees must lock. Each consumer releases reset on its own clock.
-wire sys_pll_lock, video_pll_lock;
-wire reset_request = ~rst_n | ~sys_pll_lock | ~video_pll_lock;
+wire sys_pll_lock;
+wire reset_request = ~rst_n | ~sys_pll_lock;
 wire rst_panel, rst_sd, rst_mem, rst_video, rst_serial;
 // Half-cycle staging gives the observed bus margin at the 50 MHz capture edge.
 // This path remains timed; no diagnostic CDC timing exception is introduced.
@@ -155,22 +155,17 @@ always @(posedge clk or posedge rst_panel) begin
 end
 
 // 保持你原来的 TF / SDRAM / video 时钟
-sys_pll sys_pll_m0(
+sys_pll_s3 sys_pll_m0(
     .refclk     (clk),
     .clk0_out   (sd_card_clk),
     .clk1_out   (ext_mem_clk),
     .clk2_out   (ext_mem_clk_sft),
-    .locked     (sys_pll_lock),
+    .clk3_out   (video_clk),
+    .clk4_out   (hdmi_5x_clk),
+    .extlock    (sys_pll_lock),
     .reset      (~rst_n) // External button only; never feed lock-derived reset back to PLL.
 );
 
-video_pll video_pll_m0(
-    .refclk     (clk),
-    .clk0_out   (video_clk),
-    .clk1_out   (hdmi_5x_clk),
-    .locked     (video_pll_lock),
-    .reset      (~rst_n)
-);
 
 // mem_clk 域把 write_finish 单拍转成 toggle，供 sd_card_clk 域可靠同步
 always @(posedge ext_mem_clk or posedge rst_mem) begin

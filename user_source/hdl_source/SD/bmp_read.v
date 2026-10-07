@@ -329,6 +329,16 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
+// The load base is consumed only after an accepted idle load request.
+// Keep its enable independent of the timeout/state-machine priority mux:
+// waiting is false in ST_IDLE, and ST_STOP retains the previous value.
+always @(posedge clk or posedge rst) begin
+    if (rst) load_sector_latched <= 0;
+    else if (state != ST_STOP && !sd_init_done) load_sector_latched <= 0;
+    else if (sd_init_done && state == ST_IDLE && !scan_start && load_start)
+        load_sector_latched <= load_sector;
+end
+
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         state             <= ST_IDLE;
@@ -345,7 +355,6 @@ always @(posedge clk or posedge rst) begin
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
         scan_sector       <= 32'd0;
-        load_sector_latched <= 32'd0;
     end else if (state == ST_STOP) begin
         // Late bytes/end/ack cannot revive an outstanding timed-out transaction.
         load_done <= 1'b0;
@@ -370,7 +379,6 @@ always @(posedge clk or posedge rst) begin
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
         scan_sector       <= 32'd0;
-        load_sector_latched <= 32'd0;
     end else begin
         load_done <= 1'b0;
         load_error <= 1'b0;
@@ -399,7 +407,6 @@ always @(posedge clk or posedge rst) begin
                     state            <= ST_SCAN;
                 end else if (load_start) begin
                     bmp_error          <= 3'd0;
-                    load_sector_latched <= load_sector;
                     sd_sec_read_addr    <= load_sector;
                     state               <= ST_LOAD_HDR;
                 end

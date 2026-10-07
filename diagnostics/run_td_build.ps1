@@ -64,7 +64,7 @@ foreach ($run in @('syn_1', 'phy_1')) {
         & "$TdRoot/bin/td_commands_prompt.exe" "$TdRoot/doc/scripts/DefaultFlow.tcl" *> $logPath
         if ($LASTEXITCODE -ne 0) { throw "TD failed: $logPath" }
         $log = Get-Content -LiteralPath $logPath -Raw
-        if ($log -match '(?im)^\s*(ERROR|Error):') { throw "TD reported errors: $logPath" }
+        if ($log -match '(?im)\bERROR:') { throw "TD reported errors: $logPath" }
         if ($run -eq 'phy_1' -and $log -notmatch 'Generate bitstream completely') {
             throw "No bitgen completion marker: $logPath"
         }

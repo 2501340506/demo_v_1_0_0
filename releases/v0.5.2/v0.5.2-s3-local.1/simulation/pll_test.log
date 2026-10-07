@@ -1,0 +1,32 @@
+# vsim -c -quiet -lib diagnostics/output/s3_pll/audit_work tb_pll -l diagnostics/output/s3_pll/pll_test.log -do "run -all; quit -f" 
+# Start time: 10:18:30 on Oct 07,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: user_source/ip_source/s3_single_pll/sys_pll_s3.v(89): (vopt-2241) Connection width does not match width of port 'load_reg'. The port definition is at: D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_pll.v(25).
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# ** Warning: (vsim-3015) user_source/ip_source/s3_single_pll/sys_pll_s3.v(89): [PCDPC] - Port size (5) does not match connection size (1) for port 'load_reg'. The port definition is at: D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_pll.v(25).
+#    Time: 0 fs  Iteration: 0  Instance: /tb_pll/dut/pll_inst File: D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_pll.v
+# run -all
+# ******************** : The Attribute            REFCLK_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to           1.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             FBCLK_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to           2.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC0_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to          10.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC1_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to          25.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC2_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to          25.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC3_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to          40.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC4_DIV on pll instance tb_pll.dut.pll_inst.para_int_range_chk is set to           8.  Legal values for this attribute are           1 to         128.
+# PASS vendor PLL periods 10/25/25/40/8 ns, C2 +12 ns, C3/C4 aligned
+# ** Note: $finish    : diagnostics/single_pll/tb_pll.sv(34)
+#    Time: 10945875 ps  Iteration: 0  Instance: /tb_pll
+# End time: 10:18:31 on Oct 07,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 2
