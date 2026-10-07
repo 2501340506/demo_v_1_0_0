@@ -20,7 +20,7 @@ try {
     })
     # The user GUI project may predate UART. Include current production UART
     # sources without editing that project; explicit paths avoid duplicate files.
-    foreach ($uart in @('uart_tx_byte.v','uart_boot_reporter.v')) {
+    foreach ($uart in @('uart_tx_byte.v','uart_boot_reporter.v','uart_event_logger.v')) {
         if (-not ($rtl | Where-Object { (Split-Path $_ -Leaf) -eq $uart })) {
             $rtl += Join-Path $repoRoot "user_source/hdl_source/uart/$uart"
         }

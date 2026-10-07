@@ -66,6 +66,10 @@ reg [63:0] sd_debug_half;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
 wire        auto_play_indicator;
+reg [3:0]   uart_state_seen;
+reg [15:0]  uart_events;
+wire        uart_tx_event;
+wire        rescan_event;
 reg [1:0]   auto_indicator_sync;
 
 wire        video_read_req;
@@ -125,8 +129,28 @@ reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_m
 reset_sync u_reset_video (.clk(video_clk), .async_rst(reset_request), .rst(rst_video));
 reset_sync u_reset_serial (.clk(hdmi_5x_clk), .async_rst(reset_request), .rst(rst_serial));
 
-uart_boot_reporter #(.CLK_FREQ_HZ(UART_CLK_FREQ_HZ), .BAUD_RATE(UART_BAUD_RATE)) u_uart_boot (
-    .clk(sd_card_clk), .rst(rst_sd), .uart_tx(uart_tx)
+always @(posedge sd_card_clk or posedge rst_sd) begin
+    if (rst_sd) begin
+        uart_state_seen <= 4'd0;
+        uart_events <= 16'd1; // INIT_OK/boot context is emitted by the logger.
+    end else begin
+        uart_events <= 16'd0;
+        if (state_code != uart_state_seen) begin
+            uart_state_seen <= state_code;
+            uart_events[state_code == 4'hf ? 8 :
+                        state_code == 4'he ? 6 :
+                        state_code == 4'hd ? 13 :
+                        state_code == 4'h2 ? 2 :
+                        state_code == 4'h4 ? 4 : 11] <= 1'b1;
+        end
+        if (committed_valid) uart_events[7] <= 1'b1;
+        if (rescan_event) uart_events[9] <= 1'b1;
+    end
+end
+uart_event_logger #(.CLK_FREQ_HZ(UART_CLK_FREQ_HZ), .BAUD_RATE(UART_BAUD_RATE)) u_uart_logger (
+    .clk(sd_card_clk), .rst(rst_sd), .events(uart_events), .image_index(committed_image),
+    .sector(32'd0), .error_code(state_code[2:0]), .phase(state_code),
+    .auto_enabled(auto_play_indicator), .sd_debug(sd_debug), .uart_tx(uart_tx)
 );
 
 // SDRAM and TF initialization run independently. Only the first scan waits

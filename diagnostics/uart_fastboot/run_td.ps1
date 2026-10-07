@@ -9,6 +9,7 @@ $project=Get-Content "$root/releases/v0.5.3/v0.5.3-baseline/demo.al" -Encoding U
 $entries=@'
             <File Path="../user_source/hdl_source/uart/uart_tx_byte.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="53"/></FileInfo></File>
             <File Path="../user_source/hdl_source/uart/uart_boot_reporter.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="54"/></FileInfo></File>
+            <File Path="../user_source/hdl_source/uart/uart_event_logger.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="55"/></FileInfo></File>
 '@
 $entries=$entries.Replace('UsedInP&amp;R','UsedInP&R')
 $project=$project.Replace('</Verilog>',"$entries`n        </Verilog>")
