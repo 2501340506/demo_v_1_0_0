@@ -10,7 +10,7 @@ S4 Flash 写入校验、脱离下载器 10 次独立冷启动、5 次拔插恢�
 
 TD attempt2 参数为 -HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high；Setup +0.128 ns、Hold +0.012 ns，30 个报告统计组无负端点；SDRAM 硬核边界 +6.612/+12.874 ns，覆盖率 99.89%。外部 I/O 延时仍未指定；DQ 模型是功能模型，不宣称完整电气时序验证。
 
-当前任务：固化 S4 board.2、更新下载入口、合并 main 并上传。已完成文档和逐字节产物核对；待执行提交/合并/上传。旧标签和旧 bit 保留，用户 TD 文件不纳入提交。历史等待 S4 阻塞已解除。归档：docs/history/2026-10-07/v0.5.2/refresh_completion.md。
+已完成：S4 board.2 固化、下载入口更新、归档和 main 快进合并。发布提交 c034b3a、main、开发分支及新标签 v0.5.2-s4-board.2 已原子上传成功；新标签固定发布提交，旧 v0.5.2 标签和旧 bit 保留。用户 TD 文件未纳入提交，未创建 GitHub Release 页面。历史等待 S4 阻塞已解除，本次修复验收与发布完成。归档：docs/history/2026-10-07/v0.5.2/refresh_completion.md。本条为上传后补记。
 
 踩坑：加密控制器编译不得泄漏 SIMULATION 宏；ModelSim 退出码不能单独证明通过。后续不重建已验收 bit。
 
