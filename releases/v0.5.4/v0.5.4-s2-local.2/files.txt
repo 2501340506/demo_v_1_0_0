@@ -1,8 +1,8 @@
 .gitattributes	8
-BOARD_VALIDATION.md	1053
+BOARD_VALIDATION.md	1249
 BUILD.md	1157
 demo.bit	629624
-README.md	2451
+README.md	2547
 simulation/flash_boot_v054_s2fix/baseline.log	3920
 simulation/flash_boot_v054_s2fix/headers.log	5824
 simulation/flash_boot_v054_s2fix/pixel_handoff.log	13892

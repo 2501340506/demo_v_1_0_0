@@ -1,3 +1,5 @@
+> 当前状态：S2 local.2 用户已确认通过，进入 S3；以下候选期“待上板”已由本次确认更新。
+
 # 当前开发入口：v0.5.4
 
 [阶段计划](v0.5.4_UART与快速启动分阶段计划.md) · [S2 修正版](../releases/v0.5.4/v0.5.4-s2-local.2/README.md) · [验证状态](VALIDATION_STATUS.md) · [验收更正](history/2026-10-07/v0.5.4/S2_log_correction.md)。local.2 待上板，S3 暂缓。
