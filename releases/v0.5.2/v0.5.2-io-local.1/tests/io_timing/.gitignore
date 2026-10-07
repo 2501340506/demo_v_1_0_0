@@ -1,0 +1,10 @@
+# Interactive TD investigation output; selected evidence is copied to candidate.
+*.log
+*.logw
+*.timing
+baseline_netlist.v
+baseline_check.txt
+baseline_nodes.md
+baseline_nodes.netlist.txt
+*.abnormal_timing_target
+*.timingsummary

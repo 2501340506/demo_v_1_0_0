@@ -1,0 +1,5 @@
+attempt1: rejected (top-level divider override still 0; never board candidate)
+attempt2: SWNS: -0.115ns, STNS: -0.260ns. HWNS: 0.004ns, HTNS: 0.000ns.
+attempt3: SWNS: -0.115ns, STNS: -0.260ns. HWNS: 0.004ns, HTNS: 0.000ns.
+attempt4: SWNS: -0.151ns, STNS: -0.151ns. HWNS: 0.025ns, HTNS: 0.000ns.
+attempt5: SWNS: 0.148ns, STNS: 0.000ns. HWNS: 0.011ns, HTNS: 0.000ns.

@@ -92,6 +92,8 @@ module sd_spi_card(input cs,sclk,mosi,input present,bad_crc,reject_crc_enable,re
 endmodule
 
 module tb_sd_spi_pins;
+    parameter real OUT_DELAY = 0.0;
+    parameter real MISO_DELAY = 0.0;
     reg clk=0,rst=1,read_req=0,present=1,bad_crc=0,reject_crc_enable=0;
     reg ready_between_polls=0;
     reg [31:0] read_addr=0;
@@ -107,7 +109,25 @@ module tb_sd_spi_pins;
         .sd_sec_read_data_valid(dv),.sd_sec_read_end(ending),
         .sd_sec_write(1'b0),.sd_sec_write_addr(32'd0),.sd_sec_write_data(8'd0),
         .sd_sec_write_data_req(),.sd_sec_write_end());
-    sd_spi_card card(cs,sclk,mosi,present,bad_crc,reject_crc_enable,ready_between_polls,miso);
+    wire card_cs,card_clk,card_mosi,card_miso;
+    assign #(OUT_DELAY) card_cs=cs;
+    assign #(OUT_DELAY) card_clk=sclk;
+    assign #(OUT_DELAY) card_mosi=mosi;
+    assign #(MISO_DELAY) miso=card_miso;
+    sd_spi_card card(card_cs,card_clk,card_mosi,present,bad_crc,reject_crc_enable,ready_between_polls,card_miso);
+    realtime last_card_mosi=-1e9,last_card_cs=-1e9,last_card_sample=-1e9;
+    always @(card_mosi) begin
+        if(!rst && !card_cs && $realtime-last_card_sample<5.0) $fatal(1,"card MOSI hold");
+        last_card_mosi=$realtime;
+    end
+    always @(card_cs) begin
+        if(!rst && $realtime-last_card_sample<5.0) $fatal(1,"card CS hold");
+        last_card_cs=$realtime;
+    end
+    always @(posedge card_clk) if(!rst && !card_cs) begin
+        if($realtime-last_card_mosi<5.0 || $realtime-last_card_cs<5.0) $fatal(1,"card input setup");
+        last_card_sample=$realtime;
+    end
     always @(posedge clk) if(!rst) begin
         if(dv) begin
             if(data!==((bytes*37+11)&255)) $fatal(1,"wire data mismatch byte=%0d got=%h",bytes,data);

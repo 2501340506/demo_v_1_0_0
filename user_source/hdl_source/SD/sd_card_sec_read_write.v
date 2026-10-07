@@ -4,7 +4,7 @@ module sd_card_sec_read_write
 	parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer INIT_TIMEOUT_MS = 2000,
 	parameter  SPI_LOW_SPEED_DIV = 248,         // spi clk speed = clk speed /((SPI_LOW_SPEED_DIV + 2) * 2 )
-	parameter  SPI_HIGH_SPEED_DIV = 0           // spi clk speed = clk speed /((SPI_HIGH_SPEED_DIV + 2) * 2 )
+	parameter  SPI_HIGH_SPEED_DIV = 1           // 100 MHz / (2*(1+2)) = 16.667 MHz; 30 ns return budget
 )
 (
 	input            clk,

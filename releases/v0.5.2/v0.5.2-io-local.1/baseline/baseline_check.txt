@@ -1,0 +1,260 @@
+Table of Contents
+-----------------
+1. checking no clock(0) (HIGH)
+2. checking clock definition(0) (HIGH)
+3. checking dummy node(4) (HIGH)
+4. checking invalid constraint(0) (HIGH)
+5. checking pll/clock buffer clock constraints(1) (HIGH)
+6. checking combinational loops(0) (HIGH)
+7. checking soft fifo timing exception constraints(0) (HIGH)
+8. checking no path constraints(0) (MEDIUM)
+9. checking shadowed/ignored timing exception constraints(0) (MEDIUM)
+10. checking no input delay(9) (MEDIUM)
+11. checking no output delay(23) (MEDIUM)
+12. checking partial input delay(0) (MEDIUM)
+13. checking partial output delay(0) (MEDIUM)
+14. checking abnormal input delay(0) (MEDIUM)
+
+
+1. checking nets with no clock driven. (HIGH)
+---------------------------------------------
+2. checking clock definition problems. (HIGH)
+---------------------------------------------
+2.1 There are 0 leaf clock pins driven by multiple clocks. (HIGH)
+
+
+2.2 There are 0 clocks created on internal clock network. (HIGH)
+
+
+2.3 There are 0 unexpandable clock sets. (HIGH)
+
+
+2.4 There are 0 local clocks. (HIGH)
+
+
+2.5 There are 0 generated clocks that are not connected to their master clocks. (HIGH)
+
+
+3. checking dummy nodes. (HIGH)
+---------------------------------------------
+There are 4 nodes are dangling. (HIGH)
+
+DummyNode in Model: EG_PHY_LSLICE
+	sd_card_bmp_m0/auto_blocked_reg_syn_43.d[1]
+	sd_card_bmp_m0/auto_blocked_reg_syn_44.d[1]
+	sd_card_bmp_m0/auto_blocked_reg_syn_45.d[1]
+	sd_card_bmp_m0/auto_blocked_reg_syn_43.c[1]
+	sd_card_bmp_m0/auto_blocked_reg_syn_44.c[1]
+	sd_card_bmp_m0/auto_blocked_reg_syn_45.c[1]
+	sd_card_bmp_m0/auto_blocked_reg_syn_40.c[0]
+	sd_card_bmp_m0/auto_blocked_reg_syn_40.b[0]
+	sd_card_bmp_m0/auto_blocked_reg_syn_40.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_5.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_6.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_5.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_6.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_5.b[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_6.b[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_5.mi[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_6.mi[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_5.mi[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_6.mi[1]
+	sd_card_bmp_m0/bmp_read_m0/compression_reg[21]_syn_5.mi[0]
+	sd_card_bmp_m0/bmp_read_m0/compression_reg[21]_syn_6.mi[0]
+	sd_card_bmp_m0/bmp_read_m0/compression_reg[21]_syn_7.mi[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_4.d[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_4.b[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_4.a[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[12]_syn_4.c[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/command_crc_reg[0]_syn_10.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_debug_reg[11]_syn_5.b[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_debug_reg[11]_syn_5.a[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_debug_reg[11]_syn_5.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/command_crc_reg[0]_syn_10.d[0]
+	sd_debug_panel0_reg[13]_syn_4.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_38.c[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_debug_reg[11]_syn_5.mi[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_debug_reg[11]_syn_5.mi[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_debug_reg[11]_syn_5.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_38.d[1]
+	sd_debug_panel0_reg[13]_syn_4.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_38.a[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_38.d[0]
+	sd_card_bmp_m0/img_sector3_reg[9]_syn_4.b[0]
+	sd_card_bmp_m0/img_sector3_reg[9]_syn_4.a[0]
+	sd_card_bmp_m0/img_sector3_reg[9]_syn_4.c[0]
+	sd_card_bmp_m0/img_sector3_reg[9]_syn_4.d[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[188]_syn_4.b[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_packet_scheduler/locked_reg_syn_26.b[1]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[185]_syn_4.b[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[188]_syn_4.c[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_packet_scheduler/locked_reg_syn_26.c[1]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[185]_syn_4.c[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[188]_syn_4.d[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_packet_scheduler/locked_reg_syn_26.d[1]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[185]_syn_4.d[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[188]_syn_4.e[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_packet_scheduler/locked_reg_syn_26.e[1]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[185]_syn_4.e[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[188]_syn_4.a[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_packet_scheduler/locked_reg_syn_26.a[1]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body_reg[185]_syn_4.a[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[22]_syn_4.c[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[20]_syn_4.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[20]_syn_4.c[1]
+	sd_card_bmp_m0/bmp_read_m0/bit_count_reg[5]_syn_4.c[0]
+	sd_card_bmp_m0/bmp_read_m0/file_len_reg[24]_syn_4.c[0]
+	sd_card_bmp_m0/bmp_read_m0/compression_reg[27]_syn_4.c[0]
+	sd_card_bmp_m0/bmp_read_m0/file_len_reg[28]_syn_4.c[0]
+	sd_card_bmp_m0/bmp_read_m0/pixel_offset_reg[28]_syn_4.c[0]
+	sd_card_bmp_m0/bmp_read_m0/file_len_reg[24]_syn_4.c[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_34.c[1]
+	sd_card_bmp_m0/bmp_read_m0/state_reg[0]_syn_85.c[0]
+	sd_card_bmp_m0/bmp_read_m0/dib_size_reg[1]_syn_4.c[1]
+	sd_card_bmp_m0/bmp_read_m0/dib_size_reg[4]_syn_4.c[0]
+	sd_card_bmp_m0/bmp_read_m0/dib_size_reg[1]_syn_4.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[22]_syn_4.d[1]
+	sd_card_bmp_m0/bmp_read_m0/bit_count_reg[5]_syn_4.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[20]_syn_4.d[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/sec_addr_reg[20]_syn_4.d[0]
+	sd_card_bmp_m0/bmp_read_m0/compression_reg[27]_syn_4.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_38.b[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_38.c[0]
+	sd_card_bmp_m0/bmp_read_m0/file_len_reg[28]_syn_4.d[0]
+	sd_card_bmp_m0/bmp_read_m0/file_len_reg[24]_syn_4.d[1]
+	sd_card_bmp_m0/bmp_read_m0/file_len_reg[24]_syn_4.d[0]
+	sd_card_bmp_m0/bmp_read_m0/dib_size_reg[1]_syn_4.d[1]
+	sd_card_bmp_m0/bmp_read_m0/dib_size_reg[1]_syn_4.d[0]
+	sd_card_bmp_m0/bmp_read_m0/dib_size_reg[4]_syn_4.d[0]
+	sd_card_bmp_m0/bmp_read_m0/pixel_offset_reg[28]_syn_4.d[0]
+	sd_card_bmp_m0/bmp_read_m0/state_reg[0]_syn_85.d[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_34.d[1]
+
+DummyNode in Model: EG_PHY_MSLICE
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/mux76_syn_172.c[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/mux76_syn_172.d[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/timer_reg[31]_syn_4.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_sec_read_write_m0/timer_reg[31]_syn_4.d[0]
+	seg7_panel_m0/u_scan/sel1_syn_549.b[0]
+	seg7_panel_m0/u_scan/sel1_syn_549.a[0]
+	seg7_panel_m0/u_scan/sel1_syn_549.c[0]
+	seg7_panel_m0/u_scan/sel1_syn_549.d[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_encoder2/sel0_syn_635.c[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_encoder2/sel0_syn_635.d[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_encoder2/sel0_syn_635.b[0]
+	u_media_hdmi_audio_bridge/u_symbol_core/u_encoder2/sel0_syn_635.a[0]
+	sd_debug_panel0_reg[53]_syn_4.c[0]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_42.c[1]
+	sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_syn_42.d[1]
+	sd_debug_panel0_reg[53]_syn_4.d[0]
+
+DummyNode in Model: EG_PHY_MULT18
+	u_pcm_clock/mult0_syn_4.a[17]
+
+DummyNode in Model: EG_PHY_PAD
+	U3/sdram_syn_5.opad
+	U3/sdram_syn_10.opad
+
+4. checking invalid constraints. (HIGH)
+---------------------------------------------
+There are 0 invalid constraints. (HIGH)
+
+
+5. checking PLL/buffer clocks. (HIGH)
+---------------------------------------------
+PLL/buffer inst: sys_pll_m0/pll_inst
+{
+	There are 0 clock pins that have no clock constraints. (HIGH)
+
+
+	There are 0 clocks whose clock frequency do not match the PLL setting. (HIGH)
+
+
+}
+
+6. checking combinational loops. (HIGH)
+---------------------------------------------
+There are 0 combinational loops. (HIGH)
+
+
+7. checking soft fifo set_max_delay constraints. (HIGH)
+---------------------------------------------
+There are 0 max-delay datapath-only paths that are part of the provided async clock paths, whereas the timing between other registers is not relaxed or ignored. (HIGH)
+
+
+8. checking no path constraints. (MEDIUM)
+---------------------------------------------
+There are 0 constraints that have no timing paths. (MEDIUM)
+
+
+9. checking path exception constraints shadowed/ignored by other constraints. (MEDIUM)
+---------------------------------------------
+
+MCP/SMD Summary
+--------------------
+
+		Max Check
+		--------------------
+		     Total    Dominated     Shadowed      Ignored   Constraint
+
+		Min Check
+		--------------------
+		     Total    Dominated     Shadowed      Ignored   Constraint
+
+10. checking no input delay (MEDIUM)
+--------------------------
+There are 9 input ports that with no input delay specified. (MEDIUM)
+
+	HDMI_DDC_SCL
+	HDMI_DDC_SDA
+	key1
+	key2
+	key4
+	rst_n
+	sd_miso
+	sw1
+	sw2
+
+11. checking no output delay (MEDIUM)
+--------------------------
+There are 23 output ports that with no output delay specified. (MEDIUM)
+
+	HDMI_CLK_P
+	HDMI_D0_P
+	HDMI_D1_P
+	HDMI_D2_P
+	HDMI_DDC_SCL
+	HDMI_DDC_SDA
+	sd_dclk
+	sd_mosi
+	sd_ncs
+	seg_data[7]
+	seg_data[6]
+	seg_data[5]
+	seg_data[4]
+	seg_data[3]
+	seg_data[2]
+	seg_data[1]
+	seg_data[0]
+	seg_sel[5]
+	seg_sel[4]
+	seg_sel[3]
+	seg_sel[2]
+	seg_sel[1]
+	seg_sel[0]
+
+12. checking partial input delay (MEDIUM)
+--------------------------
+There are 0 input ports with partial input delay specified. (MEDIUM)
+
+
+13. checking partial output delay (MEDIUM)
+--------------------------
+There are 0 output ports with partial output delay specified. (MEDIUM)
+
+
+14. checking abnormal set_input_delay constraints. (MEDIUM)
+---------------------------------------------
+There are 0 abnormal set_input_delay constraints. (MEDIUM)
+
+

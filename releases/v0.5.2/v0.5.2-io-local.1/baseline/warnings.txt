@@ -1,0 +1,3 @@
+USR-6135 CRITICAL-WARNING: The feedback path of PLL sys_pll_m0/pll_inst is on local network, of which compensation delay is unpredictable.
+TMR-9002 WARNING: 'report_timing' is obsolete. Please use 'report_timing_summary' instead.
+TMR-6527 WARNING: Failed to find timing paths for: .

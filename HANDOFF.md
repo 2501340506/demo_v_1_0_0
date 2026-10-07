@@ -1,3 +1,55 @@
+# 最新接续：2026-10-07 I/O 验收版本上传与合并
+
+- 当前任务：按用户要求提交本次 SPI/HDMI 时序修复、证据与验收记录，上传 GitHub 并合并 main。
+- 已完成：核对远端，开发分支与 main 起点一致；现有 main 工作树干净，可快进合并。候选已验收通过，后续四项专项按用户要求免测。
+- 提交范围：生产约束、两层 SPI 分频、仿真与复现脚本、候选 bit/源码/报告及文档。用户 TD best_result 与 .recent_user_depot.ini 保留在本地，不纳入提交。
+- 下一步：提交后快进 main，原子推送开发分支和 main，再核对远端。当前无卡点。
+- 踩坑：main 已在 diagnostics/output/v052_release_main 工作树检出，应在该工作树合并；不要切换覆盖当前用户 TD 工作文件。无需重建已验收 bit。
+
+# 验收记录：2026-10-07 I/O 候选验收通过
+
+- 当前任务：登记 v0.5.2-io-local.1 最终验收；已完成。
+- 用户已确认上板功能正常，并明确要求后续 Flash 写入校验、10 次冷启动、5 次拔插恢复、30 分钟 AUTO 不需要做，记录本次通过。本次验收通过，四项专项按用户决定免测，不再等待反馈。
+- 已完成：同步主 README、验证状态、时序审查及候选 README；本次仅更新记录。
+- 卡点：本次验收无剩余卡点。下一步：无必须的验证待办；后续发布或新改动另按用户要求处理。
+- 踩坑：免测不登记为实测完成；本次通过不改变既有工具警告记录。以下为历史过程，旧的待验证要求已被本条取代。
+
+# 历史记录：2026-10-07 I/O 候选上板功能通过
+
+- 当前任务：补全 SPI/HDMI 时序与未覆盖路径审查后的板级验收。
+- 用户反馈“上板验证功能都没问题”，对应当前交付 v0.5.2-io-local.1，登记功能上板整体通过；无逐项次数或耗时记录。C0 保持 100 MHz、SPI 16.667 MHz，125 MHz 仅评估，未实施。
+- 已完成：候选说明、主 README、验证状态与时序审查更新；未重建 bit、未改正式发布入口、未提交或上传。
+- 待完成：同一 bit Flash 写入校验、10 次脱离下载器冷启动、5 次拔插恢复、30 分钟 AUTO。当前反馈未明确这些专项，不登记为通过。
+- 踩坑与限制：保留 USR-6135 和 PHY-5079 的不同归因，不能把上板功能通过当作工具警告已经消失。下一步收集本候选 Flash/长稳实际结果后更新验收。
+
+# 2026-10-07 C0 125 MHz 评估（未修改频率）
+
+- C0 同时作为 CLKC0_EXT 反馈和 SD/BMP/写 FIFO 控制时钟。升至 125 MHz 会把周期从 10 ns 缩到 8 ns，当前 +0.148 ns 裕量不能直接支持升频。
+- 若实验，需要 TD 重新生成完整 PLL 并保持其他输出，更新 CLK_FREQ_HZ、SPI 分频和 I/O 预算。125 MHz 下 DIV=1 半周期 24 ns，不满足当前 25.9 ns 工程预算；至少 DIV=2，得到 15.625 MHz、32 ns。
+- 更正警告归因：PHY-5079 的 CTS 表指向 ext_mem_clk_sft / U3/u2_ram/SDRAM_CLK，而 USR-6135 单独报告 PLL 反馈问题，不能把两者当作同一路径。仅改 C0 频率没有证据可以解决这些警告。
+- 下一步：若用户要求实际升频实验，独立构建验证；本轮仅评估，无构建。中文文档不能通过默认 PowerShell 编码管道传给 Python，本轮乱码已修正。
+
+# 最新接续：2026-10-07 I/O 时序候选本地完成，待板测
+
+- 交付 releases/v0.5.2/v0.5.2-io-local.1/demo.bit，629624 字节，逐字节核对 attempt5 输出；生产 user_source 与候选快照逐文件一致。旧发布 bit、用户 best_result 和 .recent_user_depot.ini 未改写，未提交/推送。
+- SPI 两层 HIGH_SPEED_DIV 默认改为 1，100 MHz 下 16.667 MHz、半周期 30 ns；初始化 200 kHz 不变。SDC 增加 MISO 预算与成对 MCP、MOSI/CS setup/hold、SCLK 5 ns、HDMI 四路 3.5 ns。单 PLL、SDRAM 40 MHz 不变。
+- TD attempt5，seed 3 / high-fanout high / timing ultra / post-place high：Setup +0.148 ns、Hold +0.011 ns，SDRAM 边界 +6.138/+12.874 ns，coverage 99.90%。attempt2/3 内部 −0.115 ns，attempt4 seed2 −0.151 ns；失败产物不交付。
+- 仿真：快慢速度/延迟边界通过，旧 25 MHz 与超预算负对照正确失败；真实引脚延迟模型初始化/CRC/恢复及卡端建立保持通过；SD 四专项、三组异步恢复、307200 像素全图通过。
+- 未覆盖审查：旧基线 108 个、新候选 152 个 dummy 管脚逐项对应未用 LUT/寄存器输入、乘积高位截断、常量 CS/CKE。残留 8 输入/16 输出无 delay 是异步按键/复位、未实现 DDC、数码管。21 ns 输入大于 10 ns 周期的提示由 CE 三拍采样解释，详细路径通过；不将 0.11% 伪造为端点数。
+- 额外实际限制：旧基线和新候选都有 USR-6135 / PHY-5079，PLL 反馈走本地布线。未消除，不能声称全部时钟物理问题已解决；后续需核实厂商反馈连接要求。本轮按范围保留单 PLL 配置。
+- docs/timing_closure/IO_TIMING.md 和候选 README 给出预算、警告、证据及验收表。下一步 SRAM 验证，再同一 bit Flash 校验、10 冷启动、5 拔插、30 分钟 AUTO；板测待反馈。
+- 踩坑：HDMI datapath_only 抑制输出 hold，另用诊断 SDC 展开 16 条快慢角双沿路径。主 summary 不含全部例外细节；MISO 例外汇总 Total=0 但详情实际存在，必须核对具体端点。PowerShell 小数 -g 参数需引号。TD exe 不接脚本 argv，使用 wrapper 设置变量。
+
+# 本轮过程记录：2026-10-07 SPI/HDMI I/O 时序补全
+
+- 用户已授权补约束、必要的小范围 RTL 修改，并接受明确的板级工程预算。旧发布 bit 保留，不批量删除文件。
+- 已读取 TD 手册与 SanDisk SDSDv17：SPI 电气时序引用 SD 模式，卡输入 setup/hold 5 ns、数据输出 0–14 ns（手册负载条件）。初始预算板级每程 0–1 ns，SCLK 输出上限 5 ns。
+- 旧布局测量：SCLK/MOSI/CS clk-to-pad 4.620 ns，MISO 内部数据路径 3.796 ns，HDMI 四路双沿 2.573 ns。25 MHz 半周期不足以覆盖卡最长延迟和完整返回路径；拟改最小一级分频 1，即 16.667 MHz。
+- 已导出 baseline_check.txt：无缺失时钟、无错误时钟定义；9 输入/23 输出未指定延迟，dummy 节点按 4 类模型列出，需要结合网表解释，不能直接等同 0.11%。
+- 正在独立 diagnostics/output/io_timing_attempt1 构建。该首轮快照仍有 sd_card_top 默认分频 0 覆盖下层分频 1，不能交付；生产顶层参数已补改，最终需新快照构建。
+- 踩坑：TD Tcl 外层 get_ports/get_clocks 不返回预期 collection，SDC 必须经 read_sdc 解析；外部路径需关联 I/O delay 才进入检查；set_max_delay 路径细节在 report_timing_exception，不在普通 summary。datapath_only 会抑制相应 hold，SPI 数据路径使用成对 MCP 保留 hold。
+- 下一步：接口延迟仿真、旧速负对照、最终 TD/端点审查与候选交付；板级验证尚未进行。本轮未改旧 bit、用户 best_result 或下载器设置。
+
 # 最新接续：2026-10-07 S4 board.2 通过，发布刷新修复
 
 2026-10-07 用户确认“本候选 S3 全部通过”，随后确认“S4 全部通过”。验收对象为 v0.5.2-s3-local.2 / s3-board.2 同一 bit，629624 字节，已逐字节核对；发布未重新构建。
