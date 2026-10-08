@@ -10,7 +10,7 @@
 - S1最终真实顶层五轮专项通过：两种锁定顺序、两时钟树停钟恢复、按钮使PLL重新锁定、在途提交清空、五域三拍释放、静音与首图提示。正向编译/仿真零错误零警告。旧顶层负对照在未连接PLL按键复位处失败，属预期结果。
 - TD最终flash_boot_s1_local5通过，place hfn_opt_effort=high。3951 LUT/2900寄存器/4 BRAM/4 DSP/2 PLL；SD+0.147ns、内存同域+0.266ns、像素→串行+6.222ns。全局Setup−6.565ns/TNS−250.840ns、Hold+0.004ns，原64个SDRAM接口负端点仍在，未全局收敛。
 - [候选v0.5.0-s1-local.1](releases/v0.5.0/v0.5.0-s1-local.1/README.md)含629624字节固定bit，与最终运行产物逐字节一致，含源清单、工程/约束/构建设置快照、仿真及TD报告。未烧Flash、未上板、未推送。
-- 前任务交接保存在[任务前快照](docs/flash_boot/HANDOFF_before_S0.md)。v0.5.0尚未结项，不做完成归档。
+- 前任务交接保存在[任务前快照](../history/2026-10-05/Flash固化与上电自启/HANDOFF_before_S0.md)。v0.5.0尚未结项，不做完成归档。
 
 ## 阻塞与下一步
 

@@ -3,11 +3,15 @@ TD_project/log/
 TD_project/demo_Runs/syn_1/
 TD_project/demo_Runs/phy_1/
 TD_project/.lock.f
+TD_project/.recent_user_depot.ini
 diagnostics/modelsim*/
 diagnostics/*.bin
 docs/history/2026-10-03/HANDOFF.before_event_refactor.bin
 transcript
 *.wlf
+
+# Logs created when archived Tang Dynasty projects are opened locally
+/releases/*/*/project/log/
 
 # Editor and operating-system files
 .vscode/
