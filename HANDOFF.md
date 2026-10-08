@@ -1,3 +1,14 @@
+# 当前交接：BMP 2.11 发布与 main 合并完成
+
+- 当前任务：用户授权的 GitHub 上传及 main 合并已完成。
+- 已完成：feature/bmp211-decoder、main 和五个 bmp211 阶段标签原子推送成功；main 无冲突合并，文件树与验收分支一致。板级版本 v0.6.0-bmp211-s3-board.1；源码及 bit 不变。
+- 卡点：无。初次连接重置/超时已解决，本次 Git 命令使用 HTTP/1.1、schannel 和当前解析地址，未更改全局配置。
+- 下一步：用户可从 GitHub main 获取完整项目和已验收 bit；2.12 如需实施另立任务。当前本地仍在 feature 分支，main 位于已有独立 worktree。
+- 踩坑：main 原停留 v0.5.3，因此合并包含已验收 v0.5.4 基础；只推送本任务五个标签，不批量推送其他历史标签。未提交用户 TD/个人记录，未删除文件。
+
+[远程 main](https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/main) · [发布记录](docs/history/2026-10-08/bmp24_decoder/PUBLICATION.md)
+
+以下为历史交接。
 # 当前交接：用户已授权上传 GitHub 并合并 main
 
 - 当前任务：发布 feature/bmp211-decoder 与本任务标签，并合并 main。
