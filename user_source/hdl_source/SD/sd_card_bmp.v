@@ -547,6 +547,35 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
+// S1: preserve the legacy parser contract while using the sector service.
+wire bmp_sd_sec_read;
+wire [31:0] bmp_sd_sec_read_addr;
+wire [7:0] bmp_sd_sec_read_data;
+wire bmp_sd_sec_read_data_valid, bmp_sd_sec_read_end, bmp_sd_sec_read_failed;
+wire sector_busy, sector_done;
+wire [7:0] sector_error;
+reg legacy_request_armed;
+wire sector_request = bmp_sd_sec_read && legacy_request_armed && !sector_busy;
+always @(posedge clk or posedge parser_rst) begin
+    if (parser_rst) legacy_request_armed <= 1'b1;
+    else if (!bmp_sd_sec_read) legacy_request_armed <= 1'b1;
+    else if (sector_request) legacy_request_armed <= 1'b0;
+end
+// Short sectors remain parser format/integrity failures (retryable), as before.
+assign bmp_sd_sec_read_end = sector_done;
+assign bmp_sd_sec_read_failed = sector_done &&
+                               (sector_error == 8'h10 || sector_error == 8'h11);
+sd_sector_adapter #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS)) u_sector_adapter (
+    .clk(clk), .rst(parser_rst),
+    .sector_req(sector_request), .sector_lba(bmp_sd_sec_read_addr),
+    .sector_busy(sector_busy), .sector_valid(bmp_sd_sec_read_data_valid),
+    .sector_byte(bmp_sd_sec_read_data), .sector_byte_index(),
+    .sector_done(sector_done), .sector_error(sector_error),
+    .sd_sec_read(sd_sec_read), .sd_sec_read_addr(sd_sec_read_addr),
+    .sd_sec_read_data_valid(sd_sec_read_data_valid), .sd_sec_read_data(sd_sec_read_data),
+    .sd_sec_read_end(sd_sec_read_end), .sd_sec_read_failed(sd_sec_read_failed)
+);
+
 bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS),
            .ENABLE_SCAN_PAUSE(0)) bmp_read_m0(
     .clk                    (clk),
@@ -580,12 +609,12 @@ bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS),
     .bmp_height             (bmp_height),
     .write_req              (write_req),
     .write_req_ack          (write_req_ack_sync),
-    .sd_sec_read            (sd_sec_read),
-    .sd_sec_read_addr       (sd_sec_read_addr),
-    .sd_sec_read_data       (sd_sec_read_data),
-    .sd_sec_read_data_valid (sd_sec_read_data_valid),
-    .sd_sec_read_failed(sd_sec_read_failed),
-    .sd_sec_read_end        (sd_sec_read_end),
+    .sd_sec_read            (bmp_sd_sec_read),
+    .sd_sec_read_addr       (bmp_sd_sec_read_addr),
+    .sd_sec_read_data       (bmp_sd_sec_read_data),
+    .sd_sec_read_data_valid (bmp_sd_sec_read_data_valid),
+    .sd_sec_read_failed(bmp_sd_sec_read_failed),
+    .sd_sec_read_end        (bmp_sd_sec_read_end),
     .bmp_data_wr_en         (bmp_data_wr_en),
     .bmp_data               (bmp_data)
 );
