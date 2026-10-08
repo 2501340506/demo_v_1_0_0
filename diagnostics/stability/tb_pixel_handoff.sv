@@ -37,6 +37,7 @@ module tb_pixel_handoff;
         force dut.sd_sec_read_data_valid=sector_valid;
         force dut.sd_sec_read_end=sector_end;
     end
+    `include "diagnostics/fat32/sim_fat32_layout.vh"
     function [7:0] byte_at(input integer pos,input integer id);
         begin
             byte_at=0;
@@ -51,12 +52,12 @@ module tb_pixel_handoff;
     initial forever begin
         @(negedge clk);
         if(!rst && dut.sd_sec_read) begin
-            image=dut.sd_sec_read_addr/7;base=(dut.sd_sec_read_addr%7)*512;
-            truncate_now=(dut.bmp_read_m0.state==4 && base==short_sector*512 && short_attempts>0);
+            image=(dut.sd_sec_read_addr-1026)/7;base=((dut.sd_sec_read_addr-1026)%7)*512;
+            truncate_now=(dut.bmp_read_m0.state==10 && base==short_sector*512 && short_attempts>0);
             limit_bytes=truncate_now ? short_bytes : 512;
             if(truncate_now)short_attempts=short_attempts-1;
             for(b=0;b<limit_bytes;b=b+1)begin
-                sector_data=byte_at(base+b,image);sector_valid=1;@(negedge clk);sector_valid=0;
+                sector_data=(dut.sd_sec_read_addr<=1025)?fat32_metadata(dut.sd_sec_read_addr,b,3126,4):byte_at(base+b,image);sector_valid=1;@(negedge clk);sector_valid=0;
                 for(gap=1;gap<SOURCE_GAP;gap=gap+1)@(negedge clk);
             end
             sector_end=1;@(negedge clk);sector_end=0;@(negedge clk);

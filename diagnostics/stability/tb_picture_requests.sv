@@ -78,6 +78,7 @@ module tb_picture_requests;
         force dut.sd_sec_read_data_valid = data_valid;
         force dut.sd_sec_read_end = sector_end;
     end
+    `include "diagnostics/fat32/sim_fat32_layout.vh"
     function [7:0] bmp_byte(input integer pos);
         case (pos)
             0: bmp_byte = bad_header ? 0 : 8'h42;
@@ -98,7 +99,7 @@ module tb_picture_requests;
         @(negedge clk);
         if (!rst && dut.sd_sec_read) begin
             for (b = 0; b < 512; b = b + 1) begin
-                sector_data = bmp_byte(b);
+                sector_data = (dut.sd_sec_read_addr<=1025)?fat32_metadata(dut.sd_sec_read_addr,b,66,4):bmp_byte(b);
                 data_valid = 1;
                 @(negedge clk);
                 data_valid = 0;

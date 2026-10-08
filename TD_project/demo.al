@@ -39,7 +39,7 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="4"/>
+                    <Attr Name="CompileOrder" Val="73"/>
                 </FileInfo>
             </File>
             <File Path="../user_source/hdl_source/SD/ax_debounce.v">
@@ -431,6 +431,30 @@
             <File Path="../user_source/hdl_source/SD/bmp24_decoder.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="56"/></FileInfo></File>
             <File Path="../user_source/hdl_source/SD/bmp_header_check.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="57"/></FileInfo></File>
             <File Path="../user_source/hdl_source/SD/sd_sector_adapter.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="58"/></FileInfo></File>
+            <File Path="../user_source/hdl_source/SD/fat32_volume_scanner.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="70"/>
+                </FileInfo>
+            </File>
+            <File Path="../user_source/hdl_source/SD/fat32_file_streamer.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="71"/>
+                </FileInfo>
+            </File>
+            <File Path="../user_source/hdl_source/SD/fat32_bmp_reader.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="72"/>
+                </FileInfo>
+            </File>
         </Verilog>
         <ADC_FILE>
             <File Path="../user_source/constraints_source/pin.adc">

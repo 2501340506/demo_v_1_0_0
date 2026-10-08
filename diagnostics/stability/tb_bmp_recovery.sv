@@ -30,7 +30,7 @@ module tb_bmp_recovery;
             expected_done=dut.scan_done && !scan_seen; scan_seen=dut.scan_done;
             expected_load=dut.load_start_pulse;
             expected_log_image=dut.load_idx;
-            expected_log_sector=dut.load_sector;
+            expected_log_sector=dut.sd_sec_read_addr;
             expected_error=dut.bmp_load_error ? dut.bmp_error : 0;
             #1;
             if(dut.diagnostics[44]!==expected_scan || dut.diagnostics[45]!==expected_done ||
@@ -62,7 +62,7 @@ module tb_bmp_recovery;
         .write_finish_toggle(finish),.display_commit_ack(commit_pipe[3]),.display_commit_request(commit_req),
         .write_buf_idx(wb),.disp_buf_idx(db),.write_req(req),.write_req_ack(ack_pipe[3]),
         .write_en(we),.write_data(rgb),.SD_nCS(),.SD_DCLK(),.SD_MOSI(),.SD_MISO(1'b1));
-    sim_bmp_sectors #(.WIDTH(4),.HEIGHT(1)) card(.clk(clk),.rst(rst),
+    sim_bmp_sectors #(.WIDTH(4),.HEIGHT(1),.FAT32(1)) card(.clk(clk),.rst(rst),
         .request(dut.sd_sec_read),.address(dut.sd_sec_read_addr),.bad_headers(bad),
         .data(data),.valid(dv),.sector_end(ending),.busy(card_busy));
     initial begin
@@ -132,7 +132,7 @@ module tb_bmp_recovery;
         boot(); bad=1;
         wait(errors==1); @(negedge clk);bad=0;
         wait(valid);tick(8);
-        if(attempt[0]!=2 || commits!=1 || dut.img_idx!=0 || code!=1) $fatal(1,"retry success");
+        if(attempt[0]!=2 || commits!=1 || dut.img_idx!=0 || code!=1) $fatal(1,"retry success attempts=%0d commits=%0d idx=%0d code=%0d errors=%0d",attempt[0],commits,dut.img_idx,code,errors);
         if(log_scan!=1 || log_done!=1 || log_load!=2 || log_commit!=1 || log_retry!=1 || log_skip!=0)
             $fatal(1,"retry diagnostic counts");
         $display("PASS initial header failure retries exactly once and clears sticky E on commit");

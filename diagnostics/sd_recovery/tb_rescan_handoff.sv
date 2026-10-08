@@ -68,6 +68,7 @@ module tb_rescan_handoff;
         force dut.sd_sec_read_end=sector_end;
         force dut.sd_sec_read_failed=sector_failed;
     end
+    `include "diagnostics/fat32/sim_fat32_layout.vh"
     function [7:0] byte_at(input integer pos,input integer id);
         begin
             byte_at=0;
@@ -79,19 +80,22 @@ module tb_rescan_handoff;
             endcase
         end
     endfunction
+    integer reset_epoch=0,transaction_epoch;
+    always @(posedge dut.parser_rst) reset_epoch=reset_epoch+1;
     initial forever begin
         @(negedge clk);
         if(!rst && dut.sd_sec_read) begin
-            image=dut.sd_sec_read_addr/7;base=(dut.sd_sec_read_addr%7)*512;
-            truncate_now=(dut.bmp_read_m0.state==4 && base==short_sector*512 && short_attempts>0);
+            transaction_epoch=reset_epoch;
+            image=(dut.sd_sec_read_addr-1026)/7;base=((dut.sd_sec_read_addr-1026)%7)*512;
+            truncate_now=(dut.bmp_read_m0.state==10 && base==short_sector*512 && short_attempts>0);
             limit_bytes=truncate_now ? short_bytes : 512;
             if(truncate_now)short_attempts=short_attempts-1;
-            for(b=0;b<limit_bytes && !dut.parser_rst;b=b+1)begin
-                sector_data=byte_at(base+b,image);sector_valid=1;@(negedge clk);sector_valid=0;
+            for(b=0;b<limit_bytes && !dut.parser_rst && transaction_epoch==reset_epoch;b=b+1)begin
+                sector_data=(dut.sd_sec_read_addr<=1025)?fat32_metadata(dut.sd_sec_read_addr,b,3126,4):byte_at(base+b,image);sector_valid=1;@(negedge clk);sector_valid=0;
                 for(gap=1;gap<SOURCE_GAP;gap=gap+1)@(negedge clk);
             end
-            sector_failed=fail_final_crc && base==3072 && dut.bmp_read_m0.state==4;
-            sector_end=!dut.parser_rst && !sector_failed;
+            sector_failed=fail_final_crc && base==3072 && dut.bmp_read_m0.state==10;
+            sector_end=!dut.parser_rst && transaction_epoch==reset_epoch && !sector_failed;
             @(negedge clk);sector_end=0;sector_failed=0;@(negedge clk);
         end
     end
@@ -257,7 +261,7 @@ module tb_rescan_handoff;
         $display("PASS real KEY2/duplicate rescan/init failure/recovered event diagnostics");
         $finish;
     end
-    initial begin #100000000; $fatal(1,"handoff watchdog"); end
+    initial begin #100000000; $fatal(1,"handoff watchdog phase=%0d state=%0d err=%0d fat=%h count=%0d load=%0d commits=%0d",dut.recovery_phase,dut.bmp_read_m0.state,dut.bmp_error,dut.bmp_read_m0.fat_error,dut.img_found_count,dut.load_busy,commits); end
 endmodule
 
 // Simulation-only 512-word asynchronous FIFOs with two-stage pointer visibility.

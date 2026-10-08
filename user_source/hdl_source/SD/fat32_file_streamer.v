@@ -41,6 +41,8 @@ module fat32_file_streamer #(
     localparam ST_FAT_WAIT   = 4'd4;
     localparam ST_FAT_PARSE  = 4'd5;
     localparam ST_FINISH     = 4'd7;
+    localparam ST_OFFSET=4'd8,ST_SHIFT=4'd9,ST_ADDRESS=4'd10;
+    reg [31:0] cluster_offset;
 
     localparam integer CHAIN_COUNT_WIDTH = $clog2(MAX_VISITED_CLUSTERS + 1);
 
@@ -82,14 +84,13 @@ module fat32_file_streamer #(
         begin
             chain_count <= chain_count + 1'b1;
             current_cluster <= cluster_value;
-            sector_lba <= data_start_lba + ((cluster_value - 2) << cluster_shift);
-            state <= ST_DATA_REQ;
+            state <= ST_OFFSET;
         end
     endtask
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            state <= ST_IDLE;
+            state <= ST_IDLE;cluster_offset<=0;
             file_done <= 1'b0;
             file_valid <= 1'b0;
             file_byte <= 8'd0;
@@ -148,10 +149,12 @@ module fat32_file_streamer #(
                         finish_with_error(ERR_CLUSTER_RANGE);
                     end else begin
                         current_cluster <= first_cluster;
-                        sector_lba <= data_start_lba + ((first_cluster - 2) << spc_shift(sectors_per_cluster));
-                        state <= ST_DATA_REQ;
+                        state <= ST_OFFSET;
                     end
                 end
+                ST_OFFSET:begin cluster_offset<=current_cluster-2;state<=ST_SHIFT;end
+                ST_SHIFT:begin cluster_offset<=cluster_offset<<cluster_shift;state<=ST_ADDRESS;end
+                ST_ADDRESS:begin sector_lba<=data_start_lba+cluster_offset;state<=ST_DATA_REQ;end
                 ST_DATA_REQ: if (!sector_busy) begin
                     sector_req <= 1'b1;
                     state <= ST_DATA_WAIT;

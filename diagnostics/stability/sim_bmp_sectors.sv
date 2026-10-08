@@ -2,7 +2,7 @@
 // Contiguous raw sectors, generated independently of the DUT's byte counter.
 // Each image begins on an integral sector, with distinguishable B/G/R bytes.
 module sim_bmp_sectors #(
-    parameter integer WIDTH=640, HEIGHT=480, IMAGES=4, BYTE_GAP=2
+    parameter integer WIDTH=640, HEIGHT=480, IMAGES=4, BYTE_GAP=2, FAT32=0
 )(
     input clk, rst, request,
     input [31:0] address,
@@ -11,6 +11,7 @@ module sim_bmp_sectors #(
     output reg valid=0, sector_end=0,
     output reg busy=0
 );
+    `include "diagnostics/fat32/sim_fat32_layout.vh"
     localparam integer FILE_BYTES=54+WIDTH*HEIGHT*3;
     localparam integer SECTORS=(FILE_BYTES+511)/512;
     integer pos, base, image_id, b, gap;
@@ -45,11 +46,11 @@ module sim_bmp_sectors #(
         valid=0; sector_end=0;
         if(!rst && request) begin
             busy=1;
-            image_id=address/SECTORS;
-            base=(address%SECTORS)*512;
+            image_id=(address-(FAT32?1026:0))/SECTORS;
+            base=((address-(FAT32?1026:0))%SECTORS)*512;
             bad=(image_id<IMAGES) ? bad_headers[image_id] : 1;
             for(b=0;b<512 && !rst;b=b+1) begin
-                data=(image_id<IMAGES) ? byte_at(base+b,image_id,bad) : 0;
+                data=(FAT32 && address<=1025)?fat32_metadata(address,b,FILE_BYTES,IMAGES):((image_id<IMAGES) ? byte_at(base+b,image_id,bad) : 0);
                 valid=1; @(negedge clk); valid=0;
                 for(gap=1;gap<BYTE_GAP;gap=gap+1) @(negedge clk);
             end

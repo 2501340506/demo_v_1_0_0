@@ -19,11 +19,11 @@ module fat32_volume_scanner #(
     localparam IDLE=0, ZERO_REQ=1, ZERO_WAIT=2, ZERO_PARSE=3,
         BOOT_REQ=4, BOOT_WAIT=5, BOOT_PARSE=6, LAYOUT=7, ROOT=8,
         DIR_REQ=9, DIR_WAIT=10, DIR_NEXT=11, FAT_REQ=12, FAT_WAIT=13,
-        FAT_PARSE=14, FINISH=15;
+        FAT_PARSE=14, FINISH=15, LAYOUT_SUB=16, LAYOUT_SHIFT=17, LAYOUT_MAX=18, LAYOUT_CHECK=19, ROOT_SHIFT=20, ROOT_ADD=21;
     localparam ERR_SECTOR=8'h10, ERR_SIGNATURE=8'h20, ERR_BPB=8'h21,
         ERR_LOOP=8'h23, ERR_RANGE=8'h24, ERR_LIMIT=8'h26;
     localparam COUNT_BITS=$clog2(MAX_VISITED_CLUSTERS+1);
-    reg [3:0] state;
+    reg [4:0] state;
     reg [15:0] bytes_per_sector, reserved, root_entries, fat16, flags, signature;
     reg [7:0] spc, fat_count;
     reg [31:0] total_sectors, fat_sectors, root_cluster;
@@ -38,7 +38,7 @@ module fat32_volume_scanner #(
     reg [31:0] entry_cluster, entry_size, fat_entry;
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
     wire [8:0] fat_offset={current_cluster[6:0],2'b00};
-    wire [31:0] cluster_count=(total_sectors-{16'd0,reserved}-fat_span)>>cluster_shift;
+    reg [31:0] overhead,data_sectors,cluster_count,partition_reserved,cluster_offset;
     wire bpb_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
         reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
         total_sectors!=0 && fat_sectors!=0 && root_cluster>=2 &&
@@ -69,7 +69,7 @@ module fat32_volume_scanner #(
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
-            cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
+            overhead<=0;data_sectors<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
         end else begin
             scan_done<=0;sector_req<=0;
@@ -166,21 +166,31 @@ module fat32_volume_scanner #(
                     else begin
                         sectors_per_cluster<=spc;cluster_shift<=spc_shift(spc);
                         fat_span<=fat_count==2 ? fat_sectors<<1 : fat_sectors;
-                        fat_start_lba<=partition_lba+{16'd0,reserved}+((flags[7] && flags[0]) ? fat_sectors : 32'd0);
+                        partition_reserved<=partition_lba+{16'd0,reserved};
                         state<=LAYOUT;
                     end
                 end
                 LAYOUT:begin
-                    if(total_sectors<={16'd0,reserved}+fat_span || cluster_count==0 ||
-                       root_cluster>cluster_count+1 || cluster_count>32'h0fffffee ||
-                       (cluster_count+1)>>7 >= fat_sectors)fail(ERR_BPB);
-                    else begin
-                        data_start_lba<=partition_lba+{16'd0,reserved}+fat_span;
-                        max_cluster<=cluster_count+1;current_cluster<=root_cluster;
-                        visited<=1;dir_sector<=0;state<=ROOT;
-                    end
+                    overhead<={16'd0,reserved}+fat_span;
+                    fat_start_lba<=partition_reserved+((flags[7] && flags[0])?fat_sectors:32'd0);
+                    state<=LAYOUT_SUB;
                 end
-                ROOT:begin sector_lba<=data_start_lba+((current_cluster-2)<<cluster_shift);state<=DIR_REQ;end
+                LAYOUT_SUB:begin
+                    data_sectors<=total_sectors-overhead;
+                    data_start_lba<=partition_lba+overhead;
+                    state<=LAYOUT_SHIFT;
+                end
+                LAYOUT_SHIFT:begin cluster_count<=data_sectors>>cluster_shift;state<=LAYOUT_MAX;end
+                LAYOUT_MAX:begin max_cluster<=cluster_count+1;state<=LAYOUT_CHECK;end
+                LAYOUT_CHECK:begin
+                    if(total_sectors<=overhead || cluster_count==0 ||
+                       root_cluster>max_cluster || cluster_count>32'h0fffffee ||
+                       (max_cluster>>7)>=fat_sectors)fail(ERR_BPB);
+                    else begin current_cluster<=root_cluster;visited<=1;dir_sector<=0;state<=ROOT;end
+                end
+                ROOT:begin cluster_offset<=current_cluster-2;state<=ROOT_SHIFT;end
+                ROOT_SHIFT:begin cluster_offset<=cluster_offset<<cluster_shift;state<=ROOT_ADD;end
+                ROOT_ADD:begin sector_lba<=data_start_lba+cluster_offset;state<=DIR_REQ;end
                 DIR_REQ:if(!sector_busy)begin sector_req<=1;name_match<=0;state<=DIR_WAIT;end
                 DIR_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=DIR_NEXT;end
                 DIR_NEXT:begin
