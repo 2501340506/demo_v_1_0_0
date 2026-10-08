@@ -1,18 +1,9 @@
-# 最新状态：FAT32 S3 上板通过
+# v0.7.0 — FAT32 文件系统升级
 
-用户确认普通功能、两项顺序播放及已核验特殊布局实卡功能正常。建立 v0.7.0-s3-board.1，复用 releases/v0.7.0/s3-local.1/demo.bit；未修改 RTL 或重建。碎片、大 LBA 和后续根目录簇布局有实际 FAT 记录。未单独确认的板测项目见 BOARD_VALIDATION.md，以下旧“待上板”描述为历史状态。下一步为 S4 结项归档与正式发布，尚未合并 main。
-# 最新状态：FAT32 S3 本地完成，待上板（2026-10-08）
+完成目录定位、按簇链读取、头预检及紧凑图片列表，支持缺图、碎片与超过旧扫描范围的 BMP。核心/包装器和系统回归通过；TD Setup +0.104 ns、Hold +0.014 ns；用户确认实卡功能正常。正式 bit 复用 S3 验收原件，S4 无源码修改或重建。
 
-原项目目录 feature/fat32-filesystem 已接入 FAT32 目录扫描、BMP 头预检和按簇链读取，支持缺图与碎片文件。核心 42 场景、包装器 42 素材加 5 模式及最终 16 个验证入口通过。TD attempt7 Setup +0.104 ns / Hold +0.014 ns，固定候选 v0.7.0-s3-local.1。尚未上板验收或合并 main。
-[S3 验证与板测入口](docs/fat32_s3_validation.md)。以下为历史记录，旧状态不代表当前状态。
+[发布说明与未测项](releases/v0.7.0/README.md) · [完整阶段历史](docs/history/2026-10-08/fat32-filesystem/README.md)。
 
-# FAT32 v0.7.0：S1 本地通过，待上板（2026-10-08）
-
-当前 feature/fat32-filesystem 完成 S0/S1。新增扇区适配并接入旧 BMP 路径，完成接口/恢复回归及 TD 时序收敛；FAT32 核心尚未接入。固定候选 v0.7.0-s1-local.1：Setup +0.132 ns，Hold +0.035 ns；用户确认上板后才进入 S2。
-
-[固定 bit 与说明](releases/v0.7.0/s1-local.1/README.md) · [上板步骤](releases/v0.7.0/s1-local.1/BOARD_VALIDATION.md) · [计划](docs/fat32_filesystem_plan.md) · [交接](HANDOFF.md)。本任务尚未建立 board 标签或推送 GitHub；上一版已验收成果保持有效。
-
-以下为历史记录。
 # BMP 2.11 已上传 GitHub 并合并 main（2026-10-08）
 
 feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推送。板级版本 v0.6.0-bmp211-s3-board.1。main 合并无冲突，合并文件树与已验收分支一致；源码及 bit 未改变，未重复构建。

@@ -1,56 +1,8 @@
-# 最新状态：FAT32 S3 上板通过
+# 当前正式版：v0.7.0 FAT32 图片播放器
 
-用户确认普通功能、两项顺序播放及已核验特殊布局实卡功能正常。建立 v0.7.0-s3-board.1，复用 releases/v0.7.0/s3-local.1/demo.bit；未修改 RTL 或重建。碎片、大 LBA 和后续根目录簇布局有实际 FAT 记录。未单独确认的板测项目见 BOARD_VALIDATION.md，以下旧“待上板”描述为历史状态。下一步为 S4 结项归档与正式发布，尚未合并 main。
-# 最新状态：FAT32 S3 本地完成，待上板（2026-10-08）
+根目录 PIC1.BMP～PIC4.BMP，支持缺图、碎片和大地址文件；保持原显示、按键、轮播与音频。正式 bit 复用 S3 已验收原件。
 
-原项目目录 feature/fat32-filesystem 已接入 FAT32 目录扫描、BMP 头预检和按簇链读取，支持缺图与碎片文件。核心 42 场景、包装器 42 素材加 5 模式及最终 16 个验证入口通过。TD attempt7 Setup +0.104 ns / Hold +0.014 ns，固定候选 v0.7.0-s3-local.1。尚未上板验收或合并 main。
-[S3 验证与板测入口](docs/fat32_s3_validation.md)。以下为历史记录，旧状态不代表当前状态。
-
-# FAT32 v0.7.0：S1 本地通过，待上板（2026-10-08）
-
-当前 feature/fat32-filesystem 完成 S0/S1。新增扇区适配并接入旧 BMP 路径，完成接口/恢复回归及 TD 时序收敛；FAT32 核心尚未接入。固定候选 v0.7.0-s1-local.1：Setup +0.132 ns，Hold +0.035 ns；用户确认上板后才进入 S2。
-
-[固定 bit 与说明](releases/v0.7.0/s1-local.1/README.md) · [上板步骤](releases/v0.7.0/s1-local.1/BOARD_VALIDATION.md) · [计划](docs/fat32_filesystem_plan.md) · [交接](HANDOFF.md)。本任务尚未建立 board 标签或推送 GitHub；上一版已验收成果保持有效。
-
-以下为历史记录。
-# BMP 2.11 已上传 GitHub 并合并 main（2026-10-08）
-
-feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推送。板级版本 v0.6.0-bmp211-s3-board.1。main 合并无冲突，合并文件树与已验收分支一致；源码及 bit 未改变，未重复构建。
-
-仓库：https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/main 。用户未提交的 TD 工程、best_result、S2 工程日志及个人记录保留在本地，未纳入发布。
-
-## 目录地图
-
-| 路径 | 用途 | 版本控制约定 |
-|---|---|---|
-| `TD_project/` | Tang Dynasty 工程入口；使用 `demo.al` 打开工程 | 工程入口纳入版本控制，综合、布局布线和本机状态文件不纳入 |
-| `user_source/` | 正式 RTL、约束和 IP 源码 | 纳入版本控制，是当前生产源码入口 |
-| `diagnostics/` | testbench、诊断脚本、固定测试素材及运行入口 | 可复用内容纳入版本控制；`output/`、`local_tools/` 仅保存在本地 |
-| `releases/` | 各版本 bit、版本说明、必要源码快照和正式验证证据 | 已发布内容作为固定交付物保留，不放入新生成的工具日志 |
-| `docs/` | 当前设计文档、验证状态和历史归档 | 纳入版本控制；已完成任务归档到 `docs/history/` |
-| `work/` | 本地 ModelSim 工作库 | 不纳入版本控制 |
-
-日常开发从 `TD_project/demo.al`、`user_source/` 和 `diagnostics/README.md` 开始；上板使用 `releases/` 中的固定 bit，不使用会被后续构建覆盖的运行目录产物。
-
-以下为历史过程，其“待授权/未上传”状态已由上述完成结果更新。
-# BMP 2.11 已完成板级验收与本地归档（2026-10-08）
-
-当前本地板级版本：v0.6.0-bmp211-s3-board.1，沿用 S3 local.1 原 bit。用户确认好图、坏图过滤、恢复/AUTO 功能正常；最终独立、稳定性及系统回归全部通过。2.12 不在范围内。GitHub 未上传，等待单独明确授权。
-
-[版本、bit、验证及归档](docs/history/2026-10-08/bmp24_decoder/README.md)。以下为历史过程记录。
-
-# BMP 2.11 S3 本地候选（2026-10-08）
-
-S2 用户上板通过后，S3 已完成生产解码器固定接入与共享头校验，移除包装层旧解析和像素完整性计数。本地 ModelSim 与 TD 通过；等待 S4 上板，尚未结项、未上传 GitHub。
-[S3 候选、bit 与验证报告](releases/v0.6.0-bmp211/s3-local.1/README.md)。正式已验收版仍为 v0.5.4。
-
-以下为历史记录。
-
-# 当前正式版本：v0.5.4 UART可观测性
-
-[下载正式bit](releases/v0.5.4/demo.bit) · [版本说明](releases/v0.5.4/README.md) · [验收与归档](docs/history/2026-10-07/v0.5.4/README.md)。复用已验收S3 local.2原bit，启动行保持BOOT v0.5.4-s3-local.2，无需重复板测。
-
-以下为项目使用说明及历史版本背景；其中旧“当前版本/下载”以本页顶部入口为准。
+[下载及限制](releases/v0.7.0/README.md) · [结项归档](docs/history/2026-10-08/fat32-filesystem/README.md) · [当前交接](HANDOFF.md)。下方旧版本说明属于历史资料。
 
 # 安路 EG4 HDMI 图片播放器
 
