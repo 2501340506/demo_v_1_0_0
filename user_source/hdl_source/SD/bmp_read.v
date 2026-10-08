@@ -1,7 +1,8 @@
 module bmp_read #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer TIMEOUT_MS = 500,
-    parameter integer ENABLE_SCAN_PAUSE = 0
+    parameter integer ENABLE_SCAN_PAUSE = 0,
+    parameter integer USE_DECODER = 1
 )(
     input                       clk,
     input                       rst,
@@ -44,8 +45,8 @@ module bmp_read #(
     input                       sd_sec_read_end,
     input                       sd_sec_read_failed,
 
-    output reg                  bmp_data_wr_en,
-    output reg [23:0]           bmp_data
+    output wire                 bmp_data_wr_en,
+    output wire [23:0]          bmp_data
 );
 
 localparam ST_IDLE      = 3'd0;
@@ -319,34 +320,54 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
+reg legacy_wr_en;
+reg [23:0] legacy_data;
+wire decoder_wr_en, decoder_done, decoder_commit;
+wire [23:0] decoder_data;
+wire [2:0] decoder_error;
+wire decoder_end = (state == ST_LOAD_DRAIN) &&
+                   (!sector_complete || {2'b00,bmp_len_cnt} >= required_end);
+bmp24_decoder #(.RUNTIME_DIMENSIONS(1), .ALLOW_32(0)) u_decoder (
+    .clk(clk), .rst(rst || !sd_init_done || state == ST_STOP),
+    .expected_width(bmp_width), .expected_height(bmp_height),
+    .file_start(state == ST_LOAD_WAIT && write_req_ack), .file_size(file_len),
+    .file_valid(state == ST_LOAD_DATA && sd_sec_read_data_valid),
+    .file_byte(sd_sec_read_data), .file_byte_offset(bmp_len_cnt),
+    .file_end(decoder_end), .upstream_error(8'd0),
+    .header_accepted(), .pixel_valid(decoder_wr_en), .pixel_rgb(decoder_data),
+    .pixel_x(), .pixel_y(), .frame_commit(decoder_commit), .bmp_done(decoder_done),
+    .bmp_error(decoder_error)
+);
+assign bmp_data_wr_en = USE_DECODER ? decoder_wr_en : legacy_wr_en;
+assign bmp_data = USE_DECODER ? decoder_data : legacy_data;
 always @(posedge clk or posedge rst) begin
     if (rst) begin
-        bmp_data_wr_en <= 1'b0;
-        bmp_data       <= 24'd0;
+        legacy_wr_en <= 1'b0;
+        legacy_data    <= 24'd0;
     end else if (state == ST_LOAD_DATA) begin
         if (bmp_data_valid) begin
             case (bmp_byte_idx)
                 2'd0: begin
-                    bmp_data_wr_en <= 1'b0;
-                    bmp_data[7:0]  <= sd_sec_read_data;
+                    legacy_wr_en <= 1'b0;
+                    legacy_data[7:0]  <= sd_sec_read_data;
                 end
                 2'd1: begin
-                    bmp_data_wr_en <= 1'b0;
-                    bmp_data[15:8] <= sd_sec_read_data;
+                    legacy_wr_en <= 1'b0;
+                    legacy_data[15:8] <= sd_sec_read_data;
                 end
                 2'd2: begin
-                    bmp_data_wr_en  <= 1'b1;
-                    bmp_data[23:16] <= sd_sec_read_data;
+                    legacy_wr_en  <= 1'b1;
+                    legacy_data[23:16] <= sd_sec_read_data;
                 end
                 default: begin
-                    bmp_data_wr_en <= 1'b0;
+                    legacy_wr_en <= 1'b0;
                 end
             endcase
         end else begin
-            bmp_data_wr_en <= 1'b0;
+            legacy_wr_en <= 1'b0;
         end
     end else begin
-        bmp_data_wr_en <= 1'b0;
+        legacy_wr_en <= 1'b0;
     end
 end
 

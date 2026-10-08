@@ -1,4 +1,4 @@
-param([string]$Prefix = 'stage4')
+﻿param([string]$Prefix = 'stage4')
 $ErrorActionPreference = 'Stop'
 $simTools = 'D:/modelsim/win64'
 $simDir = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../output'))) 'modelsim_check'
@@ -12,7 +12,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'vlib failed' }
     }
     $rtl = @('media_display_control', 'media_player_control', 'media_policy',
-        'dual_key_event_router', 'key_gesture_control', 'key_press_debounce', 'mode_key_control', 'sd_card_bmp', 'bmp_read',
+        'dual_key_event_router', 'key_gesture_control', 'key_press_debounce', 'mode_key_control', 'sd_card_bmp', 'bmp24_decoder', 'bmp_read',
         'sd_card_top', 'sd_card_sec_read_write', 'sd_card_cmd', 'spi_master') |
         ForEach-Object { "user_source/hdl_source/SD/$_.v" }
     $rtl += @('user_source/hdl_source/audio/media_commit_cdc.v','user_source/hdl_source/audio/pcm_media_tone.v')

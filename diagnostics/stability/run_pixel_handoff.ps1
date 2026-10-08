@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $simTools = 'D:/modelsim/win64'
 $simDir = Join-Path ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../output'))) 'modelsim_check'
 $simLib = (Join-Path $simDir 'pixel_handoff_work').Replace('\', '/')
@@ -12,7 +12,7 @@ try {
     # Separate library: this bench supplies behavioral SD and vendor FIFO models.
     $rtl = @('media_display_control','media_player_control','media_policy',
         'key_gesture_control', 'key_press_debounce', 'mode_key_control','dual_key_event_router','sd_card_bmp',
-        'frame_fifo_read','frame_fifo_write','frame_read_write','bmp_read') |
+        'frame_fifo_read','frame_fifo_write','frame_read_write','bmp24_decoder','bmp_read') |
         ForEach-Object { "user_source/hdl_source/SD/$_.v" }
     & "$simTools/vlog.exe" -work $simLib -sv @rtl diagnostics/stability/tb_pixel_handoff.sv
     if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
