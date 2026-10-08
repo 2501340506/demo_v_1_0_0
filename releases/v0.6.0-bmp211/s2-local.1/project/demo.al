@@ -10,7 +10,7 @@
     </HardWare>
     <Source_Files>
         <Verilog>
-            <File Path="../sources/hdl_source/SD/switch_mode_control.v">
+            <File Path="../../../../user_source/hdl_source/SD/switch_mode_control.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -18,7 +18,7 @@
                     <Attr Name="CompileOrder" Val="1"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/IP/afifo_16_32_256.v">
+            <File Path="../../../../user_source/hdl_source/IP/afifo_16_32_256.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -26,7 +26,7 @@
                     <Attr Name="CompileOrder" Val="2"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/IP/afifo_32_16_256.v">
+            <File Path="../../../../user_source/hdl_source/IP/afifo_32_16_256.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -34,7 +34,7 @@
                     <Attr Name="CompileOrder" Val="3"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/ip_source/s3_single_pll/sys_pll_s3.v">
+            <File Path="../../../../user_source/ip_source/s3_single_pll/sys_pll_s3.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -42,7 +42,7 @@
                     <Attr Name="CompileOrder" Val="4"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/ax_debounce.v">
+            <File Path="../../../../user_source/hdl_source/SD/ax_debounce.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -59,7 +59,7 @@
                     <Attr Name="CompileOrder" Val="7"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/color_bar.v">
+            <File Path="../../../../user_source/hdl_source/SD/color_bar.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -67,7 +67,7 @@
                     <Attr Name="CompileOrder" Val="8"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/frame_fifo_read.v">
+            <File Path="../../../../user_source/hdl_source/SD/frame_fifo_read.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -75,7 +75,7 @@
                     <Attr Name="CompileOrder" Val="9"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/frame_fifo_write.v">
+            <File Path="../../../../user_source/hdl_source/SD/frame_fifo_write.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -83,7 +83,7 @@
                     <Attr Name="CompileOrder" Val="10"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/frame_read_write.v">
+            <File Path="../../../../user_source/hdl_source/SD/frame_read_write.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -91,7 +91,7 @@
                     <Attr Name="CompileOrder" Val="11"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/sd_card_bmp.v">
+            <File Path="../../../../user_source/hdl_source/SD/sd_card_bmp.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -99,7 +99,7 @@
                     <Attr Name="CompileOrder" Val="12"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/sd_card_cmd.v">
+            <File Path="../../../../user_source/hdl_source/SD/sd_card_cmd.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -107,7 +107,7 @@
                     <Attr Name="CompileOrder" Val="13"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/sd_card_sec_read_write.v">
+            <File Path="../../../../user_source/hdl_source/SD/sd_card_sec_read_write.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -115,7 +115,7 @@
                     <Attr Name="CompileOrder" Val="14"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/sd_card_top.v">
+            <File Path="../../../../user_source/hdl_source/SD/sd_card_top.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -123,7 +123,7 @@
                     <Attr Name="CompileOrder" Val="15"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/sdram.v">
+            <File Path="../../../../user_source/hdl_source/SD/sdram.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -131,7 +131,7 @@
                     <Attr Name="CompileOrder" Val="16"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/seg_decoder.v">
+            <File Path="../../../../user_source/hdl_source/SD/seg_decoder.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -139,7 +139,7 @@
                     <Attr Name="CompileOrder" Val="17"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/seg7_panel.v">
+            <File Path="../../../../user_source/hdl_source/SD/seg7_panel.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -147,7 +147,7 @@
                     <Attr Name="CompileOrder" Val="35"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/seg_scan.v">
+            <File Path="../../../../user_source/hdl_source/SD/seg_scan.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -155,7 +155,7 @@
                     <Attr Name="CompileOrder" Val="18"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/spi_master.v">
+            <File Path="../../../../user_source/hdl_source/SD/spi_master.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -163,7 +163,7 @@
                     <Attr Name="CompileOrder" Val="19"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/video_define.v">
+            <File Path="../../../../user_source/hdl_source/SD/video_define.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -172,7 +172,7 @@
                     <Attr Name="CompileOrder" Val="20"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/video_delay.v">
+            <File Path="../../../../user_source/hdl_source/SD/video_delay.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -180,7 +180,7 @@
                     <Attr Name="CompileOrder" Val="21"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/video_timing_data.v">
+            <File Path="../../../../user_source/hdl_source/SD/video_timing_data.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -188,7 +188,7 @@
                     <Attr Name="CompileOrder" Val="22"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/include/global_def.v">
+            <File Path="../../../../user_source/hdl_source/include/global_def.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -197,7 +197,7 @@
                     <Attr Name="CompileOrder" Val="23"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/include/sdr_as_ram.enc.v">
+            <File Path="../../../../user_source/hdl_source/include/sdr_as_ram.enc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -205,7 +205,7 @@
                     <Attr Name="CompileOrder" Val="24"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_phy_warpper.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_phy_warpper.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -213,7 +213,7 @@
                     <Attr Name="CompileOrder" Val="25"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/lane_lvds_10_1.v">
+            <File Path="../../../../user_source/hdl_source/lane_lvds_10_1.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -221,7 +221,7 @@
                     <Attr Name="CompileOrder" Val="26"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/top_tf_hdmi_audio.v">
+            <File Path="../../../../user_source/hdl_source/top_tf_hdmi_audio.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -229,7 +229,7 @@
                     <Attr Name="CompileOrder" Val="27"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/include/sdr_init_ref.enc.v">
+            <File Path="../../../../user_source/hdl_source/include/sdr_init_ref.enc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -237,7 +237,7 @@
                     <Attr Name="CompileOrder" Val="28"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/include/sdr_wrrd.enc.v">
+            <File Path="../../../../user_source/hdl_source/include/sdr_wrrd.enc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -245,7 +245,7 @@
                     <Attr Name="CompileOrder" Val="29"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/dual_key_event_router.v">
+            <File Path="../../../../user_source/hdl_source/SD/dual_key_event_router.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -254,7 +254,7 @@
                     <Attr Name="CompileOrder" Val="30"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/key_gesture_control.v">
+            <File Path="../../../../user_source/hdl_source/SD/key_gesture_control.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -263,7 +263,7 @@
                     <Attr Name="CompileOrder" Val="31"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/media_display_control.v">
+            <File Path="../../../../user_source/hdl_source/SD/media_display_control.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -271,7 +271,7 @@
                     <Attr Name="CompileOrder" Val="32"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/media_player_control.v">
+            <File Path="../../../../user_source/hdl_source/SD/media_player_control.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -279,7 +279,7 @@
                     <Attr Name="CompileOrder" Val="33"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/media_policy.v">
+            <File Path="../../../../user_source/hdl_source/SD/media_policy.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -288,7 +288,7 @@
                     <Attr Name="CompileOrder" Val="34"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/key_press_debounce.v">
+            <File Path="../../../../user_source/hdl_source/SD/key_press_debounce.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -296,7 +296,7 @@
                     <Attr Name="CompileOrder" Val="36"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/SD/mode_key_control.v">
+            <File Path="../../../../user_source/hdl_source/SD/mode_key_control.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -304,7 +304,7 @@
                     <Attr Name="CompileOrder" Val="37"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/audio/pcm_test_tone.v">
+            <File Path="../../../../user_source/hdl_source/audio/pcm_test_tone.v">
                 <FileInfo>
                     <Attr Name="AutoExcluded" Val="true"/>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -313,7 +313,7 @@
                     <Attr Name="CompileOrder" Val="38"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_audio_acr_packetizer.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_audio_acr_packetizer.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -321,7 +321,7 @@
                     <Attr Name="CompileOrder" Val="39"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_audio_infoframe_packetizer.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_audio_infoframe_packetizer.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -329,7 +329,7 @@
                     <Attr Name="CompileOrder" Val="40"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_audio_packet_scheduler.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_audio_packet_scheduler.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -337,7 +337,7 @@
                     <Attr Name="CompileOrder" Val="41"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_audio_sample_packetizer.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_audio_sample_packetizer.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -345,7 +345,7 @@
                     <Attr Name="CompileOrder" Val="42"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_audio_symbol_core.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_audio_symbol_core.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -353,7 +353,7 @@
                     <Attr Name="CompileOrder" Val="43"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_bch8.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_bch8.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -361,7 +361,7 @@
                     <Attr Name="CompileOrder" Val="44"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_data_island_mapper.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_data_island_mapper.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -369,7 +369,7 @@
                     <Attr Name="CompileOrder" Val="45"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_data_island_scheduler.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_data_island_scheduler.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -377,7 +377,7 @@
                     <Attr Name="CompileOrder" Val="46"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_terc4_encoder.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_terc4_encoder.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -385,7 +385,7 @@
                     <Attr Name="CompileOrder" Val="47"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/hdmi_tmds_channel_encoder.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/hdmi_tmds_channel_encoder.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -393,7 +393,7 @@
                     <Attr Name="CompileOrder" Val="48"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/hdmi_audio/media_hdmi_audio_bridge.v">
+            <File Path="../../../../user_source/hdl_source/hdmi_audio/media_hdmi_audio_bridge.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -401,7 +401,7 @@
                     <Attr Name="CompileOrder" Val="49"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/audio/pcm_media_tone.v">
+            <File Path="../../../../user_source/hdl_source/audio/pcm_media_tone.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -409,7 +409,7 @@
                     <Attr Name="CompileOrder" Val="50"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/audio/media_commit_cdc.v">
+            <File Path="../../../../user_source/hdl_source/audio/media_commit_cdc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -417,7 +417,7 @@
                     <Attr Name="CompileOrder" Val="51"/>
                 </FileInfo>
             </File>
-            <File Path="../sources/hdl_source/reset_sync.v">
+            <File Path="../../../../user_source/hdl_source/reset_sync.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -425,12 +425,12 @@
                     <Attr Name="CompileOrder" Val="52"/>
                 </FileInfo>
             </File>
-                    <File Path="../sources/hdl_source/uart/uart_tx_byte.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="53"/></FileInfo></File>
-            <File Path="../sources/hdl_source/uart/uart_boot_reporter.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="54"/></FileInfo></File>
-            <File Path="../sources/hdl_source/uart/uart_event_logger.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="55"/></FileInfo></File><File Path="../sources/hdl_source/SD/bmp24_decoder.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="56"/></FileInfo></File>
+                    <File Path="../../../../user_source/hdl_source/uart/uart_tx_byte.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="53"/></FileInfo></File>
+            <File Path="../../../../user_source/hdl_source/uart/uart_boot_reporter.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="54"/></FileInfo></File>
+            <File Path="../../../../user_source/hdl_source/uart/uart_event_logger.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="55"/></FileInfo></File><File Path="../sources/hdl_source/SD/bmp24_decoder.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="56"/></FileInfo></File>
         </Verilog>
         <ADC_FILE>
-            <File Path="../sources/constraints_source/pin.adc">
+            <File Path="../../../../user_source/constraints_source/pin.adc">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
@@ -440,7 +440,7 @@
             </File>
         </ADC_FILE>
         <SDC_FILE>
-            <File Path="../sources/constraints_source/timing.sdc">
+            <File Path="../../../../user_source/constraints_source/timing.sdc">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
