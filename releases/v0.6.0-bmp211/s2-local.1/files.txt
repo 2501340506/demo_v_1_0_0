@@ -1,4 +1,4 @@
-BOARD_VALIDATION.md 513 bytes
+BOARD_VALIDATION.md 1290 bytes
 demo.bit 629624 bytes
 project/demo.al 23998 bytes
 README.md 1403 bytes
