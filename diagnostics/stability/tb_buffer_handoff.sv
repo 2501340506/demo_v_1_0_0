@@ -16,7 +16,7 @@ module tb_buffer_handoff;
     always @(posedge mem_clk) if(rst) finish_toggle<=0; else if(wr_finish) finish_toggle<=~finish_toggle;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000)) dut (
         .write_cancel_req(),.write_cancel_ack(1'b0),
-        .sd_debug(),.sdram_ready(1'b1),
+        .sd_debug(),.diagnostics(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'b00),
         .state_code(),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd32),.bmp_height(16'd32),.display_valid(valid),.committed_image(),.committed_valid(),.committed_ready(1'b1),
@@ -165,7 +165,8 @@ endmodule
 
 // Source model: enumerate four images, honor write request/ack, stream a solid
 // color image. Real BMP/SPI parsing remains covered by tb_picture_requests.
-module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500)(input clk,rst,output reg ready,
+module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500, ENABLE_SCAN_PAUSE=0)(input clk,rst,output reg ready,
+    input scan_pause_request,scan_resume,output scan_paused,output [31:0] scan_resume_sector,
     input scan_start,input [31:0] scan_start_sector,scan_max_sector,input [2:0] scan_target_count,
     output wire scan_error, output reg scan_done,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,
     output reg load_done, output load_error, output [2:0] bmp_error,
@@ -173,6 +174,8 @@ module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOU
     input [15:0] bmp_width,bmp_height,output reg write_req,input write_req_ack,
     output sd_sec_read,output [31:0] sd_sec_read_addr,input [7:0] sd_sec_read_data,
     input sd_sec_read_failed,sd_sec_read_data_valid,sd_sec_read_end,output reg bmp_data_wr_en,output reg [23:0] bmp_data);
+    assign scan_paused = 1'b0;
+    assign scan_resume_sector = 32'd0;
     assign scan_error = 1'b0;
     integer state=0,count=0,pace=0;
     assign load_error=0; assign bmp_error=0;

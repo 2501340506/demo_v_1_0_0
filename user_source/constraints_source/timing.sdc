@@ -35,3 +35,8 @@ set_max_delay -from [get_clocks sd_card_clk] -to [get_ports sd_dclk] 5.000 -data
 set_output_delay -clock hdmi_5x_clk -max 0.000 [get_ports {HDMI_CLK_P HDMI_D0_P HDMI_D1_P HDMI_D2_P}]
 set_output_delay -clock hdmi_5x_clk -min 0.000 [get_ports {HDMI_CLK_P HDMI_D0_P HDMI_D1_P HDMI_D2_P}]
 set_max_delay -from [get_clocks hdmi_5x_clk] -to [get_ports {HDMI_CLK_P HDMI_D0_P HDMI_D1_P HDMI_D2_P}] 3.500 -datapath_only
+# UART is asynchronous at the receiver. Bound only FPGA TX propagation;
+# 10 ns is an engineering budget versus the 8680 ns serial bit interval.
+set_output_delay -clock sd_card_clk -max 0.000 [get_ports uart_tx]
+set_output_delay -clock sd_card_clk -min 0.000 [get_ports uart_tx]
+set_max_delay -from [get_clocks sd_card_clk] -to [get_ports uart_tx] 10.000 -datapath_only

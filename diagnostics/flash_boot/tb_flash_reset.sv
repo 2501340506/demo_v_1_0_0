@@ -10,7 +10,11 @@ module tb_flash_reset;
  top dut(.clk(clk),.rst_n(rst_n),.key1(1'b1),.key2(1'b1),.key4(1'b1),
  .sw1(1'b0),.sw2(1'b0),.seg_sel(sel),.seg_data(seg),.HDMI_CLK_P(pc),
  .HDMI_D0_P(p0),.HDMI_D1_P(p1),.HDMI_D2_P(p2),.HDMI_DDC_SCL(scl),.HDMI_DDC_SDA(sda),
- .sd_ncs(ncs),.sd_dclk(dclk),.sd_mosi(mosi),.sd_miso(1'b1));
+ .sd_ncs(ncs),.sd_dclk(dclk),.sd_mosi(mosi),.sd_miso(1'b1)
+`ifndef PRE_UART_TOP
+ ,.uart_tx()
+`endif
+ );
  reset_observer p(.clk(clk),.request(dut.reset_request),.rst(dut.rst_panel));
  reset_observer s(.clk(dut.sd_card_clk),.request(dut.reset_request),.rst(dut.rst_sd));
  reset_observer m(.clk(dut.ext_mem_clk),.request(dut.reset_request),.rst(dut.rst_mem));

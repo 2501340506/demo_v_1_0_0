@@ -25,10 +25,13 @@ module top(
     output                      sd_ncs,
     output                      sd_dclk,
     output                      sd_mosi,
-    input                       sd_miso
+    input                       sd_miso,
+    output                      uart_tx
 );
 
 parameter MEM_DATA_BITS = 32;
+parameter integer UART_CLK_FREQ_HZ = 100_000_000;
+parameter integer UART_BAUD_RATE = 115200;
 parameter ADDR_BITS     = 21;
 parameter BUSRT_BITS    = 10;
 parameter [ADDR_BITS-1:0] FRAME_PIXELS = 307200;   // 640*480
@@ -63,6 +66,7 @@ reg [63:0] sd_debug_half;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
 wire        auto_play_indicator;
+wire [57:0] uart_diagnostics;
 reg [1:0]   auto_indicator_sync;
 
 wire        video_read_req;
@@ -121,6 +125,13 @@ reset_sync u_reset_sd (.clk(sd_card_clk), .async_rst(reset_request), .rst(rst_sd
 reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_mem));
 reset_sync u_reset_video (.clk(video_clk), .async_rst(reset_request), .rst(rst_video));
 reset_sync u_reset_serial (.clk(hdmi_5x_clk), .async_rst(reset_request), .rst(rst_serial));
+
+uart_event_logger #(.CLK_FREQ_HZ(UART_CLK_FREQ_HZ), .BAUD_RATE(UART_BAUD_RATE)) u_uart_logger (
+    .clk(sd_card_clk), .rst(rst_sd), .events(uart_diagnostics[57:42]),
+    .image_index(uart_diagnostics[41:40]), .sector(uart_diagnostics[39:8]),
+    .error_code(uart_diagnostics[7:5]), .phase(uart_diagnostics[4:1]),
+    .auto_enabled(uart_diagnostics[0]), .sd_debug(sd_debug), .uart_tx(uart_tx)
+);
 
 // SDRAM and TF initialization run independently. Only the first scan waits
 // for memory readiness; keep the SD controller out of this dependency loop.
@@ -190,7 +201,7 @@ sd_card_bmp #(
     .key4              (key4),
     .mode              (switch_mode),
     .state_code        (state_code),
-    .sd_debug(sd_debug),
+    .sd_debug(sd_debug), .diagnostics(uart_diagnostics),
     .combo_event_count (combo_event_count),
     .combo_debug_active(combo_debug_active),
     .auto_play_indicator(auto_play_indicator),

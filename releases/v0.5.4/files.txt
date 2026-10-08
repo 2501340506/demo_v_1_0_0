@@ -1,0 +1,7 @@
+Final release files (relative paths; bytes):
+demo.bit	629624
+
+Artifact source: v0.5.4-s3-local.2/demo.bit (byte-for-byte identical).
+Production source baseline: v0.5.4-s3-board.2.
+No production code or constraints changed in S5; no source backup added.
+Build settings and original evidence: v0.5.4-s3-local.2/BUILD.md, timing/, simulation/.

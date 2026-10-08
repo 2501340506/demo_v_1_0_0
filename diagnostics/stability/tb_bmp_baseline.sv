@@ -14,7 +14,10 @@ module tb_bmp_baseline;
     always @(posedge clk) ack_pipe <= rst ? 0 : {ack_pipe[1:0],req};
     assign ack=ack_pipe[2];
     bmp_read dut(.clk(clk),.rst(rst),.ready(ready),.scan_start(scan_start),
-        .scan_start_sector(32'd0),.scan_max_sector(32'd7203),.scan_target_count(3'd4),
+        `ifndef STABILITY_S2
+      .scan_pause_request(1'b0),.scan_resume(1'b0),.scan_paused(),.scan_resume_sector(),
+`endif
+      .scan_start_sector(32'd0),.scan_max_sector(32'd7203),.scan_target_count(3'd4),
         .scan_error(),
         .scan_done(scan_done),.scan_found_valid(found),.scan_found_sector(sector),.scan_found_total(total),
         .load_start(load_start),.load_sector(32'd1801),.sd_init_done(!rst),.state_code(),

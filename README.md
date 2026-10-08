@@ -1,8 +1,21 @@
-# 开发候选 v0.5.3：bmp_read LUT 优化
+# BMP 2.11 已完成板级验收与本地归档（2026-10-08）
 
-[固定候选 bit](releases/v0.5.3/v0.5.3-local.1/demo.bit) · [版本说明](releases/v0.5.3/README.md) · [板测表](releases/v0.5.3/v0.5.3-local.1/BOARD_VALIDATION.md)
+当前本地板级版本：v0.6.0-bmp211-s3-board.1，沿用 S3 local.1 原 bit。用户确认好图、坏图过滤、恢复/AUTO 功能正常；最终独立、稳定性及系统回归全部通过。2.12 不在范围内。GitHub 未上传，等待单独明确授权。
 
-本地验证通过：bmp_read 布局 LUT 减少 14.4%，顶层 4571 LUT；Setup +0.107 ns、Hold +0.004 ns。等待用户上板，未上传；下方正式入口仍为 v0.5.2。
+[版本、bit、验证及归档](docs/history/2026-10-08/bmp24_decoder/README.md)。以下为历史过程记录。
+
+# BMP 2.11 S3 本地候选（2026-10-08）
+
+S2 用户上板通过后，S3 已完成生产解码器固定接入与共享头校验，移除包装层旧解析和像素完整性计数。本地 ModelSim 与 TD 通过；等待 S4 上板，尚未结项、未上传 GitHub。
+[S3 候选、bit 与验证报告](releases/v0.6.0-bmp211/s3-local.1/README.md)。正式已验收版仍为 v0.5.4。
+
+以下为历史记录。
+
+# 当前正式版本：v0.5.4 UART可观测性
+
+[下载正式bit](releases/v0.5.4/demo.bit) · [版本说明](releases/v0.5.4/README.md) · [验收与归档](docs/history/2026-10-07/v0.5.4/README.md)。复用已验收S3 local.2原bit，启动行保持BOOT v0.5.4-s3-local.2，无需重复板测。
+
+以下为项目使用说明及历史版本背景；其中旧“当前版本/下载”以本页顶部入口为准。
 
 # 安路 EG4 HDMI 图片播放器
 
@@ -66,3 +79,6 @@ S4 已确认 Flash 写入校验、10 次独立冷启动、5 次拔插恢复和 3
 TD 报告 Setup +0.128 ns、Hold +0.012 ns，覆盖率 99.89%；外部 I/O 延时及功能模型的验证限制见[验证边界](releases/v0.5.2/README.md)。
 
 本版不包含OSD、亮度/对比度调节或缩放。预留参数B初值0、范围−128..127；C初值128、范围0..256、至少9位，作为后续需求记录。
+
+## 2026-10-08 BMP ??? S2 ????
+

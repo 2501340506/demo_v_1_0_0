@@ -22,7 +22,7 @@ module tb_timeout_control;
     reg hold_ack=0,inject_old_finish=0;
     sd_card_bmp #(.CLK_FREQ_HZ(1000),.SCAN_MAX_SECTOR(3),.AUTO_PLAY_MS(100),.LOAD_TIMEOUT_MS(32)) dut(
         .write_cancel_req(),.write_cancel_ack(1'b0),
-        .sd_debug(),.sdram_ready(1'b1),
+        .sd_debug(),.diagnostics(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'd0),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd4),.bmp_height(16'd1),.display_valid(valid),
@@ -112,11 +112,11 @@ module tb_timeout_control;
       $display("PASS loaded header timeout keeps old bank/index/audio; no retry or new MAN/AUTO load");
       boot();save_display();hold_ack=1;next_key();check_stopped();
       $display("PASS write-ack timeout keeps old display; late ack and completion cannot submit");
-      boot();save_display();next_key();wait(dut.bmp_read_m0.pixel_count==2);@(negedge clk);stall=1;
+      boot();save_display();next_key();wait(dut.bmp_read_m0.u_decoder.pixel_count==2);@(negedge clk);stall=1;
       check_stopped();
       $display("PASS partial-pixel timeout retains old display and masks late SD data");
       boot();save_display();next_key();wait(req);hide_end=1;
-      wait(dut.bmp_read_m0.pixel_count==4);wait(ending);@(negedge clk);stall=1;check_stopped();
+      wait(dut.bmp_read_m0.u_decoder.pixel_count==4);wait(ending);@(negedge clk);stall=1;check_stopped();
       $display("PASS memory can finish all pixels but missing SD end times out without display/audio");
       boot();if(code!=1||!valid||commits!=1||dut.timeout_stopped)$fatal(1,"reset did not recover");
       $display("PASS reset clears F and normal first-frame commit works again");

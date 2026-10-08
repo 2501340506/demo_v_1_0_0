@@ -17,7 +17,7 @@ module tb_full_frame_evidence #(parameter EXTERNAL_MEMORY=0)(input external_busy
     always @(posedge mem_clk) if(rst) finish_toggle<=0; else if(wr_finish) finish_toggle<=~finish_toggle;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000)) dut (
         .write_cancel_req(),.write_cancel_ack(1'b0),
-        .sd_debug(),.sdram_ready(1'b1),
+        .sd_debug(),.diagnostics(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.mode(2'b00),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd640),.bmp_height(16'd480),.display_valid(valid),.committed_image(),.committed_valid(),.committed_ready(1'b1),

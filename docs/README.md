@@ -1,6 +1,21 @@
-# v0.5.3 开发入口
+# BMP 2.11 已完成板级验收与本地归档（2026-10-08）
 
-[阶段计划](bmp_read%20LUT优化分阶段计划.md) · [候选说明](../releases/v0.5.3/README.md) · [验证状态](VALIDATION_STATUS.md) · [复现](../diagnostics/lut_bmp/README.md)。本地完成，等待上板；结项归档待用户验收后执行。
+当前本地板级版本：v0.6.0-bmp211-s3-board.1，沿用 S3 local.1 原 bit。用户确认好图、坏图过滤、恢复/AUTO 功能正常；最终独立、稳定性及系统回归全部通过。2.12 不在范围内。GitHub 未上传，等待单独明确授权。
+
+[版本、bit、验证及归档](history/2026-10-08/bmp24_decoder/README.md)。以下为历史过程记录。
+
+# BMP 2.11 S3 本地候选（2026-10-08）
+
+S2 用户上板通过后，S3 已完成生产解码器固定接入与共享头校验，移除包装层旧解析和像素完整性计数。本地 ModelSim 与 TD 通过；等待 S4 上板，尚未结项、未上传 GitHub。
+[S3 候选、bit 与验证报告](../releases/v0.6.0-bmp211/s3-local.1/README.md)。正式已验收版仍为 v0.5.4。
+
+以下为历史记录。
+
+# 当前正式版：v0.5.4
+
+[版本及下载](../releases/v0.5.4/README.md) · [验证状态](VALIDATION_STATUS.md) · [完成归档](history/2026-10-07/v0.5.4/README.md)。S5已完成，复用已验收原bit。
+
+以下为历史文档入口。
 
 # 文档入口
 
@@ -36,3 +51,8 @@
 用户已手动删除根目录`_cleanup`，并已确认目录不存在。原reference、合并后空的docx目录树和旧诊断缓存清理完成；需要保留的资料已归档。
 
 S4已由用户整体确认通过，v0.5.0发布；[最终验收记录](flash_boot/s4/BOARD_VALIDATION.md) · [固化指南](flash_boot/S3_FLASH_GUIDE.md)。
+
+## BMP 2.11 ??? S2 ???
+
+
+当前 BMP 2.11：[阶段计划](bmp24_decoder_plan.md)，S2 候选待上板，S3 尚未实施。

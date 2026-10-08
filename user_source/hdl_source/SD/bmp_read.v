@@ -1,6 +1,7 @@
 module bmp_read #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
-    parameter integer TIMEOUT_MS = 500
+    parameter integer TIMEOUT_MS = 500,
+    parameter integer ENABLE_SCAN_PAUSE = 0
 )(
     input                       clk,
     input                       rst,
@@ -11,6 +12,10 @@ module bmp_read #(
     input  [31:0]               scan_start_sector,
     input  [31:0]               scan_max_sector,
     input  [2:0]                scan_target_count,
+    input                       scan_pause_request,
+    input                       scan_resume,
+    output reg                  scan_paused,
+    output reg [31:0]           scan_resume_sector,
     output reg                  scan_done,
     output reg                  scan_error,
     output reg                  scan_found_valid,
@@ -39,8 +44,8 @@ module bmp_read #(
     input                       sd_sec_read_end,
     input                       sd_sec_read_failed,
 
-    output reg                  bmp_data_wr_en,
-    output reg [23:0]           bmp_data
+    output wire                 bmp_data_wr_en,
+    output wire [23:0]          bmp_data
 );
 
 localparam ST_IDLE      = 3'd0;
@@ -54,6 +59,16 @@ localparam ST_STOP = 3'd7;
 
 reg [2:0]  state;
 reg [9:0]  rd_cnt;
+reg scan_boundary;
+reg scan_pause_pending;
+// A pulse during a sector is remembered until that sector is fully consumed.
+// The low-request boundary cycle also accepts a request based on found_valid.
+always @(posedge clk or posedge rst) begin
+    if (rst) scan_pause_pending <= 1'b0;
+    else if (!ENABLE_SCAN_PAUSE) scan_pause_pending <= 1'b0;
+    else if (!sd_init_done || state != ST_SCAN) scan_pause_pending <= 1'b0;
+    else if (scan_pause_request) scan_pause_pending <= 1'b1;
+end
 
 // A no-progress deadline, not a whole-file or whole-scan deadline.
 localparam integer TIMEOUT_CYCLES = (CLK_FREQ_HZ / 1000) * TIMEOUT_MS;
@@ -70,33 +85,24 @@ always @(posedge clk or posedge rst) begin
 end
 
 
-reg header_0_is_b;
-reg header_1_is_m;
-reg [31:0] file_len;
-reg [31:0] pixel_offset;
-reg [31:0] width;
-reg [31:0] height;
-reg bit_count_24, bit_count_32, bit_count_hi_zero;
-reg [3:0] compression_zero;
-reg [31:0] dib_size;
-reg [1:0] planes_one;
-
-// Header fields settle long before the 512-byte sector completes. Pipeline
-// arithmetic/checks so the scan/load decision is not a wide combinational chain.
-reg [31:0] expected_pixels;
-reg [33:0] expected_bytes;
-reg [33:0] required_end;
-reg [32:0] dib_end;
-reg header_format_ok;
-reg header_bounds_ok;
-
+wire [31:0] file_len, pixel_offset, expected_pixels;
+wire [33:0] required_end;
+wire header_match, skip_format;
+bmp_header_check u_header (
+ .clk(clk),.rst(rst),
+ .file_valid(((state==ST_SCAN)||(state==ST_LOAD_HDR)) && sd_sec_read_data_valid),
+ .file_byte(sd_sec_read_data),.file_byte_offset({22'd0,rd_cnt}),
+ .bmp_width(bmp_width),.bmp_height(bmp_height),
+ .file_len(file_len),.pixel_offset(pixel_offset),.width(),.height(),
+ .required_end(required_end),.header_match(header_match),.skip_format(skip_format),
+ .expected_pixels(expected_pixels),.header_complete(),.is_32(),.row_stride()
+);
 // In ST_SCAN the read address is also the current scan sector.
 wire [31:0] scan_sector = sd_sec_read_addr;
 reg [31:0] bmp_len_cnt;
-reg [1:0]  bmp_byte_idx;
 reg [9:0] sector_bytes;
 reg sector_complete;
-reg [31:0] pixel_count;
+
 wire sector_size_ok = sd_sec_read_data_valid ? (sector_bytes == 10'd511) :
                                                (sector_bytes == 10'd512);
 
@@ -118,81 +124,15 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-always @(posedge clk or posedge rst) begin
-    if (rst) pixel_count <= 0;
-    else if (load_start && ready) pixel_count <= 0;
-    else if (bmp_data_wr_en) pixel_count <= pixel_count + 1'b1;
-end
 
-wire header_match;
-wire bmp_data_valid;
+
 reg [31:0] file_sector_count;
 reg [32:0] next_scan_sector_if_match;
 wire [31:0] next_scan_sector_if_miss;
-reg [18:0] candidate_row_bytes;
-reg [34:0] candidate_data_bytes;
-reg [35:0] candidate_end;
-reg candidate_structure_ok, candidate_length_ok, candidate_span_ok;
-wire skip_candidate = candidate_structure_ok && candidate_length_ok &&
-                      candidate_span_ok && (rd_cnt >= 10'd54);
-
-// Conservative fast path for ordinary contiguous, uncompressed 24/32-bit BMPs.
-// Unknown formats or untrustworthy lengths retain the one-sector search.
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        candidate_row_bytes <= 0;
-        candidate_data_bytes <= 0;
-        candidate_end <= 0;
-        candidate_structure_ok <= 0;
-        candidate_length_ok <= 0;
-        candidate_span_ok <= 0;
-    end else begin
-        candidate_row_bytes <= (bit_count_32 && bit_count_hi_zero) ?
-                               {1'b0, width[15:0], 2'b00} :
-                               (({3'b000, width[15:0]} * 19'd3 + 19'd3) & 19'h7fffc);
-        candidate_data_bytes <= {16'd0, candidate_row_bytes} * {19'd0, height[15:0]};
-        candidate_end <= {4'd0, pixel_offset} + {1'b0, candidate_data_bytes};
-        candidate_structure_ok <= header_0_is_b && header_1_is_m &&
-                                  (dib_size >= 40) && (&planes_one) &&
-                                  (width[31:16] == 0) && (width[15:0] != 0) &&
-                                  (height[31:16] == 0) && (height[15:0] != 0) &&
-                                  ((bit_count_24 && bit_count_hi_zero) || (bit_count_32 && bit_count_hi_zero)) && (&compression_zero);
-        candidate_length_ok <= ({1'b0, pixel_offset} >= dib_end) &&
-                               (pixel_offset < file_len) && ({4'd0, file_len} >= candidate_end);
-        candidate_span_ok <= (file_sector_count != 0) &&
-                             (next_scan_sector_if_match > {1'b0, scan_sector}) &&
-                             (next_scan_sector_if_match <= ({1'b0, scan_max_sector} + 33'd1));
-    end
-end
-
-assign ready = (state == ST_IDLE);
-assign header_match = header_format_ok && header_bounds_ok && (rd_cnt >= 10'd54);
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        expected_pixels <= 0;
-        expected_bytes <= 0;
-        required_end <= 0;
-        dib_end <= 0;
-        header_format_ok <= 0;
-        header_bounds_ok <= 0;
-    end else begin
-        expected_pixels <= {16'd0, bmp_width} * {16'd0, bmp_height};
-        expected_bytes <= {2'b00, expected_pixels} * 34'd3;
-        required_end <= {2'b00, pixel_offset} + expected_bytes;
-        dib_end <= {1'b0, dib_size} + 33'd14;
-        header_format_ok <= header_0_is_b && header_1_is_m &&
-                            (dib_size >= 32'd40) && (&planes_one) &&
-                            (width == {16'd0, bmp_width}) &&
-                            (height == {16'd0, bmp_height}) &&
-                            (bit_count_24 && bit_count_hi_zero) && (&compression_zero);
-        header_bounds_ok <= ({1'b0, pixel_offset} >= dib_end) &&
-                            (pixel_offset < file_len) &&
-                            ({2'b00, file_len} >= required_end);
-    end
-end
-assign bmp_data_valid = (sd_sec_read_data_valid == 1'b1) &&
-                        (bmp_len_cnt >= pixel_offset) &&
-                        ({2'b00, bmp_len_cnt} < required_end);
+wire skip_candidate = skip_format && (file_sector_count != 0) &&
+ (next_scan_sector_if_match > {1'b0,scan_sector}) &&
+ (next_scan_sector_if_match <= ({1'b0,scan_max_sector}+33'd1));
+assign ready=(state==ST_IDLE);
 // Header length is captured at byte 5; sector completion occurs at byte 512.
 // Register these two additions separately instead of routing both through the
 // scan state decision and the new completion/error outputs in one clock.
@@ -220,67 +160,6 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        header_0_is_b <= 1'b0;
-        header_1_is_m <= 1'b0;
-        file_len     <= 32'd0;
-        pixel_offset <= 32'd54;
-        width        <= 32'd0;
-        height       <= 32'd0;
-        bit_count_24 <= 1'b0;
-        bit_count_32 <= 1'b0;
-        bit_count_hi_zero <= 1'b1;
-        compression_zero <= 4'b1111;
-        dib_size     <= 32'd0;
-        planes_one <= 2'b10;
-    end else if (((state == ST_SCAN) || (state == ST_LOAD_HDR)) && sd_sec_read_data_valid) begin
-        case (rd_cnt)
-            10'd0 : header_0_is_b <= (sd_sec_read_data == "B");
-            10'd1 : header_1_is_m <= (sd_sec_read_data == "M");
-
-            10'd2 : file_len[7:0] <= sd_sec_read_data;
-            10'd3 : file_len[15:8] <= sd_sec_read_data;
-            10'd4 : file_len[23:16] <= sd_sec_read_data;
-            10'd5 : file_len[31:24] <= sd_sec_read_data;
-
-            10'd10: pixel_offset[7:0] <= sd_sec_read_data;
-            10'd11: pixel_offset[15:8] <= sd_sec_read_data;
-            10'd12: pixel_offset[23:16] <= sd_sec_read_data;
-            10'd13: pixel_offset[31:24] <= sd_sec_read_data;
-
-            10'd14: dib_size[7:0] <= sd_sec_read_data;
-            10'd15: dib_size[15:8] <= sd_sec_read_data;
-            10'd16: dib_size[23:16] <= sd_sec_read_data;
-            10'd17: dib_size[31:24] <= sd_sec_read_data;
-
-            10'd18: width[7:0] <= sd_sec_read_data;
-            10'd19: width[15:8] <= sd_sec_read_data;
-            10'd20: width[23:16] <= sd_sec_read_data;
-            10'd21: width[31:24] <= sd_sec_read_data;
-
-            10'd22: height[7:0] <= sd_sec_read_data;
-            10'd23: height[15:8] <= sd_sec_read_data;
-            10'd24: height[23:16] <= sd_sec_read_data;
-            10'd25: height[31:24] <= sd_sec_read_data;
-
-            10'd26: planes_one[0] <= (sd_sec_read_data == 8'd1);
-            10'd27: planes_one[1] <= (sd_sec_read_data == 8'd0);
-
-            10'd28: begin
-                bit_count_24 <= (sd_sec_read_data == 8'd24);
-                bit_count_32 <= (sd_sec_read_data == 8'd32);
-            end
-            10'd29: bit_count_hi_zero <= (sd_sec_read_data == 8'd0);
-
-            10'd30: compression_zero[0] <= (sd_sec_read_data == 8'd0);
-            10'd31: compression_zero[1] <= (sd_sec_read_data == 8'd0);
-            10'd32: compression_zero[2] <= (sd_sec_read_data == 8'd0);
-            10'd33: compression_zero[3] <= (sd_sec_read_data == 8'd0);
-            default: ;
-        endcase
-    end
-end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -293,48 +172,35 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
+
+wire decoder_wr_en, decoder_done, decoder_commit;
+wire [23:0] decoder_data;
+wire [2:0] decoder_error;
+wire decoder_end = (state == ST_LOAD_DRAIN) &&
+                   (!sector_complete || {2'b00,bmp_len_cnt} >= required_end);
+bmp24_decoder #(.RUNTIME_DIMENSIONS(1), .ALLOW_32(0)) u_decoder (
+    .clk(clk), .rst(rst || !sd_init_done || state == ST_STOP),
+    .expected_width(bmp_width), .expected_height(bmp_height),
+    .file_start(state == ST_LOAD_WAIT && write_req_ack), .file_size(file_len),
+    .file_valid(state == ST_LOAD_DATA && sd_sec_read_data_valid),
+    .file_byte(sd_sec_read_data), .file_byte_offset(bmp_len_cnt),
+    .file_end(decoder_end), .upstream_error(8'd0),
+    .header_accepted(), .pixel_valid(decoder_wr_en), .pixel_rgb(decoder_data),
+    .pixel_x(), .pixel_y(), .frame_commit(decoder_commit), .bmp_done(decoder_done),
+    .bmp_error(decoder_error)
+);
+assign bmp_data_wr_en = decoder_wr_en;
+assign bmp_data = decoder_data;
+reg decoder_done_seen;
+reg [2:0] decoder_error_seen;
 always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        bmp_byte_idx <= 2'd0;
-    end else if (load_start && ready) begin
-        bmp_byte_idx <= 2'd0;
-    end else if (state == ST_LOAD_DATA) begin
-        if (bmp_data_valid)
-            bmp_byte_idx <= (bmp_byte_idx == 2'd2) ? 2'd0 : (bmp_byte_idx + 2'd1);
+    if (rst) begin decoder_done_seen<=0;decoder_error_seen<=0;end
+    else if (state==ST_LOAD_WAIT) begin decoder_done_seen<=1'b0; decoder_error_seen<=3'd0; end
+    else begin
+        if (decoder_done) decoder_done_seen<=1'b1;
+        if (decoder_error!=3'd0) decoder_error_seen<=decoder_error;
     end
 end
-
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        bmp_data_wr_en <= 1'b0;
-        bmp_data       <= 24'd0;
-    end else if (state == ST_LOAD_DATA) begin
-        if (bmp_data_valid) begin
-            case (bmp_byte_idx)
-                2'd0: begin
-                    bmp_data_wr_en <= 1'b0;
-                    bmp_data[7:0]  <= sd_sec_read_data;
-                end
-                2'd1: begin
-                    bmp_data_wr_en <= 1'b0;
-                    bmp_data[15:8] <= sd_sec_read_data;
-                end
-                2'd2: begin
-                    bmp_data_wr_en  <= 1'b1;
-                    bmp_data[23:16] <= sd_sec_read_data;
-                end
-                default: begin
-                    bmp_data_wr_en <= 1'b0;
-                end
-            endcase
-        end else begin
-            bmp_data_wr_en <= 1'b0;
-        end
-    end else begin
-        bmp_data_wr_en <= 1'b0;
-    end
-end
-
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         state             <= ST_IDLE;
@@ -350,6 +216,9 @@ always @(posedge clk or posedge rst) begin
         scan_found_valid  <= 1'b0;
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
+        scan_paused       <= 1'b0;
+        scan_resume_sector <= 32'd0;
+        scan_boundary     <= 1'b0;
     end else if (state == ST_STOP) begin
         // Late bytes/end/ack cannot revive an outstanding timed-out transaction.
         load_done <= 1'b0;
@@ -373,6 +242,9 @@ always @(posedge clk or posedge rst) begin
         scan_found_valid  <= 1'b0;
         scan_found_sector <= 32'd0;
         scan_found_total  <= 3'd0;
+        scan_paused       <= 1'b0;
+        scan_resume_sector <= 32'd0;
+        scan_boundary     <= 1'b0;
     end else begin
         load_done <= 1'b0;
         load_error <= 1'b0;
@@ -394,6 +266,9 @@ always @(posedge clk or posedge rst) begin
                 write_req   <= 1'b0;
 
                 if (scan_start) begin
+                    scan_paused      <= 1'b0;
+                    scan_boundary    <= (ENABLE_SCAN_PAUSE != 0);
+                    if (ENABLE_SCAN_PAUSE) scan_resume_sector <= scan_start_sector;
                     scan_done        <= 1'b0;
                     scan_found_total <= 3'd0;
                     sd_sec_read_addr <= scan_start_sector;
@@ -402,15 +277,31 @@ always @(posedge clk or posedge rst) begin
                     bmp_error          <= 3'd0;
                     sd_sec_read_addr    <= load_sector;
                     state               <= ST_LOAD_HDR;
+                end else if (ENABLE_SCAN_PAUSE && scan_resume && scan_paused) begin
+                    scan_paused      <= 1'b0;
+                    scan_boundary    <= 1'b1;
+                    sd_sec_read_addr <= scan_resume_sector;
+                    state            <= ST_SCAN;
                 end
             end
 
             ST_SCAN: begin
                 state_code  <= 4'd2;
-                sd_sec_read <= 1'b1;
+                if (ENABLE_SCAN_PAUSE && scan_boundary && (scan_pause_request || scan_pause_pending)) begin
+                    // Count/address already include the completed sector. Loading
+                    // may reuse sd_sec_read_addr without destroying this cursor.
+                    sd_sec_read <= 1'b0;
+                    scan_paused <= 1'b1;
+                    scan_resume_sector <= sd_sec_read_addr;
+                    state <= ST_IDLE;
+                end else begin
+                    scan_boundary <= 1'b0;
+                    sd_sec_read <= 1'b1;
+                end
 
                 if (sd_sec_read_end) begin
                     sd_sec_read <= 1'b0;
+                    scan_boundary <= (ENABLE_SCAN_PAUSE != 0);
 
                     if (header_match && sector_size_ok) begin
                         scan_found_valid  <= 1'b1;
@@ -495,13 +386,13 @@ always @(posedge clk or posedge rst) begin
                     load_error <= 1'b1;
                     state <= ST_IDLE;
                 end else if ({2'b00, bmp_len_cnt} >= required_end) begin
-                    if ((pixel_count == expected_pixels) && (bmp_byte_idx == 0)) begin
+                    if (decoder_done || decoder_done_seen) begin
                         load_done <= 1'b1;
-                    end else begin
-                        bmp_error <= 3'd3;
+                    end else if (decoder_error != 0 || decoder_error_seen != 0) begin
+                        bmp_error <= (decoder_error != 0) ? decoder_error : decoder_error_seen;
                         load_error <= 1'b1;
                     end
-                    state <= ST_IDLE;
+                    if (decoder_done || decoder_done_seen || decoder_error != 0 || decoder_error_seen != 0) state <= ST_IDLE;
                 end else begin
                     sd_sec_read_addr <= sd_sec_read_addr + 32'd1;
                     state <= ST_LOAD_DATA;

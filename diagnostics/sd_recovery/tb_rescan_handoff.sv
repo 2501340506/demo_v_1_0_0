@@ -22,7 +22,7 @@ module tb_rescan_handoff;
     always @(posedge mem_clk) if(rst) finish_toggle<=0; else if(wr_finish) finish_toggle<=~finish_toggle;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000), .SCAN_MAX_SECTOR(27)) dut (
         .write_cancel_req(cancel_req),.write_cancel_ack(cancel_ack),
-        .sd_debug(),.sdram_ready(1'b1),
+        .sd_debug(),.diagnostics(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(key2),.key4(1'b1),.mode(mode),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd32),.bmp_height(16'd32),.display_valid(valid),.committed_image(),.committed_valid(),.committed_ready(1'b1),
@@ -38,6 +38,28 @@ module tb_rescan_handoff;
     integer image,base,b,gap,limit_bytes;
     reg truncate_now;
     integer attempts=0,errors=0,commits=0;
+    integer diag_rescans=0,diag_inits=0,diag_fails=0,diag_recovered=0;
+    reg expected_rescan,expected_init,expected_fail,seen_init=0,seen_fail=0;
+    always @(posedge clk) begin
+        if(rst) begin
+            diag_rescans=0;diag_inits=0;diag_fails=0;diag_recovered=0;seen_init=0;seen_fail=0;
+        end else begin
+            expected_rescan=dut.rescan_event && !dut.recovery_active;
+            expected_init=dut.sd_init_done && !seen_init;
+            expected_fail=dut.sd_init_failed && !seen_fail;
+            seen_init=dut.sd_init_done;seen_fail=dut.sd_init_failed;
+            #1;
+            if(dut.diagnostics[51]!==expected_rescan || dut.diagnostics[42]!==expected_init ||
+               dut.diagnostics[43]!==expected_fail) $fatal(1,"rescan/init diagnostic not actual event");
+            if(dut.diagnostics[51]) diag_rescans=diag_rescans+1;
+            if(dut.diagnostics[42]) diag_inits=diag_inits+1;
+            if(dut.diagnostics[43]) begin
+                diag_fails=diag_fails+1;
+                if(dut.diagnostics[7:5]!=2) $fatal(1,"init error code");
+            end
+            if(dut.diagnostics[56]) diag_recovered=diag_recovered+1;
+        end
+    end
     initial begin
         force dut.sd_init_failed=no_card && !dut.sd_local_rst;
         force dut.sd_init_done=!dut.sd_local_rst && !no_card;
@@ -230,6 +252,9 @@ module tb_rescan_handoff;
         repeat(2600)@(negedge pix_clk);
         if(collision_count || torn_frames) $fatal(1,"buffer ownership or mixed frame");
         $display("PASS rescan real BMP and asynchronous memory: commits=%0d collisions=%0d torn=%0d",commits,collision_count,torn_frames);
+        if(diag_rescans<5 || diag_inits<5 || diag_fails<1 || diag_recovered<5)
+            $fatal(1,"missing real rescan/init/recovery logs");
+        $display("PASS real KEY2/duplicate rescan/init failure/recovered event diagnostics");
         $finish;
     end
     initial begin #100000000; $fatal(1,"handoff watchdog"); end

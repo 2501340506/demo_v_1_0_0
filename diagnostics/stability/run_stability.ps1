@@ -1,4 +1,4 @@
-param([ValidateSet('baseline','recovery','headers','scan','pixels','timeout','timeout_control')][string]$Suite='baseline', [switch]$CompareS2)
+﻿param([ValidateSet('baseline','recovery','headers','scan','pixels','timeout','timeout_control')][string]$Suite='baseline', [switch]$CompareS2)
 $ErrorActionPreference='Stop'
 $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $simTools='D:/modelsim/win64'
@@ -12,7 +12,7 @@ New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 Push-Location $repoRoot
 try {
     if (-not (Test-Path "$lib/_info")) { & "$simTools/vlib.exe" $lib }
-    $rtl=@('bmp_read')
+    $rtl=@('bmp_header_check','bmp24_decoder','bmp_read')
     $test='tb_bmp_baseline'
     if ($Suite -eq 'headers') { $test='tb_bmp_headers' }
     if ($Suite -eq 'scan') { $test='tb_bmp_scan' }

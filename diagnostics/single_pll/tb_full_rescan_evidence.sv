@@ -22,7 +22,7 @@ module tb_full_rescan_evidence #(parameter EXTERNAL_MEMORY=0)(input external_bus
     always @(posedge mem_clk) if(rst) finish_toggle<=0; else if(wr_finish) finish_toggle<=~finish_toggle;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .AUTO_PLAY_MS(3000), .SCAN_MAX_SECTOR(7203)) dut (
         .write_cancel_req(cancel_req),.write_cancel_ack(cancel_ack),
-        .sd_debug(),.sdram_ready(1'b1),
+        .sd_debug(),.diagnostics(),.sdram_ready(1'b1),
         .clk(clk),.rst(rst),.key1(1'b1),.key2(key2),.key4(1'b1),.mode(mode),
         .state_code(code),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
         .bmp_width(16'd640),.bmp_height(16'd480),.display_valid(valid),.committed_image(),.committed_valid(),.committed_ready(1'b1),

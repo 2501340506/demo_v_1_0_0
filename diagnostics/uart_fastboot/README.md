@@ -1,0 +1,36 @@
+# v0.5.4 UART与快速启动复现
+
+S2及S3 local.2已获用户上板确认；S4尚未实施。真实事务观察位于 `sd_card_bmp.v`，顶层直接接入诊断包；不能用数码管复用显示码代替事件。S3接口已完成，生产编译期关闭。
+
+本次复现命令（重新运行时使用新的输出名）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/uart_fastboot/run_sim.ps1 -RunName v054_s2fix_uart_final
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s2fix
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/sd_recovery/run_handoff.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/uart_fastboot/run_td.ps1 -BuildName v054_s2fix_final
+```
+
+[固定候选](../../releases/v0.5.4/v0.5.4-s2-local.2/README.md) 包含最终日志、源码和报告。`package_s2_fix.py` 只封装最终目录并逐字节核对，拒绝覆盖已有候选。下文保留 S1 复现方法。
+
+S1：100MHz控制域，D12输出115200/8N1启动行。GUI用户工程不改，构建使用v0.5.3归档单PLL清单加新UART源文件。
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/uart_fastboot/run_sim.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/uart_fastboot/run_td.ps1 -BuildName v054_s1_attempt1
+```
+
+每次TD构建使用新的BuildName，完整快照在diagnostics/output/<BuildName>。归档工程可在TD打开，新UART文件仅加入隔离工程，不覆盖用户TD_project/demo.al及best_result。
+
+UART引脚异步于PC接收端。SDC仅对FPGA TX寄存器到引脚定义10ns工程传播预算，不声称接收端同步setup/hold验证；协议采样由独立UART接收模型检查。原有SPI/HDMI约束保留。
+
+## S3复现
+
+`run_scan_resume.ps1 -RunName v054_s3_scan_resume_release`验证接口；`run_sim.ps1 -RunName v054_s3_uart`检查UART。全回归为`diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s3`，另运行`diagnostics/sd_recovery/run_handoff.ps1`；最后`run_td.ps1 -BuildName v054_s3_final`。重新构建使用新BuildName。
+
+`package_stage.py`以`--baseline v0.5.4-s2-board.2`只封装新增/修改代码；不覆盖现有候选。详见[固定候选](../../releases/v0.5.4/v0.5.4-s3-local.1/README.md)。S3生产仍先完整扫描，暂停控制关闭。
+
+## S3 local.2复现
+
+开启专项`run_scan_resume.ps1 -RunName v054_s3r2_scan`；关闭对比`run_s3_disabled_compare.ps1 -RunName v054_s3r2_compare`；UART用`run_sim.ps1 -RunName v054_s3r2_uart`；全回归`diagnostics/flash_boot/run_baseline.ps1 -Stage v054_s3r2`及重扫`diagnostics/sd_recovery/run_handoff.ps1`；TD为`run_td.ps1 -BuildName v054_s3r2_final`。新运行使用新输出名。local.2已上板确认；后续新候选仍须上板通过后才commit/打标签/push。

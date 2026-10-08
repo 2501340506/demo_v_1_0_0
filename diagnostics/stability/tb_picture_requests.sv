@@ -59,7 +59,7 @@ module tb_picture_requests;
     sd_card_bmp #(.CLK_FREQ_HZ(1000), .SCAN_MAX_SECTOR(4),
                   .SCAN_TARGET_COUNT(4), .AUTO_PLAY_MS(3000)) dut (
         .write_cancel_req(),.write_cancel_ack(1'b0),
-        .sd_debug(),.sdram_ready(1'b1),
+        .sd_debug(),.diagnostics(),.sdram_ready(1'b1),
         .clk(clk), .rst(rst), .key1(key1), .key2(key2), .key4(key4), .mode(mode),
         .state_code(code), .bmp_width(16'd4), .bmp_height(16'd1),
         .combo_event_count(), .combo_debug_active(),

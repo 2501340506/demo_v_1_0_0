@@ -1,0 +1,14 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 20:38:09 on Oct 07,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/v054_s2fix_uart_final/work -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\v054_s2fix_uart_final/compile.log D:\My_Program\anlogic_program\demo_v_0_0/user_source/hdl_source/uart/uart_tx_byte.v D:\My_Program\anlogic_program\demo_v_0_0/user_source/hdl_source/uart/uart_boot_reporter.v D:\My_Program\anlogic_program\demo_v_0_0/user_source/hdl_source/uart/uart_event_logger.v D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\uart_fastboot/tb_uart_boot.sv D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\uart_fastboot/tb_uart_event_logger.sv 
+-- Compiling module uart_tx_byte
+-- Compiling module uart_boot_reporter
+-- Compiling module uart_event_logger
+-- Compiling module tb_uart_boot
+-- Compiling module tb_uart_event_logger
+
+Top level modules:
+	tb_uart_boot
+	tb_uart_event_logger
+End time: 20:38:09 on Oct 07,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

@@ -1,4 +1,4 @@
-param([switch]$BaselineTop, [ValidateSet('reset','startup')][string]$Suite='reset', [switch]$BypassReady)
+﻿param([switch]$BaselineTop, [ValidateSet('reset','startup')][string]$Suite='reset', [switch]$BypassReady)
 $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $simTools = 'D:/modelsim/win64'
@@ -18,6 +18,17 @@ try {
         $path = $_.GetAttribute('Path')
         if ((Split-Path $path -Leaf) -notin $modeled) { Join-Path "$repoRoot/TD_project" $path }
     })
+    # The user GUI project may predate UART. Include current production UART
+    # sources without editing that project; explicit paths avoid duplicate files.
+    foreach ($uart in @('uart_tx_byte.v','uart_boot_reporter.v','uart_event_logger.v')) {
+        if (-not ($rtl | Where-Object { (Split-Path $_ -Leaf) -eq $uart })) {
+            $rtl += Join-Path $repoRoot "user_source/hdl_source/uart/$uart"
+        }
+    }
+    if (-not ($rtl | Where-Object { (Split-Path $_ -Leaf) -eq 'bmp24_decoder.v' })) {
+        $rtl += Join-Path $repoRoot 'user_source/hdl_source/SD/bmp24_decoder.v'
+    }
+    $rtl += Join-Path $repoRoot 'user_source/hdl_source/SD/bmp_header_check.v'
     if ($BaselineTop) {
         # Negative control: the new test must reject the old constant-reset top.
         $oldTop = Join-Path $simDir 'top_before_s1.v'
@@ -26,7 +37,9 @@ try {
         [IO.File]::WriteAllText($oldTop, $source, [Text.UTF8Encoding]::new($false))
         $rtl = @($rtl | Where-Object { (Split-Path $_ -Leaf) -ne 'top_tf_hdmi_audio.v' }) + @($oldTop)
     }
-    & "$simTools/vlog.exe" -sv -work $lib '+incdir+user_source/hdl_source/SD' -l "$simDir/compile.log" @rtl `
+    $topDefines = @()
+    if ($BaselineTop) { $topDefines += '+define+PRE_UART_TOP' }
+    & "$simTools/vlog.exe" -sv -work $lib @topDefines '+incdir+user_source/hdl_source/SD' -l "$simDir/compile.log" @rtl `
         D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_logic_io.v D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_glbl.v diagnostics/flash_boot/tb_flash_reset.sv diagnostics/flash_boot/tb_startup.sv
     if ($LASTEXITCODE -ne 0) { throw 'reset top compile failed' }
     $test = if ($Suite -eq 'startup') { 'tb_startup' } else { 'tb_flash_reset' }

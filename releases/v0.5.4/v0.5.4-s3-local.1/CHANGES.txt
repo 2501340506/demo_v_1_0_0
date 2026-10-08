@@ -1,0 +1,15 @@
+Baseline: v0.5.4-s2-board.2
+Overlay these changed/new code files onto that checkout:
+diagnostics/stability/tb_bmp_baseline.sv
+diagnostics/stability/tb_bmp_headers.sv
+diagnostics/stability/tb_bmp_pixels.sv
+diagnostics/stability/tb_bmp_scan.sv
+diagnostics/stability/tb_bmp_timeout.sv
+diagnostics/stability/tb_buffer_handoff.sv
+diagnostics/uart_fastboot/package_stage.py
+diagnostics/uart_fastboot/run_scan_resume.ps1
+diagnostics/uart_fastboot/tb_scan_resume.sv
+diagnostics/uart_fastboot/tb_uart_event_logger.sv
+user_source/hdl_source/SD/bmp_read.v
+user_source/hdl_source/SD/sd_card_bmp.v
+user_source/hdl_source/uart/uart_event_logger.v
