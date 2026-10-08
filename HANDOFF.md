@@ -3,8 +3,8 @@
 - 当前任务：记录 v0.7.0-s1-local.1 板测通过，建立 v0.7.0-s1-board.1，并同步 GitHub；S2 尚未实施。
 - 已完成：用户反馈“相关功能都正常”；串口日志保存至 releases/v0.7.0/s1-local.1/evidence/board_uart_20261008.txt，核对 18 次 COMMIT 和一次错误停机后重扫恢复。复用原 bit，无 RTL 变化或重建。
 - 已完成：原项目目录已切换 feature/fat32-filesystem，S1 源码、文档和候选已在原目录可见；执行规则明确原目录开发、功能分支提交/推送，默认不另建开发 worktree。
-- 卡住的问题：无板级卡点；GitHub 同步待本次执行确认。
-- 下一步计划：完成 board 提交/标签及阶段推送，随后在原目录推进 S2 FAT32 核心和模块测试。
+- 卡住的问题：无。GitHub 已成功同步 feature/fat32-filesystem 及 v0.7.0-plan.1、v0.7.0-s1-local.1、v0.7.0-s1-board.1。
+- 下一步计划：在原目录推进 S2 FAT32 核心和模块测试，S1 板级门槛已解除。
 - 踩过的坑：独立功能分支不代表另建目录。迁移时仅临时保存 TD_project/demo.al 并已成功自动合并恢复；其他用户改动未动、未纳入提交。保留迁移 stash 作为副本，旧 fat32_worktree 已 detached，未删除。UART 版本行仍旧，按候选路径识别；未推测长期测试时长。
 
 ## 历史交接
