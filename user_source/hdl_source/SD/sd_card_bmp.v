@@ -82,7 +82,10 @@ wire             sd_init_done;
 wire             bmp_ready;
 wire             scan_done;
 wire             scan_found_valid;
-wire [31:0]      scan_found_sector;
+wire [31:0]      scan_found_cluster;
+wire [31:0] scan_found_size;
+wire [31:0] load_size;
+reg [31:0] img_size0,img_size1,img_size2,img_size3;
 wire [2:0]       scan_found_total;
 wire [3:0]       bmp_state_code;
 wire             write_req_ack_sync;
@@ -90,17 +93,17 @@ reg [1:0]        write_req_ack_pipe;
 
 reg              scan_start_pulse;
 reg              load_start_pulse;
-wire [31:0]      load_sector;
+wire [31:0]      load_cluster;
 reg              scan_kicked;
 reg              first_image_committed;
 reg [2:0]        img_found_count;
 reg [1:0]        img_idx;              // 当前真正显示中的图片编号
 reg [1:0]        load_idx;             // 当前正在写入的图片编号
 reg [1:0]        pending_buf_idx;      // 当前正在写入的目标缓冲区
-reg [31:0]       img_sector0;
-reg [31:0]       img_sector1;
-reg [31:0]       img_sector2;
-reg [31:0]       img_sector3;
+reg [31:0]       img_cluster0;
+reg [31:0]       img_cluster1;
+reg [31:0]       img_cluster2;
+reg [31:0]       img_cluster3;
 reg              load_busy;
 reg              commit_pending;
 reg [1:0]        commit_ack_sync;
@@ -203,7 +206,7 @@ always @(posedge clk or posedge rst) begin
         diag_phase_seen<=diag_phase;
         diagnostics<={diag_events,
             (load_busy || load_start_pulse || diag_commit) ? load_idx : img_idx,
-            (diag_failure || load_start_pulse || diag_commit) ? load_sector : sd_sec_read_addr,
+            sd_sec_read_addr,
             diag_error, diag_phase, ctrl_auto_play_en};
     end
 end
@@ -263,22 +266,9 @@ media_player_control #(
     .load_request(ctrl_load_request), .target_image(ctrl_target_image)
 );
 
-function [31:0] sector_lut;
-    input [1:0] idx;
-    begin
-        case (idx)
-            2'd0: sector_lut = img_sector0;
-            2'd1: sector_lut = img_sector1;
-            2'd2: sector_lut = img_sector2;
-            2'd3: sector_lut = img_sector3;
-            default: sector_lut = img_sector0;
-        endcase
-    end
-endfunction
-
-// Decode the registered task index directly. Avoid a second wide register
-// enabled by the full retry/selection decision chain.
-assign load_sector = sector_lut(load_idx);
+// Explicit table mux includes metadata changes before the first index changes.
+assign load_cluster=(load_idx==0)?img_cluster0:(load_idx==1)?img_cluster1:(load_idx==2)?img_cluster2:img_cluster3;
+assign load_size=(load_idx==0)?img_size0:(load_idx==1)?img_size1:(load_idx==2)?img_size2:img_size3;
 
 function [1:0] next_buf_lut;
     input [1:0] cur_disp_buf;
@@ -335,10 +325,11 @@ always @(posedge clk or posedge rst) begin
         pending_buf_idx       <= 2'd0;
         write_buf_idx         <= 2'd0;
         disp_buf_idx          <= 2'd0;
-        img_sector0           <= 32'd0;
-        img_sector1           <= 32'd0;
-        img_sector2           <= 32'd0;
-        img_sector3           <= 32'd0;
+        img_cluster0           <= 32'd0;
+        img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
+        img_cluster1           <= 32'd0;
+        img_cluster2           <= 32'd0;
+        img_cluster3           <= 32'd0;
 
         load_busy             <= 1'b0;
         commit_pending        <= 1'b0;
@@ -368,7 +359,8 @@ always @(posedge clk or posedge rst) begin
             retry_used <= 0; recovery_chain <= 0; first_load_failed <= 0;
             auto_blocked <= 0; candidates_tried <= 0;
             scan_kicked <= 0; first_image_committed <= 0; img_found_count <= 0;
-            img_sector0 <= 0; img_sector1 <= 0; img_sector2 <= 0; img_sector3 <= 0;
+            img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
+            img_cluster0 <= 0; img_cluster1 <= 0; img_cluster2 <= 0; img_cluster3 <= 0;
             if (recovery_phase == 1 && !commit_pending && cancel_ack_sync[1]) begin
                 recovery_phase <= 2; recovery_reset_count <= 0;
             end else if (recovery_phase == 2) begin
@@ -404,10 +396,11 @@ always @(posedge clk or posedge rst) begin
             load_idx              <= 2'd0;
             pending_buf_idx       <= 2'd0;
             write_buf_idx         <= 2'd0;
-            img_sector0           <= 32'd0;
-            img_sector1           <= 32'd0;
-            img_sector2           <= 32'd0;
-            img_sector3           <= 32'd0;
+            img_cluster0           <= 32'd0;
+        img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
+            img_cluster1           <= 32'd0;
+            img_cluster2           <= 32'd0;
+            img_cluster3           <= 32'd0;
 
             load_busy             <= 1'b0;
             commit_pending        <= 1'b0;
@@ -423,10 +416,10 @@ always @(posedge clk or posedge rst) begin
             if (first_load_failed) recovery_phase <= 0;
             if (scan_found_valid) begin
                 case (img_found_count)
-                    3'd0: img_sector0 <= scan_found_sector;
-                    3'd1: img_sector1 <= scan_found_sector;
-                    3'd2: img_sector2 <= scan_found_sector;
-                    3'd3: img_sector3 <= scan_found_sector;
+                    3'd0: begin img_cluster0 <= scan_found_cluster; img_size0 <= scan_found_size; end
+                    3'd1: begin img_cluster1 <= scan_found_cluster; img_size1 <= scan_found_size; end
+                    3'd2: begin img_cluster2 <= scan_found_cluster; img_size2 <= scan_found_size; end
+                    3'd3: begin img_cluster3 <= scan_found_cluster; img_size3 <= scan_found_size; end
                     default: ;
                 endcase
 
@@ -547,47 +540,20 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-bmp_read #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .TIMEOUT_MS(LOAD_TIMEOUT_MS),
-           .ENABLE_SCAN_PAUSE(0)) bmp_read_m0(
-    .clk                    (clk),
-    .rst                    (parser_rst),
-    .ready                  (bmp_ready),
-
-    .scan_start             (scan_start_pulse),
-    .scan_start_sector      (SCAN_START_SECTOR),
-    .scan_max_sector        (SCAN_MAX_SECTOR),
-    .scan_target_count      (SCAN_TARGET_COUNT),
-    // S3 interface is verified independently; production keeps full-scan boot.
-    .scan_pause_request     (1'b0),
-    .scan_resume            (1'b0),
-    .scan_paused            (),
-    .scan_resume_sector     (),
-    .scan_done              (scan_done),
-    .scan_error             (bmp_scan_error),
-    .scan_found_valid       (scan_found_valid),
-    .scan_found_sector      (scan_found_sector),
-    .scan_found_total       (scan_found_total),
-
-    .load_start             (load_start_pulse),
-    .load_sector            (load_sector),
-    .load_done              (bmp_load_done),
-    .load_error             (bmp_load_error),
-    .bmp_error              (bmp_error),
-
-    .sd_init_done           (sd_init_done),
-    .state_code             (bmp_state_code),
-    .bmp_width              (bmp_width),
-    .bmp_height             (bmp_height),
-    .write_req              (write_req),
-    .write_req_ack          (write_req_ack_sync),
-    .sd_sec_read            (sd_sec_read),
-    .sd_sec_read_addr       (sd_sec_read_addr),
-    .sd_sec_read_data       (sd_sec_read_data),
-    .sd_sec_read_data_valid (sd_sec_read_data_valid),
-    .sd_sec_read_failed(sd_sec_read_failed),
-    .sd_sec_read_end        (sd_sec_read_end),
-    .bmp_data_wr_en         (bmp_data_wr_en),
-    .bmp_data               (bmp_data)
+// FAT32 owns the sector adapter for scan, preflight, and file loading.
+fat32_bmp_reader #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+ .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
+ .scan_start(scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
+ .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),
+ .scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
+ .load_start(load_start_pulse),.load_cluster(load_cluster),.load_size(load_size),
+ .load_done(bmp_load_done),.load_error(bmp_load_error),.bmp_error(bmp_error),.fat_error(),
+ .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),
+ .write_req(write_req),.write_req_ack(write_req_ack_sync),
+ .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),
+ .sd_sec_read_data(sd_sec_read_data),.sd_sec_read_data_valid(sd_sec_read_data_valid),
+ .sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),
+ .bmp_data_wr_en(bmp_data_wr_en),.bmp_data(bmp_data)
 );
 
 sd_card_top #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) sd_card_top_m0(

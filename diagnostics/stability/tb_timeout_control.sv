@@ -30,7 +30,7 @@ module tb_timeout_control;
         .write_finish_toggle(finish),.display_commit_ack(commit_pipe[3]),.display_commit_request(commit_req),
         .write_buf_idx(wb),.disp_buf_idx(db),.write_req(req),.write_req_ack(ack_pipe[3]),
         .write_en(we),.write_data(rgb),.SD_nCS(),.SD_DCLK(),.SD_MOSI(),.SD_MISO(1'b1));
-    sim_bmp_sectors #(.WIDTH(4),.HEIGHT(1)) card(.clk(clk),.rst(rst),
+    sim_bmp_sectors #(.WIDTH(4),.HEIGHT(1),.FAT32(1)) card(.clk(clk),.rst(rst),
         .request(dut.sd_sec_read),.address(dut.sd_sec_read_addr),.bad_headers(bad),
         .data(data),.valid(dv),.sector_end(ending),.busy(card_busy));
     initial begin
@@ -103,7 +103,7 @@ module tb_timeout_control;
     endtask
     initial begin
       reset_all();stall=1;wait(dut.timeout_stopped);tick(6);
-      if(code!=4'hf||valid||commits||starts||errors||scan_errors!=1||dut.scan_done)
+      if(code!=4'hf||valid||commits||starts||errors||scan_errors!=1||dut.img_found_count!=0)
         $fatal(1,"scan timeout must not create first-load event");
       stall=0;tick(1200);
       if(valid||commits||starts||code!=4'hf)$fatal(1,"late scan data committed");
@@ -112,11 +112,11 @@ module tb_timeout_control;
       $display("PASS loaded header timeout keeps old bank/index/audio; no retry or new MAN/AUTO load");
       boot();save_display();hold_ack=1;next_key();check_stopped();
       $display("PASS write-ack timeout keeps old display; late ack and completion cannot submit");
-      boot();save_display();next_key();wait(dut.bmp_read_m0.u_decoder.pixel_count==2);@(negedge clk);stall=1;
+      boot();save_display();next_key();wait(dut.bmp_read_m0.decoder.pixel_count==2);@(negedge clk);stall=1;
       check_stopped();
       $display("PASS partial-pixel timeout retains old display and masks late SD data");
       boot();save_display();next_key();wait(req);hide_end=1;
-      wait(dut.bmp_read_m0.u_decoder.pixel_count==4);wait(ending);@(negedge clk);stall=1;check_stopped();
+      wait(dut.bmp_read_m0.decoder.pixel_count==4);wait(ending);@(negedge clk);stall=1;check_stopped();
       $display("PASS memory can finish all pixels but missing SD end times out without display/audio");
       boot();if(code!=1||!valid||commits!=1||dut.timeout_stopped)$fatal(1,"reset did not recover");
       $display("PASS reset clears F and normal first-frame commit works again");

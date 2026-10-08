@@ -1,0 +1,8 @@
+Build: fat32_s1_attempt6
+Base: v0.7.0-plan.1
+Input files compared byte-for-byte: 59
+Changed source files packaged: 3
+Bit size: 629624 bytes
+Packaged bit compared byte-for-byte: identical
+Setup: +0.132 ns; Hold: +0.035 ns
+Board validation: pending

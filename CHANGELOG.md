@@ -1,3 +1,9 @@
+# v0.7.0 — FAT32 文件系统升级
+
+完成目录定位、按簇链读取、头预检及紧凑图片列表，支持缺图、碎片与超过旧扫描范围的 BMP。核心/包装器和系统回归通过；TD Setup +0.104 ns、Hold +0.014 ns；用户确认实卡功能正常。正式 bit 复用 S3 验收原件，S4 无源码修改或重建。
+
+[发布说明与未测项](releases/v0.7.0/README.md) · [完整阶段历史](docs/history/2026-10-08/fat32-filesystem/README.md)。
+
 # BMP 2.11 已上传 GitHub 并合并 main（2026-10-08）
 
 feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推送。板级版本 v0.6.0-bmp211-s3-board.1。main 合并无冲突，合并文件树与已验收分支一致；源码及 bit 未改变，未重复构建。

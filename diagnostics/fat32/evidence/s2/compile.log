@@ -1,0 +1,14 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 21:15:20 on Oct 08,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/fat32_core/work -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\fat32_core/compile.log user_source/hdl_source/SD/sd_sector_adapter.v user_source/hdl_source/SD/fat32_volume_scanner.v user_source/hdl_source/SD/fat32_file_streamer.v user_source/hdl_source/SD/bmp_header_check.v user_source/hdl_source/SD/bmp24_decoder.v diagnostics/fat32/tb_fat32_core.sv
+-- Compiling module sd_sector_adapter
+-- Compiling module fat32_volume_scanner
+-- Compiling module fat32_file_streamer
+-- Compiling module bmp_header_check
+-- Compiling module bmp24_decoder
+-- Compiling module tb_fat32_core
+
+Top level modules:
+	tb_fat32_core
+End time: 21:15:20 on Oct 08,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

@@ -165,35 +165,33 @@ endmodule
 
 // Source model: enumerate four images, honor write request/ack, stream a solid
 // color image. Real BMP/SPI parsing remains covered by tb_picture_requests.
-module bmp_read #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500, ENABLE_SCAN_PAUSE=0)(input clk,rst,output reg ready,
-    input scan_pause_request,scan_resume,output scan_paused,output [31:0] scan_resume_sector,
-    input scan_start,input [31:0] scan_start_sector,scan_max_sector,input [2:0] scan_target_count,
-    output wire scan_error, output reg scan_done,scan_found_valid,output reg [31:0] scan_found_sector,output reg [2:0] scan_found_total,
+module fat32_bmp_reader #(parameter integer PIXEL_GAP=2, CLK_FREQ_HZ=100_000_000, TIMEOUT_MS=500, ENABLE_SCAN_PAUSE=0)(input clk,rst,output reg ready,
+    input scan_start,
+    output wire scan_error, output reg scan_done,scan_found_valid,output reg [31:0] scan_found_cluster,output reg [2:0] scan_found_total,
     output reg load_done, output load_error, output [2:0] bmp_error,
-    input load_start,input [31:0] load_sector,input sd_init_done,output [3:0] state_code,
+    output [7:0] fat_error,output [31:0] scan_found_size,input [31:0] load_size,
+    input load_start,input [31:0] load_cluster,input sd_init_done,output [3:0] state_code,
     input [15:0] bmp_width,bmp_height,output reg write_req,input write_req_ack,
     output sd_sec_read,output [31:0] sd_sec_read_addr,input [7:0] sd_sec_read_data,
     input sd_sec_read_failed,sd_sec_read_data_valid,sd_sec_read_end,output reg bmp_data_wr_en,output reg [23:0] bmp_data);
-    assign scan_paused = 1'b0;
-    assign scan_resume_sector = 32'd0;
-    assign scan_error = 1'b0;
+    assign scan_error = 1'b0;assign fat_error=0;assign scan_found_size=3126;
     integer state=0,count=0,pace=0;
     assign load_error=0; assign bmp_error=0;
     assign state_code=0;assign sd_sec_read=0;assign sd_sec_read_addr=0;
     always @(posedge clk) begin
         if(rst) begin
             load_done<=0;ready<=1;scan_done<=0;scan_found_valid<=0;scan_found_total<=0;
-            scan_found_sector<=0;write_req<=0;bmp_data_wr_en<=0;bmp_data<=0;state<=0;count<=0;pace<=0;
+            scan_found_cluster<=0;write_req<=0;bmp_data_wr_en<=0;bmp_data<=0;state<=0;count<=0;pace<=0;
         end else begin
             load_done<=0;scan_found_valid<=0;bmp_data_wr_en<=0;
             case(state)
                 0: if(scan_start) begin state<=1;ready<=0;count<=0;end
                    else if(load_start) begin
                        state<=2;ready<=0;write_req<=1;count<=0;pace<=0;
-                       bmp_data<=load_sector+1;
+                       bmp_data<=load_cluster+1;
                    end
                 1: if(count<4) begin
-                       scan_found_valid<=1;scan_found_sector<=count;scan_found_total<=count+1;count<=count+1;
+                       scan_found_valid<=1;scan_found_cluster<=count;scan_found_total<=count+1;count<=count+1;
                    end else begin scan_done<=1;ready<=1;state<=0;end
                 2: if(write_req_ack) begin write_req<=0;state<=3;end
                 3: if(!write_req_ack) state<=4;

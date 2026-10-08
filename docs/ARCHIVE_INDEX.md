@@ -4,7 +4,7 @@
 
 | 日期 | 主要内容 |
 |---|---|
-| 2026-10-08 | [BMP 2.11 解码器独立化、板级验收与发布](history/2026-10-08/bmp24_decoder/README.md) |
+| 2026-10-08 | [FAT32 v0.7.0 结项](history/2026-10-08/fat32-filesystem/README.md) · [BMP 2.11 解码器独立化、板级验收与发布](history/2026-10-08/bmp24_decoder/README.md) |
 | 2026-10-07 | [v0.5.2](history/2026-10-07/v0.5.2/README.md) · [v0.5.3](history/2026-10-07/v0.5.3/README.md) · [v0.5.4](history/2026-10-07/v0.5.4/README.md) |
 | 2026-10-06 | [v0.5.1](history/2026-10-06/v0.5.1/README.md) · Flash 规划复核 |
 | 2026-10-05 | [Flash 固化](history/2026-10-05/Flash固化与上电自启/README.md) · [HDMI 音频](history/2026-10-05/HDMI音频升级/README.md) · [系统稳定性](history/2026-10-05/系统稳定性增强/README.md) |

@@ -1,4 +1,4 @@
-﻿param([ValidateSet('baseline','recovery','headers','scan','pixels','timeout','timeout_control')][string]$Suite='baseline', [switch]$CompareS2)
+param([ValidateSet('baseline','recovery','headers','scan','pixels','timeout','timeout_control')][string]$Suite='baseline', [switch]$CompareS2)
 $ErrorActionPreference='Stop'
 $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $simTools='D:/modelsim/win64'
@@ -12,14 +12,14 @@ New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 Push-Location $repoRoot
 try {
     if (-not (Test-Path "$lib/_info")) { & "$simTools/vlib.exe" $lib }
-    $rtl=@('bmp_header_check','bmp24_decoder','bmp_read')
+    $rtl=@('bmp_header_check','fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','bmp24_decoder','bmp_read')
     $test='tb_bmp_baseline'
     if ($Suite -eq 'headers') { $test='tb_bmp_headers' }
     if ($Suite -eq 'scan') { $test='tb_bmp_scan' }
     if ($Suite -eq 'pixels') { $test='tb_bmp_pixels' }
     if ($Suite -eq 'timeout') { $test='tb_bmp_timeout' }
     if ($Suite -in @('recovery','timeout_control')) {
-        $rtl+=@('sd_card_bmp','media_display_control','media_player_control','mode_key_control',
+        $rtl+=@('sd_sector_adapter','sd_card_bmp','media_display_control','media_player_control','media_policy','key_gesture_control','dual_key_event_router','mode_key_control',
             'key_press_debounce','sd_card_top','sd_card_sec_read_write','sd_card_cmd','spi_master')
         $test=if ($Suite -eq 'recovery') { 'tb_bmp_recovery' } else { 'tb_timeout_control' }
     }

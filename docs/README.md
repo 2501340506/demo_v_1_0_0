@@ -8,6 +8,7 @@
 |---|---|
 | 项目使用、构建与下载 | [项目 README](../README.md) |
 | 当前验证结论与边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
+| FAT32 v0.7.0 正式发布 | [结项归档](history/2026-10-08/fat32-filesystem/README.md) · [正式版](../releases/v0.7.0/README.md) |
 | BMP 2.11 完成归档 | [2026-10-08/bmp24_decoder](history/2026-10-08/bmp24_decoder/README.md) |
 | BMP 2.11 阶段计划 | [bmp24_decoder_plan.md](bmp24_decoder_plan.md) |
 | 构建与诊断入口 | [diagnostics/README.md](../diagnostics/README.md) |
