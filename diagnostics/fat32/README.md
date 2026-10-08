@@ -1,6 +1,6 @@
 # FAT32 升级验证入口
 
-S2 核心模块已完成独立验证；生产仍为 S1 旧 BMP 路径。S2 运行入口、接口和证据见 [核心验证记录](../../docs/fat32_s2_core.md)。run_core.ps1 执行 42 个素材场景，run_core_synthesis.ps1 只做独立模块综合，不生成硬件候选。
+S3 已接入生产并完成本地验证，固定候选待上板。run_core.ps1 验证 42 个核心场景；run_s3.ps1 运行包装器和受影响系统回归共 16 个入口。S3 TD 使用 run_td.ps1 -BuildName 新目录名 -PostPlaceOptimization high。见 [S3 验证](../../docs/fat32_s3_validation.md)。以下 S1 入口保留为历史工具，当前生产验收使用 run_s3.ps1。
 
 从本分支工作区根目录运行：
 

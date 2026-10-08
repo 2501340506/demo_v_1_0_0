@@ -1,0 +1,226 @@
+Final S3 validation: 2026-10-08.
+Core: 42 cases after layout/address pipelining.
+Reader: 42 fixtures + 5 boundary/format modes.
+All 16 suite entries passed. See source scripts for individual assertions.
+
+[reader]
+Errors: 0, Warnings: 0
+PASS reader 0 super_fragmented gap=2 mode=0
+PASS reader 1 mbr_first_large_lba gap=2 mode=0
+PASS reader 2 mbr_second_jump_opcode gap=2 mode=0
+PASS reader 3 mbr_third gap=2 mode=0
+PASS reader 4 mbr_fourth_active_fat gap=2 mode=0
+PASS reader 5 root_multisector_multicluster gap=2 mode=0
+PASS reader 6 missing_readonly_and_attributes gap=2 mode=0
+PASS reader 7 empty_directory gap=2 mode=0
+PASS reader 8 directory_eoc gap=2 mode=0
+PASS reader 9 spc_2 gap=2 mode=0
+PASS reader 10 spc_4 gap=2 mode=0
+PASS reader 11 spc_8 gap=2 mode=0
+PASS reader 12 spc_16 gap=2 mode=0
+PASS reader 13 spc_32 gap=2 mode=0
+PASS reader 14 spc_64 gap=2 mode=0
+PASS reader 15 spc_128 gap=2 mode=0
+PASS reader 16 bad_signature gap=2 mode=0
+PASS reader 17 unsupported_bpb gap=2 mode=0
+PASS reader 18 bad_active_fat gap=2 mode=0
+PASS reader 19 boot_io_failure gap=2 mode=0
+PASS reader 20 directory_io_failure gap=2 mode=0
+PASS reader 21 file_early_eoc gap=2 mode=0
+PASS reader 22 file_free_cluster gap=2 mode=0
+PASS reader 23 file_self_loop gap=2 mode=0
+PASS reader 24 file_long_loop_limit gap=2 mode=0
+PASS reader 25 file_data_io_failure gap=2 mode=0
+PASS reader 26 file_fat_io_failure gap=2 mode=0
+PASS reader 27 true_directory_size_truncation gap=2 mode=0
+PASS reader 28 file_size_zero gap=2 mode=0
+PASS reader 29 file_first_cluster_invalid gap=2 mode=0
+PASS reader 30 root_self_loop gap=2 mode=0
+PASS reader 31 root_long_loop_limit gap=2 mode=0
+PASS reader 32 root_cluster_range gap=2 mode=0
+PASS reader 33 root_fat_io_failure gap=2 mode=0
+PASS reader 34 final_sector_io_failure gap=2 mode=0
+PASS reader 35 size_ignores_extra_allocated_cluster gap=2 mode=0
+PASS reader 36 first_matching_partition_selected gap=2 mode=0
+PASS reader 37 contiguous_file gap=2 mode=0
+PASS reader 38 rescan_clears_results gap=2 mode=0
+PASS reader 39 single_fat gap=2 mode=0
+PASS reader 40 exact_sector_eof gap=2 mode=0
+PASS reader 41 exact_cluster_eof gap=2 mode=0
+[format_dimensions]
+Errors: 0, Warnings: 0
+PASS reader 0 super_fragmented gap=0 mode=1
+[format_32bit]
+Errors: 0, Warnings: 0
+PASS reader 0 super_fragmented gap=0 mode=2
+[format_length]
+Errors: 0, Warnings: 0
+PASS reader 0 super_fragmented gap=0 mode=3
+[ack_timeout]
+Errors: 0, Warnings: 0
+PASS reader 0 super_fragmented gap=0 mode=4
+[last_byte_end]
+Errors: 0, Warnings: 0
+PASS reader 0 super_fragmented gap=0 mode=5
+[recovery]
+Errors: 0, Warnings: 0
+# PASS initial header failure retries exactly once and clears sticky E on commit
+# PASS MAN stops after two attempts, preserves bank/index/audio, and new manual request recovers
+# PASS first image advances to next candidate only after one retry
+# PASS all first candidates fail: exactly eight attempts then stop without a frame
+# PASS AUTO skips rejected candidate and commits next good image
+# PASS AUTO one-table budget and manual recovery with old display preserved
+# PASS explicit success waits for memory finish and display acknowledgement
+# PASS stale finish before new write ack ignored; only current finish commits
+# PASS real parser/player diagnostic scan/load/retry/skip/commit counts, numeric errors, image and sector context
+# Errors: 0, Warnings: 0
+[timeout]
+Errors: 0, Warnings: 0
+# PASS scan timeout displays F without first frame, load failure, or audio event
+# PASS loaded header timeout keeps old bank/index/audio; no retry or new MAN/AUTO load
+# PASS write-ack timeout keeps old display; late ack and completion cannot submit
+# PASS partial-pixel timeout retains old display and masks late SD data
+# PASS memory can finish all pixels but missing SD end times out without display/audio
+# PASS reset clears F and normal first-frame commit works again
+# Errors: 0, Warnings: 0
+[pixel]
+Errors: 0, Warnings: 0
+# PASS real writer partial frame fails twice, d stays, old display preserved
+# PASS new request clears partial FIFO and restarts real writer without reset
+# PASS one truncated attempt then exact successful retry and one commit
+# PASS full pixel count with short final sector cannot commit; next task recovers
+# PASS real BMP plus asynchronous frame reader/writer: commits=20 errors=5 collisions=0 mixed=0
+# Errors: 0, Warnings: 0
+# PASS real writer partial frame fails twice, d stays, old display preserved
+# PASS new request clears partial FIFO and restarts real writer without reset
+# PASS one truncated attempt then exact successful retry and one commit
+# PASS full pixel count with short final sector cannot commit; next task recovers
+# PASS real BMP plus asynchronous frame reader/writer: commits=20 errors=5 collisions=0 mixed=0
+# Errors: 0, Warnings: 0
+# PASS real writer partial frame fails twice, d stays, old display preserved
+# PASS new request clears partial FIFO and restarts real writer without reset
+# PASS one truncated attempt then exact successful retry and one commit
+# PASS full pixel count with short final sector cannot commit; next task recovers
+# PASS real BMP plus asynchronous frame reader/writer: commits=20 errors=5 collisions=0 mixed=0
+# Errors: 0, Warnings: 0
+[rescan]
+Errors: 0, Warnings: 0
+# PASS no-old-image black boot and real KEY2 recovery in reserved mode
+# PASS same-card rescan with old display
+# PASS cancel during pixel write, new card first frame and single audio
+# PASS scan recovery ignores duplicate without queue
+# PASS pending display handshake settles before reuse
+# PASS no-card failure and retry preserve display
+# PASS final-sector failure after pixels cannot commit; explicit rescan recovers
+# PASS rescan real BMP and asynchronous memory: commits=8 collisions=0 torn=0
+# PASS real KEY2/duplicate rescan/init failure/recovered event diagnostics
+# Errors: 0, Warnings: 0
+# PASS no-old-image black boot and real KEY2 recovery in reserved mode
+# PASS same-card rescan with old display
+# PASS cancel during pixel write, new card first frame and single audio
+# PASS scan recovery ignores duplicate without queue
+# PASS pending display handshake settles before reuse
+# PASS no-card failure and retry preserve display
+# PASS final-sector failure after pixels cannot commit; explicit rescan recovers
+# PASS rescan real BMP and asynchronous memory: commits=8 collisions=0 torn=0
+# PASS real KEY2/duplicate rescan/init failure/recovered event diagnostics
+# Errors: 0, Warnings: 0
+# PASS no-old-image black boot and real KEY2 recovery in reserved mode
+# PASS same-card rescan with old display
+# PASS cancel during pixel write, new card first frame and single audio
+# PASS scan recovery ignores duplicate without queue
+# PASS pending display handshake settles before reuse
+# PASS no-card failure and retry preserve display
+# PASS final-sector failure after pixels cannot commit; explicit rescan recovers
+# PASS rescan real BMP and asynchronous memory: commits=8 collisions=0 torn=0
+# PASS real KEY2/duplicate rescan/init failure/recovered event diagnostics
+# Errors: 0, Warnings: 0
+[system]
+PASS fat32_s3_final run_control_tests
+PASS fat32_s3_final run_mode_tests
+PASS fat32_s3_final run_buffer_handoff
+PASS fat32_s3_final run_audio_tests
+PASS fat32_s3_final run_hdmi_packet_tests
+PASS fat32_s3_final run_video_alignment
+PASS fat32_s3_final run_hdmi_s6_tests
+PASS fat32_s3_final run_s9_reset_tests
+[decoder]
+Errors: 0, Warnings: 0
+# PASS decoder W=640 H=480 depth=24 bad=0 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=32 bad=0 cut=0 gap=1 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=0 cut=0 gap=1 tail=11
+# PASS decoder W=640 H=480 depth=24 bad=0 cut=2 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=1 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=2 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=3 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=4 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=5 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=6 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=7 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=8 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=9 cut=0 gap=0 tail=0
+# PASS decoder W=640 H=480 depth=24 bad=0 cut=0 gap=0 tail=0
+# PASS decoder upstream abort
+# PASS decoder W=640 H=480 depth=24 bad=0 cut=0 gap=0 tail=0
+# Errors: 0, Warnings: 0
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=32 bad=0 cut=0 gap=1 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=1 tail=11
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=2 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=1 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=2 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=3 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=4 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=5 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=6 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=7 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=8 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=9 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=0 tail=0
+# PASS decoder upstream abort
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=0 tail=0
+# Errors: 0, Warnings: 0
+[sd]
+Errors: 0, Warnings: 0
+# PASS CMD55 ready response accepted and R1 error rejected
+# PASS full command, response timeout, token timeout, CRC failure and retry
+# Errors: 0, Warnings: 0
+Errors: 0, Warnings: 0
+# PASS KEY2 release, long hold once, disabled recovery, mode change
+# Errors: 0, Warnings: 0
+Errors: 0, Warnings: 0
+# PASS initialization deadline, readiness, read failure, host-only reinitialization
+# Errors: 0, Warnings: 0
+Errors: 0, Warnings: 0
+# PASS initialization completes between ACMD41 polls: CMD55 R1=00 accepted
+# PASS pin-level CRC7, CMD59 readiness/failure/retry, good/bad CRC16 and host-only reset
+# Errors: 0, Warnings: 0
+[startup]
+Errors: 0, Warnings: 0
+# PASS FLASH S2: TF-first, memory-first, near-simultaneous, reset while waiting; two-edge CDC and exactly one scan
+# Errors: 0, Warnings: 0
+[sector]
+Errors: 0, Warnings: 0
+# PASS sector continuous bytes and simultaneous final byte/end
+# PASS sector gapped bytes exceed total deadline without timeout
+# PASS sector short transfer reports length error
+# PASS sector overlong transfer reports length error
+# PASS sector failure without normal end completes once
+# PASS sector no-progress timeout releases request
+# PASS sector next transaction after failure
+# PASS sector reset during read and restart
+# PASS sector adapter all scenarios
+# Errors: 0, Warnings: 0
+# PASS driver CMD17 rejection completes without duplicate read
+# PASS driver full sector after failure, including CRC/end
+# PASS driver CRC failure after all pixels does not report success
+# PASS driver explicit retry succeeds without duplicate read
+# PASS sector real driver all scenarios
+# Errors: 0, Warnings: 0
+[uart]
+Errors: 0, Warnings: 0
+# PASS tb_uart_boot: 72 bytes, 868 clocks/bit, 8N1, one-shot, idle and mid-byte reset
+# Errors: 0, Warnings: 0
+# PASS tb_uart_event_logger: exact wire bytes, CR/LF, timestamp, simultaneous events, immutable context, DROP=2, recovery after overflow
+# Errors: 0, Warnings: 0
+PASS UART boot and event byte receiver

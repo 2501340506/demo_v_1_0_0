@@ -1,0 +1,724 @@
+[
+  {
+    "id": 0,
+    "name": "super_fragmented",
+    "options": {},
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  },
+  {
+    "id": 1,
+    "name": "mbr_first_large_lba",
+    "options": {
+      "slot": 0,
+      "partition": 200000
+    },
+    "sectors": 18,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 23
+  },
+  {
+    "id": 2,
+    "name": "mbr_second_jump_opcode",
+    "options": {
+      "slot": 1,
+      "partition": 2048
+    },
+    "sectors": 18,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 23
+  },
+  {
+    "id": 3,
+    "name": "mbr_third",
+    "options": {
+      "slot": 2,
+      "partition": 2048
+    },
+    "sectors": 18,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 23
+  },
+  {
+    "id": 4,
+    "name": "mbr_fourth_active_fat",
+    "options": {
+      "slot": 3,
+      "partition": 2048,
+      "active": 1
+    },
+    "sectors": 18,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 23
+  },
+  {
+    "id": 5,
+    "name": "root_multisector_multicluster",
+    "options": {
+      "spc": 2,
+      "long_dir": true
+    },
+    "sectors": 21,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 21
+  },
+  {
+    "id": 6,
+    "name": "missing_readonly_and_attributes",
+    "options": {
+      "missing": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 5,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 12
+  },
+  {
+    "id": 7,
+    "name": "empty_directory",
+    "options": {
+      "empty": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 2
+  },
+  {
+    "id": 8,
+    "name": "directory_eoc",
+    "options": {
+      "dir_eoc": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 3
+  },
+  {
+    "id": 9,
+    "name": "spc_2",
+    "options": {
+      "spc": 2
+    },
+    "sectors": 18,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 18
+  },
+  {
+    "id": 10,
+    "name": "spc_4",
+    "options": {
+      "spc": 4
+    },
+    "sectors": 20,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 14
+  },
+  {
+    "id": 11,
+    "name": "spc_8",
+    "options": {
+      "spc": 8
+    },
+    "sectors": 24,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 14
+  },
+  {
+    "id": 12,
+    "name": "spc_16",
+    "options": {
+      "spc": 16
+    },
+    "sectors": 32,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 14
+  },
+  {
+    "id": 13,
+    "name": "spc_32",
+    "options": {
+      "spc": 32
+    },
+    "sectors": 48,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 14
+  },
+  {
+    "id": 14,
+    "name": "spc_64",
+    "options": {
+      "spc": 64
+    },
+    "sectors": 80,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 14
+  },
+  {
+    "id": 15,
+    "name": "spc_128",
+    "options": {
+      "spc": 128
+    },
+    "sectors": 144,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 14
+  },
+  {
+    "id": 16,
+    "name": "bad_signature",
+    "options": {
+      "bad_sig": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 32,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 1
+  },
+  {
+    "id": 17,
+    "name": "unsupported_bpb",
+    "options": {
+      "bad_bpb": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 33,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 1
+  },
+  {
+    "id": 18,
+    "name": "bad_active_fat",
+    "options": {
+      "bad_active": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 33,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 1
+  },
+  {
+    "id": 19,
+    "name": "boot_io_failure",
+    "options": {
+      "boot_fail": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 16,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 1
+  },
+  {
+    "id": 20,
+    "name": "directory_io_failure",
+    "options": {
+      "dir_fail": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 16,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 2
+  },
+  {
+    "id": 21,
+    "name": "file_early_eoc",
+    "options": {
+      "chain_error": "eoc"
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      37,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 19
+  },
+  {
+    "id": 22,
+    "name": "file_free_cluster",
+    "options": {
+      "chain_error": "free"
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      36,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 19
+  },
+  {
+    "id": 23,
+    "name": "file_self_loop",
+    "options": {
+      "chain_error": "self"
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      35,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 19
+  },
+  {
+    "id": 24,
+    "name": "file_long_loop_limit",
+    "options": {
+      "chain_error": "loop"
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      38,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 25
+  },
+  {
+    "id": 25,
+    "name": "file_data_io_failure",
+    "options": {
+      "file_fail": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      16,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 20
+  },
+  {
+    "id": 26,
+    "name": "file_fat_io_failure",
+    "options": {
+      "fat_fail": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      16,
+      16,
+      16,
+      16
+    ],
+    "expected_read_requests": 10
+  },
+  {
+    "id": 27,
+    "name": "true_directory_size_truncation",
+    "options": {
+      "truncate": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 20
+  },
+  {
+    "id": 28,
+    "name": "file_size_zero",
+    "options": {
+      "zero": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 17
+  },
+  {
+    "id": 29,
+    "name": "file_first_cluster_invalid",
+    "options": {
+      "bad_first": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      36,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 17
+  },
+  {
+    "id": 30,
+    "name": "root_self_loop",
+    "options": {
+      "root_error": "self"
+    },
+    "sectors": 19,
+    "expected_scan_error": 35,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 3
+  },
+  {
+    "id": 31,
+    "name": "root_long_loop_limit",
+    "options": {
+      "root_error": "loop"
+    },
+    "sectors": 19,
+    "expected_scan_error": 38,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 9
+  },
+  {
+    "id": 32,
+    "name": "root_cluster_range",
+    "options": {
+      "root_error": "range"
+    },
+    "sectors": 19,
+    "expected_scan_error": 36,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 3
+  },
+  {
+    "id": 33,
+    "name": "root_fat_io_failure",
+    "options": {
+      "root_error": "io"
+    },
+    "sectors": 19,
+    "expected_scan_error": 16,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 3
+  },
+  {
+    "id": 34,
+    "name": "final_sector_io_failure",
+    "options": {
+      "last_fail": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      16,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  },
+  {
+    "id": 35,
+    "name": "size_ignores_extra_allocated_cluster",
+    "options": {
+      "extra_chain": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  },
+  {
+    "id": 36,
+    "name": "first_matching_partition_selected",
+    "options": {
+      "slot": 1,
+      "partition": 4096,
+      "extra_partition": true
+    },
+    "sectors": 18,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 23
+  },
+  {
+    "id": 37,
+    "name": "contiguous_file",
+    "options": {
+      "contiguous": true
+    },
+    "sectors": 16,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  },
+  {
+    "id": 38,
+    "name": "rescan_clears_results",
+    "options": {
+      "empty": true,
+      "rescan": true
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 0,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 2
+  },
+  {
+    "id": 39,
+    "name": "single_fat",
+    "options": {
+      "fat_count": 1
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  },
+  {
+    "id": 40,
+    "name": "exact_sector_eof",
+    "options": {
+      "tail": 1536
+    },
+    "sectors": 17,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  },
+  {
+    "id": 41,
+    "name": "exact_cluster_eof",
+    "options": {
+      "spc": 2,
+      "tail": 2048
+    },
+    "sectors": 22,
+    "expected_scan_error": 0,
+    "expected_mask": 15,
+    "expected_file_errors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "expected_read_requests": 22
+  }
+]

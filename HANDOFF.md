@@ -1,3 +1,14 @@
+# 当前交接：FAT32 S3 本地完成，等待上板
+
+- 当前任务：原项目目录 feature/fat32-filesystem 已完成 S3，固定候选 v0.7.0-s3-local.1 待用户板测。
+- 已完成：fat32_bmp_reader、预检/紧凑列表、簇号与大小图片表、生产接入；布局和簇地址计算分拍。核心 42 场景、包装器 42 素材加 5 模式及最终 16 个验证入口通过。TD attempt7 Setup +0.104 ns / Hold +0.014 ns，8890 LUT、5686 reg、4 BRAM、2 DSP。
+- 已核对：64 个当前工程输入与构建快照逐字节一致；629624 字节固定 bit 与 attempt7 一致。只备份相对 S1 新增/修改的四个 RTL。原有 best_result、历史候选工程与个人记录未纳入提交；GUI 工程只选择性暂存本任务清单变更。
+- 卡住的问题：只等待具体 S3 候选的实卡板测；碎片/大 LBA 板级效果尚未验证，不能提前建立 board 标签或正式发布。
+- 下一步计划：用户烧录 releases/v0.7.0/s3-local.1/demo.bit，按 BOARD_VALIDATION.md 检查；确认后立即记录、建立 S3 board 标签并推送当前分支及阶段标签。S4 复用验收 bit 归档并发布。本轮仅本地阶段提交和 local 标签，未推送 S3、未合并 main。
+- 踩过的坑：首索引不变时旧表函数没有更新簇号，改显式 mux；慢速模拟卡用复位代次取消旧事务。TD 新源不能继承 AutoExcluded，编译序号需唯一。attempt5 工具无效引脚错误；attempt6 Setup −4.613 ns，分拍后 attempt7 通过，不放宽约束。UART 启动文本仍旧，按固定路径识别候选。诊断地址为最近实际物理 LBA。
+
+[S3 验证](docs/fat32_s3_validation.md) · [固定候选](releases/v0.7.0/s3-local.1/README.md)
+## 历史交接
 # 当前交接：FAT32 S2 本地完成
 
 - 当前任务：原项目目录 feature/fat32-filesystem 的 S2 核心实现与验证完成，生产保持已验收 S1。
