@@ -19,7 +19,7 @@ try {
     if ($Suite -eq 'pixels') { $test='tb_bmp_pixels' }
     if ($Suite -eq 'timeout') { $test='tb_bmp_timeout' }
     if ($Suite -in @('recovery','timeout_control')) {
-        $rtl+=@('sd_card_bmp','media_display_control','media_player_control','mode_key_control',
+        $rtl+=@('sd_sector_adapter','sd_card_bmp','media_display_control','media_player_control','media_policy','key_gesture_control','dual_key_event_router','mode_key_control',
             'key_press_debounce','sd_card_top','sd_card_sec_read_write','sd_card_cmd','spi_master')
         $test=if ($Suite -eq 'recovery') { 'tb_bmp_recovery' } else { 'tb_timeout_control' }
     }
