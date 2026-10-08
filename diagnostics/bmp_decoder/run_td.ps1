@@ -12,6 +12,7 @@ $entries=@'
             <File Path="../user_source/hdl_source/uart/uart_event_logger.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="55"/></FileInfo></File>
 '@
 $entries += '<File Path="../user_source/hdl_source/SD/bmp24_decoder.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="56"/></FileInfo></File>'
+$entries += '<File Path="../user_source/hdl_source/SD/bmp_header_check.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="57"/></FileInfo></File>'
 $entries=$entries.Replace('UsedInP&amp;R','UsedInP&R')
 $project=$project.Replace('</Verilog>',"$entries`n        </Verilog>")
 [IO.File]::WriteAllText("$out/TD_project/demo.al",$project,[Text.UTF8Encoding]::new($false))

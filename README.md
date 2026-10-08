@@ -1,3 +1,10 @@
+# BMP 2.11 S3 本地候选（2026-10-08）
+
+S2 用户上板通过后，S3 已完成生产解码器固定接入与共享头校验，移除包装层旧解析和像素完整性计数。本地 ModelSim 与 TD 通过；等待 S4 上板，尚未结项、未上传 GitHub。
+[S3 候选、bit 与验证报告](releases/v0.6.0-bmp211/s3-local.1/README.md)。正式已验收版仍为 v0.5.4。
+
+以下为历史记录。
+
 # 当前正式版本：v0.5.4 UART可观测性
 
 [下载正式bit](releases/v0.5.4/demo.bit) · [版本说明](releases/v0.5.4/README.md) · [验收与归档](docs/history/2026-10-07/v0.5.4/README.md)。复用已验收S3 local.2原bit，启动行保持BOOT v0.5.4-s3-local.2，无需重复板测。

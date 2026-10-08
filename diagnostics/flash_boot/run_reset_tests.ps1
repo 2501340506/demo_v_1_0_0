@@ -28,6 +28,7 @@ try {
     if (-not ($rtl | Where-Object { (Split-Path $_ -Leaf) -eq 'bmp24_decoder.v' })) {
         $rtl += Join-Path $repoRoot 'user_source/hdl_source/SD/bmp24_decoder.v'
     }
+    $rtl += Join-Path $repoRoot 'user_source/hdl_source/SD/bmp_header_check.v'
     if ($BaselineTop) {
         # Negative control: the new test must reject the old constant-reset top.
         $oldTop = Join-Path $simDir 'top_before_s1.v'

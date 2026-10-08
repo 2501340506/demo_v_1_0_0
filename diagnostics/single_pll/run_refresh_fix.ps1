@@ -8,7 +8,7 @@ $lib=(Join-Path $out 'work').Replace('\','/')
 Push-Location "$root/TD_project"
 try {
  if(!(Test-Path "$lib/_info")) { & "$sim/vlib.exe" $lib; if($LASTEXITCODE){throw 'vlib failed'} }
- $rtl=@('media_display_control','media_player_control','media_policy','key_gesture_control','key_press_debounce','mode_key_control','dual_key_event_router','sd_card_bmp','frame_fifo_read','frame_fifo_write','frame_read_write','bmp24_decoder','bmp_read') | ForEach-Object { "../user_source/hdl_source/SD/$_.v" }
+ $rtl=@('media_display_control','media_player_control','media_policy','key_gesture_control','key_press_debounce','mode_key_control','dual_key_event_router','sd_card_bmp','frame_fifo_read','frame_fifo_write','frame_read_write','bmp_header_check','bmp24_decoder','bmp_read') | ForEach-Object { "../user_source/hdl_source/SD/$_.v" }
  # SIMULATION must never leak into the protected controller: it changes read latency.
  & "$sim/vlog.exe" -work $lib '+incdir+../user_source/hdl_source/include' ../user_source/hdl_source/include/sdr_as_ram.enc.v ../user_source/hdl_source/include/sdr_init_ref.enc.v ../user_source/hdl_source/include/sdr_wrrd.enc.v 2>&1 | Tee-Object "$out/controller_compile.log"
  if($LASTEXITCODE){throw 'controller compile failed'}

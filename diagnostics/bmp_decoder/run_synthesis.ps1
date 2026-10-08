@@ -1,10 +1,10 @@
-param([string]$BuildName='decoder_s1_syn1')
+﻿param([string]$BuildName='decoder_s1_syn1')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$BuildName"
 if(Test-Path $out){throw 'Use a new build name'}
 New-Item -ItemType Directory $out | Out-Null
-Copy-Item "$root/user_source/hdl_source/SD/bmp24_decoder.v" "$out/bmp24_decoder.v"
+Copy-Item "$root/user_source/hdl_source/SD/bmp_header_check.v","$root/user_source/hdl_source/SD/bmp24_decoder.v" $out
 $source="$out/bmp24_decoder.v".Replace('\','/')
 [xml]$xml=(Get-Content "$root/releases/v0.5.3/v0.5.3-baseline/demo.al" -Raw).Replace('UsedInP&R','UsedInP&amp;R')
 foreach($node in @($xml.SelectNodes('/Project/Runs | /Project/Project_Settings'))){[void]$node.ParentNode.RemoveChild($node)}
@@ -12,6 +12,9 @@ $entry=$xml.SelectSingleNode('/Project/Source_Files/Verilog/File').CloneNode($tr
 $entry.SetAttribute('Path',$source)
 $xml.Project.Source_Files.RemoveAll()
 $verilog=$xml.CreateElement('Verilog');[void]$verilog.AppendChild($entry)
+$headerEntry=$entry.CloneNode($true)
+$headerEntry.SetAttribute('Path',"$out/bmp_header_check.v".Replace('\','/'))
+[void]$verilog.AppendChild($headerEntry)
 [void]$xml.SelectSingleNode('/Project/Source_Files').AppendChild($verilog)
 [IO.File]::WriteAllText("$out/demo.prj",$xml.OuterXml.Replace('UsedInP&amp;R','UsedInP&R'))
 $settings=@'

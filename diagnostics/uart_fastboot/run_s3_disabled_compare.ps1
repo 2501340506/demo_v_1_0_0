@@ -10,7 +10,7 @@ $old=$old.Replace('module bmp_read #(','module bmp_read_s2 #(')
 [IO.File]::WriteAllText("$out/bmp_read_s2.v",$old,[Text.UTF8Encoding]::new($false))
 $lib=(Join-Path $out 'work').Replace('\','/')
 if(!(Test-Path "$lib/_info")){& "$sim/vlib.exe" $lib}
-& "$sim/vlog.exe" -sv -work $lib -l "$out/compile.log" "$out/bmp_read_s2.v" "$root/user_source/hdl_source/SD/bmp24_decoder.v" "$root/user_source/hdl_source/SD/bmp_read.v" "$root/diagnostics/stability/sim_bmp_sectors.sv" "$root/diagnostics/stability/tb_bmp_baseline.sv" "$PSScriptRoot/tb_s3_disabled_compare.sv"
+& "$sim/vlog.exe" -sv -work $lib -l "$out/compile.log" "$out/bmp_read_s2.v" "$root/user_source/hdl_source/SD/bmp_header_check.v" "$root/user_source/hdl_source/SD/bmp24_decoder.v" "$root/user_source/hdl_source/SD/bmp_read.v" "$root/diagnostics/stability/sim_bmp_sectors.sv" "$root/diagnostics/stability/tb_bmp_baseline.sv" "$PSScriptRoot/tb_s3_disabled_compare.sv"
 if($LASTEXITCODE){throw 'Compile failed'}
 & "$sim/vsim.exe" -c -lib $lib tb_s3_disabled_compare -l "$out/test.log" -do 'run -all; quit -f'
 $log=Get-Content "$out/test.log" -Raw
