@@ -1,3 +1,38 @@
+# 项目文档入口
+
+本页顶部是当前有效导航。后续保留的阶段文字属于历史过程，不应覆盖顶部结论。
+
+## 当前有效文档
+
+| 内容 | 入口 |
+|---|---|
+| 项目使用、构建与下载 | [项目 README](../README.md) |
+| 当前验证结论与边界 | [VALIDATION_STATUS.md](VALIDATION_STATUS.md) |
+| BMP 2.11 完成归档 | [2026-10-08/bmp24_decoder](history/2026-10-08/bmp24_decoder/README.md) |
+| BMP 2.11 阶段计划 | [bmp24_decoder_plan.md](bmp24_decoder_plan.md) |
+| 构建与诊断入口 | [diagnostics/README.md](../diagnostics/README.md) |
+| 发布版本与固定产物 | [releases/README.md](../releases/README.md) |
+| 全部历史归档 | [ARCHIVE_INDEX.md](ARCHIVE_INDEX.md) |
+
+## 专题资料
+
+| 专题 | 当前入口 | 历史归档 |
+|---|---|---|
+| HDMI 音频 | [来源说明](HDMI_AUDIO_SOURCES.md) | [2026-10-05 结项](history/2026-10-05/HDMI音频升级/README.md) |
+| 系统稳定性 | [来源说明](SYSTEM_STABILITY_SOURCES.md) | [2026-10-05 结项](history/2026-10-05/系统稳定性增强/README.md) |
+| Flash 固化与启动 | [来源说明](FLASH_BOOT_SOURCES.md) | [2026-10-05 结项](history/2026-10-05/Flash固化与上电自启/README.md) |
+| 时序收敛 | [timing_closure](timing_closure/) | [v0.5.2 归档](history/2026-10-07/v0.5.2/README.md) |
+| UART 与快速启动 | [S3 接口说明](S3_SCAN_RESUME.md) | [v0.5.4 归档](history/2026-10-07/v0.5.4/README.md) |
+
+## 目录约定
+
+- `history/<日期>/<任务或版本>/`：已经完成的阶段计划、交接、验收和结论。
+- `flash_boot/`、`timing_closure/`：仍被发布说明引用的专题资料，保持路径稳定。
+- `diagnostics/`：历史问题分析；可执行测试与新日志分别位于仓库根目录的 `diagnostics/` 和 `diagnostics/output/`。
+- 已确认逐字节完全相同的副本已由用户手动清理；主文件保留在对应版本或任务归档目录。
+
+## 历史首页记录
+
 # BMP 2.11 已上传 GitHub 并合并 main（2026-10-08）
 
 feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推送。板级版本 v0.6.0-bmp211-s3-board.1。main 合并无冲突，合并文件树与已验收分支一致；源码及 bit 未改变，未重复构建。

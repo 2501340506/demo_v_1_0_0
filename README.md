@@ -4,6 +4,19 @@ feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推�
 
 仓库：https://github.com/xier1-droid/anlogic-eg4-hdmi-bmp-player/tree/main 。用户未提交的 TD 工程、best_result、S2 工程日志及个人记录保留在本地，未纳入发布。
 
+## 目录地图
+
+| 路径 | 用途 | 版本控制约定 |
+|---|---|---|
+| `TD_project/` | Tang Dynasty 工程入口；使用 `demo.al` 打开工程 | 工程入口纳入版本控制，综合、布局布线和本机状态文件不纳入 |
+| `user_source/` | 正式 RTL、约束和 IP 源码 | 纳入版本控制，是当前生产源码入口 |
+| `diagnostics/` | testbench、诊断脚本、固定测试素材及运行入口 | 可复用内容纳入版本控制；`output/`、`local_tools/` 仅保存在本地 |
+| `releases/` | 各版本 bit、版本说明、必要源码快照和正式验证证据 | 已发布内容作为固定交付物保留，不放入新生成的工具日志 |
+| `docs/` | 当前设计文档、验证状态和历史归档 | 纳入版本控制；已完成任务归档到 `docs/history/` |
+| `work/` | 本地 ModelSim 工作库 | 不纳入版本控制 |
+
+日常开发从 `TD_project/demo.al`、`user_source/` 和 `diagnostics/README.md` 开始；上板使用 `releases/` 中的固定 bit，不使用会被后续构建覆盖的运行目录产物。
+
 以下为历史过程，其“待授权/未上传”状态已由上述完成结果更新。
 # BMP 2.11 已完成板级验收与本地归档（2026-10-08）
 

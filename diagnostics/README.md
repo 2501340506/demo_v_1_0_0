@@ -4,18 +4,31 @@
 
 v0.5.2 发布后证据补测：`single_pll/run_evidence.ps1`；[结果与范围](../releases/v0.5.2/evidence-2026-10-07/README.md)。完整帧行为测试通过，实际控制器刷新测试失败；脚本保留失败日志并返回错误，不代表全部通过。
 
-活动验证见[stability](stability/README.md)；已完成阶段测试保留历史，新运行结果放output。
+活动验证见[stability](stability/README.md)；已完成阶段测试保留历史，新运行结果放 `output/`。
+
+目录内容分为两类：
+
+- 可复用并纳入版本控制：测试平台、运行脚本、固定测试素材，以及用于说明验证结论的精简证据。
+- 本地生成且不纳入版本控制：`output/` 中的运行缓存和日志、`local_tools/` 中的本机工具、ModelSim 临时库及 TD 中间产物。
+
+正式版本的 bit、验收记录和必要证据应进入 `releases/`；直接打开发布快照中的工程后产生的日志应移回 `diagnostics/output/`，不得作为发布内容继续累积。
 
 ```text
 diagnostics/
   run_td_build.ps1        TD构建入口
-  stability/             v0.4.0活动测试、接口适配及固定证据
+  bmp_decoder/           BMP解码器专项运行入口
+  flash_boot/            Flash与启动测试
+  sd_recovery/           当前SD恢复测试
+  single_pll/            单PLL与SDRAM专项测试
+  stability/             稳定性回归、接口适配及固定证据
+  test_assets/           固定测试素材
   history/
     v0.3.0/              可运行的版本回归脚本、testbench和Python参考
     sd_recovery/         延期SD问题的复现测试，仅存档
     2026-10-04/          早期阶段报告与构建对照
     2026-10-05/          旧本地运行结果压缩包及迁移清单
   output/                新运行缓存和日志（不入Git）
+  local_tools/           本机诊断工具（不入Git）
 ```
 
 - [v0.3.0测试说明](history/v0.3.0/README.md)
