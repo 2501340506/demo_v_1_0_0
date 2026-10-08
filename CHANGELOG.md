@@ -1,3 +1,10 @@
+# FAT32 v0.7.0：S1 本地通过，待上板（2026-10-08）
+
+当前 feature/fat32-filesystem 完成 S0/S1。新增扇区适配并接入旧 BMP 路径，完成接口/恢复回归及 TD 时序收敛；FAT32 核心尚未接入。固定候选 v0.7.0-s1-local.1：Setup +0.132 ns，Hold +0.035 ns；用户确认上板后才进入 S2。
+
+[固定 bit 与说明](releases/v0.7.0/s1-local.1/README.md) · [上板步骤](releases/v0.7.0/s1-local.1/BOARD_VALIDATION.md) · [计划](docs/fat32_filesystem_plan.md) · [交接](HANDOFF.md)。本任务尚未建立 board 标签或推送 GitHub；上一版已验收成果保持有效。
+
+以下为历史记录。
 # BMP 2.11 已上传 GitHub 并合并 main（2026-10-08）
 
 feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推送。板级版本 v0.6.0-bmp211-s3-board.1。main 合并无冲突，合并文件树与已验收分支一致；源码及 bit 未改变，未重复构建。

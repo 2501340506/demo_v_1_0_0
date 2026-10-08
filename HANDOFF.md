@@ -1,13 +1,13 @@
-# 当前交接：FAT32 v0.7.0，S0 基线准备
+# 当前交接：FAT32 v0.7.0 S1 本地完成，等待上板
 
-- 当前任务：实施已确认的 FAT32 升级计划，先完成 S0/S1 并交付扇区适配上板候选。
-- 已完成：从 main 建立 feature/fat32-filesystem 和独立 worktree；写入 docs/fat32_filesystem_plan.md。
-- 卡住的问题：无；S1 上板确认是进入 S2 的明确门槛。
-- 下一步计划：基线仿真，扇区适配器、专项测试、旧 BMP 生产接入、回归和 TD 构建。
-- 踩过的坑：资料扫描器只读首扇区；当前已有 SD 错误输出和独立 BMP 解码器，不能按课程示例退化。用户 TD/个人未提交改动留在原工作区。
+- 当前任务：feature/fat32-filesystem 独立 worktree 实施 FAT32 升级；S0/S1 已完成，S2～S4 尚未开始。
+- 已完成：扇区适配器、旧 BMP 生产桥接、SD 失败当拍撤销及 UART 时序分级；基线解码器 32 场景、最终九个验证入口全部通过（含八项系统回归）。TD attempt6 Setup +0.132 ns / Hold +0.035 ns，6540 LUT、4216 寄存器。固定交付 releases/v0.7.0/s1-local.1/demo.bit。
+- 已核对：59 个工程输入与构建快照逐字节一致；629624 字节 bit 与构建原文件逐字节一致；只备份三个改动 RTL。用户原工作区、资料原件及已发布候选均未改动。
+- 卡住的问题：只等待用户确认 v0.7.0-s1-local.1 上板；当前还没有 FAT32 文件读取功能，不能标记整个升级完成。
+- 下一步计划：收到原图片、切换/AUTO、拔卡及长按 KEY2 恢复结果后，立即记录实际板测、建立 S1 board 标签并推送当前分支及本阶段标签，然后进入 S2。未收到板测前不创建 board 标签、不合并 main。
+- 踩过的坑：SD 驱动失败后立即接收新请求，必须当拍撤销旧请求以免重复 CMD17；短扇区保持原重试语义。attempt1 被替代，attempt2～5 时序未过，只留本地诊断。通过寄存 SD 字节边界与拆分 UART 字段选择/转换收敛，未修改时钟约束。UART 仍显示旧启动版本行，应按固定 bit 路径确认候选。
 
-[阶段计划](docs/fat32_filesystem_plan.md)
-
+[阶段计划](docs/fat32_filesystem_plan.md) · [验证记录](docs/fat32_validation.md) · [候选](releases/v0.7.0/s1-local.1/README.md) · [板测说明](releases/v0.7.0/s1-local.1/BOARD_VALIDATION.md)
 ## 历史交接
 # 当前交接：目录与执行规则整理已发布到 main
 

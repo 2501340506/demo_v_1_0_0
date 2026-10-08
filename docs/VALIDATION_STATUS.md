@@ -1,3 +1,8 @@
+# 当前状态：FAT32 S1 本地通过，待上板（2026-10-08）
+
+v0.7.0-s1-local.1 已完成扇区适配、旧 BMP 链路接入及必要的 UART 时序分级。最终九个验证入口（含八项系统回归）通过；TD Setup +0.132 ns / Hold +0.035 ns。尚未进行本候选板测，S2/S3 FAT32 核心未接入。
+
+[验证与限制](fat32_validation.md) · [固定候选](../releases/v0.7.0/s1-local.1/README.md)。以下为历史记录，既有已验收版本仍可回退。
 # BMP 2.11 已上传 GitHub 并合并 main（2026-10-08）
 
 feature/bmp211-decoder、main 和本任务五个阶段标签已成功原子推送。板级版本 v0.6.0-bmp211-s3-board.1。main 合并无冲突，合并文件树与已验收分支一致；源码及 bit 未改变，未重复构建。
