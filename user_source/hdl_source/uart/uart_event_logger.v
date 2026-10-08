@@ -122,8 +122,15 @@ always @* begin
         endcase
     end
 end
+// Byte selection is stable for a full cycle before the registered start is
+// consumed. Break its long mux path from the serial frame/bit selection.
+reg [7:0] prepared_data;
+always @(posedge clk or posedge rst) begin
+    if(rst) prepared_data<=8'h20;
+    else prepared_data<=tx_data;
+end
 uart_tx_byte #(.CLKS_PER_BIT(CLKS_PER_BIT)) u_tx(
-    .clk(clk),.rst(rst),.start(start),.data(tx_data),
+    .clk(clk),.rst(rst),.start(start),.data(prepared_data),
     .tx(uart_tx),.busy(),.done(done)
 );
 always @(posedge clk or posedge rst) begin

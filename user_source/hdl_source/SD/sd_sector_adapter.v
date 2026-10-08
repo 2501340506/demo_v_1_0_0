@@ -7,8 +7,8 @@ module sd_sector_adapter #(
     input wire clk, input wire rst,
     input wire sector_req, input wire [31:0] sector_lba,
     output wire sector_busy,
-    output wire sector_valid, output wire [7:0] sector_byte,
-    output wire [8:0] sector_byte_index,
+    output reg sector_valid, output reg [7:0] sector_byte,
+    output reg [8:0] sector_byte_index,
     output reg sector_done, output reg [7:0] sector_error,
     output wire sd_sec_read, output reg [31:0] sd_sec_read_addr,
     input wire sd_sec_read_data_valid, input wire [7:0] sd_sec_read_data,
@@ -28,19 +28,23 @@ module sd_sector_adapter #(
 
     // The driver returns straight to IDLE on failure. Withdraw in the same
     // cycle as its failed pulse, before it can accept the held request again.
-    assign sd_sec_read=request_active && !sd_sec_read_failed && !sd_sec_read_end;
+    assign sd_sec_read=request_active && !sd_sec_read_failed;
     assign sector_busy=(state!=IDLE);
-    assign sector_valid=(state==READ) && sd_sec_read_data_valid &&
-                        !sd_sec_read_failed && byte_count<10'd512;
-    assign sector_byte=sd_sec_read_data;
-    assign sector_byte_index=byte_count[8:0];
-
     always @(posedge clk or posedge rst) begin
         if(rst) begin
             state<=IDLE; byte_count<=0; idle_cycles<=0;
             sector_done<=0; sector_error<=0; request_active<=0; sd_sec_read_addr<=0;
+            sector_valid<=0; sector_byte<=0; sector_byte_index<=0;
         end else begin
             sector_done<=0;
+            sector_valid<=0;
+            // Register the service boundary so SD protocol decode is not in
+            // the parser's byte-valid/address-advance timing path.
+            if(state==READ && sd_sec_read_data_valid && !sd_sec_read_failed && byte_count<10'd512) begin
+                sector_valid<=1;
+                sector_byte<=sd_sec_read_data;
+                sector_byte_index<=byte_count[8:0];
+            end
             case(state)
                 IDLE: if(sector_req) begin
                     sd_sec_read_addr<=sector_lba;

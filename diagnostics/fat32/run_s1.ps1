@@ -9,6 +9,7 @@ $cases=@(
     @('recovery','diagnostics/stability/run_stability.ps1','-Suite','recovery'),
     @('timeout','diagnostics/stability/run_stability.ps1','-Suite','timeout_control'),
     @('sd','diagnostics/sd_recovery/run_tests.ps1'),
+    @('uart','diagnostics/uart_fastboot/run_sim.ps1','-RunName','fat32_s1_uart'),
     @('system','diagnostics/stability/run_regression.ps1','-Stage','fat32_s1_final'),
     @('startup','diagnostics/flash_boot/run_reset_tests.ps1','-Suite','startup')
 )
