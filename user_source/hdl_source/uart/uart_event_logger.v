@@ -98,21 +98,23 @@ endfunction
 wire [79:0] name_text=event_name(kind);
 localparam [175:0] BANNER="BOOT v0.5.4-s3-local.2";
 reg [7:0] tx_data;
+reg tx_hex;
 always @* begin
     tx_data=8'h20;
+    tx_hex=1'b0;
     if(boot) begin
         if(char_index<22) tx_data=BANNER[(21-char_index)*8 +: 8];
         else if(char_index==22) tx_data=8'h0d;
         else tx_data=8'h0a;
     end else begin
         if(char_index<10) tx_data=name_text[(9-char_index)*8 +: 8];
-        else if(char_index>=13 && char_index<=20) tx_data=hex(snapshot[153-(char_index-13)*4 -: 4]);
+        else if(char_index>=13 && char_index<=20) begin tx_data={4'd0,snapshot[153-(char_index-13)*4 -: 4]};tx_hex=1;end
         else if(char_index==24) tx_data=8'h30+{6'd0,snapshot[105:104]};
-        else if(char_index>=28 && char_index<=35) tx_data=hex(snapshot[103-(char_index-28)*4 -: 4]);
-        else if(char_index==39) tx_data=hex({1'b0,snapshot[71:69]});
-        else if(char_index==43) tx_data=hex(snapshot[68:65]);
+        else if(char_index>=28 && char_index<=35) begin tx_data={4'd0,snapshot[103-(char_index-28)*4 -: 4]};tx_hex=1;end
+        else if(char_index==39) begin tx_data={5'd0,snapshot[71:69]};tx_hex=1;end
+        else if(char_index==43) begin tx_data={4'd0,snapshot[68:65]};tx_hex=1;end
         else if(char_index==47) tx_data=8'h30+{7'd0,snapshot[64]};
-        else if(char_index>=51 && char_index<=66) tx_data=hex(snapshot[63-(char_index-51)*4 -: 4]);
+        else if(char_index>=51 && char_index<=66) begin tx_data={4'd0,snapshot[63-(char_index-51)*4 -: 4]};tx_hex=1;end
         else case(char_index)
             11:tx_data="T"; 12,23,27,38,42,46,50:tx_data="=";
             22:tx_data="I"; 26:tx_data="S"; 37:tx_data="E";
@@ -122,15 +124,16 @@ always @* begin
         endcase
     end
 end
-// Byte selection is stable for a full cycle before the registered start is
-// consumed. Break its long mux path from the serial frame/bit selection.
+// Field selection is stable before registered start is consumed. Register
+// raw characters/nibbles before hexadecimal conversion and serial framing.
 reg [7:0] prepared_data;
+reg prepared_hex;
 always @(posedge clk or posedge rst) begin
-    if(rst) prepared_data<=8'h20;
-    else prepared_data<=tx_data;
+    if(rst) begin prepared_data<=8'h20;prepared_hex<=0;end
+    else begin prepared_data<=tx_data;prepared_hex<=tx_hex;end
 end
 uart_tx_byte #(.CLKS_PER_BIT(CLKS_PER_BIT)) u_tx(
-    .clk(clk),.rst(rst),.start(start),.data(prepared_data),
+    .clk(clk),.rst(rst),.start(start),.data(prepared_hex ? hex(prepared_data[3:0]) : prepared_data),
     .tx(uart_tx),.busy(),.done(done)
 );
 always @(posedge clk or posedge rst) begin
