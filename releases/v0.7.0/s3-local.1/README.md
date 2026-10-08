@@ -1,3 +1,6 @@
+# 最新状态：FAT32 S3 上板通过
+
+用户确认普通功能、两项顺序播放及已核验特殊布局实卡功能正常。建立 v0.7.0-s3-board.1，复用 releases/v0.7.0/s3-local.1/demo.bit；未修改 RTL 或重建。碎片、大 LBA 和后续根目录簇布局有实际 FAT 记录。未单独确认的板测项目见 BOARD_VALIDATION.md，以下旧“待上板”描述为历史状态。下一步为 S4 结项归档与正式发布，尚未合并 main。
 # v0.7.0-s3-local.1：FAT32 生产接入候选
 
 固定 bit：demo.bit（629624 字节）。本地 TD attempt7：Setup +0.104 ns、Hold +0.014 ns；8890 LUT、5686 寄存器、4 BRAM、2 DSP。尚未上板验收。
