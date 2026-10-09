@@ -1,0 +1,38 @@
+standard
+***Report Model: media_frame_cache_control Device: EG4S20BG256***
+
+IO Statistics
+#IO                        78   out of    188   41.49%
+  #input                   21
+  #output                  57
+  #inout                    0
+
+LUT Statistics
+#Total_luts               203
+  #lut4                   173
+  #lut5                    30
+  #lut6                     0
+  #lut5_mx41                0
+  #lut4_alu1b               0
+
+Utilization Statistics
+#lut                      203   out of  19600    1.04%
+#reg                       47   out of  19600    0.24%
+#bram                       0   out of     64    0.00%
+  #bram9k                   0
+  #fifo9k                   0
+#bram32k                    0   out of     16    0.00%
+#dsp                        0   out of     29    0.00%
+#pad                       78   out of    188   41.49%
+  #ireg                     0
+  #oreg                    52
+  #treg                     0
+#pll                        0   out of      4    0.00%
+#gclk                       0   out of     16    0.00%
+
+Report Hierarchy Area:
++---------------------------------------------------------------------------------+
+|Instance |Module                    |lut     |ripple  |seq     |bram    |dsp     |
++---------------------------------------------------------------------------------+
+|top      |media_frame_cache_control |203     |0       |99      |0       |0       |
++---------------------------------------------------------------------------------+

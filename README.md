@@ -1,5 +1,7 @@
 # 当前正式版：v0.7.0 FAT32 图片播放器
 
+开发进度：v0.8.0 S1 已获用户上板确认；S2 四 bank 缓存控制器独立仿真和综合通过，尚未接入生产。当前硬件仍为 S1 双缓冲，[S2 接口与验证](diagnostics/four_bank/CACHE_CONTROL.md)，下一阶段 S3 集成。
+
 根目录 PIC1.BMP～PIC4.BMP，支持缺图、碎片和大地址文件；保持原显示、按键、轮播与音频。正式 bit 复用 S3 已验收原件。
 
 [下载及限制](releases/v0.7.0/README.md) · [结项归档](docs/history/2026-10-08/fat32-filesystem/README.md) · [当前交接](HANDOFF.md)。下方旧版本说明属于历史资料。
