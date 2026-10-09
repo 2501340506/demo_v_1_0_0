@@ -1,0 +1,39 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 10:39:46 on Oct 09,2026
+vlog -sv -work D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/four_bank_s3_system2/work ../user_source/hdl_source/SD/sd_card_bmp.v ../user_source/hdl_source/SD/media_frame_cache_control.v ../user_source/hdl_source/SD/media_frame_load_control.v ../user_source/hdl_source/SD/media_frame_loader.v ../user_source/hdl_source/SD/media_frame_reader.v ../user_source/hdl_source/SD/frame_fifo_read.v ../user_source/hdl_source/SD/frame_fifo_write.v ../user_source/hdl_source/SD/media_player_control.v ../user_source/hdl_source/SD/media_display_control.v ../user_source/hdl_source/SD/mode_key_control.v ../user_source/hdl_source/SD/key_press_debounce.v ../user_source/hdl_source/SD/fat32_bmp_reader.v ../user_source/hdl_source/SD/fat32_volume_scanner.v ../user_source/hdl_source/SD/fat32_file_streamer.v ../user_source/hdl_source/SD/sd_sector_adapter.v ../user_source/hdl_source/SD/bmp_header_check.v ../user_source/hdl_source/SD/bmp24_decoder.v ../user_source/hdl_source/SD/color_bar.v ../user_source/hdl_source/SD/video_timing_data.v ../user_source/hdl_source/SD/video_delay.v ../user_source/hdl_source/IP/afifo_16_32_256.v ../user_source/hdl_source/IP/afifo_32_16_256.v ../user_source/hdl_source/audio/media_commit_cdc.v ../user_source/hdl_source/audio/pcm_media_tone.v ../diagnostics/single_pll/sdram_bl4_model.sv ../diagnostics/four_bank/tb_cache_system.sv
+-- Compiling module sd_card_bmp
+-- Compiling module media_frame_cache_control
+-- Compiling module media_frame_load_control
+-- Compiling module media_frame_loader
+-- Compiling module media_frame_reader
+-- Compiling module frame_fifo_read
+-- Compiling module frame_fifo_write
+-- Compiling module media_player_control
+-- Compiling module media_display_control
+-- Compiling module mode_key_control
+-- Compiling module key_press_debounce
+-- Compiling module fat32_bmp_reader
+-- Compiling module fat32_volume_scanner
+-- Compiling module fat32_file_streamer
+-- Compiling module sd_sector_adapter
+-- Compiling module bmp_header_check
+-- Compiling module bmp24_decoder
+-- Compiling module color_bar
+-- Compiling module video_timing_data
+-- Compiling module video_delay
+-- Compiling module wfifo_32_32_512
+-- Compiling module fifo_cross_domain_addr_process_al_wfifo_32_32_512
+-- Compiling module ram_infer_wfifo_32_32_512
+-- Compiling module rfifo_32_32_512
+-- Compiling module fifo_cross_domain_addr_process_al_rfifo_32_32_512
+-- Compiling module ram_infer_rfifo_32_32_512
+-- Compiling module media_commit_cdc
+-- Compiling module pcm_media_tone
+-- Compiling module sdram_bl4_model
+-- Compiling module tb_cache_system
+-- Compiling module sd_card_top
+
+Top level modules:
+	tb_cache_system
+End time: 10:39:46 on Oct 09,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

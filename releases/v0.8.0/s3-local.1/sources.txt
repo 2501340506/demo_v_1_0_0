@@ -1,0 +1,89 @@
+baseline: 1c68673 (v0.7.0 production RTL)
+candidate: v0.8.0-s3-local.1
+build: four_bank_s3_attempt1
+bit bytes: 629624
+routed setup: 0.126 ns; hold: 0.003 ns
+All 68 project inputs and project configuration match the build snapshot byte-for-byte.
+Bit and changed-source copies compared byte-for-byte; text logs normalized to UTF-8 and stripped line-end whitespace.
+Unchanged sources are referenced through the baseline; project snapshot uses repository-relative layout.
+Validation runs: four_bank_s3_system2, four_bank_s3_regression1, four_bank_s3_fat32, four_bank_s3_paths
+
+Changed inputs copied:
+user_source/hdl_source/SD/sd_card_bmp.v
+user_source/hdl_source/top_tf_hdmi_audio.v
+user_source/hdl_source/uart/uart_event_logger.v
+user_source/hdl_source/SD/fat32_bmp_reader.v
+user_source/hdl_source/SD/media_frame_loader.v
+user_source/hdl_source/SD/media_frame_reader.v
+user_source/hdl_source/SD/media_frame_cache_control.v
+user_source/hdl_source/SD/media_frame_load_control.v
+
+All project inputs (path, bytes):
+user_source/hdl_source/SD/switch_mode_control.v	1128
+user_source/hdl_source/IP/afifo_16_32_256.v	34859
+user_source/hdl_source/IP/afifo_32_16_256.v	34123
+user_source/hdl_source/IP/sys_pll.v	2567
+user_source/ip_source/s3_single_pll/sys_pll_s3.v	3015
+user_source/hdl_source/IP/video_pll.v	2389
+user_source/hdl_source/SD/ax_debounce.v	2201
+user_source/hdl_source/SD/bmp_read.v	16701
+user_source/hdl_source/SD/color_bar.v	10117
+user_source/hdl_source/SD/frame_fifo_read.v	10915
+user_source/hdl_source/SD/frame_fifo_write.v	12919
+user_source/hdl_source/SD/frame_read_write.v	11450
+user_source/hdl_source/SD/sd_card_bmp.v	18306
+user_source/hdl_source/SD/sd_card_cmd.v	12055
+user_source/hdl_source/SD/sd_card_sec_read_write.v	7585
+user_source/hdl_source/SD/sd_card_top.v	8605
+user_source/hdl_source/SD/sdram.v	3335
+user_source/hdl_source/SD/seg_decoder.v	766
+user_source/hdl_source/SD/seg7_panel.v	2743
+user_source/hdl_source/SD/seg_scan.v	1831
+user_source/hdl_source/SD/spi_master.v	3792
+user_source/hdl_source/SD/video_define.v	21
+user_source/hdl_source/SD/video_delay.v	2011
+user_source/hdl_source/SD/video_timing_data.v	2827
+user_source/hdl_source/include/global_def.v	429
+user_source/hdl_source/include/sdr_as_ram.enc.v	7538
+user_source/hdl_source/hdmi_phy_warpper.v	4250
+user_source/hdl_source/lane_lvds_10_1.v	4850
+user_source/hdl_source/top_tf_hdmi_audio.v	14941
+user_source/hdl_source/include/sdr_init_ref.enc.v	9059
+user_source/hdl_source/include/sdr_wrrd.enc.v	15637
+user_source/hdl_source/SD/dual_key_event_router.v	6608
+user_source/hdl_source/SD/key_gesture_control.v	4088
+user_source/hdl_source/SD/media_display_control.v	2121
+user_source/hdl_source/SD/media_player_control.v	3989
+user_source/hdl_source/SD/media_policy.v	494
+user_source/hdl_source/SD/key_press_debounce.v	1311
+user_source/hdl_source/SD/mode_key_control.v	2999
+user_source/hdl_source/audio/pcm_test_tone.v	2908
+user_source/hdl_source/hdmi_audio/hdmi_audio_acr_packetizer.v	2323
+user_source/hdl_source/hdmi_audio/hdmi_audio_infoframe_packetizer.v	1632
+user_source/hdl_source/hdmi_audio/hdmi_audio_packet_scheduler.v	3593
+user_source/hdl_source/hdmi_audio/hdmi_audio_sample_packetizer.v	5594
+user_source/hdl_source/hdmi_audio/hdmi_audio_symbol_core.v	7484
+user_source/hdl_source/hdmi_audio/hdmi_bch8.v	982
+user_source/hdl_source/hdmi_audio/hdmi_data_island_mapper.v	1691
+user_source/hdl_source/hdmi_audio/hdmi_data_island_scheduler.v	6450
+user_source/hdl_source/hdmi_audio/hdmi_terc4_encoder.v	900
+user_source/hdl_source/hdmi_audio/hdmi_tmds_channel_encoder.v	4202
+user_source/hdl_source/hdmi_audio/media_hdmi_audio_bridge.v	2854
+user_source/hdl_source/audio/pcm_media_tone.v	7693
+user_source/hdl_source/audio/media_commit_cdc.v	1176
+user_source/hdl_source/reset_sync.v	411
+user_source/hdl_source/uart/uart_tx_byte.v	1267
+user_source/hdl_source/uart/uart_boot_reporter.v	1169
+user_source/hdl_source/uart/uart_event_logger.v	6943
+user_source/hdl_source/SD/bmp24_decoder.v	3431
+user_source/hdl_source/SD/bmp_header_check.v	6348
+user_source/hdl_source/SD/sd_sector_adapter.v	3864
+user_source/hdl_source/SD/fat32_volume_scanner.v	13389
+user_source/hdl_source/SD/fat32_file_streamer.v	8916
+user_source/hdl_source/SD/fat32_bmp_reader.v	9403
+user_source/hdl_source/SD/media_frame_loader.v	6245
+user_source/hdl_source/SD/media_frame_reader.v	3407
+user_source/hdl_source/SD/media_frame_cache_control.v	12180
+user_source/hdl_source/SD/media_frame_load_control.v	3664
+user_source/constraints_source/pin.adc	5816
+user_source/constraints_source/timing.sdc	3491

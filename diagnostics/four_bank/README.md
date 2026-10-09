@@ -1,6 +1,6 @@
 # v0.8.0 四 bank 帧缓存验证
 
-S1 生产顶层仍使用双缓冲；loader/reader 已分离，SDRAM 为原 40 MHz/64 字 burst。四区测试用于证明端点具备四区寻址能力，不代表 S3 缓存调度已经完成。
+S3 已接入生产四 bank 缓存，固定候选见 [S3 local.1](../../releases/v0.8.0/s3-local.1/README.md)。SDRAM 仍为 40 MHz/64 字 burst。S1 读写分离、S2 独立控制器的历史证据保留；它们不替代 S3 集成验证。
 
 ## 入口
 
@@ -8,15 +8,18 @@ S1 生产顶层仍使用双缓冲；loader/reader 已分离，SDRAM 为原 40 MH
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/four_bank/run_sim.ps1 -RunName 新名称
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/four_bank/run_handoff.ps1 -RunName 新名称
-powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/stability/run_regression.ps1 -Stage 新名称
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/four_bank/run_system.ps1 -RunName 新名称
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/four_bank/run_regression.ps1 -RunName 新名称
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/fat32/run_reader.ps1 -RunName 新名称
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/four_bank/run_td.ps1 -BuildName 新名称
 ```
 
 - `run_sim` 使用实际厂商 FIFO、加密 SDRAM 控制器、既有 BL4 命令/DQ 模型和生产视频时序/延迟模块。四区分别写入 640×480 行列图案，通过真实读取的 RGB 总线逐像素比较。覆盖并发读写、刷新、源失败、短帧、活动 burst 取消、FIFO 溢出、停滞、下溢与下帧恢复。
 - SDRAM 模型内部下标是物理组织，不能直接拿应用地址索引后断言相等。验证采用控制器读回端到端对比。它是功能模型，不替代器件电气时序或上板。
 - 加密控制器不启用 `SIMULATION`，仅外层 sdram 包装器启用以引出模型引脚。ModelSim 保留厂商可选空端口及加密 IP 未定宽常量告警（2685/2718/2121），不隐藏；其他告警和任何 Error/Fatal 失败。
-- `run_handoff` 从当前两套 FAT32 交接测试生成只替换连接的副本。原刺激、断言及三组异步时钟/源间隔保持不变；生产顶层不使用测试适配器。生成文件留在本次输出目录。
+- `run_system` 连接生产应用、FAT32/BMP、厂商 FIFO、真实 SDRAM 控制器和物理模型，逐像素验证显示，同时检查缓存事务、重扫与真实音频 CDC/提示音。卡端使用扇区服务模型，真实 SPI 协议由相关回归覆盖。
+- `run_regression` 使用新的独立输出目录，运行 21 项现有按键/播放器/面板/HDMI/音频/SD/启动/复位测试。启动测试改为观察新扫描状态，UART 测试增加两个缓存事件，原断言保留。
+- `run_handoff` / `prepare_handoff` 是 S1 的双缓冲历史入口，仅适用于 S1 源码。S3 不再使用旧的双缓冲重读次数断言，以 `run_system` 中四图驻留、命中不读卡及重扫保图断言替代；原测试文件不删除。
 - 完整 TD 隔离构建复用 v0.7.0 的 high/ultra/high 策略，不写用户 GUI 的运行结果。
 
 ## S1 新接口与日志
@@ -40,4 +43,4 @@ reader 保持原 read_req/ack/en/data 延迟；`underflow` 是像素域本帧状
 
 ## 状态
 
-S1 用户已确认功能正常，记录为 `v0.8.0-s1-board.1`。S2 独立缓存控制器仿真和综合通过，接口、验证和运行入口见 [S2 控制器说明](CACHE_CONTROL.md)。S2 不接生产顶层、不生成 bit；上板继续使用 S1 已验收文件，下一阶段为 S3 集成。
+S1 已上板验收，S2 独立阶段已完成。S3 本地集成、相关回归和 TD 通过，Setup +0.126 ns、Hold +0.003 ns，等待用户板测。S4 尚未开始。

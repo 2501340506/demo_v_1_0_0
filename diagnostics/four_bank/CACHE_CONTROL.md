@@ -1,5 +1,7 @@
 # S2 四 bank 缓存控制器
 
+本文件记录 S2 独立阶段的合同和结果；当前 S3 已通过 sd_card_bmp 接入生产，增加 retry_event 供 UART 记录重试。[当前候选与验证](../../releases/v0.8.0/s3-local.1/README.md)。下文“未接生产”等表述仅对应 S2 历史阶段。
+
 模块：[media_frame_cache_control.v](../../user_source/hdl_source/SD/media_frame_cache_control.v)。S2 独立实现，不加入 `TD_project/demo.al`，不接生产顶层，不生成 bit 或 local/board 标签。当前硬件仍使用 S1 已验收原 bit。
 
 ## 状态与所有权
