@@ -6,7 +6,8 @@ module sd_card_bmp #(
     parameter [2:0]   SCAN_TARGET_COUNT = 3'd4,
     parameter integer AUTO_PLAY_MS       = 3000,
     parameter integer LOAD_TIMEOUT_MS    = 500,
-    parameter integer DIAG_DISPLAY       = 0
+    parameter integer DIAG_DISPLAY       = 0,
+    parameter integer USE_FRAME_RESULT   = 0
 )(
     input                       clk,
     input                       rst,
@@ -30,6 +31,10 @@ module sd_card_bmp #(
 
     output reg write_cancel_req,
     input write_cancel_ack,
+    output source_frame_done, source_frame_error,
+    input frame_error_toggle,
+    input [2:0] frame_memory_error, reader_error,
+    input reader_underflow,
     input                       write_finish_toggle,
     input                       display_commit_ack,
     output reg                  display_commit_request,
@@ -64,7 +69,30 @@ wire ctrl_auto_load_request;
 wire [3:0] normal_state_code;
 wire bmp_load_done, bmp_load_error, bmp_scan_error;
 reg timeout_stopped;
-wire [2:0] bmp_error;
+reg load_busy;
+wire [2:0] bmp_error, parser_error;
+wire parser_load_error;
+reg [2:0] memory_event_sync;
+reg [2:0] memory_code0, memory_code1, reader_code0, reader_code1;
+reg [1:0] underflow_sync;
+reg read_fault_seen;
+wire memory_failure = USE_FRAME_RESULT && (memory_event_sync[2] ^ memory_event_sync[1]);
+wire read_fault = USE_FRAME_RESULT && (underflow_sync[1] || reader_code1!=0);
+assign bmp_load_error = parser_load_error || (memory_failure && load_busy);
+assign bmp_error = (!USE_FRAME_RESULT || parser_load_error || !memory_failure) ? parser_error : ((memory_code1==3) ? 3'd2 : 3'd3);
+assign source_frame_done = bmp_load_done;
+assign source_frame_error = parser_load_error;
+always @(posedge clk or posedge rst) begin
+    if(rst) begin
+        memory_event_sync<=0; memory_code0<=0; memory_code1<=0;
+        reader_code0<=0; reader_code1<=0; underflow_sync<=0; read_fault_seen<=0;
+    end else begin
+        memory_event_sync<={memory_event_sync[1:0],frame_error_toggle};
+        memory_code0<=frame_memory_error; memory_code1<=memory_code0;
+        reader_code0<=reader_error; reader_code1<=reader_code0;
+        underflow_sync<={underflow_sync[0],reader_underflow}; read_fault_seen<=read_fault;
+    end
+end
 wire timeout_event = sd_sec_read_failed || bmp_scan_error || (bmp_load_error && bmp_error == 3'd2);
 reg [2:0] sticky_error;
 reg retry_used, restart_pending, recovery_chain;
@@ -104,7 +132,7 @@ reg [31:0]       img_cluster0;
 reg [31:0]       img_cluster1;
 reg [31:0]       img_cluster2;
 reg [31:0]       img_cluster3;
-reg              load_busy;
+
 reg              commit_pending;
 reg [1:0]        commit_ack_sync;
 
@@ -189,9 +217,12 @@ always @* begin
     diag_events[12]=scan_done && !diag_scan_seen && img_found_count == 0;
     diag_events[13]=diag_timeout || (diag_failure && retry_used && !diag_events[6]);
     diag_events[14]=diag_commit && recovery_active;
+    diag_events[8]=diag_events[8] || memory_failure || (read_fault && !read_fault_seen);
     diag_error=0;
     if(diag_failure) diag_error=bmp_error;
     if(diag_events[1] || diag_timeout) diag_error=3'd2;
+    if(memory_failure || (read_fault && !read_fault_seen)) diag_error=memory_failure ? memory_code1 :
+        (underflow_sync[1] ? 3'd4 : (reader_code1==1 ? 3'd5 : 3'd6));
 end
 always @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -207,7 +238,7 @@ always @(posedge clk or posedge rst) begin
         diagnostics<={diag_events,
             (load_busy || load_start_pulse || diag_commit) ? load_idx : img_idx,
             sd_sec_read_addr,
-            diag_error, diag_phase, ctrl_auto_play_en};
+            diag_error, ((memory_failure || (read_fault && !read_fault_seen)) ? 4'hf : diag_phase), ctrl_auto_play_en};
     end
 end
 
@@ -547,7 +578,7 @@ fat32_bmp_reader #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_r
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),
  .scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
  .load_start(load_start_pulse),.load_cluster(load_cluster),.load_size(load_size),
- .load_done(bmp_load_done),.load_error(bmp_load_error),.bmp_error(bmp_error),.fat_error(),
+ .load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
  .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),
  .write_req(write_req),.write_req_ack(write_req_ack_sync),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),

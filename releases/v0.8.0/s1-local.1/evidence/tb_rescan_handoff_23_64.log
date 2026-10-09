@@ -1,0 +1,37 @@
+# vsim -c -quiet -voptargs="+acc" -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/four_bank_s1_handoff4/tb_rescan_handoff tb_rescan_handoff -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\four_bank_s1_handoff4/tb_rescan_handoff_23_64.log -do "run -all; quit -f" -gSOURCE_GAP=64 -gPIX_HALF=23 
+# Start time: 09:04:20 on Oct 09,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "sd_card_bmp(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "fat32_volume_scanner(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "fat32_bmp_reader(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "frame_fifo_read(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "fat32_file_streamer(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "media_frame_loader(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "sd_sector_adapter(fast)".
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS no-old-image black boot and real KEY2 recovery in reserved mode
+# PASS same-card rescan with old display
+# PASS cancel during pixel write, new card first frame and single audio
+# PASS scan recovery ignores duplicate without queue
+# PASS pending display handshake settles before reuse
+# PASS no-card failure and retry preserve display
+# PASS final-sector failure after pixels cannot commit; explicit rescan recovers
+# PASS rescan real BMP and asynchronous memory: commits=8 collisions=0 torn=0
+# PASS real KEY2/duplicate rescan/init failure/recovered event diagnostics
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/four_bank_s1_handoff4/tb_rescan_handoff.sv(265)
+#    Time: 60921437 ns  Iteration: 1  Instance: /tb_rescan_handoff
+# End time: 09:04:26 on Oct 09,2026, Elapsed time: 0:00:06
+# Errors: 0, Warnings: 0
