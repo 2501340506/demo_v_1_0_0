@@ -1,0 +1,19 @@
+Baseline: main afe4bd3 / v0.8.0
+Production source commit: 5c8b6d5
+Verification commit: 42e2eb6
+Build: diagnostics/output/osd_s1_attempt1
+Parameters: OSD_ENABLE=1; S1 status only
+Build options: HighFanoutOptimization; TimingOptimization ultra; PostPlaceOptimization high
+
+Changed production inputs (remaining inputs are referenced by baseline):
+TD_project/demo.al | 28473 bytes
+user_source/hdl_source/SD/sd_card_bmp.v | 18693 bytes
+user_source/hdl_source/osd/osd_font_5x7.v | 8975 bytes
+user_source/hdl_source/osd/osd_status_cdc.v | 1396 bytes
+user_source/hdl_source/osd/status_osd_overlay.v | 2980 bytes
+user_source/hdl_source/top_tf_hdmi_audio.v | 15681 bytes
+
+Byte comparison: 71 project source/constraint inputs plus demo.al match the build snapshot.
+Archived 6 changed production inputs; each matches the working source.
+Fixed demo.bit matches the build output byte-for-byte; 629624 bytes.
+No board acceptance has been recorded.

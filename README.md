@@ -2,7 +2,7 @@
 
 v0.8.0 已发布并合并 main；[正式说明与已验收 bit](releases/v0.8.0/README.md)。
 
-当前开发：v0.9.0 OSD，S0 完成、S1 状态条实施中；尚无本版上板候选。见 [分阶段计划](docs/OSD字幕叠加分阶段修改计划.md) 和 [当前交接](HANDOFF.md)。滚动字幕和半透明底条分别在 S2/S3，需上一阶段板测通过。
+当前开发：v0.9.0 OSD，S1 状态条已完成本地仿真、回归及 TD，等待用户上板。[固定候选](releases/v0.9.0/s1-local.1/README.md) · [上板步骤](releases/v0.9.0/s1-local.1/BOARD_VALIDATION.md)。见 [分阶段计划](docs/OSD字幕叠加分阶段修改计划.md) 和 [当前交接](HANDOFF.md)。滚动字幕和半透明底条分别在 S2/S3，需上一阶段板测通过。
 
 以下为历史版本说明。
 # 安路 EG4 HDMI 图片播放器
