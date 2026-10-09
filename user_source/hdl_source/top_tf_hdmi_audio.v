@@ -29,6 +29,7 @@ module top(
     output                      uart_tx
 );
 
+parameter integer OSD_ENABLE = 1; // S1: status only.
 parameter MEM_DATA_BITS = 32;
 parameter integer UART_CLK_FREQ_HZ = 100_000_000;
 parameter integer UART_BAUD_RATE = 115200;
@@ -57,6 +58,9 @@ wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the HDMI core.
 
 wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
+wire [23:0] osd_rgb;
+wire [7:0] osd_error_src, osd_error_pixel;
+wire osd_auto_pixel;
 wire        display_valid;
 wire [1:0] committed_image, audio_image;
 wire committed_valid, committed_ready, audio_update, audio_enable;
@@ -212,6 +216,7 @@ sd_card_bmp #(
     .combo_event_count (combo_event_count),
     .combo_debug_active(combo_debug_active),
     .auto_play_indicator(auto_play_indicator),
+    .osd_error_code(osd_error_src),
     .bmp_width         (16'd640),
     .bmp_height        (16'd480),
     .display_valid     (display_valid),
@@ -332,6 +337,17 @@ media_commit_cdc u_media_commit_cdc (
  .src_image(committed_image), .src_valid(committed_valid), .src_ready(committed_ready),
  .media_id(audio_image), .media_update(audio_update), .media_enable(audio_enable)
 );
+osd_status_cdc u_osd_status_cdc (
+    .src_clk(sd_card_clk), .src_rst(rst_sd),
+    .src_auto(auto_play_indicator), .src_error(osd_error_src),
+    .dst_clk(video_clk), .dst_rst(rst_video),
+    .dst_auto(osd_auto_pixel), .dst_error(osd_error_pixel)
+);
+status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
+    .clk(video_clk), .rst(rst_video), .vs(vs), .de(de), .pixel_x(video_x),
+    .rgb_in(vout_data), .image_index(audio_image), .image_valid(audio_enable),
+    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb)
+);
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
 pcm_media_tone u_pcm_clock (
@@ -343,7 +359,7 @@ pcm_media_tone u_pcm_clock (
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
     .pixel_clk(video_clk), .pixel_rst_n(~rst_video),
     .video_hsync(hs), .video_vsync(vs), .video_de(de),
-    .video_x(video_x), .video_rgb(vout_data),
+    .video_x(video_x), .video_rgb(osd_rgb),
     .select_media(1'b1), .test_valid(1'b0), .test_ready(),
     .test_left(16'sd0), .test_right(16'sd0),
     .media_valid(pcm_valid), .media_ready(pcm_ready),
