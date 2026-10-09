@@ -61,6 +61,12 @@ initial begin
     check(5,"COMMIT    "," I=3 S=87654321 E=0 P=7 A=0 D=0000000000000000");
     repeat(1000) @(negedge clk);
     if(n!=6 || tx!==1) $fatal(1,"repeat/idle failure");
+    phase=4'hc;events=16'h0800;
+    @(negedge clk);events=0;wait(n==7);
+    check(6,"CACHE_DONE"," I=3 S=87654321 E=0 P=C A=0 D=0000000000000000");
+    repeat(20)@(negedge clk);phase=4'hd;events=16'h0800;
+    @(negedge clk);events=0;wait(n==8);
+    check(7,"CACHE_HIT "," I=3 S=87654321 E=0 P=D A=0 D=0000000000000000");
     $display("PASS tb_uart_event_logger: exact wire bytes, CR/LF, timestamp, simultaneous events, immutable context, DROP=2, recovery after overflow");
     $finish;
 end

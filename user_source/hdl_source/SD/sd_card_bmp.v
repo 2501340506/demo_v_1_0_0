@@ -24,12 +24,12 @@ module sd_card_bmp #(
     output                      auto_play_indicator,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
-    output reg                  display_valid,
-    output reg [1:0]            committed_image,
-    output reg                  committed_valid,
+    output                      display_valid,
+    output     [1:0]            committed_image,
+    output                      committed_valid,
     input                       committed_ready,
 
-    output reg write_cancel_req,
+    output write_cancel_req,
     input write_cancel_ack,
     output source_frame_done, source_frame_error,
     input frame_error_toggle,
@@ -38,7 +38,7 @@ module sd_card_bmp #(
     input                       write_finish_toggle,
     input                       display_commit_ack,
     output reg                  display_commit_request,
-    output reg [1:0]            write_buf_idx,
+    output     [1:0]            write_buf_idx,
     output reg [1:0]            disp_buf_idx,
 
     output                      write_req,
@@ -51,563 +51,275 @@ module sd_card_bmp #(
     input                       SD_MISO
 );
 
-wire rescan_event;
-wire sd_init_failed, sd_sec_read_failed;
-reg [2:0] recovery_phase;
-reg [3:0] recovery_reset_count;
-reg [1:0] cancel_ack_sync;
-wire recovery_active = recovery_phase != 0;
-wire recovering_reset = recovery_phase >= 1 && recovery_phase <= 3;
-wire parser_rst = rst || recovering_reset;
-wire sd_local_rst = rst || recovery_phase == 2;
-wire manual_activity;
-wire media_next_request, media_previous_request, media_auto_toggle_request;
-wire ctrl_auto_play_en, ctrl_next_pending, ctrl_prev_pending, ctrl_auto_tick, ctrl_load_request;
-wire [1:0] ctrl_target_image;
-wire ctrl_request_accept;
-wire ctrl_auto_load_request;
-wire [3:0] normal_state_code;
-wire bmp_load_done, bmp_load_error, bmp_scan_error;
-reg timeout_stopped;
-reg load_busy;
-wire [2:0] bmp_error, parser_error;
-wire parser_load_error;
-reg [2:0] memory_event_sync;
-reg [2:0] memory_code0, memory_code1, reader_code0, reader_code1;
-reg [1:0] underflow_sync;
-reg read_fault_seen;
-wire memory_failure = USE_FRAME_RESULT && (memory_event_sync[2] ^ memory_event_sync[1]);
-wire read_fault = USE_FRAME_RESULT && (underflow_sync[1] || reader_code1!=0);
-assign bmp_load_error = parser_load_error || (memory_failure && load_busy);
-assign bmp_error = (!USE_FRAME_RESULT || parser_load_error || !memory_failure) ? parser_error : ((memory_code1==3) ? 3'd2 : 3'd3);
-assign source_frame_done = bmp_load_done;
-assign source_frame_error = parser_load_error;
-always @(posedge clk or posedge rst) begin
-    if(rst) begin
-        memory_event_sync<=0; memory_code0<=0; memory_code1<=0;
-        reader_code0<=0; reader_code1<=0; underflow_sync<=0; read_fault_seen<=0;
-    end else begin
-        memory_event_sync<={memory_event_sync[1:0],frame_error_toggle};
-        memory_code0<=frame_memory_error; memory_code1<=memory_code0;
-        reader_code0<=reader_error; reader_code1<=reader_code0;
-        underflow_sync<={underflow_sync[0],reader_underflow}; read_fault_seen<=read_fault;
-    end
-end
-wire timeout_event = sd_sec_read_failed || bmp_scan_error || (bmp_load_error && bmp_error == 3'd2);
-reg [2:0] sticky_error;
-reg retry_used, restart_pending, recovery_chain;
-reg first_load_failed, auto_blocked;
-reg [2:0] candidates_tried;
-
-wire             sd_sec_read;
-wire [31:0]      sd_sec_read_addr;
-wire [7:0]       sd_sec_read_data;
-wire             sd_sec_read_data_valid;
-wire             sd_sec_read_end;
-wire             bmp_data_wr_en;
-wire [23:0]      bmp_data;
-wire             sd_init_done;
-wire             bmp_ready;
-wire             scan_done;
-wire             scan_found_valid;
-wire [31:0]      scan_found_cluster;
-wire [31:0] scan_found_size;
-wire [31:0] load_size;
+// FAT32 directory and board controls stay here; cache ownership is independent.
+wire rescan_event,manual_activity,media_next_request,media_previous_request,media_auto_toggle_request;
+wire sd_init_done,sd_init_failed,sd_sec_read_failed;
+wire sd_sec_read,sd_sec_read_data_valid,sd_sec_read_end;
+wire [31:0] sd_sec_read_addr;
+wire [7:0] sd_sec_read_data;
+wire bmp_ready,scan_done,bmp_scan_error,scan_found_valid,bmp_load_done,parser_load_error;
+wire [31:0] scan_found_cluster,scan_found_size;
+wire [2:0] scan_found_total,parser_error;
+wire [3:0] bmp_state_code,normal_state_code;
+wire bmp_data_wr_en;wire [23:0] bmp_data;
+wire scan_request,scan_accept,scan_result_ready,scan_busy;
+reg scan_result_valid,scan_success,scan_error_seen;
+reg [2:0] img_found_count;
+reg [31:0] img_cluster0,img_cluster1,img_cluster2,img_cluster3;
 reg [31:0] img_size0,img_size1,img_size2,img_size3;
-wire [2:0]       scan_found_total;
-wire [3:0]       bmp_state_code;
-wire             write_req_ack_sync;
-reg [1:0]        write_req_ack_pipe;
+wire [1:0] img_idx,load_idx,current_bank;
+wire [31:0] load_cluster=(load_idx==0)?img_cluster0:(load_idx==1)?img_cluster1:(load_idx==2)?img_cluster2:img_cluster3;
+wire [31:0] load_size=(load_idx==0)?img_size0:(load_idx==1)?img_size1:(load_idx==2)?img_size2:img_size3;
 
-reg              scan_start_pulse;
-reg              load_start_pulse;
-wire [31:0]      load_cluster;
-reg              scan_kicked;
-reg              first_image_committed;
-reg [2:0]        img_found_count;
-reg [1:0]        img_idx;              // 当前真正显示中的图片编号
-reg [1:0]        load_idx;             // 当前正在写入的图片编号
-reg [1:0]        pending_buf_idx;      // 当前正在写入的目标缓冲区
-reg [31:0]       img_cluster0;
-reg [31:0]       img_cluster1;
-reg [31:0]       img_cluster2;
-reg [31:0]       img_cluster3;
+localparam SC_IDLE=0,SC_RESET=1,SC_INIT=2,SC_SCAN=3,SC_RESULT=4;
+reg [2:0] scan_state;
+reg [3:0] reset_count;
+reg scan_start_pulse;
+wire parser_rst=rst || scan_state==SC_RESET;
+wire sd_local_rst=parser_rst;
+assign scan_accept=scan_request && scan_state==SC_IDLE;
+always @(posedge clk or posedge rst) begin
+ if(rst) begin
+  scan_state<=SC_IDLE;reset_count<=0;scan_start_pulse<=0;scan_result_valid<=0;scan_success<=0;
+  scan_error_seen<=0;img_found_count<=0;
+  img_cluster0<=0;img_cluster1<=0;img_cluster2<=0;img_cluster3<=0;
+  img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
+ end else begin
+  scan_start_pulse<=0;
+  case(scan_state)
+   SC_IDLE: if(scan_accept) begin
+    scan_state<=SC_RESET;reset_count<=0;img_found_count<=0;scan_error_seen<=0;
+   end
+   SC_RESET: if(reset_count==7) scan_state<=SC_INIT; else reset_count<=reset_count+1'b1;
+   SC_INIT: if(sd_init_failed) begin
+    scan_success<=0;scan_result_valid<=1;scan_state<=SC_RESULT;
+   end else if(sd_init_done && bmp_ready && sdram_ready) begin
+    scan_start_pulse<=1;scan_state<=SC_SCAN;
+   end
+   SC_SCAN: begin
+    if(bmp_scan_error) scan_error_seen<=1;
+    if(scan_found_valid) begin
+     case(img_found_count)
+      0:begin img_cluster0<=scan_found_cluster;img_size0<=scan_found_size;end
+      1:begin img_cluster1<=scan_found_cluster;img_size1<=scan_found_size;end
+      2:begin img_cluster2<=scan_found_cluster;img_size2<=scan_found_size;end
+      3:begin img_cluster3<=scan_found_cluster;img_size3<=scan_found_size;end
+      default:;
+     endcase
+     img_found_count<=scan_found_total;
+    end
+    if(scan_done) begin
+     scan_success<=!scan_error_seen && !bmp_scan_error;
+     scan_result_valid<=1;scan_state<=SC_RESULT;
+    end
+   end
+   SC_RESULT: if(scan_result_ready) begin scan_result_valid<=0;scan_state<=SC_IDLE;end
+   default:scan_state<=SC_IDLE;
+  endcase
+ end
+end
 
-reg              commit_pending;
-reg [1:0]        commit_ack_sync;
+wire load_request,load_accept,load_result_valid,load_result_ready,load_success,load_timeout;
+wire cancel_request,cancel_ack,parser_cancel,load_start_pulse;
+wire source_done_now,write_finish_now,load_fault,memory_failure;
+wire [2:0] load_fault_code,memory_code;
+wire load_busy,foreground_busy,timeout_stopped,first_image_committed;
+wire [2:0] image_count;
+wire [3:0] cache_valid,cache_failed;
+wire [7:0] cache_banks;
+wire cache_complete,cache_hit,request_failed,load_failed,retry_event;
+wire [1:0] cache_complete_image,cache_hit_image,failed_image;
+reg [1:0] write_req_ack_pipe,commit_ack_sync;
+wire write_req_ack_sync=write_req_ack_pipe[1];
+always @(posedge clk or posedge rst) begin
+ if(rst) begin write_req_ack_pipe<=0;commit_ack_sync<=0;end
+ else begin
+  write_req_ack_pipe<={write_req_ack_pipe[0],write_req_ack};
+  commit_ack_sync<={commit_ack_sync[0],display_commit_ack};
+ end
+end
+media_frame_load_control #(.USE_FRAME_RESULT(USE_FRAME_RESULT)) u_load_control(
+ .clk(clk),.rst(rst),.load_request(load_request),.load_accept(load_accept),
+ .load_result_valid(load_result_valid),.load_success(load_success),.load_timeout(load_timeout),
+ .load_result_ready(load_result_ready),.cancel_request(cancel_request),.cancel_ack(cancel_ack),
+ .parser_ready(bmp_ready),.source_done(bmp_load_done),.source_error(parser_load_error),.source_error_code(parser_error),
+ .load_start(load_start_pulse),.parser_cancel(parser_cancel),
+ .write_req(write_req),.write_req_ack(write_req_ack),.write_finish_toggle(write_finish_toggle),
+ .frame_error_toggle(frame_error_toggle),.frame_memory_error(frame_memory_error),
+ .write_cancel_req(write_cancel_req),.write_cancel_ack(write_cancel_ack),
+ .fault_event(load_fault),.fault_code(load_fault_code),.memory_fault(memory_failure),.memory_code(memory_code),
+ .source_complete(source_done_now),.write_complete(write_finish_now)
+);
 
-// Source completion is the parser's explicit success, never merely ready.
-reg              source_busy_seen;
-reg              source_done_seen;
-reg              write_finish_seen;
-reg              write_started_seen;
-reg              write_epoch_active;
+wire cache_display_request,cache_display_ack;
+wire [1:0] cache_display_image,cache_display_bank;
+reg commit_pending;
+// The core holds its request until this adapter returns the actual reader ack.
+// Do not issue it again on the clock the core consumes that acknowledgement.
+assign cache_display_ack=commit_pending && commit_ack_sync[1]==display_commit_request;
+always @(posedge clk or posedge rst) begin
+ if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;end
+ else begin
+  if(!cache_display_request) commit_pending<=0;
+  else if(!commit_pending) begin
+   disp_buf_idx<=cache_display_bank;
+   display_commit_request<=~display_commit_request;
+   commit_pending<=1;
+  end
+ end
+end
+wire ctrl_auto_play_en,ctrl_next_pending,ctrl_prev_pending,ctrl_auto_tick,ctrl_load_request;
+wire ctrl_request_ready,ctrl_request_accept,ctrl_auto_load_request;
+wire [1:0] ctrl_target_image;
+assign ctrl_request_accept=ctrl_load_request && ctrl_request_ready;
+media_frame_cache_control u_cache_control(
+ .clk(clk),.rst(rst),.rescan_event(rescan_event),
+ .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),
+ .scan_success(scan_success),.scan_image_count(img_found_count),.scan_result_ready(scan_result_ready),.scan_busy(scan_busy),
+ .request_valid(ctrl_load_request),.request_image(ctrl_target_image),
+ .request_manual(ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
+ .load_request(load_request),.load_accept(load_accept),.load_image(load_idx),.load_bank(write_buf_idx),
+ .load_result_valid(load_result_valid),.load_success(load_success),.load_timeout(load_timeout),.load_result_ready(load_result_ready),
+ .cancel_request(cancel_request),.cancel_ack(cancel_ack),.communication_fault(1'b0),
+ .storage_busy(load_busy),.storage_stopped(timeout_stopped),
+ .display_request(cache_display_request),.display_image(cache_display_image),.display_bank(cache_display_bank),.display_ack(cache_display_ack),
+ .display_valid(display_valid),.current_image(img_idx),.current_bank(current_bank),.first_image_committed(first_image_committed),
+ .committed_valid(committed_valid),.committed_image(committed_image),.committed_ready(committed_ready),
+ .image_count(image_count),.cache_valid(cache_valid),.cache_failed(cache_failed),.cache_banks(cache_banks),
+ .cache_complete(cache_complete),.cache_hit(cache_hit),.request_failed(request_failed),.load_failed(load_failed),
+ .retry_event(retry_event),
+ .cache_complete_image(cache_complete_image),.cache_hit_image(cache_hit_image),.failed_image(failed_image)
+);
+mode_key_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
+ .clk(clk),.rst(rst),.enable(!scan_busy),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
+ .rescan_event(rescan_event),.next_event(media_next_request),.previous_event(media_previous_request),
+ .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity)
+);
+media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS)) u_media_player_control(
+ .clk(clk),.rst(rst),.enable(!scan_busy),.scan_done(!scan_busy),
+ .display_valid(display_valid),.load_busy(foreground_busy),.first_image_committed(first_image_committed),
+ .image_count(image_count),.current_image(img_idx),.mode(mode),.next_event(media_next_request),
+ .previous_event(media_previous_request),.auto_toggle_event(media_auto_toggle_request),
+ .request_accept(ctrl_request_accept),.manual_activity(manual_activity),
+ .next_load_request(),.previous_load_request(),.auto_load_request(ctrl_auto_load_request),
+ .auto_play_en(ctrl_auto_play_en),.next_pending(ctrl_next_pending),.previous_pending(ctrl_prev_pending),
+ .auto_tick(ctrl_auto_tick),.load_request(ctrl_load_request),.target_image(ctrl_target_image)
+);
+media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.DIAG_DISPLAY(DIAG_DISPLAY)) u_media_display_control(
+ .clk(clk),.rst(rst),.combo_request(1'b0),.sd_init_done(sd_init_done),.scan_done(!scan_busy),
+ .display_valid(display_valid),.load_busy(foreground_busy),.write_started_seen(write_req),
+ .source_done_now(source_done_now),.write_finish_now(write_finish_now),.img_idx(img_idx),
+ .bmp_state_code(bmp_state_code),.state_code(normal_state_code),.auto_play_en(ctrl_auto_play_en),
+ .auto_play_indicator(auto_play_indicator),.combo_event_count(combo_event_count),.combo_debug_active(combo_debug_active)
+);
+reg [2:0] sticky_error;
+reg recovery_active;
+wire diag_commit=cache_display_request && cache_display_ack;
+always @(posedge clk or posedge rst) begin
+ if(rst) begin sticky_error<=0;recovery_active<=0;end
+ else begin
+  if(rescan_event && !scan_busy) recovery_active<=1;
+  if(scan_accept) sticky_error<=0;
+  if(scan_result_valid && scan_result_ready) begin
+   if(!scan_success) begin sticky_error<=2;recovery_active<=0;end
+   else if(img_found_count==0) begin sticky_error<=1;recovery_active<=0;end
+  end
+  if(load_fault && load_fault_code==2) sticky_error<=2;
+  if(request_failed && !timeout_stopped) sticky_error<=3;
+  if(diag_commit) begin sticky_error<=0;recovery_active<=0;end
+ end
+end
+// Cached manual switches remain available after a background timeout. Clear a
+// stale failure indication on the next successful visible commit, not preload.
+assign state_code=(scan_state==SC_RESET)?4'd0:
+                  (scan_busy && !sd_init_done)?(sd_init_failed?4'hf:4'd0):
+                  sticky_error==1?4'he:sticky_error==2?4'hf:sticky_error==3?4'hd:
+                  scan_busy?bmp_state_code:normal_state_code;
+assign source_frame_done=bmp_load_done;
+assign source_frame_error=parser_load_error;
+assign write_en=bmp_data_wr_en && !parser_cancel && !parser_rst;
+assign write_data={bmp_data,8'h00};
 
-// 同步 mem_clk 域的 write_finish_toggle
-reg [2:0]        wrfin_tgl_sync;
-wire             write_finish_pulse;
-wire             current_write_finish;
-
-wire source_done_now;
-wire write_finish_now;
-
-localparam integer AUTO_PLAY_CYCLES  = (CLK_FREQ_HZ / 1000) * AUTO_PLAY_MS;
-
-// Consume a queued request only on the edge where this block can actually
-// start a new load.  Without the busy guard, the control block clears its
-// pending direction while the loader is still handling a prior request.
-assign ctrl_request_accept = !recovery_active && ctrl_load_request && !load_busy && bmp_ready && !timeout_stopped && !timeout_event &&
-                             (ctrl_next_pending || ctrl_prev_pending || !auto_blocked);
-// With load_request asserted, pending directions select manual requests;
-// AUTO requires both pending flags clear. Avoid feeding the full AUTO request
-// availability cone back through acceptance just to distinguish the source.
-assign state_code = sd_init_failed ? 4'hf :
-                    recovering_reset ? 4'h0 :
-                    (recovery_active && !sd_init_done) ? 4'h0 :
-                    (sticky_error == 3'd1) ? 4'he :
-                    (sticky_error == 3'd2) ? 4'hf :
-                    (sticky_error == 3'd3) ? 4'hd :
-                    recovery_active ? bmp_state_code : normal_state_code;
-assign write_en   = bmp_data_wr_en && !recovering_reset;
-assign write_data = {bmp_data[23:16], bmp_data[15:8], bmp_data[7:0], 8'b0};
-assign write_finish_pulse = wrfin_tgl_sync[2] ^ wrfin_tgl_sync[1];
-assign source_done_now = source_done_seen || bmp_load_done;
-assign current_write_finish = write_epoch_active && !write_req_ack_sync && write_finish_pulse;
-assign write_finish_now = write_finish_seen || current_write_finish;
-assign write_req_ack_sync = write_req_ack_pipe[1];
-
-// Observation only: use real transactions, never the multiplexed panel code.
-// Packet = {events[15:0], image[1:0], sector[31:0], error[2:0], phase[3:0], auto}.
-reg diag_init_seen, diag_init_fail_seen, diag_scan_seen, diag_auto_seen;
-reg [3:0] diag_phase_seen;
-wire diag_rescan = rescan_event && !recovery_active;
-wire diag_running = !diag_rescan && !recovering_reset &&
-                    !timeout_event && !timeout_stopped && sd_init_done;
-wire diag_failure = diag_running && load_busy && bmp_load_error;
-wire diag_commit = !diag_rescan && commit_pending &&
-                   commit_ack_sync[1] == display_commit_request &&
-                   (recovering_reset || (diag_running && !bmp_load_error &&
-                   !restart_pending && (!committed_valid || committed_ready)));
-wire diag_timeout = !diag_rescan && !recovering_reset && timeout_event && !timeout_stopped;
-wire [3:0] diag_phase = (recovery_phase == 1) ? 4'd8 :
-                        (recovery_phase == 2 || recovery_phase == 3) ? 4'd9 :
-                        !sd_init_done ? 4'd0 :
-                        commit_pending ? 4'd7 :
-                        (load_busy && source_done_seen && !write_finish_seen) ? 4'd6 :
-                        !load_busy ? ((!scan_done && scan_kicked) ? 4'd2 : 4'd1) :
-                        write_req ? 4'd4 : (write_started_seen ? 4'd5 : 4'd3);
+// Keep original UART event IDs. WAIT phase C/D carries CACHE_DONE/CACHE_HIT.
+// Defer cache/fault records so a concurrent display acknowledgement retains
+// its own image index instead of borrowing the background load index.
+reg [1:0] underflow_sync;
+reg [2:0] reader_code0,reader_code1;
+reg read_fault_seen;
+wire read_fault=(underflow_sync[1] || reader_code1!=0) && USE_FRAME_RESULT;
+reg pending_complete,pending_hit,pending_fault,pending_retry,pending_skip;
+reg [1:0] retry_idx,skip_idx;
+reg [1:0] complete_idx,hit_idx,fault_idx;
+reg [2:0] fault_error;
+reg [3:0] fault_phase;
+reg init_seen,init_fail_seen,auto_seen,timeout_seen;
 reg [15:0] diag_events;
+reg [1:0] diag_image;
 reg [2:0] diag_error;
+reg [3:0] diag_phase;
 always @* begin
-    diag_events=0;
-    diag_events[0]=sd_init_done && !diag_init_seen;
-    diag_events[1]=sd_init_failed && !diag_init_fail_seen;
-    diag_events[2]=scan_start_pulse;
-    diag_events[3]=scan_done && !diag_scan_seen;
-    diag_events[4]=load_start_pulse;
-    diag_events[5]=diag_failure && !retry_used;
-    diag_events[6]=diag_failure && retry_used && recovery_chain &&
-                    (!first_image_committed || ctrl_auto_play_en) && candidates_tried < img_found_count;
-    diag_events[7]=diag_commit;
-    diag_events[8]=diag_failure || diag_timeout;
-    diag_events[9]=diag_rescan;
-    diag_events[10]=ctrl_auto_play_en != diag_auto_seen;
-    diag_events[11]=(diag_phase != diag_phase_seen) &&
-                     ((diag_phase == 4) || (diag_phase >= 6));
-    diag_events[12]=scan_done && !diag_scan_seen && img_found_count == 0;
-    diag_events[13]=diag_timeout || (diag_failure && retry_used && !diag_events[6]);
-    diag_events[14]=diag_commit && recovery_active;
-    diag_events[8]=diag_events[8] || memory_failure || (read_fault && !read_fault_seen);
-    diag_error=0;
-    if(diag_failure) diag_error=bmp_error;
-    if(diag_events[1] || diag_timeout) diag_error=3'd2;
-    if(memory_failure || (read_fault && !read_fault_seen)) diag_error=memory_failure ? memory_code1 :
-        (underflow_sync[1] ? 3'd4 : (reader_code1==1 ? 3'd5 : 3'd6));
+ diag_events=0;diag_image=img_idx;diag_error=0;diag_phase=1;
+ if(diag_commit) begin
+  diag_events[7]=1;diag_events[14]=recovery_active;diag_image=cache_display_image;diag_phase=7;
+ end else if(load_start_pulse) begin diag_events[4]=1;diag_image=load_idx;diag_phase=3;end
+ else if(rescan_event && !scan_busy) begin diag_events[9]=1;diag_phase=8;end
+ else if(sd_init_failed && !init_fail_seen) begin diag_events[1]=1;diag_error=2;diag_phase=0;end
+ else if(sd_init_done && !init_seen) begin diag_events[0]=1;diag_phase=0;end
+ else if(scan_start_pulse) begin diag_events[2]=1;diag_phase=2;end
+ else if(scan_result_valid && scan_result_ready) begin
+  diag_events[3]=1;diag_events[12]=scan_success && img_found_count==0;diag_phase=2;
+ end else if(timeout_stopped && !timeout_seen) begin diag_events[13]=1;diag_error=2;end
+ else if(pending_fault) begin diag_events[8]=1;diag_image=fault_idx;diag_error=fault_error;diag_phase=fault_phase;end
+ else if(pending_retry) begin diag_events[5]=1;diag_image=retry_idx;diag_phase=3;end
+ else if(pending_skip) begin diag_events[6]=1;diag_image=skip_idx;diag_phase=3;end
+ else if(pending_complete) begin diag_events[11]=1;diag_image=complete_idx;diag_phase=4'hc;end
+ else if(pending_hit) begin diag_events[11]=1;diag_image=hit_idx;diag_phase=4'hd;end
+ else if(ctrl_auto_play_en!=auto_seen) diag_events[10]=1;
 end
 always @(posedge clk or posedge rst) begin
-    if(rst) begin
-        diagnostics<=0;
-        diag_init_seen<=0; diag_init_fail_seen<=0; diag_scan_seen<=0;
-        diag_auto_seen<=0; diag_phase_seen<=0;
-    end else begin
-        diag_init_seen<=sd_init_done;
-        diag_init_fail_seen<=sd_init_failed;
-        diag_scan_seen<=scan_done;
-        diag_auto_seen<=ctrl_auto_play_en;
-        diag_phase_seen<=diag_phase;
-        diagnostics<={diag_events,
-            (load_busy || load_start_pulse || diag_commit) ? load_idx : img_idx,
-            sd_sec_read_addr,
-            diag_error, ((memory_failure || (read_fault && !read_fault_seen)) ? 4'hf : diag_phase), ctrl_auto_play_en};
-    end
+ if(rst) begin
+  diagnostics<=0;underflow_sync<=0;reader_code0<=0;reader_code1<=0;read_fault_seen<=0;
+  pending_complete<=0;pending_hit<=0;pending_fault<=0;complete_idx<=0;hit_idx<=0;fault_idx<=0;fault_error<=0;fault_phase<=0;
+  pending_retry<=0;pending_skip<=0;retry_idx<=0;skip_idx<=0;
+  init_seen<=0;init_fail_seen<=0;auto_seen<=0;timeout_seen<=0;
+ end else begin
+  underflow_sync<={underflow_sync[0],reader_underflow};reader_code0<=reader_error;reader_code1<=reader_code0;read_fault_seen<=read_fault;
+  init_seen<=sd_init_done;init_fail_seen<=sd_init_failed;auto_seen<=ctrl_auto_play_en;timeout_seen<=timeout_stopped;
+  diagnostics<={diag_events,diag_image,sd_sec_read_addr,diag_error,diag_phase,ctrl_auto_play_en};
+  if(diag_events[8]) pending_fault<=0;
+  if(diag_events[5]) pending_retry<=0;
+  if(diag_events[6]) pending_skip<=0;
+  if(diag_events[11] && diag_phase==4'hc) pending_complete<=0;
+  if(diag_events[11] && diag_phase==4'hd) pending_hit<=0;
+  if(cache_complete) begin pending_complete<=1;complete_idx<=cache_complete_image;end
+  if(cache_hit) begin pending_hit<=1;hit_idx<=cache_hit_image;end
+  if(retry_event) begin pending_retry<=1;retry_idx<=load_idx;end
+  if(load_failed && !timeout_stopped) begin pending_skip<=1;skip_idx<=failed_image;end
+  if(load_fault) begin pending_fault<=1;fault_idx<=load_idx;fault_error<=load_fault_code;fault_phase<=3;end
+  if(memory_failure || (read_fault && !read_fault_seen)) begin
+   pending_fault<=1;fault_idx<=memory_failure?load_idx:img_idx;fault_phase<=4'hf;
+   fault_error<=memory_failure?memory_code:(underflow_sync[1]?3'd4:(reader_code1==1?3'd5:3'd6));
+  end
+ end
 end
 
-// A new request acknowledges only after the previous burst has ended and the
-// write FIFO is cleared. Discard old completion toggles through that handshake.
-always @(posedge clk or posedge rst) begin
-    if (rst) write_epoch_active <= 1'b0;
-    else if (recovering_reset || !sd_init_done || !load_busy || load_start_pulse || bmp_load_error)
-        write_epoch_active <= 1'b0;
-    else if (write_req && write_req_ack_sync)
-        write_epoch_active <= 1'b1;
-end
-
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        write_req_ack_pipe <= 2'b00;
-        commit_ack_sync <= 2'b00;
-        cancel_ack_sync <= 0;
-    end else begin
-        write_req_ack_pipe <= {write_req_ack_pipe[0], write_req_ack};
-        commit_ack_sync <= {commit_ack_sync[0], display_commit_ack};
-        cancel_ack_sync <= {cancel_ack_sync[0], write_cancel_ack};
-    end
-end
-
-mode_key_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control (
-    .clk(clk), .rst(rst), .enable(!recovery_active && sd_init_done && scan_kicked),
-    .key1(key1), .key2(key2), .key4(key4), .mode(mode),
-    .rescan_event(rescan_event), .next_event(media_next_request), .previous_event(media_previous_request),
-    .auto_toggle_event(media_auto_toggle_request), .manual_activity(manual_activity)
-);
-
-media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .DIAG_DISPLAY(DIAG_DISPLAY)) u_media_display_control (
- .clk(clk), .rst(rst), .combo_request(1'b0),
- .sd_init_done(sd_init_done), .scan_done(scan_done), .display_valid(display_valid),
- .load_busy(load_busy), .write_started_seen(write_started_seen),
- .source_done_now(source_done_now), .write_finish_now(write_finish_now),
- .img_idx(img_idx), .bmp_state_code(bmp_state_code), .state_code(normal_state_code),
- .auto_play_en(ctrl_auto_play_en), .auto_play_indicator(auto_play_indicator),
- .combo_event_count(combo_event_count), .combo_debug_active(combo_debug_active)
-);
-
-media_player_control #(
-    .AUTO_PLAY_CYCLES(AUTO_PLAY_CYCLES)
-) u_media_player_control (
-    .clk(clk), .rst(rst), .enable(!recovery_active && sd_init_done && (scan_kicked || !bmp_ready)), .scan_done(scan_done),
-    .display_valid(display_valid), .load_busy(load_busy),
-    .first_image_committed(first_image_committed), .image_count(img_found_count),
-    .current_image(img_idx), .mode(mode), .next_event(media_next_request),
-    .previous_event(media_previous_request), .auto_toggle_event(media_auto_toggle_request),
-    .request_accept(ctrl_request_accept),
-    .manual_activity(manual_activity),
-    .next_load_request(), .previous_load_request(), .auto_load_request(ctrl_auto_load_request),
-    .auto_play_en(ctrl_auto_play_en), .next_pending(ctrl_next_pending),
-    .previous_pending(ctrl_prev_pending), .auto_tick(ctrl_auto_tick),
-    .load_request(ctrl_load_request), .target_image(ctrl_target_image)
-);
-
-// Explicit table mux includes metadata changes before the first index changes.
-assign load_cluster=(load_idx==0)?img_cluster0:(load_idx==1)?img_cluster1:(load_idx==2)?img_cluster2:img_cluster3;
-assign load_size=(load_idx==0)?img_size0:(load_idx==1)?img_size1:(load_idx==2)?img_size2:img_size3;
-
-function [1:0] next_buf_lut;
-    input [1:0] cur_disp_buf;
-    input       valid_now;
-    begin
-        if (!valid_now)
-            next_buf_lut = 2'd0;                 // 首图固定写 buffer0
-        else if (cur_disp_buf == 2'd0)
-            next_buf_lut = 2'd1;
-        else
-            next_buf_lut = 2'd0;
-    end
-endfunction
-
-function [1:0] next_image;
-    input [1:0] current;
-    begin
-        next_image = ({1'b0, current} + 3'd1 >= img_found_count) ? 2'd0 : current + 2'd1;
-    end
-endfunction
-
-// 记录本次加载是否发出过写请求，区分读图头失败与真正的源端完成。
-always @(posedge clk or posedge rst) begin
-    if (rst)
-        write_started_seen <= 1'b0;
-    else if (!sd_init_done || !load_busy)
-        write_started_seen <= 1'b0;
-    else if (write_req)
-        write_started_seen <= 1'b1;
-end
-
-always @(posedge clk or posedge rst) begin
-    if (rst) begin
-        recovery_phase <= 0; recovery_reset_count <= 0; write_cancel_req <= 0;
-        timeout_stopped <= 0;
-        sticky_error <= 0;
-        retry_used <= 0;
-        restart_pending <= 0;
-        recovery_chain <= 0;
-        first_load_failed <= 0;
-        auto_blocked <= 0;
-        candidates_tried <= 0;
-        committed_image <= 0;
-        committed_valid <= 0;
-        wrfin_tgl_sync        <= 3'b000;
-        scan_start_pulse      <= 1'b0;
-        load_start_pulse      <= 1'b0;
-        scan_kicked           <= 1'b0;
-        first_image_committed <= 1'b0;
-
-        img_found_count       <= 3'd0;
-        img_idx               <= 2'd0;
-        load_idx              <= 2'd0;
-        pending_buf_idx       <= 2'd0;
-        write_buf_idx         <= 2'd0;
-        disp_buf_idx          <= 2'd0;
-        img_cluster0           <= 32'd0;
-        img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
-        img_cluster1           <= 32'd0;
-        img_cluster2           <= 32'd0;
-        img_cluster3           <= 32'd0;
-
-        load_busy             <= 1'b0;
-        commit_pending        <= 1'b0;
-        display_commit_request <= 1'b0;
-        source_busy_seen      <= 1'b0;
-        source_done_seen      <= 1'b0;
-        write_finish_seen     <= 1'b0;
-        display_valid         <= 1'b0;
-    end else begin
-        if (committed_valid && committed_ready) committed_valid <= 0;
-        wrfin_tgl_sync   <= {wrfin_tgl_sync[1:0], write_finish_toggle};
-        scan_start_pulse <= 1'b0;
-        load_start_pulse <= 1'b0;
-
-        if (rescan_event && !recovery_active) begin
-            recovery_phase <= 1;
-            write_cancel_req <= 1;
-            load_start_pulse <= 0; scan_start_pulse <= 0;
-        end else if (recovering_reset) begin
-            // Never reset the display toggle locally; first adopt an issued commit.
-            if (commit_pending && commit_ack_sync[1] == display_commit_request) begin
-                commit_pending <= 0; display_valid <= 1; img_idx <= load_idx;
-            end
-            load_busy <= 0; source_busy_seen <= 0; source_done_seen <= 0;
-            write_finish_seen <= 0; restart_pending <= 0;
-            timeout_stopped <= 0; sticky_error <= 0;
-            retry_used <= 0; recovery_chain <= 0; first_load_failed <= 0;
-            auto_blocked <= 0; candidates_tried <= 0;
-            scan_kicked <= 0; first_image_committed <= 0; img_found_count <= 0;
-            img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
-            img_cluster0 <= 0; img_cluster1 <= 0; img_cluster2 <= 0; img_cluster3 <= 0;
-            if (recovery_phase == 1 && !commit_pending && cancel_ack_sync[1]) begin
-                recovery_phase <= 2; recovery_reset_count <= 0;
-            end else if (recovery_phase == 2) begin
-                if (recovery_reset_count == 7) begin
-                    recovery_phase <= 3; write_cancel_req <= 0;
-                end else recovery_reset_count <= recovery_reset_count + 1'b1;
-            end else if (recovery_phase == 3 && !cancel_ack_sync[1])
-                recovery_phase <= 4;
-        end else if (timeout_event || timeout_stopped) begin
-            recovery_phase <= 0;
-            timeout_stopped <= 1'b1;
-            sticky_error <= 3'd2;
-            load_busy <= 1'b0;
-            restart_pending <= 1'b0;
-            commit_pending <= 1'b0;
-            source_done_seen <= 1'b0;
-            write_finish_seen <= 1'b0;
-            auto_blocked <= 1'b1;
-        end else if (!sd_init_done) begin
-            sticky_error <= sd_init_failed ? 3'd2 : 3'd0;
-            if (sd_init_failed) recovery_phase <= 0;
-            retry_used <= 0;
-            restart_pending <= 0;
-            recovery_chain <= 0;
-            first_load_failed <= 0;
-            auto_blocked <= 0;
-            candidates_tried <= 0;
-            scan_kicked           <= 1'b0;
-            first_image_committed <= 1'b0;
-
-            img_found_count       <= 3'd0;
-            img_idx               <= 2'd0;
-            load_idx              <= 2'd0;
-            pending_buf_idx       <= 2'd0;
-            write_buf_idx         <= 2'd0;
-            img_cluster0           <= 32'd0;
-        img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
-            img_cluster1           <= 32'd0;
-            img_cluster2           <= 32'd0;
-            img_cluster3           <= 32'd0;
-
-            load_busy             <= 1'b0;
-            commit_pending        <= 1'b0;
-            source_busy_seen      <= 1'b0;
-            source_done_seen      <= 1'b0;
-            write_finish_seen     <= 1'b0;
-
-        end else begin
-            // 扫描阶段缓存前 4 张图的起始 sector
-            if (scan_done && img_found_count == 0) begin
-                sticky_error <= 1; recovery_phase <= 0;
-            end
-            if (first_load_failed) recovery_phase <= 0;
-            if (scan_found_valid) begin
-                case (img_found_count)
-                    3'd0: begin img_cluster0 <= scan_found_cluster; img_size0 <= scan_found_size; end
-                    3'd1: begin img_cluster1 <= scan_found_cluster; img_size1 <= scan_found_size; end
-                    3'd2: begin img_cluster2 <= scan_found_cluster; img_size2 <= scan_found_size; end
-                    3'd3: begin img_cluster3 <= scan_found_cluster; img_size3 <= scan_found_size; end
-                    default: ;
-                endcase
-
-                if (img_found_count < 3'd4)
-                    img_found_count <= img_found_count + 3'd1;
-            end
-
-            // 两个完成事件独立锁存，避免跨时钟脉冲和源端完成的先后顺序造成丢失
-            if (load_busy && !bmp_ready)
-                source_busy_seen <= 1'b1;
-
-            if (load_busy && bmp_load_done)
-                source_done_seen <= 1'b1;
-
-            if (load_busy && current_write_finish)
-                write_finish_seen <= 1'b1;
-            if (write_req_ack_sync)
-                write_finish_seen <= 1'b0;
-
-            // Keep the old buffer owned by the reader until its frame request
-            // has adopted the new base address. Data stays stable until ack.
-            if (load_busy && bmp_load_error) begin
-                sticky_error <= bmp_error;
-                source_busy_seen <= 1'b0;
-                source_done_seen <= 1'b0;
-                write_finish_seen <= 1'b0;
-                if (!retry_used) begin
-                    retry_used <= 1'b1;
-                    restart_pending <= 1'b1;
-                end else if (recovery_chain && (!first_image_committed || ctrl_auto_play_en) &&
-                             candidates_tried < img_found_count) begin
-                    load_idx <= next_image(load_idx);
-                    candidates_tried <= candidates_tried + 3'd1;
-                    retry_used <= 1'b0;
-                    restart_pending <= 1'b1;
-                end else begin
-                    load_busy <= 1'b0;
-                    restart_pending <= 1'b0;
-                    if (!first_image_committed) first_load_failed <= 1'b1;
-                    if (recovery_chain) auto_blocked <= 1'b1;
-                end
-            end else if (restart_pending && bmp_ready) begin
-                load_start_pulse <= 1'b1;
-                restart_pending <= 1'b0;
-                source_busy_seen <= 1'b0;
-                source_done_seen <= 1'b0;
-                write_finish_seen <= 1'b0;
-            end else if (commit_pending && commit_ack_sync[1] == display_commit_request &&
-                (!committed_valid || committed_ready)) begin
-                sticky_error <= 0;
-                auto_blocked <= 0;
-                recovery_phase <= 0;
-                committed_image <= load_idx;
-                committed_valid <= 1;
-                commit_pending        <= 1'b0;
-                load_busy             <= 1'b0;
-                source_busy_seen      <= 1'b0;
-                source_done_seen      <= 1'b0;
-                write_finish_seen     <= 1'b0;
-                img_idx               <= load_idx;
-                display_valid         <= 1'b1;
-                first_image_committed <= 1'b1;
-            end else if (!commit_pending && load_busy && source_done_now && write_finish_now) begin
-                commit_pending        <= 1'b1;
-                display_commit_request <= ~display_commit_request;
-                disp_buf_idx          <= pending_buf_idx;
-            end
-
-            // 上电后自动发起一次“扫描前 4 张 BMP”
-            if (!scan_kicked && bmp_ready && sdram_ready) begin
-                scan_start_pulse      <= 1'b1;
-                scan_kicked           <= 1'b1;
-                first_image_committed <= 1'b0;
-
-                img_found_count       <= 3'd0;
-                img_idx               <= 2'd0;
-                load_idx              <= 2'd0;
-                pending_buf_idx       <= 2'd0;
-                write_buf_idx         <= 2'd0;
-
-                load_busy             <= 1'b0;
-                source_busy_seen      <= 1'b0;
-                source_done_seen      <= 1'b0;
-                write_finish_seen     <= 1'b0;
-            end else begin
-                // First image loading stays local.
-                if (scan_done && !first_image_committed && !first_load_failed && bmp_ready && !load_busy && (img_found_count != 3'd0)) begin
-                    retry_used <= 1'b0;
-                    recovery_chain <= 1'b1;
-                    candidates_tried <= 3'd1;
-                    load_idx         <= 2'd0;
-                    pending_buf_idx  <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx    <= next_buf_lut(disp_buf_idx, display_valid);
-                    load_start_pulse <= 1'b1;
-                    load_busy        <= 1'b1;
-                    source_busy_seen <= 1'b0;
-                    source_done_seen <= 1'b0;
-                    write_finish_seen <= 1'b0;
-
-                end
-                // Accept request and index together; write to the inactive buffer.
-                else if (ctrl_request_accept) begin
-                    retry_used <= 1'b0;
-                    recovery_chain <= ctrl_auto_load_request;
-                    candidates_tried <= 3'd1;
-                    if (!ctrl_auto_load_request) auto_blocked <= 1'b0;
-                    load_idx <= ctrl_target_image;
-                    pending_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
-                    write_buf_idx <= next_buf_lut(disp_buf_idx, display_valid);
-                    load_start_pulse <= 1'b1;
-                    load_busy <= 1'b1;
-                    source_busy_seen <= 1'b0;
-                    source_done_seen <= 1'b0;
-                    write_finish_seen <= 1'b0;
-                end
-            end
-        end
-    end
-end
-
-// FAT32 owns the sector adapter for scan, preflight, and file loading.
 fat32_bmp_reader #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
  .scan_start(scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
- .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),
- .scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
- .load_start(load_start_pulse),.load_cluster(load_cluster),.load_size(load_size),
+ .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
+ .load_start(load_start_pulse),.load_cancel(parser_cancel),.load_cluster(load_cluster),.load_size(load_size),
  .load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
- .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),
- .write_req(write_req),.write_req_ack(write_req_ack_sync),
- .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),
- .sd_sec_read_data(sd_sec_read_data),.sd_sec_read_data_valid(sd_sec_read_data_valid),
- .sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),
+ .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),.write_req(write_req),.write_req_ack(write_req_ack_sync),
+ .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
+ .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),
  .bmp_data_wr_en(bmp_data_wr_en),.bmp_data(bmp_data)
 );
-
 sd_card_top #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) sd_card_top_m0(
-    .sd_debug(sd_debug),
-    .sd_init_failed(sd_init_failed),
-    .clk                    (clk),
-    .rst                    (sd_local_rst),
-    .SD_nCS                 (SD_nCS),
-    .SD_DCLK                (SD_DCLK),
-    .SD_MOSI                (SD_MOSI),
-    .SD_MISO                (SD_MISO),
-    .sd_init_done           (sd_init_done),
-    .sd_sec_read            (sd_sec_read),
-    .sd_sec_read_addr       (sd_sec_read_addr),
-    .sd_sec_read_data       (sd_sec_read_data),
-    .sd_sec_read_data_valid (sd_sec_read_data_valid),
-    .sd_sec_read_failed(sd_sec_read_failed),
-    .sd_sec_read_end        (sd_sec_read_end),
-    .sd_sec_write           (1'b0),
-    .sd_sec_write_addr      (32'd0),
-    .sd_sec_write_data      (),
-    .sd_sec_write_data_req  (),
-    .sd_sec_write_end       ()
+ .clk(clk),.rst(sd_local_rst),.SD_nCS(SD_nCS),.SD_DCLK(SD_DCLK),.SD_MOSI(SD_MOSI),.SD_MISO(SD_MISO),
+ .sd_debug(sd_debug),.sd_init_failed(sd_init_failed),.sd_init_done(sd_init_done),
+ .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
+ .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),
+ .sd_sec_write(1'b0),.sd_sec_write_addr(32'd0),.sd_sec_write_data(),.sd_sec_write_data_req(),.sd_sec_write_end()
 );
-
 endmodule
+

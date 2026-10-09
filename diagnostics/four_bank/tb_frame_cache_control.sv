@@ -19,7 +19,7 @@ module tb_frame_cache_control;
     wire [2:0] image_count;
     wire [3:0] cache_valid, cache_failed;
     wire [7:0] cache_banks;
-    wire cache_complete, cache_hit, request_failed, load_failed;
+    wire cache_complete, cache_hit, request_failed, load_failed, retry_event;
     wire [1:0] cache_complete_image, cache_hit_image, failed_image;
     reg use_player=0, next_event=0, previous_event=0, auto_toggle=0;
     wire player_request, player_next, player_previous, player_auto, player_accept;

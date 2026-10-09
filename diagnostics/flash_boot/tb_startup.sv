@@ -16,6 +16,7 @@ module tb_startup;
 `endif
   );
  integer scans=0, scenarios=0;
+ wire scan_kicked=(dut.sd_card_bmp_m0.scan_state==3 || dut.sd_card_bmp_m0.scan_state==4);
  reg sampled_ready=0, expected_ready=0;
  always @(posedge dut.sd_card_clk or posedge dut.rst_sd) begin
   if(dut.rst_sd) begin sampled_ready<=0;expected_ready<=0;end
@@ -29,7 +30,7 @@ module tb_startup;
     scans=scans+1;
     if(!expected_ready || !card_ready) $fatal(1,"scan before both initialization completions");
    end
-   if(!expected_ready && (dut.sd_card_bmp_m0.scan_kicked || dut.sd_card_write_req ||
+   if(!expected_ready && (scan_kicked || dut.sd_card_write_req ||
       dut.sd_card_write_en || dut.display_valid || dut.committed_valid || dut.audio_enable))
     $fatal(1,"business activity before memory readiness");
    if(scans>1) $fatal(1,"duplicate startup scan");
@@ -46,14 +47,14 @@ module tb_startup;
  task idle_check;
   begin
    repeat(15) @(negedge dut.sd_card_clk);
-   if(scans!=0 || dut.sd_card_bmp_m0.scan_kicked) $fatal(1,"scan occurred while waiting");
+   if(scans!=0 || scan_kicked) $fatal(1,"scan occurred while waiting");
    if(dut.sd_card_bmp_m0.rst) $fatal(1,"memory readiness reset SD initialization");
   end
  endtask
  task started_once;
   begin
    repeat(25) @(negedge dut.sd_card_clk);
-   if(scans!=1 || !dut.sd_card_bmp_m0.scan_kicked) $fatal(1,"missing startup scan");
+   if(scans!=1 || !scan_kicked) $fatal(1,"missing startup scan");
    repeat(50) @(negedge dut.sd_card_clk);
    if(scans!=1) $fatal(1,"startup scan repeated");
    scenarios=scenarios+1;

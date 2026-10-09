@@ -95,7 +95,10 @@ function [7:0] hex;
     input [3:0] value;
     begin hex=(value<10) ? 8'h30+{4'd0,value} : 8'h41+{4'd0,value}-8'd10; end
 endfunction
-wire [79:0] name_text=event_name(kind);
+// New cache records share WAIT's reserved phase codes; all old IDs, fields,
+// queue framing and DROP semantics remain unchanged.
+wire [79:0] name_text=(kind==11 && snapshot[68:65]==4'hc)?"CACHE_DONE":
+                      (kind==11 && snapshot[68:65]==4'hd)?"CACHE_HIT ":event_name(kind);
 localparam [175:0] BANNER="BOOT v0.5.4-s3-local.2";
 reg [7:0] tx_data;
 reg tx_hex;

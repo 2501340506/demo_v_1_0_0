@@ -37,6 +37,8 @@ parameter BUSRT_BITS    = 10;
 parameter [ADDR_BITS-1:0] FRAME_PIXELS = 307200;   // 640*480
 parameter [ADDR_BITS-1:0] BUF0_ADDR = 0;
 parameter [ADDR_BITS-1:0] BUF1_ADDR = FRAME_PIXELS;
+parameter [ADDR_BITS-1:0] BUF2_ADDR = FRAME_PIXELS * 2;
+parameter [ADDR_BITS-1:0] BUF3_ADDR = FRAME_PIXELS * 3;
 
 wire Sdr_init_done;
 wire Sdr_init_ref_vld;
@@ -290,7 +292,7 @@ media_frame_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_fr
     .write_cancel_req(write_cancel_req),.write_cancel_ack(write_cancel_ack),
     .write_finish(frame_write_finish),.source_done(source_frame_done),.source_error(source_frame_error),
     .error_toggle(frame_error_toggle),.memory_error(frame_memory_error),
-    .write_addr_0(BUF0_ADDR),.write_addr_1(BUF1_ADDR),.write_addr_2(21'd0),.write_addr_3(21'd0),
+    .write_addr_0(BUF0_ADDR),.write_addr_1(BUF1_ADDR),.write_addr_2(BUF2_ADDR),.write_addr_3(BUF3_ADDR),
     .write_addr_index(write_buf_idx),.write_len(FRAME_PIXELS),
     .write_en(sd_card_write_en),.write_data(sd_card_write_data)
 );
@@ -301,7 +303,7 @@ media_frame_reader u_frame_reader(
     .App_rd_en(App_rd_en),.App_rd_addr(App_rd_addr),.Sdr_rd_en(Sdr_rd_en),.Sdr_rd_dout(Sdr_rd_dout),
     .read_req(video_read_req),.read_req_ack(video_read_req_ack),.read_finish(),
     .display_commit_request(display_commit_request),.display_commit_ack(display_commit_ack),
-    .read_addr_0(BUF0_ADDR),.read_addr_1(BUF1_ADDR),.read_addr_2(21'd0),.read_addr_3(21'd0),
+    .read_addr_0(BUF0_ADDR),.read_addr_1(BUF1_ADDR),.read_addr_2(BUF2_ADDR),.read_addr_3(BUF3_ADDR),
     .read_addr_index(disp_buf_idx),.read_len(FRAME_PIXELS),
     .read_en(video_read_en),.display_valid(display_valid),.read_data(video_read_data),
     .underflow(frame_underflow),.reader_error(frame_reader_error)

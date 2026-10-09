@@ -5,9 +5,10 @@ No physical disk access. All sectors not explicitly listed are test failures.
 from pathlib import Path
 import json
 import struct
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'diagnostics/output/fat32_core/fixtures'
+OUT = Path(sys.argv[1]) if len(sys.argv)>1 else ROOT / 'diagnostics/output/fat32_core/fixtures'
 
 
 def u16(buf, off, value):

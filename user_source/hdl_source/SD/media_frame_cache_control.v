@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 // Four logical frame banks. All ports are synchronous to the SD control clock.
-// This S2 module is intentionally not in the production project yet.
+// Integrated through sd_card_bmp's scan/load/display adapters in S3.
 // Adapters must report load success only after parser success AND write drain.
 // Requests/parameters stay stable until acceptance; display_ack means the
 // reader actually committed at a frame boundary, not merely queued a target.
@@ -49,6 +49,7 @@ module media_frame_cache_control (
     output reg [3:0] cache_valid, cache_failed,
     output [7:0] cache_banks,
     output reg cache_complete, cache_hit, request_failed, load_failed,
+    output reg retry_event,
     output reg [1:0] cache_complete_image, cache_hit_image, failed_image
 );
     localparam [1:0] SCAN_ISSUE=0, SCAN_WAIT=1, RUN=2, QUIESCE=3;
@@ -110,10 +111,10 @@ module media_frame_cache_control (
             display_request <= 0; display_image <= 0; display_bank <= 0;
             display_valid <= 0; current_image <= 0; current_bank <= 0;
             first_image_committed <= 0; committed_valid <= 0; committed_image <= 0;
-            cache_complete <= 0; cache_hit <= 0; request_failed <= 0; load_failed <= 0;
+            cache_complete <= 0; cache_hit <= 0; request_failed <= 0; load_failed <= 0; retry_event <= 0;
             cache_complete_image <= 0; cache_hit_image <= 0; failed_image <= 0;
         end else begin
-            cache_complete <= 0; cache_hit <= 0; request_failed <= 0; load_failed <= 0;
+            cache_complete <= 0; cache_hit <= 0; request_failed <= 0; load_failed <= 0; retry_event <= 0;
             if (committed_valid && committed_ready) committed_valid <= 0;
             // Never abort an issued display commit: rescan waits for ownership
             // to transfer before invalidating the directory and allocating banks.
@@ -143,6 +144,7 @@ module media_frame_cache_control (
                         load_state <= LOAD_IDLE;
                     end else if (!retry_used) begin
                         retry_used <= 1;
+                        retry_event <= 1;
                         load_state <= LOAD_ISSUE;
                     end else begin
                         cache_failed[load_image] <= 1;
