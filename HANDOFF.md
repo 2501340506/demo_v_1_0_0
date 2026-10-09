@@ -1,9 +1,40 @@
-# ?????v0.8.0 ? bank ??? S1 ?????2026-10-09?
+# 当前交接：v0.8.0 S1 候选待上板（2026-10-09）
 
-- ??????? `releases/v0.8.0/s1-local.1/demo.bit` ?? S1 ?????
-- ????S1 loader/reader ????? SDRAM/FIFO ???FAT32/??????????TD ???????? Setup +0.100 ns?Hold +0.030 ns???? `v0.8.0-s1-local.1`?
-- ????????????????????Flash?????????? SD ??????????
-- ??????????? `releases/v0.8.0/s1-local.1/BOARD_VALIDATION.md`???????????????????? `v0.8.0-s1-board.1` ??? S2?
-- ??????? SDRAM ?? 64 ? burst????????? 128 ?????? `{RGB,8'h00}` ? BMP ???????????????????????????????????????? best_result ??? worktree ??????????
+- 当前任务：交付 S1 上板文件，修复 HANDOFF 乱码；生产调度仍为双缓冲。
+- 已完成：loader/reader 分离及本地验证，固定候选 [demo.bit](releases/v0.8.0/s1-local.1/demo.bit)，标签 `v0.8.0-s1-local.1`。TD Setup +0.100 ns、Hold +0.030 ns；验证详情见候选说明。本次补齐 [上板步骤与反馈表](releases/v0.8.0/s1-local.1/BOARD_VALIDATION.md)，恢复中文及历史交接，未改 RTL 或重建 bit。
+- 卡住的问题：尚无该候选的用户板测结果；Flash、冷启动和长期运行未确认。四图驻留、后台预载和缓存命中切换尚未接入生产。
+- 下一步计划：用户测试固定候选并反馈，通过后记录 board 标签并按执行规则推送，再进入 S2。后续重新运行交接回归前需核对 prepare_handoff.py 与原测试台端口连接；历史通过结果不代表当前脚本已重新执行。
+- 踩过的坑：PowerShell 默认管道将中文传入 Python 时替换为问号，之后保存 UTF-8 无法恢复。本次从正常 Git 历史恢复并直接 UTF-8 写入。课程 128 字 burst 不适用本项目 64 字配置；保留 RGB 高 24 位、BMP 翻转和输出延迟。不得把 S3 验收要求写成 S1 已实现功能，不覆盖 best_result、不移动旧标签、不删除旧目录。
 
-????????????? [? bank ?????](docs/?bank??????????.md)?
+[候选说明](releases/v0.8.0/s1-local.1/README.md) · [阶段计划](docs/四bank帧缓存分阶段修改计划.md) · [回退 bit](releases/v0.7.0/demo.bit)
+
+## 历史交接
+
+# 当前交接：v0.8.0 四 bank 帧缓存 S1 实施中（2026-10-09）
+
+- 当前任务：按已确认计划先完成 S0 和 S1 读写分离，S1 仍使用双缓冲。
+- 已完成：核对当前 feature/four-bank-frame-cache、干净工作区、基线 1c68673；生产 RTL 与 v0.7.0 一致。阶段计划已保存至 docs/四bank帧缓存分阶段修改计划.md。
+- 卡住的问题：无实施阻塞；S1 本地候选完成后需要用户板测，未通过前不进入 S2。
+- 下一步计划：实现独立 loader/reader，验证真实 SDRAM 数据链路、相关回归、TD，再固定候选及标签。
+- 踩过的坑：课程默认 128 字不适用当前 64 字刷新方案；必须保留 RGB 高 24 位及垂直翻转；不能用 bmp_ready 代替解析成功。用户 best_result 和现有 worktree 保留；禁止批量删除。
+
+## 历史交接
+# 当前交接：8890 LUT 组成分析（2026-10-08）
+
+- 当前任务：分析 v0.7.0 的 8890 LUT 组成，给出缩减方案。
+- 已完成：核对发布报告和 attempt7 源码快照，统一 lut+ripple 口径；完成层级拆分、前版对比及优化方案。详见 [分析文档](docs/LUT_8890_analysis.md)。未改生产 RTL 或重建 bit。
+- 主要结论：SD/FAT32/BMP 5493，UART 1136，HDMI 桥 871；优先 UART 字符生成、共享 BMP 头检查，再评估 FAT32 运算共享。
+- 卡住的问题：分析无阻塞；净收益需后续 A/B 综合确认。
+- 下一步计划：进入实施时先保持日志格式优化 UART，在新输出目录验证资源和时序，再处理 BMP 与 FAT32。
+- 踩过的坑：层级 lut 必须加 ripple，父子层不能重复相加；UART 队列已是分布式 RAM；顶层尺寸已为常量；未接运算可能被裁剪。PowerShell 读取需 UTF8，默认管道传中文给 Python 会变问号，已改为直接 UTF8 写入。用户原有六项修改保留，未覆盖 TD 工程、best_result，未删除文件或目录。
+
+---
+# 当前交接：v0.7.0 已发布并合并 main
+
+- 当前任务：S4 已完成；v0.7.0、main 及 feature/fat32-filesystem 已成功同步 GitHub。
+- 已完成：复用已验收 S3 bit 为 releases/v0.7.0/demo.bit，逐字节一致；生产源码无变化，未重建。计划、交接及验收记录归档至 docs/history/2026-10-08/fat32-filesystem；活动入口更新。
+- 卡住的问题：无。未单独确认的板测边界和长期运行继续列为未测，不扩大通过范围。
+- 下一步计划：原目录 main 合并完成，文件树与发布分支一致；六个用户本地修改已恢复且逐字节一致。正式标签及两个分支已推送；后续新需求另建功能分支。临时 stash 和本地备份保留，不删除旧 worktree。
+- 踩过的坑：禁止覆盖用户 TD 工程、best_result 和个人记录；不新建开发 worktree、不删除旧目录、不重建验收 bit、不移动阶段标签。历史交接见归档。
+
+[正式版](releases/v0.7.0/README.md) · [归档](docs/history/2026-10-08/fat32-filesystem/README.md)
