@@ -37,6 +37,8 @@ parameter BUSRT_BITS    = 10;
 parameter [ADDR_BITS-1:0] FRAME_PIXELS = 307200;   // 640*480
 parameter [ADDR_BITS-1:0] BUF0_ADDR = 0;
 parameter [ADDR_BITS-1:0] BUF1_ADDR = FRAME_PIXELS;
+parameter [ADDR_BITS-1:0] BUF2_ADDR = FRAME_PIXELS * 2;
+parameter [ADDR_BITS-1:0] BUF3_ADDR = FRAME_PIXELS * 3;
 
 wire Sdr_init_done;
 wire Sdr_init_ref_vld;
@@ -80,6 +82,11 @@ wire write_cancel_req, write_cancel_ack;
 wire        sd_card_write_req;
 wire        sd_card_write_req_ack;
 wire        frame_write_finish;
+wire source_frame_done, source_frame_error;
+wire frame_error_toggle;
+wire [2:0] frame_memory_error, frame_reader_error;
+wire frame_underflow;
+wire frame_wr_busy, frame_rd_busy;
 reg         frame_write_toggle_mem;
 
 wire [1:0]  write_buf_idx;
@@ -191,7 +198,7 @@ sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4)
+    .SCAN_TARGET_COUNT (3'd4), .USE_FRAME_RESULT(1)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_sd),
@@ -211,6 +218,9 @@ sd_card_bmp #(
     .committed_image(committed_image), .committed_valid(committed_valid),
     .committed_ready(committed_ready),
 
+    .source_frame_done(source_frame_done), .source_frame_error(source_frame_error),
+    .frame_error_toggle(frame_error_toggle), .frame_memory_error(frame_memory_error),
+    .reader_error(frame_reader_error), .reader_underflow(frame_underflow),
     .write_finish_toggle(frame_write_toggle_mem),
     .display_commit_request(display_commit_request),
     .display_commit_ack(display_commit_ack),
@@ -272,55 +282,31 @@ video_delay video_delay_m0(
 // 首图提交前黑屏；提交后一直显示当前显示缓冲区内容
 assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
-frame_read_write #(
-    .WRITE_V_FLIP     (1),
-    .FRAME_WIDTH      (640),
-    .FRAME_HEIGHT     (480)
-) frame_read_write_m0(
-    .mem_clk           (ext_mem_clk),
-    .rst               (rst_mem),
-    .Sdr_init_done     (Sdr_init_done),
-    .Sdr_init_ref_vld  (Sdr_init_ref_vld),
-    .Sdr_busy          (Sdr_busy),
-
-    .App_rd_en         (App_rd_en),
-    .App_rd_addr       (App_rd_addr),
-    .Sdr_rd_en         (Sdr_rd_en),
-    .Sdr_rd_dout       (Sdr_rd_dout),
-
-    .read_clk          (video_clk),
-    .read_req          (video_read_req),
-    .read_req_ack      (video_read_req_ack),
-    .read_finish       (),
-    .read_addr_0       (BUF0_ADDR),
-    .read_addr_1       (BUF1_ADDR),
-    .read_addr_2       ({ADDR_BITS{1'b0}}),
-    .read_addr_3       ({ADDR_BITS{1'b0}}),
-    .read_addr_index   (disp_buf_idx),
-    .display_commit_request(display_commit_request),
-    .display_commit_ack(display_commit_ack),
-    .read_len          (FRAME_PIXELS),
-    .read_en           (video_read_en),
-    .read_data         (video_read_data),
-
-    .App_wr_en         (App_wr_en),
-    .App_wr_addr       (App_wr_addr),
-    .App_wr_din        (App_wr_din),
-    .App_wr_dm         (App_wr_dm),
-
-    .write_clk         (sd_card_clk),
-    .write_cancel_req(write_cancel_req), .write_cancel_ack(write_cancel_ack),
-    .write_req         (sd_card_write_req),
-    .write_req_ack     (sd_card_write_req_ack),
-    .write_finish      (frame_write_finish),
-    .write_addr_0      (BUF0_ADDR),
-    .write_addr_1      (BUF1_ADDR),
-    .write_addr_2      ({ADDR_BITS{1'b0}}),
-    .write_addr_3      ({ADDR_BITS{1'b0}}),
-    .write_addr_index  (write_buf_idx),
-    .write_len         (FRAME_PIXELS),
-    .write_en          (sd_card_write_en),
-    .write_data        (sd_card_write_data)
+// S1 separates ownership of each FIFO; the established burst interlock stays.
+media_frame_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
+    .rst(rst_mem),.mem_clk(ext_mem_clk),.write_clk(sd_card_clk),.write_rst(rst_sd),
+    .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
+    .App_rd_busy(frame_rd_busy),.O_wr_busy(frame_wr_busy),
+    .App_wr_en(App_wr_en),.App_wr_addr(App_wr_addr),.App_wr_din(App_wr_din),.App_wr_dm(App_wr_dm),
+    .write_req(sd_card_write_req),.write_req_ack(sd_card_write_req_ack),
+    .write_cancel_req(write_cancel_req),.write_cancel_ack(write_cancel_ack),
+    .write_finish(frame_write_finish),.source_done(source_frame_done),.source_error(source_frame_error),
+    .error_toggle(frame_error_toggle),.memory_error(frame_memory_error),
+    .write_addr_0(BUF0_ADDR),.write_addr_1(BUF1_ADDR),.write_addr_2(BUF2_ADDR),.write_addr_3(BUF3_ADDR),
+    .write_addr_index(write_buf_idx),.write_len(FRAME_PIXELS),
+    .write_en(sd_card_write_en),.write_data(sd_card_write_data)
+);
+media_frame_reader u_frame_reader(
+    .rst(rst_mem),.mem_clk(ext_mem_clk),.read_clk(video_clk),.read_rst(rst_video),
+    .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
+    .App_wr_busy(frame_wr_busy),.O_rd_busy(frame_rd_busy),
+    .App_rd_en(App_rd_en),.App_rd_addr(App_rd_addr),.Sdr_rd_en(Sdr_rd_en),.Sdr_rd_dout(Sdr_rd_dout),
+    .read_req(video_read_req),.read_req_ack(video_read_req_ack),.read_finish(),
+    .display_commit_request(display_commit_request),.display_commit_ack(display_commit_ack),
+    .read_addr_0(BUF0_ADDR),.read_addr_1(BUF1_ADDR),.read_addr_2(BUF2_ADDR),.read_addr_3(BUF3_ADDR),
+    .read_addr_index(disp_buf_idx),.read_len(FRAME_PIXELS),
+    .read_en(video_read_en),.display_valid(display_valid),.read_data(video_read_data),
+    .underflow(frame_underflow),.reader_error(frame_reader_error)
 );
 
 sdram U3(

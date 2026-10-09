@@ -3,7 +3,7 @@ module fat32_bmp_reader #(
  parameter integer CLK_FREQ_HZ=100000000, TIMEOUT_MS=500,
  parameter integer MAX_VISITED_CLUSTERS=8192
 )(
- input clk,rst,sd_init_done,scan_start,load_start,
+ input clk,rst,sd_init_done,scan_start,load_start,load_cancel,
  input [31:0] load_cluster,load_size,
  input [15:0] bmp_width,bmp_height,
  output ready, output reg scan_done,scan_error,scan_found_valid,
@@ -35,9 +35,9 @@ module fat32_bmp_reader #(
  wire [7:0] sector_byte,sector_error;wire [8:0] sector_index;
  wire scan_owner=(state==SCAN);
  wire file_owner=(state==START_FILE || state==READ_FILE || state==DRAIN);
- wire abort_file=(state==DRAIN || state==RESULT || state==IDLE);
+ wire abort_file=(state==DRAIN || state==RESULT || state==IDLE || load_cancel);
  wire [2:0] decode_error;wire decode_done;
- wire request_allowed=(state==READ_FILE && decode_error==0);
+ wire request_allowed=(state==READ_FILE && decode_error==0 && !load_cancel);
  wire header_match;wire [33:0] required_end;
  wire [31:0] header_file_len;
  reg header_go;
@@ -50,9 +50,9 @@ module fat32_bmp_reader #(
  endfunction
  assign ready=(state==IDLE && sd_init_done);
  assign state_code=(state==IDLE)?4'd1:((state<=SCAN_FINISH)?4'd2:4'd3);
- assign write_req=(state==WRITE_WAIT);
+ assign write_req=(state==WRITE_WAIT && !load_cancel);
  wire pixel_valid;
- assign bmp_data_wr_en=pixel_valid && state==READ_FILE && decode_error==0 && stream_error==0;
+ assign bmp_data_wr_en=pixel_valid && state==READ_FILE && decode_error==0 && stream_error==0 && !load_cancel;
  fat32_volume_scanner #(.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
  .clk(clk),.rst_n(!rst),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
@@ -78,7 +78,7 @@ module fat32_bmp_reader #(
  .file_len(header_file_len),.pixel_offset(),.width(),.height(),.required_end(required_end),.header_match(header_match),
  .skip_format(),.header_complete(),.is_32(),.row_stride(),.expected_pixels());
  bmp24_decoder #(.RUNTIME_DIMENSIONS(1),.ALLOW_32(0)) decoder(
- .clk(clk),.rst(rst || state==WRITE_WAIT),.expected_width(bmp_width),.expected_height(bmp_height),
+ .clk(clk),.rst(rst || state==WRITE_WAIT || load_cancel),.expected_width(bmp_width),.expected_height(bmp_height),
  .file_start(file_go),.file_size(task_size),.file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),
  .file_byte_offset(stream_offset),.file_end(stream_done),.upstream_error(stream_error),
  .header_accepted(),.pixel_valid(pixel_valid),.pixel_rgb(bmp_data),.pixel_x(),.pixel_y(),
@@ -94,7 +94,12 @@ module fat32_bmp_reader #(
  end else begin
  scan_go<=0;file_go<=0;header_go<=0;scan_found_valid<=0;load_done<=0;load_error<=0;scan_error<=0;
  if(sector_done && sector_error!=0)io_error<=sector_error;
- case(state)
+ // Cancel only the current file and drain an already issued sector. Scanner
+ // geometry stays intact for a retry or the next cached image.
+ if(load_cancel) begin
+  if(!sector_busy) state<=IDLE;
+  else state<=DRAIN;
+ end else case(state)
  IDLE:if(sd_init_done)begin
  if(scan_start)begin scan_done<=0;scan_found_total<=0;candidate<=0;fat_error<=0;bmp_error<=0;io_error<=0;scan_go<=1;state<=SCAN;end
  else if(load_start)begin task_cluster<=load_cluster;task_size<=load_size;io_error<=0;fat_error<=0;bmp_error<=0;

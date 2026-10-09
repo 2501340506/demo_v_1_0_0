@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 module tb_fat32_reader;
     parameter integer CASE_ID=0;
+    parameter FIXTURE_DIR="diagnostics/output/fat32_core/fixtures";
     parameter integer BYTE_GAP=2;
     parameter integer TEST_MODE=0; // 1..3: rejected headers; 4: ack timeout; 5: last byte/end together
     reg clk=0;always #5 clk=~clk;
@@ -26,7 +27,7 @@ module tb_fat32_reader;
     reg [31:0] table_cluster[0:3],table_size[0:3];
     integer found_n=0,delay_ack=0;
     fat32_bmp_reader #(.CLK_FREQ_HZ(1000),.TIMEOUT_MS(500),.MAX_VISITED_CLUSTERS(4)) dut(
-      .clk(clk),.rst(rst),.sd_init_done(1'b1),.scan_start(scan_start),.load_start(file_start),
+      .clk(clk),.rst(rst),.sd_init_done(1'b1),.scan_start(scan_start),.load_cancel(1'b0),.load_start(file_start),
       .load_cluster(selected_cluster),.load_size(selected_size),.bmp_width(16'd3),.bmp_height(16'd91),
       .ready(ready),.scan_done(scan_done),.scan_error(scan_fault),.scan_found_valid(found),
       .scan_found_cluster(found_cluster),.scan_found_size(found_size),.scan_found_total(found_count),
@@ -74,9 +75,9 @@ module tb_fat32_reader;
     end
     integer i,k,expected_count,first_slot;
     initial begin
-      $readmemh($sformatf("diagnostics/output/fat32_core/fixtures/case%0d_meta.hex",CASE_ID),meta,0,31);
-      $readmemh($sformatf("diagnostics/output/fat32_core/fixtures/case%0d_lba.hex",CASE_ID),lbas,0,meta[25]-1);
-      $readmemh($sformatf("diagnostics/output/fat32_core/fixtures/case%0d_bytes.hex",CASE_ID),media,0,meta[25]*512-1);
+      $readmemh($sformatf("%s/case%0d_meta.hex",FIXTURE_DIR,CASE_ID),meta,0,31);
+      $readmemh($sformatf("%s/case%0d_lba.hex",FIXTURE_DIR,CASE_ID),lbas,0,meta[25]-1);
+      $readmemh($sformatf("%s/case%0d_bytes.hex",FIXTURE_DIR,CASE_ID),media,0,meta[25]*512-1);
       first_slot=-1;
       for(k=0;k<meta[25];k=k+1)if(lbas[k]==meta[5]+(meta[7]-2)*meta[3])first_slot=k;
       if(TEST_MODE>=1 && TEST_MODE<=3)begin
