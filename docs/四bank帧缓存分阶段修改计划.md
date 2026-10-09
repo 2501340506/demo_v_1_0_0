@@ -25,8 +25,8 @@
 | S0 | 基线、计划、HANDOFF、标签规则 | 已核对基线，文档落地 |
 | S1 | loader/reader 分离，生产仍为双缓冲，完成/取消/错误反馈 | 本地验证完成；2026-10-09 用户确认 local.1 功能正常，board.1 记录验收 |
 | S2 | 四 bank 缓存控制独立实现 | 已完成；控制器及真实播放器联合仿真、100 MHz 独立综合通过；[验证说明](../diagnostics/four_bank/CACHE_CONTROL.md)，无 bit、不建 local/board 标签 |
-| S3 | 四 bank 生产集成、显示/音频关联、日志 | 本地通过；57 帧系统逐像素、42 个 FAT32 用例、21 项相关回归、17 帧端点故障；TD +0.126/+0.003 ns；[local.1](../releases/v0.8.0/s3-local.1/README.md) 待用户上板 |
-| S4 | 同一 S3 bit 的 Flash/冷启动/持续播放、发布归档 | 待 S3；真实记录用户结果，正式版本再合并 main |
+| S3 | 四 bank 生产集成、显示/音频关联、日志 | 本地通过；57 帧系统逐像素、42 个 FAT32 用例、21 项相关回归、17 帧端点故障；TD +0.126/+0.003 ns；[local.1](../releases/v0.8.0/s3-local.1/README.md) 已获用户板测确认，见 [board.1 记录](../releases/v0.8.0/s3-local.1/BOARD_RESULT.md) |
+| S4 | 同一 S3 bit 的 Flash/冷启动/持续播放、发布归档 | S3 已通过；[S4 步骤](../releases/v0.8.0/S4_VALIDATION.md) 已准备，待实际反馈后发布及合并 main |
 
 标签：`v0.8.0-plan.1`、`v0.8.0-sN-local.N`、`v0.8.0-sN-board.N`、正式 `v0.8.0`。源码或重建变化生成新候选；用户确认具体候选才建 board，并推送当前分支及本阶段标签。已发布标签不移动。
 

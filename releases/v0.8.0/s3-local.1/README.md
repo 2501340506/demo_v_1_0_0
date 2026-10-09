@@ -1,6 +1,6 @@
 # v0.8.0 S3 local.1：四 bank 帧缓存上板候选
 
-下载：[demo.bit](demo.bit)，629624 字节，EG4S20BG256。请按 [上板步骤](BOARD_VALIDATION.md) 测试。此候选已通过本地验证，尚未获得 S3 板测确认。
+下载：[demo.bit](demo.bit)，629624 字节，EG4S20BG256。请按 [上板步骤](BOARD_VALIDATION.md) 测试。此候选已通过本地验证及 S3 用户功能板测，见 [board.1 记录](BOARD_RESULT.md)。
 
 ## 行为
 
@@ -43,4 +43,4 @@ UART 保留原有事件编号和字段，新增 `CACHE_DONE`（WAIT 类、phase=
 
 ## 未测与回退
 
-S3 尚待用户上板确认；Flash、冷启动及持续播放归 S4，不预填通过结果。没有 S3 board 标签，不合并 main。出现问题可回退 [v0.7.0 正式 bit](../../v0.7.0/demo.bit)，也可对比 [已验收 S1 bit](../s1-local.1/demo.bit)。
+S3 用户功能板测已通过，记录为 v0.8.0-s3-board.1；Flash、冷启动及持续播放归 [S4](../S4_VALIDATION.md)，尚未确认，不合并 main。专项未测范围见板测记录。出现问题可回退 [v0.7.0 正式 bit](../../v0.7.0/demo.bit)，也可对比 [已验收 S1 bit](../s1-local.1/demo.bit)。
