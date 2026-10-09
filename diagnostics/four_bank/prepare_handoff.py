@@ -22,6 +22,11 @@ for relative in ['diagnostics/stability/tb_pixel_handoff.sv',
     # Both current benches declare the shared signals with the same text.
     assert 'wire frame_error_toggle' in source
     source = source.replace(".frame_error_toggle(1'b0),\n        .frame_memory_error(3'd0),.reader_error(3'd0),.reader_underflow(1'b0),\n        ", '')
+    # Shared historical benches omit the new S1 output ports. Explicitly mark
+    # them open here; the adapter below observes them through the DUT instance.
+    if '.source_frame_done(' not in source:
+        source = source.replace('.write_finish_toggle(finish_toggle)',
+            '.source_frame_done(),.source_frame_error(),.write_finish_toggle(finish_toggle)')
     source = source.replace('.write_finish_toggle(finish_toggle)',
         '.frame_error_toggle(frame_error_toggle),.frame_memory_error(frame_memory_error),'
         '.reader_error(frame_reader_error),.reader_underflow(frame_underflow),'
