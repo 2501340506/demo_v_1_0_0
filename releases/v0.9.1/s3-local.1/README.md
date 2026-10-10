@@ -1,5 +1,7 @@
 # v0.9.1 S3 local.1 — OSD 优化候选
 
+更新（2026-10-10）：用户确认“功能正常，进入下一阶段”，对应 v0.9.1-s3-board.1，见 [板测记录](BOARD_RESULT.md)。同一 bit 进入 [S4 最终验收](../S4_VALIDATION.md)。下文保留候选生成时的验证范围。
+
 基线 v0.9.0 已合并 main；开发分支 feature/osd-optimize。固定上板文件为本目录 [demo.bit](demo.bit)，629624 字节。回退 [v0.9.0 S3 原 bit](../../v0.9.0/s3-local.1/demo.bit)。本轮尚未板测，不代表正式版。
 
 ## 改动

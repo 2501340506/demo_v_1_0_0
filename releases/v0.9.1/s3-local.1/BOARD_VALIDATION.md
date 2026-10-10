@@ -1,5 +1,7 @@
 # v0.9.1 S3 local.1 上板步骤
 
+更新（2026-10-10）：用户已确认功能正常，见 BOARD_RESULT.md。以下为原候选测试步骤；S4 单项尚待反馈，当前状态见 ../S4_VALIDATION.md。
+
 候选：本目录 demo.bit；回退：releases/v0.9.0/s3-local.1/demo.bit。当前未测。
 
 1. 下载本候选，确认图像、左上 PIC/MAN/AUTO/ERR 和底部滚动字幕位置、颜色与原版相同。文字不闪烁、不撕裂；滚动完整退出后回绕。

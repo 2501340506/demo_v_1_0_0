@@ -2,7 +2,7 @@
 
 基线 v0.9.0 已合并 main。本轮在 feature/osd-optimize 统一 OSD 坐标/帧事件、参数化滚动并修正底条将原图黄/红/白色误认成文字的问题。视频 RGB888 和时序延迟不变。当前验证进度见 [HANDOFF](HANDOFF.md)，实现合同见 [优化计划](docs/OSD优化实施计划.md)。下方旧版“待上板”等描述属于历史，不代表当前版本状态。
 
-本地专项、系统、回归和 TD 已通过；[v0.9.1-s3-local.1 固定候选](releases/v0.9.1/s3-local.1/README.md) 待上板，步骤见 [BOARD_VALIDATION](releases/v0.9.1/s3-local.1/BOARD_VALIDATION.md)。
+本地专项、系统、回归和 TD 已通过；用户已确认 [v0.9.1-s3-local.1](releases/v0.9.1/s3-local.1/README.md) 功能正常，记录 s3-board.1。现进入 [S4 Flash、冷启动和持续运行验收](releases/v0.9.1/S4_VALIDATION.md)，继续使用同一 bit。
 
 # 最新状态：v0.9.0 S2 local.1 待上板（2026-10-10）
 
