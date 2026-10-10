@@ -1,0 +1,2 @@
+`timescale 1ns/1ps
+module tb_alpha; reg clk=0,rst=1,vs=1,de=0;reg[9:0]x;reg[23:0]in;wire[23:0]out;wire a;always #5 clk=~clk;osd_alpha_band d(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(in),.rgb_out(out),.active(a));initial begin in=24'h123456;x=10;#20 rst=0;repeat(4)@(negedge clk);vs=0;repeat(2)@(negedge clk);vs=1;force d.line_y=10;de=1;@(negedge clk);if(out!==24'h091a2b)$fatal;in=24'hffff00;@(negedge clk);if(out!==in)$fatal; $display("PASS alpha band");$finish;end endmodule
