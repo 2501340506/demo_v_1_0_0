@@ -1,0 +1,1 @@
+﻿$ErrorActionPreference='Stop';$o='diagnostics/output/osd_s3_alpha1';New-Item -ItemType Directory $o -Force|Out-Null;$s='D:/modelsim/win64';& "$s/vlib.exe" "$o/work"; & "$s/vlog.exe" -sv -work "$o/work" user_source/hdl_source/osd/osd_alpha_band.v diagnostics/osd/tb_alpha.sv;& "$s/vsim.exe" -c -quiet -lib "$o/work" tb_alpha -do 'run -all;quit -f'

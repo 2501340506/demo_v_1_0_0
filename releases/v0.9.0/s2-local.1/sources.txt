@@ -1,0 +1,16 @@
+Baseline: v0.9.0-s1-board.1 (f36cf04); unchanged production inputs refer to S1.
+Production commit: 5dcd0c1; verification commit: 2d9bda0
+Build: diagnostics/output/osd_s2_attempt1
+Build options: HighFanoutOptimization; TimingOptimization ultra; PostPlaceOptimization high
+Parameters: OSD_ENABLE=1, SCROLL_ENABLE=1; no band.
+
+Changed production inputs:
+TD_project/demo.al | 28725 bytes
+user_source/hdl_source/osd/scroll_text_overlay.v | 2385 bytes
+user_source/hdl_source/top_tf_hdmi_audio.v | 15953 bytes
+
+72 project source/constraint inputs plus demo.al match the build snapshot byte-for-byte.
+3 changed production inputs archived and compared byte-for-byte.
+Fixed bit matches build output byte-for-byte: 629624 bytes.
+Timing audit category counts unchanged from S1.
+S2 board acceptance pending.

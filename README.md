@@ -1,11 +1,13 @@
-# 当前正式版：v0.7.0 FAT32 图片播放器
+# 最新状态：v0.9.0 S2 local.1 待上板（2026-10-10）
 
-开发进度：v0.8.0 S3 四 bank 缓存已接入生产，本地仿真、相关回归和 TD 通过，S3 已获用户板测确认；[板测记录](releases/v0.8.0/s3-local.1/BOARD_RESULT.md)，下一步 [S4 实测](releases/v0.8.0/S4_VALIDATION.md)。[S3 固定 bit 与说明](releases/v0.8.0/s3-local.1/README.md) · [上板步骤](releases/v0.8.0/s3-local.1/BOARD_VALIDATION.md)。首图先显示、后台补齐，缓存命中切图不读卡；正式回退版本仍为 v0.7.0。
+S1 已通过用户验收，分支与 S1 local/board 标签已推送。S2 滚动字幕已完成专项、真实 SDRAM 联合测试、21 项回归及 TD，待用户板测；S3 半透明底条尚未实施。详细证据及固定候选见项目根目录 releases/v0.9.0/s2-local.1/README.md，上板使用该目录 demo.bit。Setup +0.113 ns、Hold +0.030 ns。以下为历史阶段记录。
+# 当前正式版：v0.8.0 四 bank 帧缓存
 
-根目录 PIC1.BMP～PIC4.BMP，支持缺图、碎片和大地址文件；保持原显示、按键、轮播与音频。正式 bit 复用 S3 已验收原件。
+v0.8.0 已发布并合并 main；[正式说明与已验收 bit](releases/v0.8.0/README.md)。
 
-[下载及限制](releases/v0.7.0/README.md) · [结项归档](docs/history/2026-10-08/fat32-filesystem/README.md) · [当前交接](HANDOFF.md)。下方旧版本说明属于历史资料。
+当前开发：v0.9.0 OSD，S1 状态条已完成本地仿真、回归及 TD，等待用户上板。[固定候选](releases/v0.9.0/s1-local.1/README.md) · [上板步骤](releases/v0.9.0/s1-local.1/BOARD_VALIDATION.md)。见 [分阶段计划](docs/OSD字幕叠加分阶段修改计划.md) 和 [当前交接](HANDOFF.md)。滚动字幕和半透明底条分别在 S2/S3，需上一阶段板测通过。
 
+以下为历史版本说明。
 # 安路 EG4 HDMI 图片播放器
 
 当前工作区已补 SPI/HDMI I/O 时序预算，SD 数据传输改为 16.667 MHz；新候选 [v0.5.2-io-local.1](releases/v0.5.2/v0.5.2-io-local.1/README.md) 本地及用户上板功能验证通过，用户明确免除后续 Flash、冷启动、拔插次数及长稳专项，本次验收通过，C0 保持 100 MHz。[预算与未覆盖项审查](docs/timing_closure/IO_TIMING.md)。下方正式下载和板级结果仍对应已验收 s4-board.2。

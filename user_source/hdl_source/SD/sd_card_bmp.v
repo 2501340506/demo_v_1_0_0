@@ -22,6 +22,7 @@ module sd_card_bmp #(
     output     [7:0]            combo_event_count,
     output                      combo_debug_active,
     output                      auto_play_indicator,
+    output [7:0]                osd_error_code,
     input  [15:0]               bmp_width,
     input  [15:0]               bmp_height,
     output                      display_valid,
@@ -235,6 +236,11 @@ assign state_code=(scan_state==SC_RESET)?4'd0:
                   (scan_busy && !sd_init_done)?(sd_init_failed?4'hf:4'd0):
                   sticky_error==1?4'he:sticky_error==2?4'hf:sticky_error==3?4'hd:
                   scan_busy?bmp_state_code:normal_state_code;
+// Stable status, not the transient UART event code. Match the existing panel
+// error priority/clear behavior; a completed cached switch clears sticky errors.
+assign osd_error_code=(scan_state==SC_RESET)?8'd0:
+                      (scan_busy && !sd_init_done)?(sd_init_failed?8'd2:8'd0):
+                      {5'd0,sticky_error};
 assign source_frame_done=bmp_load_done;
 assign source_frame_error=parser_load_error;
 assign write_en=bmp_data_wr_en && !parser_cancel && !parser_rst;

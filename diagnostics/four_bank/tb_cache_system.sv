@@ -75,6 +75,10 @@ module tb_cache_system;
   .media_update(media_update),.media_id(media_id),.volume(8'd128),.sample_ready(1'b1),
   .sample_valid(),.sample_left(),.sample_right(),.overflow(),.blip_active());
 
+`ifdef OSD_S1
+ `include "cache_osd_checks.svh"
+`endif
+
  // Sector-level card service only. FAT32, BMP, both asynchronous FIFOs,
  // protected SDRAM controller and the physical command/DQ model are real RTL.
  localparam FILE_BYTES=921654, FILE_CLUSTERS=15, FILE_SPAN=1920;

@@ -1,0 +1,45 @@
+# vsim -c -quiet -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/osd_s1_system1/work tb_cache_system -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\osd_s1_system1/system.log -do "run -all; quit -f" 
+# Start time: 16:14:56 on Oct 09,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(59): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(59): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(59): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(59): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(39): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(39): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(39): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(39): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../diagnostics/four_bank/tb_cache_system.sv(60): (vopt-2685) [TFMPC] - Too few port connections for 'app'.  Expected 41, found 40.
+# ** Warning: ../diagnostics/four_bank/tb_cache_system.sv(60): (vopt-2718) [TFMPC] - Missing connection for port 'osd_error_code'.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_wrrd.enc.v(77): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS integrated cache hits/AUTO: starts=4 reads=7266 commits=14
+# PASS integrated rescan: pending commit, active load, compact/missing/no card preserve old pixels
+# PASS integrated ordinary failure retry/skip/manual reload with retained FAT32 volume
+# PASS integrated timeout keeps cached manual switching
+# PASS cache system: starts=14 completions=10 commits=22 cues=22 hits=15 frames=57 refreshes=37756
+# ** Note: $finish    : ../diagnostics/four_bank/tb_cache_system.sv(302)
+#    Time: 1041570120 ns  Iteration: 1  Instance: /tb_cache_system
+# OSD system observations: 62 frame snapshots, 26039248 pixel/blanking checks
+# End time: 16:18:24 on Oct 09,2026, Elapsed time: 0:03:28
+# Errors: 0, Warnings: 18
