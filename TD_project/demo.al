@@ -499,7 +499,7 @@
                     <Attr Name="CompileOrder" Val="100"/>
                 </FileInfo>
             </File>
-            <File Path="../user_source/hdl_source/osd/osd_font_cn_16x16.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="104.5"/></FileInfo></File>
+            <File Path="../user_source/hdl_source/osd/osd_font_cn_16x16.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="104"/></FileInfo></File>
             <File Path="../user_source/hdl_source/osd/osd_status_cdc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
@@ -573,4 +573,5 @@
     <Project_Settings>
     </Project_Settings>
 </Project>
+
 
