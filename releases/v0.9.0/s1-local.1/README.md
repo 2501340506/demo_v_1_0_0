@@ -1,6 +1,6 @@
 # v0.9.0 S1 local.1：状态 OSD
 
-固定上板文件：[demo.bit](demo.bit)，629624 字节。[上板步骤](BOARD_VALIDATION.md)。仅完成本地验证，等待用户板测；不进入 S2，不建立 board 标签。
+固定上板文件：[demo.bit](demo.bit)，629624 字节。[上板步骤](BOARD_VALIDATION.md)。用户已明确确认测试通过，进入 S2；板测实际范围见 [BOARD_RESULT.md](BOARD_RESULT.md)，S1 board.1 保留原标签。
 
 ## 本次效果
 
