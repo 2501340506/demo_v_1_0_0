@@ -33,6 +33,7 @@ module top(
 parameter integer OSD_ENABLE = 1;
 parameter integer SCROLL_ENABLE = 1;
 parameter integer BAND_ENABLE = 1;
+parameter integer TIMESTAMP_ENABLE = 1;
 parameter MEM_DATA_BITS = 32;
 parameter integer UART_CLK_FREQ_HZ = 100_000_000;
 parameter integer UART_BAUD_RATE = 115200;
@@ -63,8 +64,10 @@ wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
 wire [23:0] osd_rgb;
 wire [23:0] scroll_rgb;
+wire [23:0] timestamp_rgb;
 wire [23:0] band_rgb;
 wire status_glyph_active, scroll_glyph_active;
+wire timestamp_glyph_active;
 wire [7:0] osd_error_src, osd_error_pixel;
 wire osd_auto_pixel;
 wire        display_valid;
@@ -389,9 +392,12 @@ scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNT
  .runtime_text(sub_text_pixel),.runtime_length(sub_length_pixel),
  .runtime_enable(sub_enable_pixel),.runtime_text_changed(sub_text_changed)
 );
+timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
+ .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),
+ .rgb_in(scroll_rgb),.rgb_out(timestamp_rgb),.active(timestamp_glyph_active));
 osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_band(
  .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),
- .rgb_in(scroll_rgb),.glyph_active(status_glyph_active || scroll_glyph_active),
+ .rgb_in(timestamp_rgb),.glyph_active(status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
  .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && sub_length_pixel!=0)
 );
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;

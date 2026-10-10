@@ -520,6 +520,7 @@
         <File Path="../user_source/hdl_source/osd/osd_alpha_band.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="104"/></FileInfo></File><File Path="../user_source/hdl_source/osd/osd_pixel_position.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="105"/></FileInfo></File><File Path="../user_source/hdl_source/uart/uart_rx_byte.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="110"/></FileInfo></File>
 <File Path="../user_source/hdl_source/uart/subtitle_uart_controller.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="111"/></FileInfo></File>
 <File Path="../user_source/hdl_source/osd/subtitle_frame_commit.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="112"/></FileInfo></File>
+<File Path="../user_source/hdl_source/osd/timestamp_osd.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="113"/></FileInfo></File>
 </Verilog>
         <ADC_FILE>
             <File Path="../user_source/constraints_source/pin.adc">
