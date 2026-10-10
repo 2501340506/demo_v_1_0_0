@@ -7,9 +7,9 @@ module tb_alpha;
  wire active;
  always #5 clk=~clk;
  osd_alpha_band dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
-  .rgb_in(rgb),.glyph_active(glyph),.rgb_out(out_rgb),.active(active));
+  .rgb_in(rgb),.glyph_active(glyph),.rgb_out(out_rgb),.active(active),.subtitle_enable(1'b1));
  osd_alpha_band #(.ENABLE(0)) off_dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
-  .rgb_in(rgb),.glyph_active(glyph),.rgb_out(bypass),.active());
+  .rgb_in(rgb),.glyph_active(glyph),.rgb_out(bypass),.active(),.subtitle_enable(1'b1));
  integer y,col,frame,checks=0,rr,gg,bb;
  reg band;
  reg [23:0] want;

@@ -9,6 +9,10 @@ Copy-Item "$root/TD_project/demo.al" "$out/TD_project/demo.al"
 Copy-Item "$root/diagnostics/run_td_build.ps1" "$out/diagnostics/run_td_build.ps1"
 & powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high
 if($LASTEXITCODE){throw 'TD build failed'}
+$physicalLog=Get-Content "$out/TD_project/demo_Runs/phy_1/build_$BuildName.log" -Raw
+if($physicalLog -match 'No (pins|cells|ports|clocks) matched|CRITICAL-WARNING: Command set_.* fails'){
+ throw 'Unresolved timing constraint; this build is not a local candidate'
+}
 $report=Get-Content "$out/TD_project/demo_Runs/phy_1/final_timing.rpt" -Raw
 $setup=[regex]::Match($report,'SWNS:\s*([-\d.]+)ns')
 $hold=[regex]::Match($report,'HWNS:\s*([-\d.]+)ns')

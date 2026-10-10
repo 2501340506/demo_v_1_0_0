@@ -45,16 +45,27 @@ final $display("OSD system observations: %0d frame snapshots, %0d pixel/blanking
 `ifdef OSD_S2
 wire [23:0] final_osd_pixels;
 wire scroll_active;
-scroll_text_overlay scrolling(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
- .image_valid(media_enable),.rgb_in(osd_pixels),.rgb_out(final_osd_pixels),.active(scroll_active));
+`ifdef OSD_UART
+`include "cache_uart_subtitle.svh"
+localparam integer RUNTIME_TEST=1;
+`else
+localparam integer RUNTIME_TEST=0;
+wire [119:0] runtime_text=0;
+wire [3:0] runtime_length=0;
+wire runtime_enable=1, runtime_changed=0;
+`endif
+scroll_text_overlay #(.RUNTIME_ENABLE(RUNTIME_TEST)) scrolling(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
+ .image_valid(media_enable),.rgb_in(osd_pixels),.rgb_out(final_osd_pixels),.active(scroll_active),
+ .runtime_text(runtime_text),.runtime_length(runtime_length),.runtime_enable(runtime_enable),.runtime_text_changed(runtime_changed));
 integer expected_scroll=0,scroll_checks=0,scroll_lit=0;
 reg motion_started=0,scroll_vs_prev=1;
 always @(posedge pix_clk) begin
  if(rst) begin expected_scroll=0;motion_started=0;scroll_vs_prev=1;end
  else begin
-  if(scroll_vs_prev && !vs && media_enable) begin
+  if(RUNTIME_TEST && runtime_changed) expected_scroll=0;
+  else if(scroll_vs_prev && !vs && media_enable && runtime_enable) begin
    if(!motion_started)begin motion_started=1;expected_scroll=0;end
-   else expected_scroll=(expected_scroll==1024)?0:expected_scroll+1;
+   else expected_scroll=(expected_scroll==(RUNTIME_TEST ? 624+runtime_length*16 : 1024))?0:expected_scroll+1;
   end
   scroll_vs_prev=vs;
  end
@@ -62,7 +73,7 @@ end
 always @(negedge pix_clk) if(!rst) begin
  if(scrolling.scroll!==expected_scroll || scrolling.started!==motion_started)
   $fatal(1,"scroll restarted/stalled across visible commit or rescan");
- if(!de || x<8 || x>=632 || osd_y<444 || osd_y>=460 || !motion_started)begin
+ if(!de || x<8 || x>=632 || osd_y<444 || osd_y>=460 || !motion_started || !runtime_enable)begin
   if(final_osd_pixels!==osd_pixels || scroll_active)$fatal(1,"scroll changed outside window or before first image");
  end else if(final_osd_pixels!==(scroll_active?24'hffffff:osd_pixels))
   $fatal(1,"scroll composite color");
@@ -75,15 +86,15 @@ final $display("Scroll system observations: %0d output checks, %0d foreground pi
 `ifdef OSD_S3
 wire [23:0] band_pixels;
 wire band_active;
-osd_alpha_band bands(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
+osd_alpha_band #(.RUNTIME_ENABLE(RUNTIME_TEST)) bands(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
  .rgb_in(final_osd_pixels),.glyph_active(status_active || scroll_active),
- .rgb_out(band_pixels),.active(band_active));
+ .rgb_out(band_pixels),.active(band_active),.subtitle_enable(runtime_enable && runtime_length!=0));
 integer band_checks=0,band_lit=0;
 reg expected_band;
 reg [23:0] expected_band_rgb;
 always @(negedge pix_clk) if(!rst) begin
  expected_band=de && ((x>=4 && x<284 && osd_y>=4 && osd_y<28) ||
-                      (x>=8 && x<632 && osd_y>=440 && osd_y<464)) &&
+                      (x>=8 && x<632 && osd_y>=440 && osd_y<464 && (!RUNTIME_TEST || (runtime_enable && runtime_length!=0)))) &&
                !(status_active || scroll_active);
  expected_band_rgb=expected_band ?
   {1'b0,final_osd_pixels[23:17],1'b0,final_osd_pixels[15:9],1'b0,final_osd_pixels[7:1]} : final_osd_pixels;

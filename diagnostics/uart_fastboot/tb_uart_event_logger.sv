@@ -6,7 +6,7 @@ reg [2:0] error=0; reg [3:0] phase=2; reg auto_en=0; reg [63:0] debug=64'h112233
 wire tx;
 uart_event_logger #(.CLK_FREQ_HZ(100000),.BAUD_RATE(10000),.QUEUE_DEPTH(2)) dut(
  .clk(clk),.rst(rst),.events(events),.image_index(image),.sector(sector),.error_code(error),
- .phase(phase),.auto_enabled(auto_en),.sd_debug(debug),.uart_tx(tx));
+ .phase(phase),.auto_enabled(auto_en),.sd_debug(debug),.uart_tx(tx),.reply_valid(1'b0),.reply_data(8'd0),.reply_last(1'b0),.reply_ready());
 string lines[0:31], line="";
 integer n=0,b;
 reg [7:0] rx;

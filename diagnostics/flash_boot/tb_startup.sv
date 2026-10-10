@@ -12,7 +12,7 @@ module tb_startup;
   .HDMI_D0_P(p0),.HDMI_D1_P(p1),.HDMI_D2_P(p2),.HDMI_DDC_SCL(scl),.HDMI_DDC_SDA(sda),
   .sd_ncs(ncs),.sd_dclk(dclk),.sd_mosi(mosi),.sd_miso(1'b1)
 `ifndef PRE_UART_TOP
-  ,.uart_tx()
+  ,.uart_tx(),.uart_rx(1'b1)
 `endif
   );
  integer scans=0, scenarios=0;
