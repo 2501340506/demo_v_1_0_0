@@ -1,3 +1,9 @@
+# 当前开发：v0.10.0 S3 时间显示待板测（2026-10-10）
+
+S2 用户确认功能均正常，已记录 board.1。S3 新增右上角白色 MM:SS，每 60 视频帧加一秒，复位清零；保持在线字幕、状态条、底条及音频。专项、真实 SDRAM 联合仿真、21 项回归和 TD 通过；Setup +0.102 ns / Hold +0.019 ns。使用 [S3 固定候选](releases/v0.10.0/s3-local.1/README.md) 与 [上板步骤](releases/v0.10.0/s3-local.1/BOARD_VALIDATION.md)。S3 尚未板测，正式版仍为 v0.9.1。
+
+## 历史记录
+
 # 当前开发：v0.10.0 S2 UART 字幕待板测（2026-10-10）
 
 S1 已确认功能正常。S2 已完成 UART 在线字幕、帧边界提交和日志仲裁，RX F12 / TX D12，115200 8N1。专项、真实 SDRAM 联合仿真、21 项回归和完整 TD 通过；Setup +0.105 ns / Hold +0.067 ns。使用 [S2 固定候选](releases/v0.10.0/s2-local.1/README.md) 及 [串口上板步骤](releases/v0.10.0/s2-local.1/BOARD_VALIDATION.md)。S2 尚未板测，S3 时间显示尚未实施；正式版及总回退仍为 v0.9.1。
