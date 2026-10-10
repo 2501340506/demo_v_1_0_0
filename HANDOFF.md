@@ -1,3 +1,13 @@
+# 当前交接：v0.10.0 S2 local.1 待板测（2026-10-10）
+
+- 当前任务：在原目录 feature/osd-gap-analysis 完成 UART 在线字幕 S2；用户指定 RXD F12，S1 已确认功能正常。
+- 已经完成：RX、命令解析、完整配置 request/ack mailbox、帧边界更新、动态中英字幕及日志/回复整行仲裁。UART 专项、144 行字模及 665 帧像素测试、真实 SDRAM 57 帧/22 次音频提交、21 项回归、静态滚动/参数/底条测试通过。
+- 卡住的问题：本地实现无阻塞；仅 S2 板测待用户反馈。TD attempt3 通过，Setup +0.105 ns、Hold +0.067 ns，96 个工程/源码输入逐字节一致，固定 bit 已归档至 releases/v0.10.0/s2-local.1/demo.bit。审计限制与既有模型警告详见候选 README。
+- 下一步计划：交用户按 releases/v0.10.0/s2-local.1/BOARD_VALIDATION.md 测试 F12 RX / D12 TX，115200 8N1；板测通过后建立 S2 board 标签并进入 MM:SS S3。当前只建立 S2 local 标签，正式版仍为 v0.9.1。
+- 踩过的坑：TD 将 RX 第一级寄存器合并到 F12 PAD FF，原 rx_meta_reg 约束无对象；attempt1/2 不可交付。旧启动仿真需将新增 RX 显式接空闲高电平。SystemVerilog 字符串回车使用显式字节 13。S1 已验收 bit 位于 s1-local.1 目录但对应 local.2/board.1，不改旧候选或标签。保留用户已跟踪的 问题小记录.txt 修改；不纳入提交。
+
+## 历史交接
+
 # 当前交接：v0.10.0 S1 board.1 通过，进入 S2（2026-10-10）
 
 - 当前任务：记录固定中文字幕候选板测通过，进入 UART 在线字幕 S2。
