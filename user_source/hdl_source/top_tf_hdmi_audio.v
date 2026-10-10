@@ -26,6 +26,7 @@ module top(
     output                      sd_dclk,
     output                      sd_mosi,
     input                       sd_miso,
+    input                       uart_rx, // F12, asynchronous 115200 8N1
     output                      uart_tx
 );
 
@@ -142,11 +143,36 @@ reset_sync u_reset_mem (.clk(ext_mem_clk), .async_rst(reset_request), .rst(rst_m
 reset_sync u_reset_video (.clk(video_clk), .async_rst(reset_request), .rst(rst_video));
 reset_sync u_reset_serial (.clk(hdmi_5x_clk), .async_rst(reset_request), .rst(rst_serial));
 
-uart_event_logger #(.CLK_FREQ_HZ(UART_CLK_FREQ_HZ), .BAUD_RATE(UART_BAUD_RATE)) u_uart_logger (
+// UART command state lives in the SD/control domain; renderer sees frame snapshots.
+wire [7:0] sub_rx_data, sub_reply_data;
+wire sub_rx_valid, sub_rx_error, sub_reply_valid, sub_reply_last, sub_reply_ready;
+wire [119:0] sub_text_src, sub_text_pixel;
+wire [3:0] sub_length_src, sub_length_pixel;
+wire sub_enable_src, sub_enable_pixel, sub_text_changed, sub_frame_start;
+uart_rx_byte #(.CLKS_PER_BIT((UART_CLK_FREQ_HZ+UART_BAUD_RATE/2)/UART_BAUD_RATE)) u_uart_rx (
+ .clk(sd_card_clk),.rst_n(~rst_sd),.rx(uart_rx),.data(sub_rx_data),
+ .valid(sub_rx_valid),.framing_error(sub_rx_error));
+subtitle_uart_controller u_subtitle_control(
+ .clk(sd_card_clk),.rst(rst_sd),.rx_data(sub_rx_data),.rx_valid(sub_rx_valid),
+ .rx_framing_error(sub_rx_error),.cfg_text(sub_text_src),.cfg_length(sub_length_src),
+ .cfg_enable(sub_enable_src),.cfg_update_valid(),.reply_valid(sub_reply_valid),
+ .reply_data(sub_reply_data),.reply_last(sub_reply_last),.reply_ready(sub_reply_ready));
+osd_pixel_position u_subtitle_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
+ .line_y(),.frame_start(sub_frame_start),.first_active());
+subtitle_frame_commit u_subtitle_commit(
+ .src_clk(sd_card_clk),.src_rst(rst_sd),.src_text(sub_text_src),
+ .src_length(sub_length_src),.src_enable(sub_enable_src),
+ .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),
+ .dst_text(sub_text_pixel),.dst_length(sub_length_pixel),.dst_enable(sub_enable_pixel),
+ .text_changed(sub_text_changed));
+
+uart_event_logger #(.CLK_FREQ_HZ(UART_CLK_FREQ_HZ), .BAUD_RATE(UART_BAUD_RATE), .REPLY_ENABLE(1)) u_uart_logger (
     .clk(sd_card_clk), .rst(rst_sd), .events(uart_diagnostics[57:42]),
     .image_index(uart_diagnostics[41:40]), .sector(uart_diagnostics[39:8]),
     .error_code(uart_diagnostics[7:5]), .phase(uart_diagnostics[4:1]),
-    .auto_enabled(uart_diagnostics[0]), .sd_debug(sd_debug), .uart_tx(uart_tx)
+    .auto_enabled(uart_diagnostics[0]), .sd_debug(sd_debug), .uart_tx(uart_tx),
+    .reply_valid(sub_reply_valid), .reply_data(sub_reply_data),
+    .reply_last(sub_reply_last), .reply_ready(sub_reply_ready)
 );
 
 // SDRAM and TF initialization run independently. Only the first scan waits
@@ -357,14 +383,16 @@ status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
     .active(status_glyph_active)
 );
-scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1)) u_scroll_osd (
+scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1)) u_scroll_osd (
  .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),.image_valid(audio_enable),
- .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active)
+ .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active),
+ .runtime_text(sub_text_pixel),.runtime_length(sub_length_pixel),
+ .runtime_enable(sub_enable_pixel),.runtime_text_changed(sub_text_changed)
 );
-osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE)) u_osd_band(
+osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_band(
  .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),
  .rgb_in(scroll_rgb),.glyph_active(status_glyph_active || scroll_glyph_active),
- .rgb_out(band_rgb),.active()
+ .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && sub_length_pixel!=0)
 );
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;

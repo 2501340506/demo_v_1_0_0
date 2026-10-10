@@ -7,20 +7,27 @@ module scroll_text_overlay #(
     parameter integer WINDOW_RIGHT = 632,
     parameter integer TEXT_Y = 444,
     parameter integer PIXELS_PER_FRAME = 1,
-    parameter integer CN_ENABLE = 0
+    parameter integer CN_ENABLE = 0,
+    parameter integer RUNTIME_ENABLE = 0
 )(
     input clk, rst, vs, de,
     input [9:0] pixel_x,
     input image_valid,
     input [23:0] rgb_in,
     output wire [23:0] rgb_out,
-    output wire active
+    output wire active,
+    input [119:0] runtime_text,
+    input [3:0] runtime_length,
+    input runtime_enable, runtime_text_changed
 );
     localparam integer MIXED_LEN = 15;
-    localparam integer TEXT_WIDTH = (CN_ENABLE ? MIXED_LEN : TEXT_LEN) * 16;
+    localparam integer MAX_WIDTH = (RUNTIME_ENABLE ? 15 : (CN_ENABLE ? MIXED_LEN : TEXT_LEN)) * 16;
+    wire [10:0] text_width = RUNTIME_ENABLE ? {3'b0,runtime_length,4'b0} : MAX_WIDTH;
+    wire subtitle_enabled = RUNTIME_ENABLE ? runtime_enable : 1'b1;
     // Window [8,632): text starts at x=632 and ends at x=8-TEXT_WIDTH.
     // Retain one fully outside position at each end of the cycle.
-    localparam integer LAST_STEP = WINDOW_RIGHT - WINDOW_LEFT + TEXT_WIDTH;
+    localparam integer LAST_STEP = WINDOW_RIGHT - WINDOW_LEFT + MAX_WIDTH;
+    wire [10:0] last_step = WINDOW_RIGHT - WINDOW_LEFT + text_width;
     localparam integer STEP_BITS = $clog2(LAST_STEP + 1);
     reg [STEP_BITS-1:0] scroll;
     wire [8:0] line_y;
@@ -36,13 +43,14 @@ module scroll_text_overlay #(
             scroll <= 0;
             started <= 0;
         end else begin
-            if (frame_start && ENABLE && image_valid) begin
+            if(RUNTIME_ENABLE && runtime_text_changed) scroll<=0;
+            else if (frame_start && ENABLE && image_valid && subtitle_enabled) begin
                 if (!started) begin
                     started <= 1;
                     scroll <= 0;
                 end else
-                    if (scroll == LAST_STEP) scroll <= 0;
-                    else if (scroll + PIXELS_PER_FRAME >= LAST_STEP) scroll <= LAST_STEP;
+                    if (scroll == last_step) scroll <= 0;
+                    else if (scroll + PIXELS_PER_FRAME >= last_step) scroll <= last_step;
                     else scroll <= scroll + PIXELS_PER_FRAME;
             end
         end
@@ -70,16 +78,22 @@ module scroll_text_overlay #(
     endfunction
     always @* begin
         character = " ";
-        if (text_x >= 0 && text_x < TEXT_WIDTH)
-            character = CN_ENABLE ? mixed_char(text_x >> 4) :
+        if (text_x >= 0 && text_x < text_width)
+            character = RUNTIME_ENABLE ? runtime_text[(text_x >> 4)*8 +: 8] :
+                        CN_ENABLE ? mixed_char(text_x >> 4) :
                         TEXT[(TEXT_LEN-1-(text_x >> 4))*8 +: 8];
     end
     wire [4:0] glyph;
     wire [15:0] cn_glyph;
-    osd_font_5x7 font(.character(character), .row(dy[3:1]), .pixels(glyph));
+    wire ascii_supported = (character >= "A" && character <= "Z") ||
+        (character >= "0" && character <= "9") || character==" " || character==":" ||
+        character=="." || character=="," || character=="!" || character=="?" ||
+        character=="-" || character=="_" || character=="/";
+    wire [7:0] ascii_char = RUNTIME_ENABLE && !ascii_supported ? "?" : character;
+    osd_font_5x7 font(.character(ascii_char), .row(dy[3:1]), .pixels(glyph));
     osd_font_cn_16x16 cn_font(.character(character), .row(dy[3:0]), .pixels(cn_glyph));
-    wire in_region = ENABLE && started && de && pixel_x >= WINDOW_LEFT && pixel_x < WINDOW_RIGHT &&
-                     line_y >= TEXT_Y && line_y < TEXT_Y + 16 && text_x >= 0 && text_x < TEXT_WIDTH;
+    wire in_region = ENABLE && subtitle_enabled && started && de && pixel_x >= WINDOW_LEFT && pixel_x < WINDOW_RIGHT &&
+                     line_y >= TEXT_Y && line_y < TEXT_Y + 16 && text_x >= 0 && text_x < text_width;
     wire is_cn = character[7:4] == 4'h8;
     wire hit = in_region && (is_cn ? cn_glyph[15-text_x[3:0]] :
                (text_x[3:1] < 5 && dy[3:1] < 7 && glyph[3'd4-text_x[3:1]]));

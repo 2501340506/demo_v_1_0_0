@@ -1,9 +1,10 @@
 // Same-cycle RGB888 bands: protect glyphs by provenance, not by color.
-module osd_alpha_band #(parameter integer ENABLE = 1)(
+module osd_alpha_band #(parameter integer ENABLE = 1, parameter integer RUNTIME_ENABLE = 0)(
     input clk, rst, vs, de,
     input [9:0] pixel_x,
     input [23:0] rgb_in,
     input glyph_active,
+    input subtitle_enable,
     output wire [23:0] rgb_out,
     output wire active
 );
@@ -12,7 +13,7 @@ module osd_alpha_band #(parameter integer ENABLE = 1)(
         .line_y(line_y), .frame_start(), .first_active());
     wire status_band = de && pixel_x >= 4 && pixel_x < 284 &&
                        line_y >= 4 && line_y < 28;
-    wire scroll_band = de && pixel_x >= 8 && pixel_x < 632 &&
+    wire scroll_band = (!RUNTIME_ENABLE || subtitle_enable) && de && pixel_x >= 8 && pixel_x < 632 &&
                        line_y >= 440 && line_y < 464;
     assign active = ENABLE && (status_band || scroll_band) && !glyph_active;
     assign rgb_out = active ?

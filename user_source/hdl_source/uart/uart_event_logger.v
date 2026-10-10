@@ -3,7 +3,8 @@
 module uart_event_logger #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer BAUD_RATE = 115200,
-    parameter integer QUEUE_DEPTH = 8
+    parameter integer QUEUE_DEPTH = 8,
+    parameter integer REPLY_ENABLE = 0
 )(
     input wire clk, rst,
     input wire [15:0] events,
@@ -13,7 +14,11 @@ module uart_event_logger #(
     input wire [3:0] phase,
     input wire auto_enabled,
     input wire [63:0] sd_debug,
-    output wire uart_tx
+    output wire uart_tx,
+    input wire reply_valid,
+    input wire [7:0] reply_data,
+    input wire reply_last,
+    output wire reply_ready
 );
 localparam integer MS_CYCLES = CLK_FREQ_HZ / 1000;
 localparam integer MS_BITS = MS_CYCLES > 1 ? $clog2(MS_CYCLES) : 1;
@@ -44,10 +49,12 @@ reg [31:0] dropped;
 reg active, boot;
 reg [153:0] snapshot;
 reg [15:0] remaining;
-wire pop = !boot && !active && (count != 0);
+reg reply_owner, reply_wait, reply_start, reply_end;
+reg [7:0] reply_byte;
+wire pop = !boot && !active && !reply_owner && (count != 0);
 wire push = pending_valid && ((count < QUEUE_DEPTH) || pop);
 wire lost = pending_valid && !push;
-wire report_drop = !boot && !active && (count == 0) && (dropped != 0);
+wire report_drop = !boot && !active && !reply_owner && (count == 0) && (dropped != 0);
 always @(posedge clk or posedge rst) begin
     if(rst) begin wr_ptr<=0; rd_ptr<=0; count<=0; dropped<=0; end
     else begin
@@ -136,9 +143,26 @@ always @(posedge clk or posedge rst) begin
     else begin prepared_data<=tx_data;prepared_hex<=tx_hex;end
 end
 uart_tx_byte #(.CLKS_PER_BIT(CLKS_PER_BIT)) u_tx(
-    .clk(clk),.rst(rst),.start(start),.data(prepared_hex ? hex(prepared_data[3:0]) : prepared_data),
+    .clk(clk),.rst(rst),.start(start || reply_start),
+    .data(reply_owner ? reply_byte : (prepared_hex ? hex(prepared_data[3:0]) : prepared_data)),
     .tx(uart_tx),.busy(),.done(done)
 );
+// Acquire only between complete log records; keep ownership through reply LF.
+assign reply_ready = REPLY_ENABLE && reply_owner && !reply_wait;
+always @(posedge clk or posedge rst) begin
+    if(rst) begin reply_owner<=0;reply_wait<=0;reply_start<=0;reply_end<=0;reply_byte<=0;end
+    else begin
+        reply_start<=0;
+        if(REPLY_ENABLE && !reply_owner && !boot && !active && count==0 &&
+           dropped==0 && !pending_valid && reply_valid) reply_owner<=1;
+        if(reply_ready && reply_valid) begin
+            reply_byte<=reply_data; reply_end<=reply_last; reply_start<=1;reply_wait<=1;
+        end else if(reply_owner && reply_wait && done) begin
+            reply_wait<=0;
+            if(reply_end) reply_owner<=0;
+        end
+    end
+end
 always @(posedge clk or posedge rst) begin
     if(rst) begin
         boot<=1; active<=0; snapshot<=0; remaining<=0;
