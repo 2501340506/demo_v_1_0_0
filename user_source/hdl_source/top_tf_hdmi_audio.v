@@ -63,6 +63,7 @@ wire [23:0] vout_data;
 wire [23:0] osd_rgb;
 wire [23:0] scroll_rgb;
 wire [23:0] band_rgb;
+wire status_glyph_active, scroll_glyph_active;
 wire [7:0] osd_error_src, osd_error_pixel;
 wire osd_auto_pixel;
 wire        display_valid;
@@ -347,17 +348,23 @@ osd_status_cdc u_osd_status_cdc (
     .dst_clk(video_clk), .dst_rst(rst_video),
     .dst_auto(osd_auto_pixel), .dst_error(osd_error_pixel)
 );
+// AUTO/error: acknowledged SD-domain mailbox. Image ID/valid: existing pixel
+// domain media commit. Status snapshots at first active pixel after blanking.
+// RGB layers are combinational; final HS/VS/DE/X pass directly to HDMI.
 status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .clk(video_clk), .rst(rst_video), .vs(vs), .de(de), .pixel_x(video_x),
     .rgb_in(vout_data), .image_index(audio_image), .image_valid(audio_enable),
-    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb), .active()
+    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
+    .active(status_glyph_active)
 );
 scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE)) u_scroll_osd (
  .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),.image_valid(audio_enable),
- .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active()
+ .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active)
 );
 osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE)) u_osd_band(
- .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),.rgb_in(scroll_rgb),.rgb_out(band_rgb),.active()
+ .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),
+ .rgb_in(scroll_rgb),.glyph_active(status_glyph_active || scroll_glyph_active),
+ .rgb_out(band_rgb),.active()
 );
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
