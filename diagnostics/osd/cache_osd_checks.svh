@@ -86,8 +86,41 @@ final $display("Scroll system observations: %0d output checks, %0d foreground pi
 `ifdef OSD_S3
 wire [23:0] band_pixels;
 wire band_active;
+wire [23:0] timestamp_pixels;
+wire timestamp_active;
+`ifdef OSD_TIMESTAMP
+timestamp_osd timer(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
+ .rgb_in(final_osd_pixels),.rgb_out(timestamp_pixels),.active(timestamp_active));
+integer time_frames=0,time_checks=0,time_lit=0,time_seconds;
+reg time_vs_prev=1;
+always @(posedge pix_clk) begin
+ if(rst)begin time_frames=0;time_vs_prev=1;end
+ else begin
+  if(time_vs_prev && !vs)time_frames=time_frames+1;
+  time_vs_prev=vs;
+ end
+end
+always @(negedge pix_clk) if(!rst)begin
+ time_seconds=(time_frames/60)%6000;
+ if(timer.enabled.minute_tens!==time_seconds/600 ||
+    timer.enabled.minute_ones!==(time_seconds/60)%10 ||
+    timer.enabled.second_tens!==(time_seconds%60)/10 ||
+    timer.enabled.second_ones!==time_seconds%10)$fatal(1,"system timestamp count");
+ if(!de || x<500 || x>=580 || osd_y<8 || osd_y>=24)begin
+  if(timestamp_active || timestamp_pixels!==final_osd_pixels)$fatal(1,"timestamp outside area");
+ end else if(timestamp_pixels!==(timestamp_active?24'hffffff:final_osd_pixels))$fatal(1,"timestamp color");
+ time_checks=time_checks+1;if(timestamp_active)time_lit=time_lit+1;
+end
+final begin
+ if(time_lit==0)$error("timestamp never rendered");
+ $display("Timestamp system observations: %0d frame edges, %0d pixel/blanking checks, %0d foreground pixels",time_frames,time_checks,time_lit);
+end
+`else
+assign timestamp_pixels=final_osd_pixels;
+assign timestamp_active=1'b0;
+`endif
 osd_alpha_band #(.RUNTIME_ENABLE(RUNTIME_TEST)) bands(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
- .rgb_in(final_osd_pixels),.glyph_active(status_active || scroll_active),
+ .rgb_in(timestamp_pixels),.glyph_active(status_active || scroll_active || timestamp_active),
  .rgb_out(band_pixels),.active(band_active),.subtitle_enable(runtime_enable && runtime_length!=0));
 integer band_checks=0,band_lit=0;
 reg expected_band;
@@ -95,9 +128,9 @@ reg [23:0] expected_band_rgb;
 always @(negedge pix_clk) if(!rst) begin
  expected_band=de && ((x>=4 && x<284 && osd_y>=4 && osd_y<28) ||
                       (x>=8 && x<632 && osd_y>=440 && osd_y<464 && (!RUNTIME_TEST || (runtime_enable && runtime_length!=0)))) &&
-               !(status_active || scroll_active);
+               !(status_active || scroll_active || timestamp_active);
  expected_band_rgb=expected_band ?
-  {1'b0,final_osd_pixels[23:17],1'b0,final_osd_pixels[15:9],1'b0,final_osd_pixels[7:1]} : final_osd_pixels;
+  {1'b0,timestamp_pixels[23:17],1'b0,timestamp_pixels[15:9],1'b0,timestamp_pixels[7:1]} : timestamp_pixels;
  if(band_pixels!==expected_band_rgb || band_active!==expected_band)
   $fatal(1,"OSD final composite differs at x=%0d y=%0d",x,osd_y);
  band_checks=band_checks+1;
