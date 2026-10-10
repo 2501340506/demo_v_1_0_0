@@ -10,37 +10,30 @@ module status_osd_overlay #(
     input [1:0] image_index,
     input image_valid, auto_enabled,
     input [7:0] error_code,
-    output wire [23:0] rgb_out
+    output wire [23:0] rgb_out,
+    output wire active
 );
-    reg [8:0] line_y;
-    reg de_q, frame_pending;
+    wire [8:0] line_y;
+    wire first_active;
+    osd_pixel_position position(.clk(clk), .rst(rst), .vs(vs), .de(de),
+        .line_y(line_y), .frame_start(), .first_active(first_active));
     reg [1:0] image_frame;
     reg valid_frame, auto_frame;
     reg [7:0] error_frame;
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            line_y <= 0;
-            de_q <= 0;
-            frame_pending <= 1;
             image_frame <= 0;
             valid_frame <= 0;
             auto_frame <= 0;
             error_frame <= 0;
         end else begin
-            de_q <= de;
-            if (!vs) begin
-                line_y <= 0;
-                frame_pending <= 1;
-            end else if (de_q && !de)
-                line_y <= line_y + 1'b1;
             // Reader commits during vertical blanking, after VS assertion.
             // Snapshot at the first active pixel; text starts on line eight.
-            if (vs && de && frame_pending) begin
+            if (first_active) begin
                 image_frame <= image_index;
                 valid_frame <= image_valid;
                 auto_frame <= auto_enabled;
                 error_frame <= error_code;
-                frame_pending <= 0;
             end
         end
     end
@@ -79,5 +72,6 @@ module status_osd_overlay #(
                      line_y >= 8 && line_y < 24;
     wire glyph_hit = in_region && dx[3:1] < 5 && dy[3:1] < 7 &&
                      glyph[3'd4 - dx[3:1]];
+    assign active = glyph_hit;
     assign rgb_out = glyph_hit ? (error_frame == 0 ? 24'hffff00 : 24'hff4444) : rgb_in;
 endmodule
