@@ -12,6 +12,7 @@ status_osd_overlay 新增 active 输出（实际字形命中），scroll_text_ov
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/osd/run_sim.ps1 -RunName osd_opt_status1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/osd/run_sim_scroll.ps1 -RunName osd_opt_scroll1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/osd/run_alpha.ps1 -RunName osd_opt_alpha1
+powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/osd/run_scroll_params.ps1 -RunName osd_opt_params1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/osd/run_system_scroll.ps1 -RunName osd_opt_system1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/four_bank/run_regression.ps1 -RunName osd_opt_regression1
 powershell -NoProfile -ExecutionPolicy Bypass -File diagnostics/osd/run_td.ps1 -BuildName osd_opt_attempt1

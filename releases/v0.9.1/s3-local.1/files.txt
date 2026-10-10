@@ -1,0 +1,58 @@
+Baseline: v0.9.0
+Build: diagnostics/output/osd_opt_attempt1
+Compared 75 project inputs byte-for-byte against build snapshot.
+Changed production inputs:
+TD_project/demo.al
+user_source/hdl_source/osd/osd_alpha_band.v
+user_source/hdl_source/osd/osd_pixel_position.v
+user_source/hdl_source/osd/scroll_text_overlay.v
+user_source/hdl_source/osd/status_osd_overlay.v
+user_source/hdl_source/top_tf_hdmi_audio.v
+
+Delivered files (bytes):
+changes/TD_project/demo.al 29195
+changes/user_source/hdl_source/osd/osd_alpha_band.v 886
+changes/user_source/hdl_source/osd/osd_pixel_position.v 909
+changes/user_source/hdl_source/osd/scroll_text_overlay.v 2933
+changes/user_source/hdl_source/osd/status_osd_overlay.v 2926
+changes/user_source/hdl_source/top_tf_hdmi_audio.v 16596
+demo.bit 629624
+reports/audit.timing 1550763
+reports/baseline_s2_check_timing.txt 48928
+reports/check_timing.txt 37339
+reports/demo_phy.area 24623
+reports/final_timing.rpt 1550763
+simulation/osd_opt_alpha1/compile.log 1344
+simulation/osd_opt_alpha1/sim.log 1284
+simulation/osd_opt_params1/compile.log 1648
+simulation/osd_opt_params1/sim.log 1271
+simulation/osd_opt_regression1/compile.log 25314
+simulation/osd_opt_regression1/tb_dual_key_event_router.log 1304
+simulation/osd_opt_regression1/tb_flash_reset.log 1368
+simulation/osd_opt_regression1/tb_frame_cache_control.log 2285
+simulation/osd_opt_regression1/tb_hdmi_packets.log 1404
+simulation/osd_opt_regression1/tb_hdmi_primitives.log 1355
+simulation/osd_opt_regression1/tb_hdmi_s6_phy.log 1437
+simulation/osd_opt_regression1/tb_key_gesture_control.log 1570
+simulation/osd_opt_regression1/tb_media_commit_cdc.log 1311
+simulation/osd_opt_regression1/tb_media_display_control.log 1337
+simulation/osd_opt_regression1/tb_media_player_control.log 1332
+simulation/osd_opt_regression1/tb_mode_key_control.log 1276
+simulation/osd_opt_regression1/tb_pcm_media_tone.log 1355
+simulation/osd_opt_regression1/tb_pcm_test_tone.log 1504
+simulation/osd_opt_regression1/tb_rescan_key.log 1271
+simulation/osd_opt_regression1/tb_sd_initialization.log 1315
+simulation/osd_opt_regression1/tb_sd_protocol.log 1343
+simulation/osd_opt_regression1/tb_sd_spi_pins.log 3160
+simulation/osd_opt_regression1/tb_startup.log 1304
+simulation/osd_opt_regression1/tb_switch_mode_panel.log 1367
+simulation/osd_opt_regression1/tb_uart_event_logger.log 1371
+simulation/osd_opt_regression1/tb_video_alignment.log 1546
+simulation/osd_opt_scroll1/compile.log 1636
+simulation/osd_opt_scroll1/sim.log 1315
+simulation/osd_opt_status2/compile.log 1868
+simulation/osd_opt_status2/sim.log 1271
+simulation/osd_opt_system1/compile.log 7132
+simulation/osd_opt_system1/controller_compile.log 1756
+simulation/osd_opt_system1/system.log 4303
+simulation/osd_opt_system1/wrapper_compile.log 988

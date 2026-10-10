@@ -1,3 +1,7 @@
+# 当前入口：v0.9.1 OSD 优化
+
+当前生产包含状态、滚动和底条三层，接口、命令和验证范围见 [OPTIMIZATION.md](OPTIMIZATION.md)。下方 S1/S2 与“底条未实施”文字为历史说明。run_system_scroll.ps1 现在同时检查 S3 最终合成，run_alpha.ps1 使用唯一 RunName 保存完整日志。
+
 # OSD S1 验证
 
 ## S2 滚动字幕

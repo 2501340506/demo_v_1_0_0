@@ -1,3 +1,9 @@
+# 当前开发：v0.9.1 OSD 优化（2026-10-10）
+
+基线 v0.9.0 已合并 main。本轮在 feature/osd-optimize 统一 OSD 坐标/帧事件、参数化滚动并修正底条将原图黄/红/白色误认成文字的问题。视频 RGB888 和时序延迟不变。当前验证进度见 [HANDOFF](HANDOFF.md)，实现合同见 [优化计划](docs/OSD优化实施计划.md)。下方旧版“待上板”等描述属于历史，不代表当前版本状态。
+
+本地专项、系统、回归和 TD 已通过；[v0.9.1-s3-local.1 固定候选](releases/v0.9.1/s3-local.1/README.md) 待上板，步骤见 [BOARD_VALIDATION](releases/v0.9.1/s3-local.1/BOARD_VALIDATION.md)。
+
 # 最新状态：v0.9.0 S2 local.1 待上板（2026-10-10）
 
 S1 已通过用户验收，分支与 S1 local/board 标签已推送。S2 滚动字幕已完成专项、真实 SDRAM 联合测试、21 项回归及 TD，待用户板测；S3 半透明底条尚未实施。详细证据及固定候选见项目根目录 releases/v0.9.0/s2-local.1/README.md，上板使用该目录 demo.bit。Setup +0.113 ns、Hold +0.030 ns。以下为历史阶段记录。
@@ -72,4 +78,3 @@ TD 报告 Setup +0.128 ns、Hold +0.012 ns，覆盖率 99.89%；外部 I/O 延�
 本版不包含OSD、亮度/对比度调节或缩放。预留参数B初值0、范围−128..127；C初值128、范围0..256、至少9位，作为后续需求记录。
 
 ## 2026-10-08 BMP ??? S2 ????
-
