@@ -9,10 +9,11 @@ module tb_status_osd;
  reg valid=0,auto_en=0;
  reg [7:0] err=0;
  wire [23:0] out_rgb,bypass;
+ wire active,off_active;
  status_osd_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb),
-  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(out_rgb),.active());
+  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(out_rgb),.active(active));
  status_osd_overlay #(.OSD_ENABLE(0)) off_dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb),
-  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(bypass),.active());
+  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(bypass),.active(off_active));
  reg src_auto=0;reg [7:0] src_err=0;
  wire dst_auto;wire [7:0] dst_err;
  osd_status_cdc cdc(.src_clk(src_clk),.src_rst(rst),.src_auto(src_auto),.src_error(src_err),
@@ -60,11 +61,12 @@ module tb_status_osd;
      want=hit?(red?24'hff4444:24'hffff00):rgb;
      #1;
      if(out_rgb!==want)$fatal(1,"OSD pixel x=%0d y=%0d got=%h expected=%h char=%s",col,y,out_rgb,want,expected);
+     if(active!==hit || off_active)$fatal(1,"status glyph mask mismatch");
      if(bypass!==rgb)$fatal(1,"bypass changed RGB");
      checks=checks+1;
     end
     @(negedge clk);de=0;x=640;rgb=24'h13579b;#1;
-    if(out_rgb!==rgb || bypass!==rgb)$fatal(1,"blanking changed");
+    if(out_rgb!==rgb || bypass!==rgb || active || off_active)$fatal(1,"blanking changed");
     repeat(3)@(negedge clk);
    end
   end

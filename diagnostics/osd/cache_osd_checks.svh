@@ -4,12 +4,13 @@ wire osd_auto;
 wire [7:0] osd_error;
 wire [23:0] osd_base = display_valid ? rgb : 24'd0;
 wire [23:0] osd_pixels;
+wire status_active;
 osd_status_cdc status_crossing(.src_clk(src_clk),.src_rst(rst),
  .src_auto(app.auto_play_indicator),.src_error(app.osd_error_code),
  .dst_clk(pix_clk),.dst_rst(rst),.dst_auto(osd_auto),.dst_error(osd_error));
 status_osd_overlay overlay(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
  .rgb_in(osd_base),.image_index(media_id),.image_valid(media_enable),
- .auto_enabled(osd_auto),.error_code(osd_error),.rgb_out(osd_pixels));
+ .auto_enabled(osd_auto),.error_code(osd_error),.rgb_out(osd_pixels),.active(status_active));
 integer osd_y=0,osd_frames=0,osd_checked=0;
 reg osd_de_prev=0;
 reg [11:0] osd_frame_snapshot;
@@ -69,4 +70,27 @@ always @(negedge pix_clk) if(!rst) begin
  if(scroll_active)scroll_lit=scroll_lit+1;
 end
 final $display("Scroll system observations: %0d output checks, %0d foreground pixels",scroll_checks,scroll_lit);
+`endif
+
+`ifdef OSD_S3
+wire [23:0] band_pixels;
+wire band_active;
+osd_alpha_band bands(.clk(pix_clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),
+ .rgb_in(final_osd_pixels),.glyph_active(status_active || scroll_active),
+ .rgb_out(band_pixels),.active(band_active));
+integer band_checks=0,band_lit=0;
+reg expected_band;
+reg [23:0] expected_band_rgb;
+always @(negedge pix_clk) if(!rst) begin
+ expected_band=de && ((x>=4 && x<284 && osd_y>=4 && osd_y<28) ||
+                      (x>=8 && x<632 && osd_y>=440 && osd_y<464)) &&
+               !(status_active || scroll_active);
+ expected_band_rgb=expected_band ?
+  {1'b0,final_osd_pixels[23:17],1'b0,final_osd_pixels[15:9],1'b0,final_osd_pixels[7:1]} : final_osd_pixels;
+ if(band_pixels!==expected_band_rgb || band_active!==expected_band)
+  $fatal(1,"OSD final composite differs at x=%0d y=%0d",x,osd_y);
+ band_checks=band_checks+1;
+ if(band_active)band_lit=band_lit+1;
+end
+final $display("Band system observations: %0d output checks, %0d dimmed pixels",band_checks,band_lit);
 `endif
