@@ -10,9 +10,9 @@ module tb_status_osd;
  reg [7:0] err=0;
  wire [23:0] out_rgb,bypass;
  status_osd_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb),
-  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(out_rgb));
+  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(out_rgb),.active());
  status_osd_overlay #(.OSD_ENABLE(0)) off_dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb),
-  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(bypass));
+  .image_index(idx),.image_valid(valid),.auto_enabled(auto_en),.error_code(err),.rgb_out(bypass),.active());
  reg src_auto=0;reg [7:0] src_err=0;
  wire dst_auto;wire [7:0] dst_err;
  osd_status_cdc cdc(.src_clk(src_clk),.src_rst(rst),.src_auto(src_auto),.src_error(src_err),

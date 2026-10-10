@@ -350,7 +350,7 @@ osd_status_cdc u_osd_status_cdc (
 status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .clk(video_clk), .rst(rst_video), .vs(vs), .de(de), .pixel_x(video_x),
     .rgb_in(vout_data), .image_index(audio_image), .image_valid(audio_enable),
-    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb)
+    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb), .active()
 );
 scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE)) u_scroll_osd (
  .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),.image_valid(audio_enable),
