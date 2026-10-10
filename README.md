@@ -1,3 +1,6 @@
+# 最新状态：v0.9.0 S2 local.1 待上板（2026-10-10）
+
+S1 已通过用户验收，分支与 S1 local/board 标签已推送。S2 滚动字幕已完成专项、真实 SDRAM 联合测试、21 项回归及 TD，待用户板测；S3 半透明底条尚未实施。详细证据及固定候选见项目根目录 releases/v0.9.0/s2-local.1/README.md，上板使用该目录 demo.bit。Setup +0.113 ns、Hold +0.030 ns。以下为历史阶段记录。
 # 当前正式版：v0.8.0 四 bank 帧缓存
 
 v0.8.0 已发布并合并 main；[正式说明与已验收 bit](releases/v0.8.0/README.md)。
