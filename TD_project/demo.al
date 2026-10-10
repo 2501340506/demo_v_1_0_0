@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project Version="3" Minor="2" Path="D:/My_Program/anlogic_program/demo_v_0_0/TD_project">
     <Project_Created_Time></Project_Created_Time>
     <TD_Version>6.2.168116</TD_Version>
@@ -499,6 +499,7 @@
                     <Attr Name="CompileOrder" Val="100"/>
                 </FileInfo>
             </File>
+            <File Path="../user_source/hdl_source/osd/osd_font_cn_16x16.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="104.5"/></FileInfo></File>
             <File Path="../user_source/hdl_source/osd/osd_status_cdc.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>

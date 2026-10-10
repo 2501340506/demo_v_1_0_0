@@ -6,7 +6,8 @@ module scroll_text_overlay #(
     parameter integer WINDOW_LEFT = 8,
     parameter integer WINDOW_RIGHT = 632,
     parameter integer TEXT_Y = 444,
-    parameter integer PIXELS_PER_FRAME = 1
+    parameter integer PIXELS_PER_FRAME = 1,
+    parameter integer CN_ENABLE = 0
 )(
     input clk, rst, vs, de,
     input [9:0] pixel_x,
@@ -15,7 +16,8 @@ module scroll_text_overlay #(
     output wire [23:0] rgb_out,
     output wire active
 );
-    localparam integer TEXT_WIDTH = TEXT_LEN * 16;
+    localparam integer MIXED_LEN = 15;
+    localparam integer TEXT_WIDTH = (CN_ENABLE ? MIXED_LEN : TEXT_LEN) * 16;
     // Window [8,632): text starts at x=632 and ends at x=8-TEXT_WIDTH.
     // Retain one fully outside position at each end of the cycle.
     localparam integer LAST_STEP = WINDOW_RIGHT - WINDOW_LEFT + TEXT_WIDTH;
@@ -51,17 +53,36 @@ module scroll_text_overlay #(
                                                 $signed({1'b0,pixel_x}) - WINDOW_RIGHT;
     wire [8:0] dy = line_y - TEXT_Y;
     reg [7:0] character;
+    function [7:0] mixed_char;
+        input integer index;
+        begin
+            // Nine course glyphs followed by an ASCII suffix: a compact
+            // mixed Chinese/English slogan without a runtime text bus.
+            case (index)
+                0: mixed_char=8'h80; 1: mixed_char=8'h81; 2: mixed_char=8'h82;
+                3: mixed_char=8'h83; 4: mixed_char=8'h84; 5: mixed_char=8'h85;
+                6: mixed_char=8'h86; 7: mixed_char=8'h87; 8: mixed_char=8'h88;
+                9: mixed_char=" "; 10: mixed_char="F"; 11: mixed_char="P";
+                12: mixed_char="G"; 13: mixed_char="A"; 14: mixed_char=" ";
+                default: mixed_char=" ";
+            endcase
+        end
+    endfunction
     always @* begin
         character = " ";
         if (text_x >= 0 && text_x < TEXT_WIDTH)
-            character = TEXT[(TEXT_LEN-1-(text_x >> 4))*8 +: 8];
+            character = CN_ENABLE ? mixed_char(text_x >> 4) :
+                        TEXT[(TEXT_LEN-1-(text_x >> 4))*8 +: 8];
     end
     wire [4:0] glyph;
+    wire [15:0] cn_glyph;
     osd_font_5x7 font(.character(character), .row(dy[3:1]), .pixels(glyph));
+    osd_font_cn_16x16 cn_font(.character(character), .row(dy[3:0]), .pixels(cn_glyph));
     wire in_region = ENABLE && started && de && pixel_x >= WINDOW_LEFT && pixel_x < WINDOW_RIGHT &&
                      line_y >= TEXT_Y && line_y < TEXT_Y + 16 && text_x >= 0 && text_x < TEXT_WIDTH;
-    wire hit = in_region && text_x[3:1] < 5 && dy[3:1] < 7 &&
-               glyph[3'd4-text_x[3:1]];
+    wire is_cn = character[7:4] == 4'h8;
+    wire hit = in_region && (is_cn ? cn_glyph[15-text_x[3:0]] :
+               (text_x[3:1] < 5 && dy[3:1] < 7 && glyph[3'd4-text_x[3:1]]));
     assign active = hit;
     assign rgb_out = hit ? 24'hffffff : rgb_in;
 endmodule

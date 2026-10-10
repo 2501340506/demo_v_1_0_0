@@ -357,7 +357,7 @@ status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
     .active(status_glyph_active)
 );
-scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE)) u_scroll_osd (
+scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1)) u_scroll_osd (
  .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),.image_valid(audio_enable),
  .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active)
 );
