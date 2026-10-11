@@ -56,12 +56,12 @@ module fat32_bmp_reader #(
  fat32_volume_scanner #(.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
  .clk(clk),.rst_n(!rst),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
- .resource_valid(mask),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
+ .resource_valid(mask),.audio_found(),.audio_cluster(),.audio_size(),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
  .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_owner && sector_valid),
  .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(scan_owner && sector_done),.sector_error(sector_error));
  fat32_file_streamer #(.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) streamer(
- .clk(clk),.rst_n(!rst && !abort_file),.file_start(file_go),.first_cluster(task_cluster),.file_size(task_size),
+ .clk(clk),.rst_n(!rst && !abort_file),.file_start(file_go),.data_permit(1'b1),.first_cluster(task_cluster),.file_size(task_size),
  .sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
  .file_busy(stream_busy),.file_done(stream_done),.file_valid(stream_valid),.file_byte(stream_byte),.file_byte_offset(stream_offset),.fs_error(stream_error),
  .sector_req(file_req),.sector_lba(file_lba),.sector_busy(sector_busy),.sector_valid(file_owner && sector_valid),

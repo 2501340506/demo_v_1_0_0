@@ -1,11 +1,13 @@
 `timescale 1ns/1ps
 
 module fat32_file_streamer #(
-    parameter integer MAX_VISITED_CLUSTERS = 8192
+    parameter integer MAX_VISITED_CLUSTERS = 8192,
+    parameter integer DATA_GATE_ENABLE = 0
 ) (
     input  wire        clk,
     input  wire        rst_n,
     input  wire        file_start,
+    input  wire        data_permit,
     input  wire [31:0] first_cluster,
     input  wire [31:0] file_size,
     input  wire [7:0]  sectors_per_cluster,
@@ -155,7 +157,7 @@ module fat32_file_streamer #(
                 ST_OFFSET:begin cluster_offset<=current_cluster-2;state<=ST_SHIFT;end
                 ST_SHIFT:begin cluster_offset<=cluster_offset<<cluster_shift;state<=ST_ADDRESS;end
                 ST_ADDRESS:begin sector_lba<=data_start_lba+cluster_offset;state<=ST_DATA_REQ;end
-                ST_DATA_REQ: if (!sector_busy) begin
+                ST_DATA_REQ: if (!sector_busy && (!DATA_GATE_ENABLE || data_permit)) begin
                     sector_req <= 1'b1;
                     state <= ST_DATA_WAIT;
                 end

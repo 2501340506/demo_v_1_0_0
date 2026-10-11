@@ -1,7 +1,8 @@
 // Read-only FAT32 root directory scanner. Derived from the lesson's resource
 // contract; fields are captured as bytes arrive, without a 512-byte mux array.
 module fat32_volume_scanner #(
-    parameter integer MAX_VISITED_CLUSTERS = 8192
+    parameter integer MAX_VISITED_CLUSTERS = 8192,
+    parameter integer SCAN_AUDIO = 0
 )(
     input wire clk, input wire rst_n, input wire scan_start,
     output wire scan_busy, output reg scan_done, output reg [7:0] fs_error,
@@ -11,6 +12,7 @@ module fat32_volume_scanner #(
     output reg [3:0] resource_valid,
     output reg [31:0] resource0_cluster, resource1_cluster, resource2_cluster, resource3_cluster,
     output reg [31:0] resource0_size, resource1_size, resource2_size, resource3_size,
+    output reg audio_found, output reg [31:0] audio_cluster, audio_size,
     output reg sector_req, output reg [31:0] sector_lba,
     input wire sector_busy, sector_valid, input wire [7:0] sector_byte,
     input wire [8:0] sector_byte_index,
@@ -34,6 +36,7 @@ module fat32_volume_scanner #(
     reg [7:0] dir_sector;
     reg [COUNT_BITS-1:0] visited;
     reg dir_end, name_match;
+    reg audio_match;
     reg [1:0] resource_index;
     reg [31:0] entry_cluster, entry_size, fat_entry;
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
@@ -71,6 +74,7 @@ module fat32_volume_scanner #(
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
             overhead<=0;data_sectors<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
+            audio_found<=0;audio_cluster<=0;audio_size<=0;audio_match<=0;
         end else begin
             scan_done<=0;sector_req<=0;
             if(sector_valid && (state==ZERO_WAIT || state==BOOT_WAIT)) begin
@@ -103,23 +107,25 @@ module fat32_volume_scanner #(
             end
             if(state==DIR_WAIT && sector_valid && !dir_end) begin
                 case(sector_byte_index[4:0])
-                    0:begin name_match<=(sector_byte=="P");if(sector_byte==0)dir_end<=1;end
-                    1:name_match<=name_match && sector_byte=="I";
-                    2:name_match<=name_match && sector_byte=="C";
-                    3:begin name_match<=name_match && sector_byte>="1" && sector_byte<="4";
+                    0:begin name_match<=(sector_byte=="P");audio_match<=SCAN_AUDIO && (sector_byte=="B");if(sector_byte==0)dir_end<=1;end
+                    1:begin name_match<=name_match && sector_byte=="I";audio_match<=audio_match && sector_byte=="G";end
+                    2:begin name_match<=name_match && sector_byte=="C";audio_match<=audio_match && sector_byte=="M";end
+                    3:begin name_match<=name_match && sector_byte>="1" && sector_byte<="4";audio_match<=audio_match && sector_byte==" ";
                         resource_index<=sector_byte[1:0]-2'd1;end
-                    4,5,6,7:name_match<=name_match && sector_byte==" ";
-                    8:name_match<=name_match && sector_byte=="B";
-                    9:name_match<=name_match && sector_byte=="M";
-                    10:name_match<=name_match && sector_byte=="P";
+                    4,5,6,7:begin name_match<=name_match && sector_byte==" ";audio_match<=audio_match && sector_byte==" ";end
+                    8:begin name_match<=name_match && sector_byte=="B";audio_match<=audio_match && sector_byte=="P";end
+                    9:begin name_match<=name_match && sector_byte=="M";audio_match<=audio_match && sector_byte=="C";end
+                    10:begin name_match<=name_match && sector_byte=="P";audio_match<=audio_match && sector_byte=="M";end
                     // Accept read-only/hidden/system/archive files; exclude LFN,
                     // volume labels and subdirectories by their attribute bits.
-                    11:name_match<=name_match && (sector_byte & 8'h18)==0;
+                    11:begin name_match<=name_match && (sector_byte & 8'h18)==0;audio_match<=audio_match && (sector_byte & 8'h18)==0;end
                     20:entry_cluster[23:16]<=sector_byte;
                     21:entry_cluster[31:24]<={4'b0,sector_byte[3:0]};
                     26:entry_cluster[7:0]<=sector_byte;27:entry_cluster[15:8]<=sector_byte;
                     28:entry_size[7:0]<=sector_byte;29:entry_size[15:8]<=sector_byte;30:entry_size[23:16]<=sector_byte;
-                    31:if(name_match && !resource_valid[resource_index]) begin
+                    31:begin
+                    if(audio_match && !audio_found) begin audio_found<=1;audio_cluster<=entry_cluster;audio_size<={sector_byte,entry_size[23:0]};end
+                    if(name_match && !resource_valid[resource_index]) begin
                         resource_valid[resource_index]<=1;
                         case(resource_index)
                             0:begin resource0_cluster<=entry_cluster;resource0_size<={sector_byte,entry_size[23:0]};end
@@ -127,6 +133,7 @@ module fat32_volume_scanner #(
                             2:begin resource2_cluster<=entry_cluster;resource2_size<={sector_byte,entry_size[23:0]};end
                             3:begin resource3_cluster<=entry_cluster;resource3_size<={sector_byte,entry_size[23:0]};end
                         endcase
+                    end
                     end
                     default:;
                 endcase
@@ -139,7 +146,7 @@ module fat32_volume_scanner #(
             end
             case(state)
                 IDLE:if(scan_start) begin
-                    fs_error<=0;resource_valid<=0;partition_lba<=0;mbr_match<=0;dir_end<=0;
+                    fs_error<=0;resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;partition_lba<=0;mbr_match<=0;dir_end<=0;
                     resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
                     resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
                     sector_lba<=0;state<=ZERO_REQ;
@@ -194,7 +201,7 @@ module fat32_volume_scanner #(
                 DIR_REQ:if(!sector_busy)begin sector_req<=1;name_match<=0;state<=DIR_WAIT;end
                 DIR_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=DIR_NEXT;end
                 DIR_NEXT:begin
-                    if(dir_end || resource_valid==4'hf)state<=FINISH;
+                    if(dir_end || (resource_valid==4'hf && (!SCAN_AUDIO || audio_found)))state<=FINISH;
                     else if(dir_sector+1'b1<sectors_per_cluster)begin
                         dir_sector<=dir_sector+1'b1;sector_lba<=sector_lba+1'b1;state<=DIR_REQ;
                     end else begin sector_lba<=fat_start_lba+(current_cluster>>7);state<=FAT_REQ;end
