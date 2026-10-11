@@ -1,0 +1,82 @@
+S2 module validation only; no bitstream and no local/board tag.
+Baseline: v0.12.0-s1-board.1
+Simulation logs: 46
+Changed source files:
+tools/make_audio_corpus.py
+user_source/hdl_source/SD/fat32_bmp_reader.v
+user_source/hdl_source/SD/fat32_file_streamer.v
+user_source/hdl_source/SD/fat32_volume_scanner.v
+user_source/hdl_source/audio/audio_source_mux.v
+user_source/hdl_source/audio/fat32_pcm_stream.v
+user_source/hdl_source/audio/pcm_stream_player.v
+
+Files and sizes:
+changes/tools/make_audio_corpus.py 856
+changes/user_source/hdl_source/audio/audio_source_mux.v 1053
+changes/user_source/hdl_source/audio/fat32_pcm_stream.v 4049
+changes/user_source/hdl_source/audio/pcm_stream_player.v 4818
+changes/user_source/hdl_source/SD/fat32_bmp_reader.v 9757
+changes/user_source/hdl_source/SD/fat32_file_streamer.v 9036
+changes/user_source/hdl_source/SD/fat32_volume_scanner.v 14358
+samples/audition_440Hz.wav 288044
+samples/BGM.PCM 288000
+samples/RESULT.txt 98
+samples/signed_endpoints.pcm 16
+simulation/pcm_s2_player_exact2/player.log 1301
+simulation/pcm_s2_reader_final2/reader0_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader10_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader11_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader12_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader13_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader14_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader15_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader16_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader17_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader18_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader19_gap2_mode0.log 1362
+simulation/pcm_s2_reader_final2/reader1_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader20_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader21_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader22_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader23_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader24_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader25_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader26_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader27_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader28_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader29_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader2_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader30_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader31_gap2_mode0.log 1365
+simulation/pcm_s2_reader_final2/reader32_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader33_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader34_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader35_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader36_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader37_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader38_gap2_mode0.log 1364
+simulation/pcm_s2_reader_final2/reader39_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader3_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader40_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader41_gap2_mode0.log 1366
+simulation/pcm_s2_reader_final2/reader4_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader5_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader6_gap2_mode0.log 1363
+simulation/pcm_s2_reader_final2/reader7_gap2_mode0.log 1361
+simulation/pcm_s2_reader_final2/reader8_gap2_mode0.log 1361
+simulation/pcm_s2_reader_final2/reader9_gap2_mode0.log 1363
+simulation/pcm_s2_units_final1/tb_audio_mux.log 1237
+simulation/pcm_s2_units_final1/tb_audio_scan.log 1279
+simulation/pcm_s2_units_final1/tb_audio_stream.log 1318
+synthesis/audio_scan_synthesis/build.log 56620
+synthesis/audio_scan_synthesis/demo_gate.area 1583
+synthesis/audio_scan_synthesis/td_20261011_202934.logw 400
+synthesis/audio_source_mux/build.log 47738
+synthesis/audio_source_mux/demo_gate.area 1380
+synthesis/audio_source_mux/td_20261011_202933.logw 400
+synthesis/fat32_pcm_stream/build.log 54594
+synthesis/fat32_pcm_stream/demo_gate.area 1567
+synthesis/fat32_pcm_stream/td_20261011_202930.logw 529
+synthesis/pcm_stream_player/build.log 52540
+synthesis/pcm_stream_player/demo_gate.area 1479
+synthesis/pcm_stream_player/td_20261011_202928.logw 838

@@ -1,12 +1,12 @@
-# 当前交接：v0.12.0 S2 PCM 模块验证中（2026-10-11）
+# 当前交接：v0.12.0 S2 独立模块验证完成（2026-10-11）
 
-- 当前任务：按已批准计划完成 S0/S1，本轮到 S1 本地候选，上板确认后才进入 S2。
-- 已完成：S0 标签 v0.12.0-plan.1；生产提交 94dfc50，测试提交 fce2c69。service3 专项、reader2 的 42 个 FAT32 用例、regression1 的 21 项回归通过。
-- 卡住的问题：无。用户确认 S1 候选功能均正常；未补造测试次数或时长，Flash/完全断电项目仍未声明通过。
-- 已完成：S1 board.1 已记录；新增 PCM 转换工具、pcm_stream_player、audio_source_mux；pcm_s2_player7 通过。生产入口保持关闭。
-- 卡住的问题：无外部阻塞。S2 尚未完成 FAT32 BGM.PCM 发现、音频客户端接入、循环 EOF 和生产 HDMI 接线，不能建立 S2 local/board 标签。
-- 下一步计划：扩展 FAT32 目录扫描输出 BGM.PCM，接入共享服务 a 端并验证音频低水位优先、循环和重扫清空，再做独立综合。
-- 踩过的坑：课程缓冲限流和 CDC 不可直接复制；当前 PCM 源被取消选择仍产样本；四图齐全提前结束扫描会漏音频。保留用户字幕、两个既有 worktree、best_result 和旧 bit，不删除文件。
+- 当前任务：S2 的文件发现、流式播放、音源选择、转换工具、独立综合已完成；下一阶段是 S3 生产接入。
+- 已完成：S1 用户“功能均正常”已记录 board.1，当前分支及 S1 local/board 标签已推送。S2 最终播放器 5,300 个有符号样本逐项比对，扫描/mux/碎片文件+图片并发专项、42 项 FAT32 回归通过；四个模块独立综合通过，播放器 4096×16bit BRAM 推断成功。FFmpeg 三组转换通过，提供 3 秒 440Hz 示例。
+- 卡住的问题：无。S2 没有 bit，不建立 local/board 标签；现有 S1 固件不支持 BGM.PCM。独立综合不等于集成时序通过，保留工具 BRAM 提示。
+- 下一步计划：S3 顶层将 SCAN_AUDIO 置 1、导出稳定卷几何与音频元数据、接 a 客户端、接视频域 PCM/HDMI、协调全局重扫与图片取消；验证后完整 TD 和新 local 候选，再由用户上板。当前回退为 releases/v0.12.0/s1-local.1/demo.bit。
+- 踩过的坑：上一轮 player7 仅验证左右相等，不能证明播放正确；旧草稿 CDC、采样率、背压、重启有缺陷，已重写并逐样本验证。负数在三目表达式中右移曾丢符号，现保留符号位。两字节文件每圈读扇区吞吐不足，≤512 字节改短缓存循环。保留用户字幕、两个既有 worktree、best_result、旧 bit，不删除文件。
+
+证据：releases/v0.12.0/s2-modules；详细结果：diagnostics/pcm_audio/S2_VALIDATION.md。最终运行：pcm_s2_player_exact2、pcm_s2_units_final1、pcm_s2_reader_final2、pcm_s2_syn2、pcm_s2_conversion1，均已结束。
 
 计划：docs/WAV音频播放分阶段修改计划.md。总回退：releases/v0.11.0/demo.bit。
 

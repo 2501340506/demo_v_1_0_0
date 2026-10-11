@@ -1,0 +1,39 @@
+standard
+***Report Model: fat32_pcm_stream Device: EG4S20BG256***
+
+IO Statistics
+#IO                       287   out of    188  152.66%
+  #input                  203
+  #output                  84
+  #inout                    0
+
+LUT Statistics
+#Total_luts               536
+  #lut4                   495
+  #lut5                    41
+  #lut6                     0
+  #lut5_mx41                0
+  #lut4_alu1b               0
+
+Utilization Statistics
+#lut                      986   out of  19600    5.03%
+#reg                      269   out of  19600    1.37%
+#bram                       1   out of     64    1.56%
+  #bram9k                   1
+  #fifo9k                   0
+#bram32k                    0   out of     16    0.00%
+#dsp                        0   out of     29    0.00%
+#pad                      287   out of    188  152.66%
+  #ireg                    71
+  #oreg                    70
+  #treg                     0
+#pll                        0   out of      4    0.00%
+#gclk                       0   out of     16    0.00%
+
+Report Hierarchy Area:
++---------------------------------------------------------------------------+
+|Instance |Module              |lut     |ripple  |seq     |bram    |dsp     |
++---------------------------------------------------------------------------+
+|top      |fat32_pcm_stream    |761     |225     |410     |1       |0       |
+|  source |fat32_file_streamer |565     |142     |215     |0       |0       |
++---------------------------------------------------------------------------+
