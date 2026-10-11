@@ -1,7 +1,7 @@
-param([string[]]$Tests = @('tb_sd_protocol','tb_rescan_key','tb_sd_initialization','tb_sd_spi_pins'))
+param([string[]]$Tests = @('tb_sd_protocol','tb_rescan_key','tb_sd_initialization','tb_sd_spi_pins','tb_sd_init_retry'),[string]$RunName='v052_sd_recovery')
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-$out = Join-Path $root 'diagnostics/output/v052_sd_recovery'
+$out = Join-Path $root "diagnostics/output/$RunName"
 $sim = 'D:/modelsim/win64'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 $lib = (Join-Path $out 'work').Replace('\','/')

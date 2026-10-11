@@ -44,7 +44,8 @@ module sd_card_sec_read_write
 );
 reg[7:0] read_data;
 reg[31:0] timer;
-reg[2:0] init_retry;
+localparam RETRY_BITS = (INIT_RETRIES < 1) ? 1 : $clog2(INIT_RETRIES+1);
+reg[RETRY_BITS-1:0] init_retry;
 reg[15:0] recover_count;
 localparam integer INIT_CYCLES = (CLK_FREQ_HZ / 1000) * INIT_TIMEOUT_MS;
 
@@ -93,7 +94,7 @@ begin
 	end
 	else begin
         sd_sec_read_failed <= 0;
-        if (!sd_init_done && state != S_ERR) timer <= timer + 1'b1;
+        if (!sd_init_done && state != S_ERR && state != S_RECOVER) timer <= timer + 1'b1;
         if (!sd_init_done && state != S_ERR && state != S_RECOVER && timer >= INIT_CYCLES - 1) begin
             if (init_retry < INIT_RETRIES) begin
                 state <= S_RECOVER; recover_count <= 0; init_retry <= init_retry + 1'b1;
@@ -122,7 +123,6 @@ begin
 					state <= S_CMD8;
 					cmd_req <= 1'b0;
 				end
-                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -138,7 +138,6 @@ begin
 					state <= S_CMD55;
 					cmd_req <= 1'b0;
 				end
-                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -154,7 +153,6 @@ begin
 					state <= S_CMD41;
 					cmd_req <= 1'b0;
 				end
-                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -170,7 +168,6 @@ begin
 					state <= S_CMD16;
 					cmd_req <= 1'b0;
 				end
-                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else if(cmd_req_ack)
 				begin
 					state <= S_CMD55;
@@ -190,7 +187,6 @@ begin
 					state <= S_CMD59;
 					cmd_req <= 1'b0;
 				end
-                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else if(cmd_req_ack)
 				begin
 					state <= S_CMD55;

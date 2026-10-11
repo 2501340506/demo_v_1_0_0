@@ -53,5 +53,5 @@ initial begin
  if(cmd16_count!=2 || cmd59_count!=2) $fatal(1,"card state/reset test");
  $display("PASS initialization deadline, readiness, read failure, host-only reinitialization");$finish;
 end
-initial begin #100000;$fatal(1,"watchdog");end
+initial begin #300000;$fatal(1,"watchdog");end
 endmodule
