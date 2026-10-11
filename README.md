@@ -1,8 +1,10 @@
-# 当前开发：v0.12.0 S2 独立 PCM 模块验证完成
+# 当前开发：v0.12.0 S3 PCM 候选已完成，待上板
 
 S1 共享扇区服务已由用户确认上板通过，local/board 标签及分支已推送。S2 完成 BGM.PCM 扫描、碎片文件循环、跨域缓冲、音源切换和转换工具的独立验证；46 个 RTL 日志、四个模块独立综合和实际音频转换通过。
 
-S2 没有新 bit，背景音乐尚未接入生产 top；下一阶段 S3 才形成音频上板候选。[S2 证据](releases/v0.12.0/s2-modules/README.md) · [验证详情](diagnostics/pcm_audio/S2_VALIDATION.md) · [交接](HANDOFF.md)。
+S3 已接入生产 top：FAT32 根目录 BGM.PCM 自动循环播放，固定 48kHz/16bit/单声道；切图不重启音乐，无音乐时回退原琶音。582 帧系统仿真及 472,955 个 PCM 样本比较通过，TD Setup +0.100ns / Hold +0.004ns。
+
+[固定候选与说明](releases/v0.12.0/s3-local.1/README.md) · [上板步骤](releases/v0.12.0/s3-local.1/BOARD_VALIDATION.md) · [S3 验证](diagnostics/pcm_audio/S3_VALIDATION.md) · [交接](HANDOFF.md)。板测尚未执行；S3 确认后再进入 S4 持续播放、Flash 和完全断电冷启动验收。
 
 # 当前正式版：v0.11.0（2026-10-11）
 

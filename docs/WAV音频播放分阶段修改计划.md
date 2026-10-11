@@ -40,6 +40,8 @@ TD 检查 Setup/Hold、资源、覆盖率和新增 CDC，不放宽无关约束�
 
 ## 已发现的问题与状态
 
+S3 本地完成：582 帧完整系统、472,955 个 PCM 样本、生产专项及相关回归通过；TD Setup +0.100ns / Hold +0.004ns。固定候选 releases/v0.12.0/s3-local.1/demo.bit，标签 v0.12.0-s3-local.1，详见 diagnostics/pcm_audio/S3_VALIDATION.md。等待 S3 上板，仍以 S1 bit 为阶段回退；尚未进入 S4。
+
 课程播放器没有真实缓冲限流，格雷码在接收域生成且缺回绕位，EOF 提前撤 active，valid 单拍不满足背压；只参考结构，不直接复制。课程转换工具缺失。当前桥与课程桥接口不同，复用项目版本。
 
 2026-10-11：S1 已由用户确认功能正常，board.1 与 local.1 标签及分支已推送。S2 独立模块验证完成，46 个 RTL 日志、转换测试、四个模块独立综合通过；证据见 releases/v0.12.0/s2-modules，详细边界见 diagnostics/pcm_audio/S2_VALIDATION.md。没有 S2 bit 或 local/board 标签。下一阶段 S3 为顶层生产接入。
