@@ -1,0 +1,49 @@
+Baseline: v0.12.0-s3-local.1
+Build: diagnostics/output/pcm_s3_reset_retry2
+Compared 87 project/source inputs byte for byte.
+Passed 27 simulation logs.
+Changed production files:
+user_source/hdl_source/SD/sd_card_sec_read_write.v
+user_source/hdl_source/SD/sd_card_top.v
+
+Files and sizes:
+BOARD_VALIDATION.md 668
+changes/user_source/hdl_source/SD/sd_card_sec_read_write.v 8598
+changes/user_source/hdl_source/SD/sd_card_top.v 8775
+demo.bit 629624
+README.md 1474
+reports/audit.timing 1620518
+reports/check_timing.txt 55575
+reports/demo_phy.area 26295
+reports/final_timing.rpt 1620518
+reports/pcm_cdc.timing 2760158
+reports/phy_1/td_20261011_222942.logw 1299
+reports/syn_1/td_20261011_222824.logw 15657
+simulation/reset_final_production1/tb_pcm_production.log 1380
+simulation/reset_final_regression1/tb_dual_key_event_router.log 1312
+simulation/reset_final_regression1/tb_flash_reset.log 1376
+simulation/reset_final_regression1/tb_frame_cache_control.log 2293
+simulation/reset_final_regression1/tb_hdmi_packets.log 1412
+simulation/reset_final_regression1/tb_hdmi_primitives.log 1363
+simulation/reset_final_regression1/tb_hdmi_s6_phy.log 1445
+simulation/reset_final_regression1/tb_key_gesture_control.log 1578
+simulation/reset_final_regression1/tb_media_commit_cdc.log 1319
+simulation/reset_final_regression1/tb_media_display_control.log 1345
+simulation/reset_final_regression1/tb_media_player_control.log 1340
+simulation/reset_final_regression1/tb_mode_key_control.log 1284
+simulation/reset_final_regression1/tb_pcm_media_tone.log 1363
+simulation/reset_final_regression1/tb_pcm_test_tone.log 1512
+simulation/reset_final_regression1/tb_rescan_key.log 1279
+simulation/reset_final_regression1/tb_sd_initialization.log 1324
+simulation/reset_final_regression1/tb_sd_protocol.log 1351
+simulation/reset_final_regression1/tb_sd_spi_pins.log 3168
+simulation/reset_final_regression1/tb_startup.log 1312
+simulation/reset_final_regression1/tb_switch_mode_panel.log 1375
+simulation/reset_final_regression1/tb_uart_event_logger.log 1379
+simulation/reset_final_regression1/tb_video_alignment.log 1554
+simulation/reset_final_units1/tb_rescan_key.log 1240
+simulation/reset_final_units1/tb_sd_initialization.log 1426
+simulation/reset_final_units1/tb_sd_protocol.log 1383
+simulation/reset_final_units1/tb_sd_spi_pins.log 3270
+simulation/reset_retry_exact1/tb_sd_init_retry.log 1445
+SOURCE_MANIFEST.md 2405
