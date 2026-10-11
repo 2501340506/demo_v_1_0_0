@@ -57,7 +57,19 @@ module tb_cache_system;
  wire [57:0] diagnostics;
  wire [1:0] committed_image,media_id;
  wire committed_valid,committed_ready,media_update,media_enable;
- sd_card_bmp #(.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
+`ifdef TRANSITION_S1
+ localparam TRANSITION_TEST=1;
+`else
+ localparam TRANSITION_TEST=0;
+`endif
+ wire transition_active;wire [4:0] transition_level;
+ reg transition_vs_q=1;
+ wire transition_frame_start=transition_vs_q && !vs;
+ always @(posedge pix_clk) if(rst) transition_vs_q<=1;else transition_vs_q<=vs;
+ sd_card_bmp #(.TRANSITION_ENABLE(TRANSITION_TEST),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
+  .transition_pix_clk(pix_clk),.transition_pix_rst(rst),
+  .transition_frame_start(transition_frame_start),.transition_commit_done(media_update),
+  .transition_active(transition_active),.transition_level(transition_level),
   .clk(src_clk),.rst(rst),.sdram_ready(init_done),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
   .state_code(state_code),.sd_debug(),.diagnostics(diagnostics),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
   .bmp_width(16'd640),.bmp_height(16'd480),.display_valid(display_valid),
@@ -75,6 +87,9 @@ module tb_cache_system;
   .media_update(media_update),.media_id(media_id),.volume(8'd128),.sample_ready(1'b1),
   .sample_valid(),.sample_left(),.sample_right(),.overflow(),.blip_active());
 
+`ifdef TRANSITION_S1
+ `include "cache_transition_checks.svh"
+`endif
 `ifdef OSD_S1
  `include "cache_osd_checks.svh"
 `endif
@@ -238,14 +253,14 @@ module tb_cache_system;
    if(rgb!==pattern(bank_id[app.current_bank],bank_generation[app.current_bank],(479-pixel/640)*640+pixel%640))
     $fatal(1,"pixel mismatch bank=%0d image=%0d generation=%0d n=%0d got=%h",app.current_bank,
              bank_id[app.current_bank],bank_generation[app.current_bank],pixel,rgb);
-   if(pixel==307199)begin pixel=0;frames=frames+1;end else pixel=pixel+1;
+   if(pixel==307199)begin pixel=0;frames=frames+1;if(TRANSITION_TEST && frames%32==0)$display("TRANSITION progress frames=%0d commits=%0d",frames,commits);end else pixel=pixel+1;
   end
  end
  task key_next;begin key2=0;repeat(30)@(negedge src_clk);key2=1;repeat(30)@(negedge src_clk);end endtask
  task key_prev;begin key1=0;repeat(30)@(negedge src_clk);key1=1;repeat(30)@(negedge src_clk);end endtask
  task key_auto;begin key4=0;repeat(30)@(negedge src_clk);key4=1;repeat(30)@(negedge src_clk);end endtask
  task key_rescan;begin key2=0;repeat(2030)@(negedge src_clk);key2=1;repeat(30)@(negedge src_clk);end endtask
- task wait_image(input integer idx);begin wait(app.img_idx==idx && display_valid && !app.foreground_busy);end endtask
+ task wait_image(input integer idx);begin wait(app.img_idx==idx && display_valid && !app.foreground_busy && !app.transition_busy);end endtask
  integer saved_starts,saved_reads,saved_commits,saved_bank,saved_frames;
  initial begin
   #200;rst=0;
@@ -253,14 +268,20 @@ module tb_cache_system;
   if(app.cache_valid!=1)$fatal(1,"first image not displayed before background fill");
   key_prev();wait_image(3);
   if(start_image[0]!=0 || start_image[1]!=1 || start_image[2]!=3)$fatal(1,"miss priority did not precede image 2");
-  wait(app.load_idx==2 && app.load_start_pulse);repeat(2)@(negedge src_clk);saved_starts=starts;
+  if(TRANSITION_TEST) begin
+   // A 32-frame effect lets background preloading finish before fade-in.
+   wait(app.cache_valid==15 && !app.load_busy);
+  end else begin
+   wait(app.load_idx==2 && app.load_start_pulse);repeat(2)@(negedge src_clk);
+  end
+  saved_starts=starts;
   key_next();wait_image(0);key_next();wait_image(1);
   if(starts!=saved_starts)$fatal(1,"cached switch restarted background read");
   wait(app.cache_valid==15 && !app.load_busy);saved_reads=sector_reads;saved_starts=starts;
-  repeat(4)begin saved_commits=commits;key_next();wait(commits>saved_commits);wait(!app.foreground_busy);end
-  repeat(4)begin saved_commits=commits;key_prev();wait(commits>saved_commits);wait(!app.foreground_busy);end
+  repeat(4)begin saved_commits=commits;key_next();wait(commits>saved_commits);wait(!app.foreground_busy && !app.transition_busy);end
+  repeat(4)begin saved_commits=commits;key_prev();wait(commits>saved_commits);wait(!app.foreground_busy && !app.transition_busy);end
   if(starts!=saved_starts || sector_reads!=saved_reads)$fatal(1,"full cache read SD again");
-  saved_commits=commits;key_auto();wait(commits>=saved_commits+2);key_auto();wait(!app.foreground_busy);
+  saved_commits=commits;key_auto();wait(commits>=saved_commits+2);key_auto();wait(!app.foreground_busy && !app.transition_busy);
   if(starts!=saved_starts || sector_reads!=saved_reads)$fatal(1,"AUTO missed full cache");
   $display("PASS integrated cache hits/AUTO: starts=%0d reads=%0d commits=%0d",starts,sector_reads,commits);
 
@@ -301,7 +322,7 @@ module tb_cache_system;
   $display("PASS cache system: starts=%0d completions=%0d commits=%0d cues=%0d hits=%0d frames=%0d refreshes=%0d",starts,completed,commits,cues,hits,frames,refreshes);
   $finish;
  end
- initial begin #(64'd2500000000);$fatal(1,"cache system watchdog: scan=%0d load=%0d cache=%h stop=%b",app.scan_state,app.u_load_control.state,app.cache_valid,app.timeout_stopped);end
+ initial begin #(TRANSITION_TEST ? 64'd20000000000 : 64'd2500000000);$fatal(1,"cache system watchdog: scan=%0d load=%0d cache=%h stop=%b",app.scan_state,app.u_load_control.state,app.cache_valid,app.timeout_stopped);end
 endmodule
 
 // The SPI pin-level driver is covered by its existing protocol/reset suites.

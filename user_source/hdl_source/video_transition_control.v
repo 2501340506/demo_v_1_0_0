@@ -1,44 +1,33 @@
 `timescale 1ns/1ps
-
-// S1 frame-level transition sequencer. The display owner starts a transition
-// only after the target bank is ready; permit_commit is asserted at black.
-module video_transition_control #(
-    parameter integer FADE_FRAMES = 16
-) (
-    input wire clk, input wire rst,
-    input wire request, input wire request_ready,
-    input wire commit_done,
-    input wire frame_start,
-    output wire busy, output wire permit_commit,
-    output wire active, output wire [4:0] level
+// All brightness updates occur in the pixel domain, during frame blanking.
+module video_transition_control (
+ input wire clk, rst, request, commit_done, frame_start,
+ output wire busy, output reg permit_commit, output reg done,
+ output reg [4:0] level
 );
-    localparam [2:0] IDLE=0, OUT=1, WAIT_COMMIT=2, IN=3;
-    reg [2:0] state;
-    reg [5:0] count;
-    reg permit_r;
-    assign busy = state != IDLE;
-    assign active = state != IDLE;
-    assign permit_commit = permit_r;
-    assign level = (state == OUT) ? count[4:0] :
-                   (state == IN) ? count[4:0] :
-                   (state == WAIT_COMMIT) ? 5'd0 : 5'd16;
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin state<=IDLE; count<=0; permit_r<=0; end
-        else begin
-            permit_r <= 1'b0;
-            case (state)
-            IDLE: if (request && request_ready) begin state<=OUT; count<=FADE_FRAMES[5:0]; end
-            OUT: if (frame_start) begin
-                if (count == 0) begin state<=WAIT_COMMIT; permit_r<=1'b1; end
-                else count<=count-1'b1;
-            end
-            WAIT_COMMIT: if (commit_done) begin state<=IN; count<=0; end
-            IN: if (frame_start) begin
-                if (count >= FADE_FRAMES-1) state<=IDLE;
-                else count<=count+1'b1;
-            end
-            default: state<=IDLE;
-            endcase
-        end
+ localparam IDLE=0, OUT=1, HOLD=2, IN=3;
+ reg [1:0] state;
+ reg committed;
+ assign busy=(state!=IDLE);
+ always @(posedge clk or posedge rst) begin
+  if(rst) begin state<=IDLE;level<=16;permit_commit<=0;done<=0;committed<=0;end
+  else begin
+   permit_commit<=0;done<=0;
+   case(state)
+    IDLE: if(request) begin state<=OUT;committed<=0;end
+    OUT: if(frame_start) begin
+     level<=level-1'b1;
+     if(level==1) begin state<=HOLD;permit_commit<=1;end
     end
+    HOLD: begin
+     if(commit_done) committed<=1;
+     if(frame_start && (committed || commit_done)) begin state<=IN;level<=1;end
+    end
+    IN: if(frame_start) begin
+     level<=level+1'b1;
+     if(level==15) begin state<=IDLE;done<=1;end
+    end
+   endcase
+  end
+ end
 endmodule

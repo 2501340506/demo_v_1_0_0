@@ -7,7 +7,8 @@ module sd_card_bmp #(
     parameter integer AUTO_PLAY_MS       = 3000,
     parameter integer LOAD_TIMEOUT_MS    = 500,
     parameter integer DIAG_DISPLAY       = 0,
-    parameter integer USE_FRAME_RESULT   = 0
+    parameter integer USE_FRAME_RESULT   = 0,
+    parameter integer TRANSITION_ENABLE = 0
 )(
     input                       clk,
     input                       rst,
@@ -38,7 +39,8 @@ module sd_card_bmp #(
     input reader_underflow,
     input                       write_finish_toggle,
     input                       display_commit_ack,
-    input                       transition_frame_toggle,
+    input                       transition_pix_clk, transition_pix_rst,
+    input                       transition_frame_start, transition_commit_done,
     output reg                  display_commit_request,
     output     [1:0]            write_buf_idx,
     output reg [1:0]            disp_buf_idx,
@@ -56,7 +58,7 @@ module sd_card_bmp #(
 );
 
 // FAT32 directory and board controls stay here; cache ownership is independent.
-wire rescan_event,manual_activity,media_next_request,media_previous_request,media_auto_toggle_request;
+wire rescan_event,rescan_raw,manual_activity,media_next_request,media_previous_request,media_auto_toggle_request;
 wire sd_init_done,sd_init_failed,sd_sec_read_failed;
 wire sd_sec_read,sd_sec_read_data_valid,sd_sec_read_end;
 wire [31:0] sd_sec_read_addr;
@@ -157,22 +159,32 @@ media_frame_load_control #(.USE_FRAME_RESULT(USE_FRAME_RESULT)) u_load_control(
 
 wire cache_display_request,cache_display_ack;
 wire transition_permit, transition_busy;
-video_transition_sd_control u_transition_sd_control(
- .clk(clk),.rst(rst),.display_request(cache_display_request),.display_valid(display_valid),
- .frame_toggle(transition_frame_toggle),.display_ack(display_commit_ack),
+wire [1:0] cache_display_image,cache_display_bank;
+wire transition_needed=TRANSITION_ENABLE && first_image_committed &&
+                       display_valid && cache_display_bank!=current_bank;
+video_transition_sd_control #(.ENABLE(TRANSITION_ENABLE)) u_transition_sd_control(
+ .clk(clk),.rst(rst),.display_request(cache_display_request),.display_valid(transition_needed),
+ .pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
+ .frame_start(transition_frame_start),.commit_done(transition_commit_done),
  .transition_busy(transition_busy),.transition_active(transition_active),
  .transition_level(transition_level),.permit_commit(transition_permit));
-wire [1:0] cache_display_image,cache_display_bank;
+reg rescan_pending;
+wire rescan_wait=TRANSITION_ENABLE && (rescan_pending || rescan_raw);
+assign rescan_event=TRANSITION_ENABLE ? (rescan_pending && !transition_busy) : rescan_raw;
+always @(posedge clk or posedge rst) begin
+ if(rst) rescan_pending<=0;
+ else if(rescan_raw) rescan_pending<=1;
+ else if(rescan_event) rescan_pending<=0;
+end
 reg commit_pending;
 // The core holds its request until this adapter returns the actual reader ack.
 // Do not issue it again on the clock the core consumes that acknowledgement.
-assign cache_display_ack=commit_pending && commit_ack_sync[1]==display_commit_request &&
-                         ((!display_valid) || transition_permit);
+assign cache_display_ack=commit_pending && commit_ack_sync[1]==display_commit_request;
 always @(posedge clk or posedge rst) begin
  if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;end
  else begin
   if(!cache_display_request) commit_pending<=0;
-  else if(!commit_pending) begin
+  else if(!commit_pending && (!transition_needed || transition_permit)) begin
    disp_buf_idx<=cache_display_bank;
    display_commit_request<=~display_commit_request;
    commit_pending<=1;
@@ -182,12 +194,14 @@ end
 wire ctrl_auto_play_en,ctrl_next_pending,ctrl_prev_pending,ctrl_auto_tick,ctrl_load_request;
 wire ctrl_request_ready,ctrl_request_accept,ctrl_auto_load_request;
 wire [1:0] ctrl_target_image;
-assign ctrl_request_accept=ctrl_load_request && ctrl_request_ready;
+wire transition_block=transition_busy || rescan_wait;
+wire ctrl_offer=ctrl_load_request && !transition_block;
+assign ctrl_request_accept=ctrl_offer && ctrl_request_ready;
 media_frame_cache_control u_cache_control(
  .clk(clk),.rst(rst),.rescan_event(rescan_event),
  .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),
  .scan_success(scan_success),.scan_image_count(img_found_count),.scan_result_ready(scan_result_ready),.scan_busy(scan_busy),
- .request_valid(ctrl_load_request),.request_image(ctrl_target_image),
+ .request_valid(ctrl_offer),.request_image(ctrl_target_image),
  .request_manual(ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
  .load_request(load_request),.load_accept(load_accept),.load_image(load_idx),.load_bank(write_buf_idx),
  .load_result_valid(load_result_valid),.load_success(load_success),.load_timeout(load_timeout),.load_result_ready(load_result_ready),
@@ -203,12 +217,12 @@ media_frame_cache_control u_cache_control(
 );
 mode_key_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
  .clk(clk),.rst(rst),.enable(!scan_busy),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
- .rescan_event(rescan_event),.next_event(media_next_request),.previous_event(media_previous_request),
+ .rescan_event(rescan_raw),.next_event(media_next_request),.previous_event(media_previous_request),
  .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity)
 );
 media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS)) u_media_player_control(
  .clk(clk),.rst(rst),.enable(!scan_busy),.scan_done(!scan_busy),
- .display_valid(display_valid),.load_busy(foreground_busy),.first_image_committed(first_image_committed),
+ .display_valid(display_valid),.load_busy(foreground_busy || transition_block),.first_image_committed(first_image_committed),
  .image_count(image_count),.current_image(img_idx),.mode(mode),.next_event(media_next_request),
  .previous_event(media_previous_request),.auto_toggle_event(media_auto_toggle_request),
  .request_accept(ctrl_request_accept),.manual_activity(manual_activity),

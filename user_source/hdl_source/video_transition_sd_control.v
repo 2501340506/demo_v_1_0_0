@@ -1,32 +1,47 @@
 `timescale 1ns/1ps
-// S1 adapter-domain controller. Frame ticks arrive as a toggle from video_clk;
-// the permit pulse is generated in the same domain as the cache commit.
-module video_transition_sd_control #(parameter integer FADE_FRAMES=16)(
- input wire clk, input wire rst, input wire display_request, input wire display_valid,
- input wire frame_toggle, input wire display_ack,
- output wire transition_busy, output wire transition_active, output wire [4:0] transition_level,
- output reg permit_commit
+// One outstanding transition. Only event toggles cross clock domains.
+// The caller keeps display_request asserted until the real reader ack.
+module video_transition_sd_control #(parameter integer ENABLE=1)(
+ input wire clk,rst,display_request,display_valid,
+ input wire pix_clk,pix_rst,frame_start,commit_done,
+ output wire transition_busy,output wire transition_active,
+ output wire [4:0] transition_level,output wire permit_commit
 );
- reg ft1,ft2,ft_seen,ack_seen; reg [5:0] count; reg [1:0] state;
- localparam IDLE=0, OUT=1, WAIT=2, IN=3;
- assign transition_busy=(state!=IDLE);
- assign transition_active=(state!=IDLE);
- assign transition_level=(state==OUT) ? count[4:0] :
-                         (state==IN) ? count[4:0] :
-                         (state==WAIT) ? 5'd0 : 5'd16;
- always @(posedge clk or posedge rst) begin
-  if(rst) begin ft1<=0;ft2<=0;ft_seen<=0;ack_seen<=display_ack;count<=0;state<=IDLE;permit_commit<=0;end
-  else begin
-   ft1<=frame_toggle; ft2<=ft1; permit_commit<=0;
-   case(state)
-    IDLE: if(display_request && display_valid) begin state<=OUT; count<=FADE_FRAMES[5:0]; end
-    // The first frame after scan/rescan keeps the established hard-cut path.
-    // It has no previous displayed bank to fade out from.
-    OUT: if(ft2!=ft_seen) begin ft_seen<=ft2; if(count==0) begin permit_commit<=1; state<=WAIT; end else count<=count-1'b1; end
-    WAIT: if(display_ack!=ack_seen) begin ack_seen<=display_ack; count<=0; state<=IN; end
-    IN: if(ft2!=ft_seen) begin ft_seen<=ft2; if(count>=FADE_FRAMES-1) state<=IDLE; else count<=count+1'b1; end
-    default: state<=IDLE;
-   endcase
+ generate if(ENABLE==0) begin:g_off
+  assign transition_busy=0;assign transition_active=0;
+  assign transition_level=16;assign permit_commit=1;
+ end else begin:g_on
+  reg request_toggle,request_seen,occupied,permit;
+  reg black_toggle,done_toggle;
+  (* ASYNC_REG="TRUE" *) reg [1:0] request_sync,black_sync,done_sync;
+  reg black_seen,done_seen;
+  wire pixel_busy,black_pulse,done_pulse;
+  assign transition_busy=occupied;
+  assign transition_active=pixel_busy;
+  assign permit_commit=permit;
+  always @(posedge clk or posedge rst) begin
+   if(rst) begin
+    request_toggle<=0;occupied<=0;permit<=0;
+    black_sync<=0;done_sync<=0;black_seen<=0;done_seen<=0;
+   end else begin
+    black_sync<={black_sync[0],black_toggle};done_sync<={done_sync[0],done_toggle};
+    if(!occupied && display_request && display_valid) begin
+     occupied<=1;permit<=0;request_toggle<=~request_toggle;
+    end
+    if(black_sync[1]!=black_seen) begin black_seen<=black_sync[1];permit<=1;end
+    if(done_sync[1]!=done_seen) begin done_seen<=done_sync[1];occupied<=0;permit<=0;end
+   end
   end
- end
+  always @(posedge pix_clk or posedge pix_rst) begin
+   if(pix_rst) begin request_sync<=0;request_seen<=0;black_toggle<=0;done_toggle<=0;end
+   else begin
+    request_sync<={request_sync[0],request_toggle};request_seen<=request_sync[1];
+    if(black_pulse) black_toggle<=~black_toggle;
+    if(done_pulse) done_toggle<=~done_toggle;
+   end
+  end
+  video_transition_control pixels(.clk(pix_clk),.rst(pix_rst),
+   .request(request_sync[1]!=request_seen),.commit_done(commit_done),.frame_start(frame_start),
+   .busy(pixel_busy),.permit_commit(black_pulse),.done(done_pulse),.level(transition_level));
+ end endgenerate
 endmodule

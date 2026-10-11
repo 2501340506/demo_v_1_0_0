@@ -34,6 +34,7 @@ parameter integer OSD_ENABLE = 1;
 parameter integer SCROLL_ENABLE = 1;
 parameter integer BAND_ENABLE = 1;
 parameter integer TIMESTAMP_ENABLE = 1;
+parameter integer TRANSITION_ENABLE = 1;
 parameter MEM_DATA_BITS = 32;
 parameter integer UART_CLK_FREQ_HZ = 100_000_000;
 parameter integer UART_BAUD_RATE = 115200;
@@ -62,8 +63,7 @@ wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the HDMI core.
 
 wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
-// S1 transition pixel stage. Control remains bypassed until the display
-// commit handshake is connected in the next integration step.
+// S1 transition precedes OSD; all RGB channels retain the original latency.
 wire [23:0] transition_rgb;
 wire [23:0] osd_rgb;
 wire [23:0] scroll_rgb;
@@ -108,11 +108,9 @@ reg         frame_write_toggle_mem;
 wire [1:0]  write_buf_idx;
 wire [1:0]  disp_buf_idx;
 wire        display_commit_request, display_commit_ack;
-wire        transition_active_sd;
-wire [4:0]  transition_level_sd;
-reg  [4:0]  transition_level_v1, transition_level_v2;
-reg         transition_active_v1, transition_active_v2;
-reg         transition_frame_toggle;
+wire transition_active;
+wire [4:0] transition_level;
+
 wire App_rd_en;
 wire [ADDR_BITS-1:0] App_rd_addr;
 wire Sdr_rd_en;
@@ -169,21 +167,6 @@ subtitle_uart_controller u_subtitle_control(
  .reply_data(sub_reply_data),.reply_last(sub_reply_last),.reply_ready(sub_reply_ready));
 osd_pixel_position u_subtitle_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
  .line_y(),.frame_start(sub_frame_start),.first_active());
-always @(posedge video_clk or posedge rst_video) begin
-    if (rst_video) transition_frame_toggle <= 1'b0;
-    else if (sub_frame_start) transition_frame_toggle <= ~transition_frame_toggle;
-end
-always @(posedge video_clk or posedge rst_video) begin
-    if (rst_video) begin
-        transition_level_v1 <= 5'd16; transition_level_v2 <= 5'd16;
-        transition_active_v1 <= 1'b0; transition_active_v2 <= 1'b0;
-    end else begin
-        transition_level_v1 <= transition_level_sd;
-        transition_level_v2 <= transition_level_v1;
-        transition_active_v1 <= transition_active_sd;
-        transition_active_v2 <= transition_active_v1;
-    end
-end
 subtitle_frame_commit u_subtitle_commit(
  .src_clk(sd_card_clk),.src_rst(rst_sd),.src_text(sub_text_src),
  .src_length(sub_length_src),.src_enable(sub_enable_src),
@@ -258,7 +241,7 @@ sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4), .USE_FRAME_RESULT(1)
+    .SCAN_TARGET_COUNT (3'd4), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE)
 ) sd_card_bmp_m0(
     .clk               (sd_card_clk),
     .rst               (rst_sd),
@@ -284,9 +267,9 @@ sd_card_bmp #(
     .reader_error(frame_reader_error), .reader_underflow(frame_underflow),
     .write_finish_toggle(frame_write_toggle_mem),
     .display_commit_request(display_commit_request),
-    .transition_frame_toggle(transition_frame_toggle),
-    .transition_active(transition_active_sd),
-    .transition_level(transition_level_sd),
+    .transition_pix_clk(video_clk), .transition_pix_rst(rst_video),
+    .transition_frame_start(sub_frame_start), .transition_commit_done(audio_update),
+    .transition_active(transition_active), .transition_level(transition_level),
     .display_commit_ack(display_commit_ack),
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
@@ -347,9 +330,7 @@ video_delay video_delay_m0(
 assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
 video_transition_pixels u_video_transition_pixels(
-    .clk(video_clk), .rst(rst_video), .frame_start(sub_frame_start),
-    .active(transition_active_v2), .level(transition_level_v2),
-    .rgb_in(vout_data), .rgb_out(transition_rgb)
+    .level(transition_level), .rgb_in(vout_data), .rgb_out(transition_rgb)
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.

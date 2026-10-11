@@ -15,7 +15,7 @@ try {
  if($LASTEXITCODE){throw 'Wrapper compile failed'}
  $names=@('sd_card_bmp','media_frame_cache_control','media_frame_load_control','media_frame_loader','media_frame_reader','frame_fifo_read','frame_fifo_write','media_player_control','media_display_control','mode_key_control','key_press_debounce','fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','sd_sector_adapter','bmp_header_check','bmp24_decoder','color_bar','video_timing_data','video_delay')
  $rtl=$names | ForEach-Object {"../user_source/hdl_source/SD/$_.v"}
- & "$sim/vlog.exe" -sv -work $lib @rtl ../user_source/hdl_source/IP/afifo_16_32_256.v ../user_source/hdl_source/IP/afifo_32_16_256.v ../user_source/hdl_source/audio/media_commit_cdc.v ../user_source/hdl_source/audio/pcm_media_tone.v ../diagnostics/single_pll/sdram_bl4_model.sv ../diagnostics/four_bank/tb_cache_system.sv *> "$out/compile.log"
+ & "$sim/vlog.exe" -sv -work $lib @rtl ../user_source/hdl_source/video_transition_sd_control.v ../user_source/hdl_source/IP/afifo_16_32_256.v ../user_source/hdl_source/IP/afifo_32_16_256.v ../user_source/hdl_source/audio/media_commit_cdc.v ../user_source/hdl_source/audio/pcm_media_tone.v ../diagnostics/single_pll/sdram_bl4_model.sv ../diagnostics/four_bank/tb_cache_system.sv *> "$out/compile.log"
  if($LASTEXITCODE){throw "Compile failed: $out/compile.log"}
  & "$sim/vsim.exe" -c -quiet -lib $lib tb_cache_system -l "$out/system.log" -do 'run -all; quit -f' *> "$out/console.log"
  $rc=$LASTEXITCODE;$log=Get-Content "$out/system.log" -Raw

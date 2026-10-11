@@ -2,7 +2,11 @@
 // SDRAM pixel scoreboard remain unchanged; observe the added production path.
 wire osd_auto;
 wire [7:0] osd_error;
+`ifdef TRANSITION_S1
+wire [23:0] osd_base = transition_rgb;
+`else
 wire [23:0] osd_base = display_valid ? rgb : 24'd0;
+`endif
 wire [23:0] osd_pixels;
 wire status_active;
 osd_status_cdc status_crossing(.src_clk(src_clk),.src_rst(rst),
