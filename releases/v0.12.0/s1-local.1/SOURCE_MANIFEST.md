@@ -1,0 +1,83 @@
+Baseline: v0.11.0 / ff1c138
+Build: diagnostics\output\pcm_s1_attempt2
+Compared 84 project/source inputs byte for byte.
+Changed production files:
+TD_project/demo.al
+user_source/hdl_source/SD/fat32_bmp_reader.v
+user_source/hdl_source/SD/sd_sector_service.v
+
+Files and sizes:
+changes/TD_project/demo.al 31522
+changes/user_source/hdl_source/SD/fat32_bmp_reader.v 9692
+changes/user_source/hdl_source/SD/sd_sector_service.v 3793
+demo.bit 629624
+reports/audit.timing 1600297
+reports/check_timing.txt 41933
+reports/demo_phy.area 25731
+reports/final_timing.rpt 1600297
+reports/td_20261011_184539.logw 1299
+simulation/pcm_s1_reader2/reader0_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader10_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader11_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader12_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader13_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader14_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader15_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader16_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader17_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader18_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader19_gap2_mode0.log 1344
+simulation/pcm_s1_reader2/reader1_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader20_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader21_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader22_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader23_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader24_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader25_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader26_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader27_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader28_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader29_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader2_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader30_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader31_gap2_mode0.log 1347
+simulation/pcm_s1_reader2/reader32_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader33_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader34_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader35_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader36_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader37_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader38_gap2_mode0.log 1346
+simulation/pcm_s1_reader2/reader39_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader3_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader40_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader41_gap2_mode0.log 1348
+simulation/pcm_s1_reader2/reader4_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader5_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader6_gap2_mode0.log 1345
+simulation/pcm_s1_reader2/reader7_gap2_mode0.log 1343
+simulation/pcm_s1_reader2/reader8_gap2_mode0.log 1343
+simulation/pcm_s1_reader2/reader9_gap2_mode0.log 1345
+simulation/pcm_s1_regression1/tb_dual_key_event_router.log 1302
+simulation/pcm_s1_regression1/tb_flash_reset.log 1366
+simulation/pcm_s1_regression1/tb_frame_cache_control.log 2283
+simulation/pcm_s1_regression1/tb_hdmi_packets.log 1402
+simulation/pcm_s1_regression1/tb_hdmi_primitives.log 1353
+simulation/pcm_s1_regression1/tb_hdmi_s6_phy.log 1435
+simulation/pcm_s1_regression1/tb_key_gesture_control.log 1568
+simulation/pcm_s1_regression1/tb_media_commit_cdc.log 1309
+simulation/pcm_s1_regression1/tb_media_display_control.log 1335
+simulation/pcm_s1_regression1/tb_media_player_control.log 1330
+simulation/pcm_s1_regression1/tb_mode_key_control.log 1274
+simulation/pcm_s1_regression1/tb_pcm_media_tone.log 1353
+simulation/pcm_s1_regression1/tb_pcm_test_tone.log 1502
+simulation/pcm_s1_regression1/tb_rescan_key.log 1269
+simulation/pcm_s1_regression1/tb_sd_initialization.log 1313
+simulation/pcm_s1_regression1/tb_sd_protocol.log 1341
+simulation/pcm_s1_regression1/tb_sd_spi_pins.log 3158
+simulation/pcm_s1_regression1/tb_startup.log 1302
+simulation/pcm_s1_regression1/tb_switch_mode_panel.log 1365
+simulation/pcm_s1_regression1/tb_uart_event_logger.log 1369
+simulation/pcm_s1_regression1/tb_video_alignment.log 1544
+simulation/pcm_s1_service3/service.log 1274
+simulation/pcm_s1_system1/system.log 5419
