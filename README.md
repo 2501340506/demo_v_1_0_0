@@ -1,4 +1,12 @@
-# 当前开发：v0.12.0 S3 功能通过，进入 S4
+# 当前正式版：v0.12.0
+
+TF 卡 PCM 循环背景音乐和 SD 初始化超时恢复已验收：功能正常、连续运行 20 分钟、Flash 烧录及完全断电冷启动通过。正式版复用 S3 local.2 原 bit，未重建。
+
+[正式版与下载](releases/v0.12.0/README.md) · [最终验证](releases/v0.12.0/FINAL_VALIDATION.md) · [历史归档](docs/history/2026-10-11/pcm-background-audio/README.md)。将固定格式的 BGM.PCM 放入 FAT32 根目录即可自动循环播放；无音乐时保留原琶音及提示音。
+
+## 历史记录
+
+# v0.12.0 S3 功能通过，进入 S4
 
 用户已确认 local.2 功能通过，记录 `v0.12.0-s3-board.2`；随后确认运行 20 分钟、功能正常。S4 复用同一候选，待确认 Flash 与完全断电冷启动；见 [S4 最终验收](releases/v0.12.0/S4_VALIDATION.md)。本轮未改生产源码或重新构建，尚未正式发布。
 

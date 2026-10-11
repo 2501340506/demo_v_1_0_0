@@ -1,5 +1,7 @@
 # v0.12.0 TF 卡 PCM 背景音乐分阶段修改计划
 
+结项：S0～S4 已完成，用户确认 local.2 功能、运行 20 分钟、Flash 与完全断电冷启动通过。正式版复用该 bit，不重建；最终证据见 releases/v0.12.0/FINAL_VALIDATION.md，归档见 docs/history/2026-10-11/pcm-background-audio。以下保留阶段历史。
+
 当前阶段：用户确认 S3 local.2 功能通过，建立 board.2，进入 S4。复用原候选，未改生产源码/工程或重建 bit；最终持续播放、Flash、完全断电冷启动按 releases/v0.12.0/S4_VALIDATION.md 记录实际反馈，通过后再发布和合并。
 
 最新进度（2026-10-11）：local.1 用户确认功能正常、连续播放 20 分钟及 Flash 烧录通过。针对重复 KEY3 后偶发 2000ms 初始化失败，准备 S3 local.2：每轮超时后完整重启 SD 协议、最多三次恢复，正常 ACMD41 轮询保留。5 项 SD 专项、21 项回归和 9,279 个 PCM 样本比较通过。local.2 需重新完成 KEY3、持续播放、Flash 和完全断电冷启动验收；尚未进入正式发布，不沿用 local.1 板测结果。
