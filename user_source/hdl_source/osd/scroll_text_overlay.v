@@ -20,7 +20,7 @@ module scroll_text_overlay #(
     input [3:0] runtime_length,
     input runtime_enable, runtime_text_changed
 );
-    localparam integer MIXED_LEN = 15;
+    localparam integer MIXED_LEN = 12;
     localparam integer MAX_WIDTH = (RUNTIME_ENABLE ? 15 : (CN_ENABLE ? MIXED_LEN : TEXT_LEN)) * 16;
     wire [10:0] text_width = RUNTIME_ENABLE ? {3'b0,runtime_length,4'b0} : MAX_WIDTH;
     wire subtitle_enabled = RUNTIME_ENABLE ? runtime_enable : 1'b1;
@@ -64,14 +64,12 @@ module scroll_text_overlay #(
     function [7:0] mixed_char;
         input integer index;
         begin
-            // Nine course glyphs followed by an ASCII suffix: a compact
-            // mixed Chinese/English slogan without a runtime text bus.
+            // Chinese slogan followed by the existing ASCII suffix.
             case (index)
-                0: mixed_char=8'h80; 1: mixed_char=8'h81; 2: mixed_char=8'h82;
-                3: mixed_char=8'h83; 4: mixed_char=8'h84; 5: mixed_char=8'h85;
-                6: mixed_char=8'h86; 7: mixed_char=8'h87; 8: mixed_char=8'h88;
-                9: mixed_char=" "; 10: mixed_char="F"; 11: mixed_char="P";
-                12: mixed_char="G"; 13: mixed_char="A"; 14: mixed_char=" ";
+                0: mixed_char=8'h89; 1: mixed_char=8'h83; 2: mixed_char=8'h8a;
+                3: mixed_char=8'h8b; 4: mixed_char=8'h8b; 5: mixed_char=8'h8c;
+                6: mixed_char=" "; 7: mixed_char="F"; 8: mixed_char="P";
+                9: mixed_char="G"; 10: mixed_char="A"; 11: mixed_char=" ";
                 default: mixed_char=" ";
             endcase
         end

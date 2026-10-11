@@ -29,7 +29,7 @@ initial begin
  wait(!rst);wait(osd_frames>=4);sub_send("SUB=AB\n");
  wait(runtime_length==2 && runtime_text[15:0]==16'h4241);sub_stages=1;
  wait(osd_frames>=12);sub_send("SUB=OFF\n");wait(!runtime_enable);sub_stages=2;
- wait(osd_frames>=16);sub_send("SUB=CN\n");wait(runtime_length==9);sub_stages=3;
+ wait(osd_frames>=16);sub_send("SUB=CN\n");wait(runtime_length==6);sub_stages=3;
  sub_send("SUB=ON\n");wait(runtime_enable);sub_stages=4;
 end
 reg [124:0] subtitle_previous;

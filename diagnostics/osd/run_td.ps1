@@ -1,4 +1,5 @@
-param([string]$BuildName='osd_s1_attempt1')
+param([string]$BuildName='osd_s1_attempt1',
+ [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization='high')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$BuildName"
@@ -7,7 +8,7 @@ New-Item -ItemType Directory -Path "$out/TD_project","$out/diagnostics" -Force |
 Copy-Item "$root/user_source" "$out/user_source" -Recurse
 Copy-Item "$root/TD_project/demo.al" "$out/TD_project/demo.al"
 Copy-Item "$root/diagnostics/run_td_build.ps1" "$out/diagnostics/run_td_build.ps1"
-& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization high
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -HighFanoutOptimization -TimingOptimization ultra -PostPlaceOptimization $PostPlaceOptimization
 if($LASTEXITCODE){throw 'TD build failed'}
 $physicalLog=Get-Content "$out/TD_project/demo_Runs/phy_1/build_$BuildName.log" -Raw
 if($physicalLog -match 'No (pins|cells|ports|clocks) matched|CRITICAL-WARNING: Command set_.* fails'){

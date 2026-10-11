@@ -12,7 +12,7 @@ module subtitle_uart_controller(
     output wire reply_last,
     input reply_ready
 );
-    localparam [119:0] DEFAULT_TEXT=120'h204147504620888786858483828180;
+    localparam [119:0] DEFAULT_TEXT=120'h0000002041475046208c8b8b8a8389;
     reg [127:0] line;
     reg [4:0] length;
     reg bad_line, discard_lf;
@@ -34,13 +34,13 @@ module subtitle_uart_controller(
                 if(length==6 && line[47:32]==16'h4e4f) parsed_enable=1; // ON
                 else if(length==7 && line[55:32]==24'h46464f) parsed_enable=0;
                 else if(length==6 && line[47:32]==16'h4e43) begin
-                    parsed=120'h000000000000888786858483828180; parsed_length=9;
+                    parsed=120'h0000000000000000008c8b8b8a8389; parsed_length=6;
                 end else begin
                     parsed=0; parsed_length=length-4;
                     for(i=0;i<12;i=i+1) if(i<length-4) begin
                         c=line[(i+4)*8 +: 8];
                         if(c>="a" && c<="z") c=c-32;
-                        if(!((c>=32 && c<=126) || (c>=128 && c<=136))) good=0;
+                        if(!((c>=32 && c<=126) || (c>=128 && c<=140))) good=0;
                         parsed[i*8 +: 8]=c;
                     end
                 end
@@ -84,7 +84,7 @@ module subtitle_uart_controller(
     assign reply_last=index==last_index;
     always @(posedge clk or posedge rst) begin
         if(rst) begin
-            cfg_text<=DEFAULT_TEXT; cfg_length<=15; cfg_enable<=1; cfg_update_valid<=0;
+            cfg_text<=DEFAULT_TEXT; cfg_length<=12; cfg_enable<=1; cfg_update_valid<=0;
             line<=0; length<=0; bad_line<=0; discard_lf<=0;
             active<=0; pending<=0; kind<=0; pending_kind<=0;
             snapshot<=0; pending_snapshot<=0; index<=0;
