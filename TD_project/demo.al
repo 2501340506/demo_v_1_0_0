@@ -433,7 +433,7 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="70"/>
+                    <Attr Name="CompileOrder" Val="200"/>
                 </FileInfo>
             </File>
             <File Path="../user_source/hdl_source/audio/pcm_stream_player.v">
@@ -441,7 +441,7 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="71"/>
+                    <Attr Name="CompileOrder" Val="201"/>
                 </FileInfo>
             </File>
             <File Path="../user_source/hdl_source/audio/audio_source_mux.v">
@@ -449,7 +449,7 @@
                     <Attr Name="UsedInSyn" Val="true"/>
                     <Attr Name="UsedInP&R" Val="true"/>
                     <Attr Name="BelongTo" Val="design_1"/>
-                    <Attr Name="CompileOrder" Val="72"/>
+                    <Attr Name="CompileOrder" Val="202"/>
                 </FileInfo>
             </File>
             <File Path="../user_source/hdl_source/audio/pcm_media_tone.v">
