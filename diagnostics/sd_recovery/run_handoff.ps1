@@ -11,7 +11,7 @@ try {
     }
     # Separate library: this bench supplies behavioral SD and vendor FIFO models.
     $rtl = @('media_display_control','media_player_control','media_policy',
-        'key_gesture_control', 'key_press_debounce', 'mode_key_control','dual_key_event_router','sd_sector_adapter','sd_card_bmp',
+        'key_gesture_control', 'key_press_debounce', 'mode_key_control','dual_key_event_router','sd_sector_adapter','sd_sector_service','sd_card_bmp',
         'frame_fifo_read','frame_fifo_write','frame_read_write','bmp_header_check','fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','bmp24_decoder','bmp_read') |
         ForEach-Object { "user_source/hdl_source/SD/$_.v" }
     & "$simTools/vlog.exe" -work $simLib -sv @rtl diagnostics/sd_recovery/tb_rescan_handoff.sv

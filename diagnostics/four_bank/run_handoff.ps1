@@ -11,7 +11,7 @@ try{
  foreach($test in @('tb_pixel_handoff','tb_rescan_handoff')){
   $lib=(Join-Path $out $test).Replace('\','/')
   if(!(Test-Path "$lib/_info")){& "$sim/vlib.exe" $lib;if($LASTEXITCODE){throw 'vlib failed'}}
-  $rtl=@('media_frame_loader','media_frame_reader','media_display_control','media_player_control','media_policy','key_gesture_control','key_press_debounce','mode_key_control','dual_key_event_router','sd_sector_adapter','sd_card_bmp','frame_fifo_read','frame_fifo_write','bmp_header_check','fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','bmp24_decoder','bmp_read') | ForEach-Object {"user_source/hdl_source/SD/$_.v"}
+  $rtl=@('media_frame_loader','media_frame_reader','media_display_control','media_player_control','media_policy','key_gesture_control','key_press_debounce','mode_key_control','dual_key_event_router','sd_sector_adapter','sd_sector_service','sd_card_bmp','frame_fifo_read','frame_fifo_write','bmp_header_check','fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','bmp24_decoder','bmp_read') | ForEach-Object {"user_source/hdl_source/SD/$_.v"}
   & "$sim/vlog.exe" -sv -work $lib @rtl diagnostics/four_bank/frame_split_test_adapter.sv "$out/$test.sv" *> "$out/${test}_compile.log"
   if($LASTEXITCODE){throw "Compile failed: $test"}
   foreach($scenario in @(@(17,2),@(19,16),@(23,64))){

@@ -9,7 +9,7 @@ try {
     & python diagnostics/fat32/generate_core_fixtures.py "$out/fixtures"
     if($LASTEXITCODE){throw 'fixture generation failed'}
     if(!(Test-Path "$lib/_info")){& "$sim/vlib.exe" $lib}
-    $rtl=@('fat32_bmp_reader','sd_sector_adapter','fat32_volume_scanner','fat32_file_streamer','bmp_header_check','bmp24_decoder') | ForEach-Object { "user_source/hdl_source/SD/$_.v" }
+    $rtl=@('fat32_bmp_reader','sd_sector_adapter','sd_sector_service','fat32_volume_scanner','fat32_file_streamer','bmp_header_check','bmp24_decoder') | ForEach-Object { "user_source/hdl_source/SD/$_.v" }
     & "$sim/vlog.exe" -sv -work $lib -l "$out/compile.log" @rtl diagnostics/fat32/tb_fat32_reader.sv
     if($LASTEXITCODE){throw 'core compilation failed'}
     $manifest=Get-Content "$out/fixtures/manifest.json" -Raw | ConvertFrom-Json

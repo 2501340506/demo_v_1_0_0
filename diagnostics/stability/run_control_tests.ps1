@@ -12,7 +12,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'vlib failed' }
     }
     $rtl = @('media_display_control', 'media_player_control', 'media_policy',
-        'dual_key_event_router', 'key_gesture_control', 'key_press_debounce', 'mode_key_control', 'sd_sector_adapter','sd_card_bmp', 'bmp_header_check', 'fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','bmp24_decoder', 'bmp_read',
+        'dual_key_event_router', 'key_gesture_control', 'key_press_debounce', 'mode_key_control', 'sd_sector_adapter','sd_sector_service','sd_card_bmp', 'bmp_header_check', 'fat32_bmp_reader','fat32_volume_scanner','fat32_file_streamer','bmp24_decoder', 'bmp_read',
         'sd_card_top', 'sd_card_sec_read_write', 'sd_card_cmd', 'spi_master') |
         ForEach-Object { "user_source/hdl_source/SD/$_.v" }
     $rtl += @('user_source/hdl_source/audio/media_commit_cdc.v','user_source/hdl_source/audio/pcm_media_tone.v')
