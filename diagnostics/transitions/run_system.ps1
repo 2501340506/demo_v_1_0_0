@@ -1,4 +1,4 @@
-param([string]$RunName='v011_s1_system1')
+param([string]$RunName='transition_s2_full1')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$RunName"
@@ -19,7 +19,7 @@ try {
  if($LASTEXITCODE){throw "Compile failed: $out/compile.log"}
  & "$sim/vsim.exe" -c -quiet -lib $lib tb_cache_system -l "$out/system.log" -do 'run -all; quit -f' *> "$out/console.log"
  $rc=$LASTEXITCODE;$log=Get-Content "$out/system.log" -Raw
- if($log -notmatch 'PASS transition system:'){throw 'Missing transition observations'}
+ if($log -notmatch 'PASS S2 origin:' -or $log -notmatch 'PASS transition system:'){throw 'Missing transition observations'}
  if($log -notmatch 'Timestamp system observations:' -or $log -notmatch 'UART system observations: 4 serial command stages'){throw 'Missing integrated OSD observations'}
  if($rc -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS cache system:' -or $log -notmatch 'Errors: 0,'){throw "Cache system failed: $out/system.log"}
  $unexpected=@($log -split "`n" | Where-Object {$_ -match '\*\* Warning:' -and $_ -notmatch 'vopt-(2685|2718|2121)'})

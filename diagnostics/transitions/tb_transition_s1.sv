@@ -2,17 +2,18 @@
 module tb_transition_s1;
  reg clk=0,pix_clk=0,rst=1,pix_rst=1,display_request=0,display_valid=1;
  reg frame_start=0,commit_done=0;
- wire transition_busy,transition_active,permit_commit;
+ wire transition_busy,transition_active,permit_commit, wipe_active;
+ reg request_wipe=0;
  wire [4:0] transition_level; reg [23:0] rgb_in;wire [23:0] rgb_out;
  always #5 clk=~clk;
  always #20 pix_clk=~pix_clk;
  video_transition_sd_control dut(.*);
- video_transition_pixels pixel(.level(transition_level),.rgb_in(rgb_in),.rgb_out(rgb_out));
+ video_transition_pixels pixel(.wipe_active(wipe_active),.de(1'b1),.pixel_x(10'd0),.level(transition_level),.rgb_in(rgb_in),.rgb_out(rgb_out));
  wire off_busy,off_active,off_permit;wire [4:0] off_level;
  video_transition_sd_control #(.ENABLE(0)) bypass(.clk(clk),.rst(rst),
- .pix_clk(pix_clk),.pix_rst(pix_rst),.display_request(display_request),.display_valid(display_valid),
+ .pix_clk(pix_clk),.pix_rst(pix_rst),.display_request(display_request),.display_valid(display_valid),.request_wipe(request_wipe),
  .frame_start(frame_start),.commit_done(commit_done),.transition_busy(off_busy),
- .transition_active(off_active),.transition_level(off_level),.permit_commit(off_permit));
+ .transition_active(off_active),.wipe_active(),.transition_level(off_level),.permit_commit(off_permit));
  integer checked=0;
  task check_pixels(input integer level);
  integer c;reg [23:0] expected;

@@ -20,7 +20,7 @@ module tb_transition_player;
  reg [4:0] frame_div=0;wire frame_start=frame_div==15;
  always @(posedge pix_clk) if(rst)frame_div<=0;else frame_div<=frame_div==15?0:frame_div+1;
  video_transition_sd_control fade(.clk(clk),.rst(rst),.pix_clk(pix_clk),.pix_rst(rst),
- .display_request(display_request),.display_valid(1'b1),.frame_start(frame_start),.commit_done(commit_done),
+ .display_request(display_request),.request_wipe(1'b0),.wipe_active(),.display_valid(1'b1),.frame_start(frame_start),.commit_done(commit_done),
  .transition_busy(transition_busy),.transition_active(transition_active),.transition_level(transition_level),.permit_commit(permit_commit));
  integer accepted=0,commits=0;reg [1:0] targets[0:15];
  always @(posedge clk) if(!rst && request_accept) begin

@@ -46,6 +46,7 @@ module sd_card_bmp #(
     output reg [1:0]            disp_buf_idx,
     output                      transition_active,
     output [4:0]                transition_level,
+    output                      transition_wipe,
 
     output                      write_req,
     input                       write_req_ack,
@@ -159,15 +160,16 @@ media_frame_load_control #(.USE_FRAME_RESULT(USE_FRAME_RESULT)) u_load_control(
 
 wire cache_display_request,cache_display_ack;
 wire transition_permit, transition_busy;
+reg transition_auto;
 wire [1:0] cache_display_image,cache_display_bank;
 wire transition_needed=TRANSITION_ENABLE && first_image_committed &&
                        display_valid && cache_display_bank!=current_bank;
 video_transition_sd_control #(.ENABLE(TRANSITION_ENABLE)) u_transition_sd_control(
- .clk(clk),.rst(rst),.display_request(cache_display_request),.display_valid(transition_needed),
+ .clk(clk),.rst(rst),.display_request(cache_display_request),.display_valid(transition_needed),.request_wipe(transition_auto),
  .pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
  .frame_start(transition_frame_start),.commit_done(transition_commit_done),
  .transition_busy(transition_busy),.transition_active(transition_active),
- .transition_level(transition_level),.permit_commit(transition_permit));
+ .transition_level(transition_level),.permit_commit(transition_permit),.wipe_active(transition_wipe));
 reg rescan_pending;
 wire rescan_wait=TRANSITION_ENABLE && (rescan_pending || rescan_raw);
 assign rescan_event=TRANSITION_ENABLE ? (rescan_pending && !transition_busy) : rescan_raw;
@@ -197,6 +199,12 @@ wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || rescan_wait;
 wire ctrl_offer=ctrl_load_request && !transition_block;
 assign ctrl_request_accept=ctrl_offer && ctrl_request_ready;
+// Capture origin at acceptance, not when queued keys or AUTO state later change.
+always @(posedge clk or posedge rst) begin
+ if(rst) transition_auto<=0;
+ else if(rescan_event) transition_auto<=0;
+ else if(ctrl_request_accept) transition_auto<=ctrl_auto_load_request;
+end
 media_frame_cache_control u_cache_control(
  .clk(clk),.rst(rst),.rescan_event(rescan_event),
  .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),

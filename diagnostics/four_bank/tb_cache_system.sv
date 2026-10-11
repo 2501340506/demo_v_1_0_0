@@ -62,14 +62,14 @@ module tb_cache_system;
 `else
  localparam TRANSITION_TEST=0;
 `endif
- wire transition_active;wire [4:0] transition_level;
+ wire transition_active,transition_wipe;wire [4:0] transition_level;
  reg transition_vs_q=1;
  wire transition_frame_start=transition_vs_q && !vs;
  always @(posedge pix_clk) if(rst) transition_vs_q<=1;else transition_vs_q<=vs;
  sd_card_bmp #(.TRANSITION_ENABLE(TRANSITION_TEST),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
   .transition_pix_clk(pix_clk),.transition_pix_rst(rst),
   .transition_frame_start(transition_frame_start),.transition_commit_done(media_update),
-  .transition_active(transition_active),.transition_level(transition_level),
+  .transition_active(transition_active),.transition_level(transition_level),.transition_wipe(transition_wipe),
   .clk(src_clk),.rst(rst),.sdram_ready(init_done),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
   .state_code(state_code),.sd_debug(),.diagnostics(diagnostics),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),
   .bmp_width(16'd640),.bmp_height(16'd480),.display_valid(display_valid),

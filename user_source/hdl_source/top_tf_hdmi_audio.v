@@ -108,7 +108,7 @@ reg         frame_write_toggle_mem;
 wire [1:0]  write_buf_idx;
 wire [1:0]  disp_buf_idx;
 wire        display_commit_request, display_commit_ack;
-wire transition_active;
+wire transition_active,transition_wipe;
 wire [4:0] transition_level;
 
 wire App_rd_en;
@@ -270,6 +270,7 @@ sd_card_bmp #(
     .transition_pix_clk(video_clk), .transition_pix_rst(rst_video),
     .transition_frame_start(sub_frame_start), .transition_commit_done(audio_update),
     .transition_active(transition_active), .transition_level(transition_level),
+    .transition_wipe(transition_wipe),
     .display_commit_ack(display_commit_ack),
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
@@ -330,7 +331,7 @@ video_delay video_delay_m0(
 assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
 video_transition_pixels u_video_transition_pixels(
-    .level(transition_level), .rgb_in(vout_data), .rgb_out(transition_rgb)
+    .level(transition_level), .wipe_active(transition_wipe), .de(de), .pixel_x(video_x), .rgb_in(vout_data), .rgb_out(transition_rgb)
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.
