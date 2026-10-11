@@ -1,9 +1,9 @@
-# 当前交接：v0.12.0 S1 local.1 待上板（2026-10-11）
+# 当前交接：v0.12.0 S1 board.1 通过，进入 S2（2026-10-11）
 
 - 当前任务：按已批准计划完成 S0/S1，本轮到 S1 本地候选，上板确认后才进入 S2。
 - 已完成：S0 标签 v0.12.0-plan.1；生产提交 94dfc50，测试提交 fce2c69。service3 专项、reader2 的 42 个 FAT32 用例、regression1 的 21 项回归通过。
-- 卡住的问题：无本地阻塞；用户尚未上板。attempt1 Setup -0.212ns / Hold +0.057ns，不交付。attempt2 仅改 TimingOptimization=high，RTL/约束不变，Setup +0.101ns / Hold +0.021ns，覆盖率 99.96%。
-- 下一步计划：使用 releases/v0.12.0/s1-local.1/demo.bit 上板，按 S1_BOARD_DRAFT.md 反馈实际图片、切图、重扫、字幕、计时和音频结果；确认前不进入 S2。回退 releases/v0.11.0/demo.bit。
+- 卡住的问题：无。用户确认 S1 候选功能均正常；未补造测试次数或时长，Flash/完全断电项目仍未声明通过。
+- 下一步计划：实现并验证 S2 PCM 转换工具、BGM 文件发现接口、独立流式播放器和音源选择；生产入口保持关闭，完成后再规划 S3。
 - 踩过的坑：课程缓冲限流和 CDC 不可直接复制；当前 PCM 源被取消选择仍产样本；四图齐全提前结束扫描会漏音频。保留用户字幕、两个既有 worktree、best_result 和旧 bit，不删除文件。
 
 计划：docs/WAV音频播放分阶段修改计划.md。总回退：releases/v0.11.0/demo.bit。
