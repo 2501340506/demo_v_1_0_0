@@ -3,6 +3,7 @@ module sd_card_sec_read_write
 #(
 	parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer INIT_TIMEOUT_MS = 2000,
+    parameter integer INIT_RETRIES = 3,
 	parameter  SPI_LOW_SPEED_DIV = 248,         // spi clk speed = clk speed /((SPI_LOW_SPEED_DIV + 2) * 2 )
 	parameter  SPI_HIGH_SPEED_DIV = 1           // 100 MHz / (2*(1+2)) = 16.667 MHz; 30 ns return budget
 )
@@ -11,6 +12,7 @@ module sd_card_sec_read_write
 	input            rst,
 	output reg       sd_init_done,
     output reg sd_init_failed,
+    output wire sd_init_recovery,
     output reg sd_sec_read_failed,
 	input            sd_sec_read,
 	input[31:0]      sd_sec_read_addr,
@@ -42,6 +44,8 @@ module sd_card_sec_read_write
 );
 reg[7:0] read_data;
 reg[31:0] timer;
+reg[2:0] init_retry;
+reg[15:0] recover_count;
 localparam integer INIT_CYCLES = (CLK_FREQ_HZ / 1000) * INIT_TIMEOUT_MS;
 
 localparam S_IDLE               = 0;
@@ -59,8 +63,10 @@ localparam S_READ_END           = 16;
 localparam S_WAIT_READ_WRITE    = 17;
 localparam S_CMD16              = 18;
 localparam S_CMD59              = 19;
+localparam S_RECOVER            = 20;
 
 reg[4:0]                       state;
+assign sd_init_recovery = (state == S_RECOVER);
 reg[31:0]                      sec_addr;
 assign sd_sec_read_data_valid = (state == S_READ) && block_read_valid;
 assign sd_sec_read_data = block_read_data;
@@ -83,15 +89,26 @@ begin
 		block_read_req <= 1'b0;
 		sec_addr <= 32'd0;
 		sd_init_done <= 1'b0;
-        timer <= 0; sd_init_failed <= 0; sd_sec_read_failed <= 0;
+        timer <= 0; init_retry <= 0; recover_count <= 0; sd_init_failed <= 0; sd_sec_read_failed <= 0;
 	end
 	else begin
         sd_sec_read_failed <= 0;
         if (!sd_init_done && state != S_ERR) timer <= timer + 1'b1;
-        if (!sd_init_done && state != S_ERR && timer >= INIT_CYCLES - 1) begin
-            state <= S_ERR; sd_init_failed <= 1;
-            cmd_req <= 0; block_read_req <= 0;
+        if (!sd_init_done && state != S_ERR && state != S_RECOVER && timer >= INIT_CYCLES - 1) begin
+            if (init_retry < INIT_RETRIES) begin
+                state <= S_RECOVER; recover_count <= 0; init_retry <= init_retry + 1'b1;
+                cmd_req <= 0; block_read_req <= 0; timer <= 0;
+            end else begin
+                state <= S_ERR; sd_init_failed <= 1;
+                cmd_req <= 0; block_read_req <= 0;
+            end
         end else case(state)
+            S_RECOVER:
+            begin
+                cmd_req <= 1'b0; block_read_req <= 1'b0; sd_init_done <= 1'b0;
+                if (recover_count >= 16'd1023) begin recover_count <= 0; timer <= 0; state <= S_IDLE; end
+                else recover_count <= recover_count + 1'b1;
+            end
 			S_IDLE:
 			begin
 				state <= S_CMD0;
@@ -105,6 +122,7 @@ begin
 					state <= S_CMD8;
 					cmd_req <= 1'b0;
 				end
+                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -120,6 +138,7 @@ begin
 					state <= S_CMD55;
 					cmd_req <= 1'b0;
 				end
+                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -135,6 +154,7 @@ begin
 					state <= S_CMD41;
 					cmd_req <= 1'b0;
 				end
+                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else
 				begin
 					cmd_req <= 1'b1;
@@ -150,6 +170,7 @@ begin
 					state <= S_CMD16;
 					cmd_req <= 1'b0;
 				end
+                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else if(cmd_req_ack)
 				begin
 					state <= S_CMD55;
@@ -169,6 +190,7 @@ begin
 					state <= S_CMD59;
 					cmd_req <= 1'b0;
 				end
+                else if (cmd_req_ack && cmd_req_error) begin state <= S_RECOVER; cmd_req <= 1'b0; recover_count <= 0; init_retry <= init_retry + 1'b1; end
 				else if(cmd_req_ack)
 				begin
 					state <= S_CMD55;
@@ -192,6 +214,7 @@ begin
                     end else begin
                         state <= S_WAIT_READ_WRITE;
                         sd_init_done <= 1;
+                        init_retry <= 0;
                         spi_clk_div <= SPI_HIGH_SPEED_DIV[15:0];
                     end
                 end else begin

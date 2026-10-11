@@ -3,6 +3,7 @@ module sd_card_top
 #(
 	parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer INIT_TIMEOUT_MS = 2000,
+    parameter integer INIT_RETRIES = 3,
     parameter integer RESPONSE_TIMEOUT_MS = 100,
     parameter integer TOKEN_TIMEOUT_MS = 250,
 	parameter  SPI_LOW_SPEED_DIV = 248,         // SD card low speed mode frequency division parameter,spi clk speed = clk speed /((SPI_LOW_SPEED_DIV + 2) * 2 )
@@ -30,7 +31,8 @@ module sd_card_top
 	output           sd_sec_write_end           //SD card sector write end
 );
 wire block_read_error;
-wire protocol_rst = rst || sd_init_failed;
+wire sd_init_recovery;
+wire protocol_rst = rst || sd_init_failed || sd_init_recovery;
 wire[15:0]           spi_clk_div;               //SPI module clock division parameter
 wire                 cmd_req;                   //SD card command request
 wire                 cmd_req_ack;               //SD card command request response
@@ -67,14 +69,14 @@ always @(posedge clk or posedge rst) begin
 end
 sd_card_sec_read_write
 #(
-	.CLK_FREQ_HZ(CLK_FREQ_HZ), .INIT_TIMEOUT_MS(INIT_TIMEOUT_MS),
+	.CLK_FREQ_HZ(CLK_FREQ_HZ), .INIT_TIMEOUT_MS(INIT_TIMEOUT_MS), .INIT_RETRIES(INIT_RETRIES),
 	.SPI_LOW_SPEED_DIV(SPI_LOW_SPEED_DIV),
 	.SPI_HIGH_SPEED_DIV(SPI_HIGH_SPEED_DIV)
 )
 sd_card_sec_read_write_m0(
 	.clk                            (clk                    ),
 	.rst                            (rst                    ),
-	.sd_init_failed(sd_init_failed), .sd_sec_read_failed(sd_sec_read_failed),
+	.sd_init_failed(sd_init_failed), .sd_init_recovery(sd_init_recovery), .sd_sec_read_failed(sd_sec_read_failed),
     .block_read_error(block_read_error),
 	.sd_init_done                   (sd_init_done           ),
 	.sd_sec_read                    (sd_sec_read            ),
