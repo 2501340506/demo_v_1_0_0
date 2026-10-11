@@ -11,3 +11,5 @@
 - TD 首轮 `subtitle_dandu_build1` 生成 bit，Setup −0.198 ns / Hold +0.040 ns，未通过时序。第二轮 `subtitle_dandu_build2` 提高布局优化为 ultra 后，TD 在布局阶段崩溃。当前无合格新 bit，上板未验证，详情见根目录 HANDOFF.md。
 
 历史 releases 文件保持原样，新显示内容须烧录本次重新生成的 bit 才会生效。
+
+最终交付 bit：diagnostics/output/subtitle_dandu_build4/subtitle_dandu.bit，TD Setup +0.119 ns、Hold +0.027 ns。
