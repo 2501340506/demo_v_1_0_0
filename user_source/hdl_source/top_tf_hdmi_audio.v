@@ -108,12 +108,11 @@ reg         frame_write_toggle_mem;
 wire [1:0]  write_buf_idx;
 wire [1:0]  disp_buf_idx;
 wire        display_commit_request, display_commit_ack;
+wire        transition_active_sd;
+wire [4:0]  transition_level_sd;
+reg  [4:0]  transition_level_v1, transition_level_v2;
+reg         transition_active_v1, transition_active_v2;
 reg         transition_frame_toggle;
-always @(posedge video_clk or posedge rst_video) begin
-    if (rst_video) transition_frame_toggle <= 1'b0;
-    else if (sub_frame_start) transition_frame_toggle <= ~transition_frame_toggle;
-end
-
 wire App_rd_en;
 wire [ADDR_BITS-1:0] App_rd_addr;
 wire Sdr_rd_en;
@@ -170,6 +169,21 @@ subtitle_uart_controller u_subtitle_control(
  .reply_data(sub_reply_data),.reply_last(sub_reply_last),.reply_ready(sub_reply_ready));
 osd_pixel_position u_subtitle_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
  .line_y(),.frame_start(sub_frame_start),.first_active());
+always @(posedge video_clk or posedge rst_video) begin
+    if (rst_video) transition_frame_toggle <= 1'b0;
+    else if (sub_frame_start) transition_frame_toggle <= ~transition_frame_toggle;
+end
+always @(posedge video_clk or posedge rst_video) begin
+    if (rst_video) begin
+        transition_level_v1 <= 5'd16; transition_level_v2 <= 5'd16;
+        transition_active_v1 <= 1'b0; transition_active_v2 <= 1'b0;
+    end else begin
+        transition_level_v1 <= transition_level_sd;
+        transition_level_v2 <= transition_level_v1;
+        transition_active_v1 <= transition_active_sd;
+        transition_active_v2 <= transition_active_v1;
+    end
+end
 subtitle_frame_commit u_subtitle_commit(
  .src_clk(sd_card_clk),.src_rst(rst_sd),.src_text(sub_text_src),
  .src_length(sub_length_src),.src_enable(sub_enable_src),
@@ -271,6 +285,8 @@ sd_card_bmp #(
     .write_finish_toggle(frame_write_toggle_mem),
     .display_commit_request(display_commit_request),
     .transition_frame_toggle(transition_frame_toggle),
+    .transition_active(transition_active_sd),
+    .transition_level(transition_level_sd),
     .display_commit_ack(display_commit_ack),
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
@@ -332,7 +348,8 @@ assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
 video_transition_pixels u_video_transition_pixels(
     .clk(video_clk), .rst(rst_video), .frame_start(sub_frame_start),
-    .active(1'b0), .level(5'd16), .rgb_in(vout_data), .rgb_out(transition_rgb)
+    .active(transition_active_v2), .level(transition_level_v2),
+    .rgb_in(vout_data), .rgb_out(transition_rgb)
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.

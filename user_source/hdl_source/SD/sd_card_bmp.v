@@ -42,6 +42,8 @@ module sd_card_bmp #(
     output reg                  display_commit_request,
     output     [1:0]            write_buf_idx,
     output reg [1:0]            disp_buf_idx,
+    output                      transition_active,
+    output [4:0]                transition_level,
 
     output                      write_req,
     input                       write_req_ack,
@@ -158,7 +160,8 @@ wire transition_permit, transition_busy;
 video_transition_sd_control u_transition_sd_control(
  .clk(clk),.rst(rst),.display_request(cache_display_request),.display_valid(display_valid),
  .frame_toggle(transition_frame_toggle),.display_ack(display_commit_ack),
- .transition_busy(transition_busy),.permit_commit(transition_permit));
+ .transition_busy(transition_busy),.transition_active(transition_active),
+ .transition_level(transition_level),.permit_commit(transition_permit));
 wire [1:0] cache_display_image,cache_display_bank;
 reg commit_pending;
 // The core holds its request until this adapter returns the actual reader ack.
