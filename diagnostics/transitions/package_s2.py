@@ -37,6 +37,7 @@ def copy(source,target):
     if source.read_bytes()!=target.read_bytes(): raise SystemExit(f'Copy differs: {target}')
 copy(phy/'demo.bit','demo.bit')
 for name in ('final_timing.rpt','demo_phy.area'): copy(phy/name,'reports/'+name)
+for p in phy.glob('*.logw'): copy(p,'reports/'+p.name)
 for name in ('check_timing.txt','audit.timing'): copy(build/'timing_audit'/name,'reports/'+name)
 for name in changed: copy(root/name,'changes/'+name)
 for run in runs:
