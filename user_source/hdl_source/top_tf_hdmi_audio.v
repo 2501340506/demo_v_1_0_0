@@ -237,12 +237,16 @@ always @(posedge ext_mem_clk or posedge rst_mem) begin
 end
 
 // ===================== TF 多图扫描与缓存（双缓冲） =====================
+wire bgm_valid,bgm_ready,bgm_active;
+wire signed [15:0] bgm_left,bgm_right;
 sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE)
+    .SCAN_TARGET_COUNT (3'd4), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE)
 ) sd_card_bmp_m0(
+    .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
+    .bgm_left(bgm_left),.bgm_right(bgm_right),
     .clk               (sd_card_clk),
     .rst               (rst_sd),
     .sdram_ready       (sdram_ready_sync[1]),
@@ -421,14 +425,21 @@ pcm_media_tone u_pcm_clock (
     .sample_valid(pcm_valid), .sample_ready(pcm_ready),
     .sample_left(pcm_left), .sample_right(pcm_right), .blip_active(), .overflow(pcm_overflow)
 );
+wire mixed_valid,mixed_ready;
+wire signed [15:0] mixed_left,mixed_right;
+audio_source_mux u_audio_source_mux(
+ .clk(video_clk),.rst_n(!rst_video),
+ .wav_valid(bgm_valid),.wav_ready(bgm_ready),.wav_left(bgm_left),.wav_right(bgm_right),.wav_active(bgm_active),
+ .arp_valid(pcm_valid),.arp_ready(pcm_ready),.arp_left(pcm_left),.arp_right(pcm_right),
+ .out_ready(mixed_ready),.out_valid(mixed_valid),.out_left(mixed_left),.out_right(mixed_right));
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
     .pixel_clk(video_clk), .pixel_rst_n(~rst_video),
     .video_hsync(hs), .video_vsync(vs), .video_de(de),
     .video_x(video_x), .video_rgb(band_rgb),
     .select_media(1'b1), .test_valid(1'b0), .test_ready(),
     .test_left(16'sd0), .test_right(16'sd0),
-    .media_valid(pcm_valid), .media_ready(pcm_ready),
-    .media_left(pcm_left), .media_right(pcm_right),
+    .media_valid(mixed_valid), .media_ready(mixed_ready),
+    .media_left(mixed_left), .media_right(mixed_right),
     .channel0_symbol(tmds_ch0_data), .channel1_symbol(tmds_ch1_data),
     .channel2_symbol(tmds_ch2_data), .sequence_error(hdmi_sequence_error),
     .pcm_tap_valid(), .pcm_tap_left(), .pcm_tap_right()

@@ -1,9 +1,14 @@
 // FAT32 scan/preflight/load coordinator. Sector ownership changes only at idle.
 module fat32_bmp_reader #(
  parameter integer CLK_FREQ_HZ=100000000, TIMEOUT_MS=500,
+ parameter integer SCAN_AUDIO=0,
  parameter integer MAX_VISITED_CLUSTERS=8192
 )(
  input clk,rst,sd_init_done,scan_start,load_start,load_cancel,
+ output audio_found,output [31:0] audio_cluster,audio_size,
+ output [7:0] audio_spc,output [31:0] audio_fat_lba,audio_data_lba,audio_max_cluster,
+ input a_req,input [31:0] a_lba,input a_urgent,a_cancel,
+ output a_busy,a_valid,a_done,output [7:0] a_error,a_byte,output [8:0] a_index,
  input [31:0] load_cluster,load_size,
  input [15:0] bmp_width,bmp_height,
  output ready, output reg scan_done,scan_error,scan_found_valid,
@@ -53,10 +58,13 @@ module fat32_bmp_reader #(
  assign write_req=(state==WRITE_WAIT && !load_cancel);
  wire pixel_valid;
  assign bmp_data_wr_en=pixel_valid && state==READ_FILE && decode_error==0 && stream_error==0 && !load_cancel;
- fat32_volume_scanner #(.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
+ assign audio_spc=spc;
+ assign audio_fat_lba=fat_lba;assign audio_data_lba=data_lba;assign audio_max_cluster=max_cluster;
+ assign a_byte=sector_byte;assign a_index=sector_index;
+ fat32_volume_scanner #(.SCAN_AUDIO(SCAN_AUDIO),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
  .clk(clk),.rst_n(!rst),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
- .resource_valid(mask),.audio_found(),.audio_cluster(),.audio_size(),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
+ .resource_valid(mask),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
  .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_owner && sector_valid),
  .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(scan_owner && sector_done),.sector_error(sector_error));
@@ -66,14 +74,13 @@ module fat32_bmp_reader #(
  .file_busy(stream_busy),.file_done(stream_done),.file_valid(stream_valid),.file_byte(stream_byte),.file_byte_offset(stream_offset),.fs_error(stream_error),
  .sector_req(file_req),.sector_lba(file_lba),.sector_busy(sector_busy),.sector_valid(file_owner && sector_valid),
  .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(file_owner && sector_done),.sector_error(sector_error));
- // S1 keeps the service at the existing reader boundary. Its second
- // mailbox is tied off until the independently tested audio path is added.
+ // Shared service retains per-client ownership through cancellation and drain.
  sd_sector_service #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(TIMEOUT_MS)) adapter(
  .clk(clk),.rst(rst),.p_req(scan_owner?scan_req:(file_owner?(file_req && request_allowed):header_go)),
  .p_lba(scan_owner?scan_lba:(file_owner?file_lba:header_lba)),.p_cancel(load_cancel),
  .p_busy(sector_busy),.p_accepted(),.p_valid(sector_valid),.p_done(sector_done),.p_error(sector_error),
- .a_req(1'b0),.a_lba(32'd0),.a_cancel(1'b0),.a_urgent(1'b0),.a_enable(1'b0),
- .a_busy(),.a_accepted(),.a_valid(),.a_done(),.a_error(),
+ .a_req(SCAN_AUDIO ? a_req : 1'b0),.a_lba(a_lba),.a_cancel(SCAN_AUDIO ? a_cancel : 1'b0),.a_urgent(a_urgent),.a_enable(SCAN_AUDIO!=0),
+ .a_busy(a_busy),.a_accepted(),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),
  .sector_byte(sector_byte),.sector_index(sector_index),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));

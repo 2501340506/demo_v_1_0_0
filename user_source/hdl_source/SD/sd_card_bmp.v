@@ -8,8 +8,12 @@ module sd_card_bmp #(
     parameter integer LOAD_TIMEOUT_MS    = 500,
     parameter integer DIAG_DISPLAY       = 0,
     parameter integer USE_FRAME_RESULT   = 0,
+    parameter integer AUDIO_ENABLE = 0,
     parameter integer TRANSITION_ENABLE = 0
 )(
+    output                      bgm_valid,bgm_active,
+    output signed [15:0]        bgm_left,bgm_right,
+    input                       bgm_ready,
     input                       clk,
     input                       rst,
     input                       sdram_ready, // Synchronized into clk; gates first scan only.
@@ -84,7 +88,47 @@ reg [3:0] reset_count;
 reg scan_start_pulse;
 wire parser_rst=rst || scan_state==SC_RESET;
 wire sd_local_rst=parser_rst;
-assign scan_accept=scan_request && scan_state==SC_IDLE;
+wire audio_stopped;
+reg audio_session;
+wire audio_found;
+wire [31:0] audio_cluster,audio_size,audio_fat_lba,audio_data_lba,audio_max_cluster;
+wire [7:0] audio_spc;
+wire a_req,a_busy,a_valid,a_done,a_urgent;
+wire [31:0] a_lba;
+wire [7:0] a_error,a_byte;
+wire [8:0] a_index;
+// Hold the scan request until the audio transaction and both ring pointers
+// have stopped. The physical SD reset must never cut an audio sector short.
+wire audio_run=audio_session && !scan_request && !rescan_event;
+assign scan_accept=scan_request && scan_state==SC_IDLE && audio_stopped;
+always @(posedge clk or posedge rst) begin
+ if(rst)audio_session<=0;
+ else if(scan_request || rescan_event)audio_session<=0;
+ else if(scan_result_valid && scan_result_ready)audio_session<=scan_success;
+end
+generate if(AUDIO_ENABLE)begin: g_audio
+ wire player_enable,file_valid,file_ready,sector_permit,player_stopped;
+ wire [7:0] file_byte;
+ fat32_pcm_stream u_stream(
+ .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(audio_found),
+ .first_cluster(audio_cluster),.file_size(audio_size),.sectors_per_cluster(audio_spc),
+ .fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
+ .sector_permit(sector_permit),.player_stopped(player_stopped),.player_ready(file_ready),
+ .player_enable(player_enable),.file_valid(file_valid),.file_byte(file_byte),
+ .stopped(audio_stopped),.error_code(),.loop_count(),
+ .sector_req(a_req),.sector_lba(a_lba),.sector_busy(a_busy),.sector_valid(a_valid),
+ .sector_done(a_done),.sector_byte(a_byte),.sector_error(a_error),.sector_index(a_index));
+ pcm_stream_player u_player(
+ .wr_clk(clk),.wr_rst_n(!rst),.play_enable(player_enable),
+ .file_valid(file_valid),.file_byte(file_byte),.file_ready(file_ready),
+ .sector_permit(sector_permit),.buffer_low(a_urgent),.stopped(player_stopped),.write_level(),
+ .rd_clk(transition_pix_clk),.rd_rst_n(!transition_pix_rst),.sample_ready(bgm_ready),
+ .sample_valid(bgm_valid),.sample_left(bgm_left),.sample_right(bgm_right),
+ .active(bgm_active),.underflow_count(),.output_overrun());
+end else begin: g_no_audio
+ assign audio_stopped=1'b1;assign a_req=1'b0;assign a_lba=0;assign a_urgent=0;
+ assign bgm_valid=0;assign bgm_active=0;assign bgm_left=0;assign bgm_right=0;
+end endgenerate
 always @(posedge clk or posedge rst) begin
  if(rst) begin
   scan_state<=SC_IDLE;reset_count<=0;scan_start_pulse<=0;scan_result_valid<=0;scan_success<=0;
@@ -341,8 +385,12 @@ always @(posedge clk or posedge rst) begin
  end
 end
 
-fat32_bmp_reader #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+fat32_bmp_reader #(.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
+ .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
+ .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
+ .a_req(a_req),.a_lba(a_lba),.a_cancel(!audio_run),.a_urgent(a_urgent),
+ .a_busy(a_busy),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),.a_byte(a_byte),.a_index(a_index),
  .scan_start(scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
  .load_start(load_start_pulse),.load_cancel(parser_cancel),.load_cluster(load_cluster),.load_size(load_size),
