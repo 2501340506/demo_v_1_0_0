@@ -27,6 +27,9 @@ module tb_fat32_reader;
     reg [31:0] table_cluster[0:3],table_size[0:3];
     integer found_n=0,delay_ack=0;
     fat32_bmp_reader #(.CLK_FREQ_HZ(1000),.TIMEOUT_MS(500),.MAX_VISITED_CLUSTERS(4)) dut(
+      .audio_found(),.audio_cluster(),.audio_size(),.audio_spc(),.audio_fat_lba(),.audio_data_lba(),.audio_max_cluster(),
+      .a_req(1'b0),.a_lba(32'd0),.a_cancel(1'b0),.a_urgent(1'b0),
+      .a_busy(),.a_valid(),.a_done(),.a_error(),.a_byte(),.a_index(),
       .clk(clk),.rst(rst),.sd_init_done(1'b1),.scan_start(scan_start),.load_cancel(1'b0),.load_start(file_start),
       .load_cluster(selected_cluster),.load_size(selected_size),.bmp_width(16'd3),.bmp_height(16'd91),
       .ready(ready),.scan_done(scan_done),.scan_error(scan_fault),.scan_found_valid(found),

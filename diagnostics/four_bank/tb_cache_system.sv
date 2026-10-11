@@ -66,7 +66,15 @@ module tb_cache_system;
  reg transition_vs_q=1;
  wire transition_frame_start=transition_vs_q && !vs;
  always @(posedge pix_clk) if(rst) transition_vs_q<=1;else transition_vs_q<=vs;
- sd_card_bmp #(.TRANSITION_ENABLE(TRANSITION_TEST),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
+`ifdef PCM_S3
+ localparam AUDIO_TEST=1;
+`else
+ localparam AUDIO_TEST=0;
+`endif
+ wire bgm_valid,bgm_ready,bgm_active;
+ wire signed [15:0] bgm_left,bgm_right;
+ sd_card_bmp #(.AUDIO_ENABLE(AUDIO_TEST),.TRANSITION_ENABLE(TRANSITION_TEST),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
+  .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),.bgm_left(bgm_left),.bgm_right(bgm_right),
   .transition_pix_clk(pix_clk),.transition_pix_rst(rst),
   .transition_frame_start(transition_frame_start),.transition_commit_done(media_update),
   .transition_active(transition_active),.transition_level(transition_level),.transition_wipe(transition_wipe),
@@ -86,6 +94,12 @@ module tb_cache_system;
  pcm_media_tone #(.CLOCK_HZ(480000)) tone(.clk(pix_clk),.rst_n(!rst),.enable(media_enable),
   .media_update(media_update),.media_id(media_id),.volume(8'd128),.sample_ready(1'b1),
   .sample_valid(),.sample_left(),.sample_right(),.overflow(),.blip_active());
+
+`ifdef PCM_S3
+ `include "cache_pcm_checks.svh"
+`else
+ assign bgm_ready=1;
+`endif
 
 `ifdef TRANSITION_S1
  `include "cache_transition_checks.svh"
@@ -169,14 +183,26 @@ module tb_cache_system;
       default:;
      endcase
     end
+`ifdef PCM_S3
+    else if(id==4)begin
+     case(part)
+      0:metadata="B";1:metadata="G";2:metadata="M";
+      3,4,5,6,7:metadata=" ";8:metadata="P";9:metadata="C";10:metadata="M";11:metadata=32;
+      26:metadata=70;
+      28,29,30,31:metadata=32'd1202>>(8*(part-28));
+      default:;
+     endcase
+    end
+`endif
    end
   end
  endfunction
- integer lba,id,base,generation,limit,b,sector_reads=0;
+ integer lba,id,base,generation,limit,b,sector_reads=0,picture_reads=0;
  initial forever begin
   @(negedge src_clk);
   if(!rst && app.sd_sec_read) begin
    sector_reads=sector_reads+1;lba=app.sd_sec_read_addr;
+   if(!app.bmp_read_m0.adapter.owner)picture_reads=picture_reads+1;
    id=(lba-1153)/FILE_SPAN;base=((lba-1153)%FILE_SPAN)*512;generation=card_generation;limit=512;
    if(lba>=1153 && base==512 && app.bmp_read_m0.state==10 && id==timeout_image) begin
     timeout_image=-1;repeat(16)@(negedge src_clk);
@@ -187,6 +213,9 @@ module tb_cache_system;
     end
     for(b=0;b<limit;b=b+1) begin
      sector_data=(lba<1153)?metadata(lba,b):byte_at(base+b,id,generation);
+`ifdef PCM_S3
+     if(lba>=9729 && lba<=9731)sector_data=pcm_byte((lba-9729)*512+b);
+`endif
      sector_valid=1;@(negedge src_clk);sector_valid=0;
      repeat(7)@(negedge src_clk);
     end
@@ -277,12 +306,12 @@ module tb_cache_system;
   saved_starts=starts;
   key_next();wait_image(0);key_next();wait_image(1);
   if(starts!=saved_starts)$fatal(1,"cached switch restarted background read");
-  wait(app.cache_valid==15 && !app.load_busy);saved_reads=sector_reads;saved_starts=starts;
+  wait(app.cache_valid==15 && !app.load_busy);saved_reads=picture_reads;saved_starts=starts;
   repeat(4)begin saved_commits=commits;key_next();wait(commits>saved_commits);wait(!app.foreground_busy && !app.transition_busy);end
   repeat(4)begin saved_commits=commits;key_prev();wait(commits>saved_commits);wait(!app.foreground_busy && !app.transition_busy);end
-  if(starts!=saved_starts || sector_reads!=saved_reads)$fatal(1,"full cache read SD again");
+  if(starts!=saved_starts || picture_reads!=saved_reads)$fatal(1,"full cache read SD again");
   saved_commits=commits;key_auto();wait(commits>=saved_commits+2);key_auto();wait(!app.foreground_busy && !app.transition_busy);
-  if(starts!=saved_starts || sector_reads!=saved_reads)$fatal(1,"AUTO missed full cache");
+  if(starts!=saved_starts || picture_reads!=saved_reads)$fatal(1,"AUTO missed full cache");
   $display("PASS integrated cache hits/AUTO: starts=%0d reads=%0d commits=%0d",starts,sector_reads,commits);
 
   // Rescan while a display target is still crossing to a real frame boundary.
@@ -313,9 +342,9 @@ module tb_cache_system;
   card_mask=7;card_generation=4;timeout_image=2;key_rescan();
   wait(app.timeout_stopped && !app.load_busy);
   if(app.cache_valid!=3)$fatal(1,"timeout invalidated completed cache");
-  saved_reads=sector_reads;saved_starts=starts;
+  saved_reads=picture_reads;saved_starts=starts;
   key_next();wait_image(1);key_prev();wait_image(0);
-  if(starts!=saved_starts || sector_reads!=saved_reads)$fatal(1,"cached hit after timeout read SD");
+  if(starts!=saved_starts || picture_reads!=saved_reads)$fatal(1,"cached hit after timeout read SD");
   saved_frames=frames;wait(frames>=saved_frames+2);repeat(100)@(negedge src_clk);
   if(cues!=sent || sent!=commits)$fatal(1,"lost/extra picture cue");
   $display("PASS integrated timeout keeps cached manual switching");
