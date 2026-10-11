@@ -62,6 +62,9 @@ wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the HDMI core.
 
 wire [23:0] vout_data_raw;
 wire [23:0] vout_data;
+// S1 transition pixel stage. Control remains bypassed until the display
+// commit handshake is connected in the next integration step.
+wire [23:0] transition_rgb;
 wire [23:0] osd_rgb;
 wire [23:0] scroll_rgb;
 wire [23:0] timestamp_rgb;
@@ -321,6 +324,11 @@ video_delay video_delay_m0(
 // 首图提交前黑屏；提交后一直显示当前显示缓冲区内容
 assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
+video_transition_pixels u_video_transition_pixels(
+    .clk(video_clk), .rst(rst_video), .frame_start(sub_frame_start),
+    .active(1'b0), .level(5'd16), .rgb_in(vout_data), .rgb_out(transition_rgb)
+);
+
 // S1 separates ownership of each FIFO; the established burst interlock stays.
 media_frame_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
     .rst(rst_mem),.mem_clk(ext_mem_clk),.write_clk(sd_card_clk),.write_rst(rst_sd),
@@ -382,7 +390,7 @@ osd_status_cdc u_osd_status_cdc (
 // RGB layers are combinational; final HS/VS/DE/X pass directly to HDMI.
 status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .clk(video_clk), .rst(rst_video), .vs(vs), .de(de), .pixel_x(video_x),
-    .rgb_in(vout_data), .image_index(audio_image), .image_valid(audio_enable),
+    .rgb_in(transition_rgb), .image_index(audio_image), .image_valid(audio_enable),
     .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
     .active(status_glyph_active)
 );

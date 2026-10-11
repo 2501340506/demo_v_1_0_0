@@ -198,6 +198,12 @@
                     <Attr Name="CompileOrder" Val="21"/>
                 </FileInfo>
             </File>
+            <File Path="../user_source/hdl_source/video_transition_control.v">
+                <FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="194"/></FileInfo>
+            </File>
+            <File Path="../user_source/hdl_source/video_transition_pixels.v">
+                <FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&amp;R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="195"/></FileInfo>
+            </File>
             <File Path="../user_source/hdl_source/SD/video_timing_data.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>
