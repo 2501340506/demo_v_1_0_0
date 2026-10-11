@@ -108,6 +108,11 @@ reg         frame_write_toggle_mem;
 wire [1:0]  write_buf_idx;
 wire [1:0]  disp_buf_idx;
 wire        display_commit_request, display_commit_ack;
+reg         transition_frame_toggle;
+always @(posedge video_clk or posedge rst_video) begin
+    if (rst_video) transition_frame_toggle <= 1'b0;
+    else if (sub_frame_start) transition_frame_toggle <= ~transition_frame_toggle;
+end
 
 wire App_rd_en;
 wire [ADDR_BITS-1:0] App_rd_addr;
@@ -265,6 +270,7 @@ sd_card_bmp #(
     .reader_error(frame_reader_error), .reader_underflow(frame_underflow),
     .write_finish_toggle(frame_write_toggle_mem),
     .display_commit_request(display_commit_request),
+    .transition_frame_toggle(transition_frame_toggle),
     .display_commit_ack(display_commit_ack),
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
