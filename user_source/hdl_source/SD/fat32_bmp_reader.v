@@ -66,10 +66,15 @@ module fat32_bmp_reader #(
  .file_busy(stream_busy),.file_done(stream_done),.file_valid(stream_valid),.file_byte(stream_byte),.file_byte_offset(stream_offset),.fs_error(stream_error),
  .sector_req(file_req),.sector_lba(file_lba),.sector_busy(sector_busy),.sector_valid(file_owner && sector_valid),
  .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(file_owner && sector_done),.sector_error(sector_error));
- sd_sector_adapter #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(TIMEOUT_MS)) adapter(
- .clk(clk),.rst(rst),.sector_req(scan_owner?scan_req:(file_owner?(file_req && request_allowed):header_go)),
- .sector_lba(scan_owner?scan_lba:(file_owner?file_lba:header_lba)),
- .sector_busy(sector_busy),.sector_valid(sector_valid),.sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(sector_done),.sector_error(sector_error),
+ // S1 keeps the service at the existing reader boundary. Its second
+ // mailbox is tied off until the independently tested audio path is added.
+ sd_sector_service #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(TIMEOUT_MS)) adapter(
+ .clk(clk),.rst(rst),.p_req(scan_owner?scan_req:(file_owner?(file_req && request_allowed):header_go)),
+ .p_lba(scan_owner?scan_lba:(file_owner?file_lba:header_lba)),.p_cancel(load_cancel),
+ .p_busy(sector_busy),.p_accepted(),.p_valid(sector_valid),.p_done(sector_done),.p_error(sector_error),
+ .a_req(1'b0),.a_lba(32'd0),.a_cancel(1'b0),.a_urgent(1'b0),.a_enable(1'b0),
+ .a_busy(),.a_accepted(),.a_valid(),.a_done(),.a_error(),
+ .sector_byte(sector_byte),.sector_index(sector_index),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));
  bmp_header_check #(.ALLOW_32(0)) preflight(
