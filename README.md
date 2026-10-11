@@ -1,10 +1,12 @@
-# 当前开发：v0.12.0 S3 local.2 初始化恢复修复
+# 当前开发：v0.12.0 S3 功能通过，进入 S4
+
+用户已确认 local.2 功能通过，记录 `v0.12.0-s3-board.2`。S4 复用同一候选，待确认持续播放实际时长、Flash 与完全断电冷启动；见 [S4 最终验收](releases/v0.12.0/S4_VALIDATION.md)。本轮未改生产源码或重新构建，尚未正式发布。
 
 S1 共享扇区服务已由用户确认上板通过，local/board 标签及分支已推送。S2 完成 BGM.PCM 扫描、碎片文件循环、跨域缓冲、音源切换和转换工具的独立验证；46 个 RTL 日志、四个模块独立综合和实际音频转换通过。
 
 S3 已接入生产 top：FAT32 根目录 BGM.PCM 自动循环播放，固定 48kHz/16bit/单声道；切图不重启音乐，无音乐时回退原琶音。582 帧系统仿真及 472,955 个 PCM 样本比较通过，TD Setup +0.100ns / Hold +0.004ns。
 
-[修复候选与说明](releases/v0.12.0/s3-local.2/README.md) · [上板步骤](releases/v0.12.0/s3-local.2/BOARD_VALIDATION.md) · [S3 验证](diagnostics/pcm_audio/S3_VALIDATION.md) · [交接](HANDOFF.md)。local.1 已由用户确认功能正常、播放 20 分钟及 Flash 烧录通过；local.2 为 KEY3 初始化超时新增最多三次完整恢复重试，须重新板测。完全断电冷启动待反馈，尚未正式发布。
+[修复候选与说明](releases/v0.12.0/s3-local.2/README.md) · [板测结果](releases/v0.12.0/s3-local.2/BOARD_RESULT.md) · [S3 验证](diagnostics/pcm_audio/S3_VALIDATION.md) · [交接](HANDOFF.md)。local.2 为 KEY3 初始化超时新增最多三次完整恢复重试，功能板测已通过；最终验收待反馈，尚未正式发布。
 
 # 当前正式版：v0.11.0（2026-10-11）
 

@@ -4,4 +4,4 @@
 
 确认音乐能重新开始，切图、AUTO、转场、重扫正常；移走 BGM.PCM 后重扫仍恢复琶音与提示音。完成后用同一候选持续播放（建议 20 分钟）、Flash 烧录并完全断电重新上电，反馈实际时长及冷启动结果。回退使用 `../s3-local.1/demo.bit`。
 
-local.2 尚未板测；不沿用 local.1 的板测结论。
+local.2 已获用户功能通过确认，见 BOARD_RESULT.md。后续 S4 见 ../S4_VALIDATION.md，不沿用 local.1 的持续播放/Flash 结论。
