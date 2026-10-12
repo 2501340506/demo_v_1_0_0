@@ -56,6 +56,10 @@ def copy(source,target):
 copy(phy/'demo.bit',Path('demo.bit'))
 for name in ('final_timing.rpt','demo_phy.area'):
     copy(phy/name,Path('reports')/name)
+copy(phy/'build_ring_s2_attempt1.log',Path('reports/build_phy.log'))
+copy(build/'TD_project/demo_Runs/syn_1/build_ring_s2_attempt1.log',Path('reports/build_syn.log'))
+for module in ('audio_ring_levels','audio_ring_overlay'):
+    copy(output/'ring_s1_syn1'/module/'demo_gate.area',Path('reports')/f'{module}_standalone.area')
 copy(build/'timing_audit/check_timing.txt',Path('reports/check_timing.txt'))
 copy(build/'timing_audit/audit.timing',Path('reports/audit.timing'))
 for path in logs:copy(path,Path('validation')/path.parent.name/path.name)
