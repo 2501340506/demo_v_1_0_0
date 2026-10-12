@@ -4,6 +4,7 @@
 
 | 日期 | 主要内容 |
 |---|---|
+| 2026-10-12 | [v0.13.0 彩色圆形音频可视化结项](history/2026-10-12/circular-audio-visualizer/README.md) |
 | 2026-10-08 | [FAT32 v0.7.0 结项](history/2026-10-08/fat32-filesystem/README.md) · [BMP 2.11 解码器独立化、板级验收与发布](history/2026-10-08/bmp24_decoder/README.md) |
 | 2026-10-07 | [v0.5.2](history/2026-10-07/v0.5.2/README.md) · [v0.5.3](history/2026-10-07/v0.5.3/README.md) · [v0.5.4](history/2026-10-07/v0.5.4/README.md) |
 | 2026-10-06 | [v0.5.1](history/2026-10-06/v0.5.1/README.md) · Flash 规划复核 |

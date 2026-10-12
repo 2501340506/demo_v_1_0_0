@@ -1,0 +1,31 @@
+# v0.13.0 圆形音频可视化
+
+## 基线和目标
+- 基线 v0.12.0；回退 releases/v0.12.0/demo.bit。原目录 feature/circular-audio-visualizer 开发。
+- 640×480，圆心 (520,310)，透明圆心半径52、黑环至64；96根白色圆头柱，基础3像素、伸长0～28。
+- 实际 HDMI PCM 左右幅度较大者，每32样本峰值，96组历史约64ms；帧快照，快速上升、每帧回落3像素。
+- 四象限几何ROM、两拍视频流水线；转场→圆环→全部OSD→HDMI。独立 AUDIO_VIS_ENABLE。
+- 不增加FFT、封面读取、按键或UART命令。保留用户素材、既有worktree和best_result。
+
+## 阶段与门槛
+1. S0：计划、基线、交接，v0.13.0-plan.1。
+2. S1：独立RTL、ROM生成器、专项仿真、预览和独立综合；无bit，不设local/board标签。
+3. S2：生产接入、音频/显示/OSD/转场回归、完整TD构建；通过后 releases/v0.13.0/s2-local.N 和 v0.13.0-s2-local.N。用户上板确认才建立board.N并推送对应分支/标签。
+4. S3：同一候选持续播放20分钟、Flash和完全断电冷启动；实际反馈通过后复用bit正式发布v0.13.0，归档并合并main。
+
+## 验证
+样本握手、正负满幅、幅度响应、静音/缺样回落、帧内稳定、圆心/区域外透传、圆头/间距、两拍同步对齐、音频序列一致。独立综合检查ROM推断；完整TD检查资源及Setup/Hold，不放宽约束。
+
+## 初始事实
+基线 13,470 LUT、7,300寄存器、12 BRAM9K、4 DSP、1 PLL；Setup +0.117ns、Hold +0.002ns。教程384个48kHz样本约8ms，并非半秒。监听接口已存在于media_hdmi_audio_bridge。
+
+## 状态
+结项：S0～S3全部完成；用户确认S3三项验收通过。正式发布v0.13.0，复用local.2原bit，未重建。归档docs/history/2026-10-12/circular-audio-visualizer；最终记录releases/v0.13.0/FINAL_VALIDATION.md。以下为历史实施过程。
+
+2026-10-12最新状态：用户确认彩色local.2功能全部通过，S2完成，记录v0.13.0-s2-board.2并进入S3。复用原bit，不重建；验收步骤见releases/v0.13.0/S3_VALIDATION.md，20分钟/Flash/完全断电冷启动均待反馈。以下为实施历史。
+
+用户追加彩色柱条：沿圆周六色渐变，单独修改audio_ring_overlay的RGB选择，不改变采集、几何和接口。以s2-local.1为基线生成s2-local.2；重新执行像素/OSD/音乐验证及完整TD，原白色候选保留。新候选需独立板测。
+
+彩色修订本地已完成：ring_color_attempt1 Setup +0.010ns、Hold +0.036ns，颜色/像素/OSD/音乐专项通过；固定releases/v0.13.0/s2-local.2/demo.bit，标签v0.13.0-s2-local.2，等待用户上板。
+
+S0、S1完成；S2生产接入、专项、21项回归、582帧系统仿真和完整TD均通过。交付releases/v0.13.0/s2-local.1/demo.bit，对应v0.13.0-s2-local.1。详见diagnostics/audio_vis/VALIDATION.md。尚无板测通过结论；S3等待S2候选上板确认。

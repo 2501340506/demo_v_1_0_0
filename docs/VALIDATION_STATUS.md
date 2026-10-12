@@ -1,5 +1,7 @@
 # 当前验证：v0.13.0 圆形音频可视化（2026-10-12）
 
+最新结论：S2功能及S3的20分钟、Flash、完全断电冷启动全部验收通过，v0.13.0正式发布，复用已验收local.2原bit。见[最终验证](../releases/v0.13.0/FINAL_VALIDATION.md)及[结项归档](history/2026-10-12/circular-audio-visualizer/README.md)。以下为历史阶段记录。
+
 最新结论：用户确认彩色local.2功能全部通过，记录v0.13.0-s2-board.2，进入[S3验收](../releases/v0.13.0/S3_VALIDATION.md)。bit/生产源码/工程与local.2一致，未重建；20分钟、Flash及完全断电冷启动未反馈，尚未正式发布。
 
 ## 历史本地验证

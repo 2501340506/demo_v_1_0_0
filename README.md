@@ -1,3 +1,11 @@
+# 当前正式版：v0.13.0
+
+彩色圆形音频可视化已完成S2功能和S3持续播放20分钟、Flash及完全断电冷启动验收。正式版复用已验收local.2原bit，未重建。
+
+[正式下载与说明](releases/v0.13.0/README.md) · [最终验证](releases/v0.13.0/FINAL_VALIDATION.md) · [彩色预览](releases/v0.13.0/s2-local.2/preview/music.gif) · [归档](docs/history/2026-10-12/circular-audio-visualizer/README.md)。回退releases/v0.12.0/demo.bit。
+
+## 历史记录
+
 # 当前阶段：v0.13.0 S3（S2彩色柱条已通过板测）
 
 用户确认彩色候选local.2功能全部通过，记录v0.13.0-s2-board.2。S3继续使用同一bit，待20分钟持续播放、Flash烧录和完全断电冷启动结果；本次未改源码或重新构建，正式版仍为v0.12.0。
