@@ -508,6 +508,10 @@
                 </FileInfo>
             </File>
         <File Path="../user_source/hdl_source/SD/media_frame_loader.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="65"/></FileInfo></File>
+<File Path="../user_source/hdl_source/SD/media_thumbnail_loader.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="223"/></FileInfo></File>
+<File Path="../user_source/hdl_source/SD/media_preview_control.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="224"/></FileInfo></File>
+<File Path="../user_source/hdl_source/SD/thumbnail_address.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="225"/></FileInfo></File>
+<File Path="../user_source/hdl_source/SD/thumbnail_layout.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="226"/></FileInfo></File>
 <File Path="../user_source/hdl_source/SD/media_frame_reader.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="66"/></FileInfo></File>
             <File Path="../user_source/hdl_source/SD/media_frame_cache_control.v">
                 <FileInfo>

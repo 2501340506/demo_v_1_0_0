@@ -33,9 +33,16 @@ module bmp24_decoder #(
  reg [COUNT_BITS-1:0] pixel_count;
  reg [31:0] row_payload,row_last;
  reg header_good;
+ reg pixels_started;
  reg [1:0] phase;
  reg [7:0] blue,green;
  wire take_byte = file_valid && file_ready;
+ // The range-mode sector buffer delivers every byte in order. Once the
+ // payload starts, row completion bounds it without a wide offset comparator
+ // on every pixel/row write-enable path. Fixed legacy mode retains its check.
+ wire in_pixel_region=RANGE_DIMENSIONS ?
+    ((pixels_started || file_byte_offset==pixel_offset) && row<height[ROW_BITS-1:0]) :
+    (file_byte_offset>=pixel_offset && {2'b0,file_byte_offset}<pixel_end);
  assign file_ready = !FLOW_CONTROL || !pixel_valid || pixel_ready;
  assign image_width = width[15:0];
  assign image_height = height[15:0];
@@ -54,7 +61,7 @@ module bmp24_decoder #(
  wire accepted_header=header_ok && {2'b0,size_reg}>=pixel_end;
  always @(posedge clk or posedge rst) begin
   if(rst) begin
-   active<=0;checked<=0;end_pending<=0;size_reg<=0;header_good<=0;
+   active<=0;checked<=0;end_pending<=0;size_reg<=0;header_good<=0;pixels_started<=0;
    header_accepted<=0;pixel_valid<=0;frame_commit<=0;bmp_done<=0;bmp_error<=0;
    pixel_rgb<=0;pixel_x<=0;pixel_y<=0;row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;
    blue<=0;green<=0;
@@ -62,7 +69,7 @@ module bmp24_decoder #(
    header_accepted<=0;frame_commit<=0;bmp_done<=0;
    if(!FLOW_CONTROL || pixel_ready) pixel_valid<=0;
    if(file_start) begin
-    active<=1;checked<=0;end_pending<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;
+    active<=1;checked<=0;end_pending<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;
     row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;pixel_valid<=0;
    end else if(active) begin
     if(header_complete && !checked) begin
@@ -70,7 +77,8 @@ module bmp24_decoder #(
      if(accepted_header)begin header_accepted<=1;header_good<=1;end
      else begin bmp_error<=1;active<=0;end
     end
-    if(take_byte && (FLOW_CONTROL?header_good:accepted_header) && file_byte_offset>=pixel_offset && {2'b0,file_byte_offset}<pixel_end) begin
+    if(take_byte && (FLOW_CONTROL?header_good:accepted_header) && in_pixel_region) begin
+     pixels_started<=1;
      if(row_byte < row_payload) begin
       if(phase==0)blue<=file_byte;
       if(phase==1)green<=file_byte;

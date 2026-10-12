@@ -1,4 +1,5 @@
-param([string]$BuildName='scale_s2_attempt1')
+param([string]$BuildName='scale_s2_attempt1',[switch]$PlaceHoldFix,
+ [ValidateSet('high','ultra')][string]$TimingOptimization='high')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$BuildName"
@@ -7,7 +8,8 @@ New-Item -ItemType Directory -Path "$out/TD_project","$out/diagnostics" -Force |
 Copy-Item "$root/user_source" "$out/user_source" -Recurse
 Copy-Item "$root/TD_project/demo.al" "$out/TD_project/demo.al"
 Copy-Item "$root/diagnostics/run_td_build.ps1" "$out/diagnostics/run_td_build.ps1"
-& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -HighFanoutOptimization -TimingOptimization high -PostPlaceOptimization high
+$holdArgs=@();if($PlaceHoldFix){$holdArgs=@('-PlaceHoldFix')}
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -HighFanoutOptimization -TimingOptimization $TimingOptimization -PostPlaceOptimization high @holdArgs
 if($LASTEXITCODE){throw 'TD build failed'}
 $report=Get-Content "$out/TD_project/demo_Runs/phy_1/final_timing.rpt" -Raw
 $setup=[regex]::Match($report,'SWNS:\s*([-\d.]+)ns');$hold=[regex]::Match($report,'HWNS:\s*([-\d.]+)ns')

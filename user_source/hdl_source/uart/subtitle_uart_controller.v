@@ -37,10 +37,12 @@ module subtitle_uart_controller(
                     parsed=120'h0000000000000000008c8b8b8a8389; parsed_length=6;
                 end else begin
                     parsed=0; parsed_length=length-4;
-                    for(i=0;i<12;i=i+1) if(i<length-4) begin
+                    for(i=0;i<12;i=i+1) if(length>i+4) begin
                         c=line[(i+4)*8 +: 8];
-                        if(c>="a" && c<="z") c=c-32;
+                        // Validate the original byte: folding ASCII lowercase
+                        // cannot change whether a byte belongs to this set.
                         if(!((c>=32 && c<=126) || (c>=128 && c<=140))) good=0;
+                        if(c>="a" && c<="z") c=c & 8'hdf;
                         parsed[i*8 +: 8]=c;
                     end
                 end

@@ -66,6 +66,7 @@ endfunction
    end else begin
      if (scan_done && image_count > 1 && auto_toggle_event)
        auto_play_en <= ~auto_play_en;
+     if(mode==3 || mode_seen==3) auto_play_en<=0;
      if (mode != mode_seen) begin
        mode_seen <= mode;
        auto_count <= 0;

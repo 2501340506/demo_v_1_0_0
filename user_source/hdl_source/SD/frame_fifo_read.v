@@ -3,6 +3,7 @@ module frame_fifo_read
 #
 (
 	parameter MEM_DATA_BITS          = 32,
+    parameter PREVIEW_ENABLE = 0,
 	parameter ADDR_BITS              = 21,
 	parameter BURST_BITS             = 9,
 	parameter FIFO_DEPTH             = 512,
@@ -29,6 +30,8 @@ module frame_fifo_read
 	
 	input                            read_req,                   // data read module read request,keep '1' until read_req_ack = '1'
     input                            display_commit_request,
+    input preview_request, input [17:0] preview_descriptor,
+    output reg preview_ack, output reg [17:0] frame_descriptor,
     output reg                       display_commit_ack,
     output                           refill_priority,
 	output reg                       read_req_ack,               // data read module read request response
@@ -89,7 +92,27 @@ always @(posedge mem_clk or posedge rst) begin
     end
 end
 
-assign App_rd_addr = {App_rd_addr_r[ADDR_BITS - 1:0]};
+reg [2:0] preview_sync;
+reg [17:0] descriptor_sync0,descriptor_sync1;
+wire [17:0] next_descriptor=(preview_sync[2]!=preview_ack)?descriptor_sync1:frame_descriptor;
+wire [20:0] thumbnail_addr;
+always @(posedge mem_clk or posedge rst) begin
+ if(rst)begin preview_sync<=0;descriptor_sync0<=0;descriptor_sync1<=0;preview_ack<=0;frame_descriptor<=0;end
+ else if(PREVIEW_ENABLE)begin
+  preview_sync<={preview_sync[1:0],preview_request};
+  descriptor_sync0<=preview_descriptor;descriptor_sync1<=descriptor_sync0;
+  if(state==S_ACK && !read_req_d2)begin
+   preview_ack<=preview_sync[2];frame_descriptor<=next_descriptor;
+  end
+ end
+end
+generate if(PREVIEW_ENABLE)begin:g_preview_address
+ thumbnail_address address_gen(.clk(mem_clk),.rst(rst),.reload(state==S_ACK),.advance(App_rd_en),
+ .preview(next_descriptor[17]),.bank_map(next_descriptor[7:0]),.fullscreen_bank(read_addr_index_d1),.address(thumbnail_addr));
+end else begin:g_no_preview_address
+ assign thumbnail_addr=0;
+end endgenerate
+assign App_rd_addr = PREVIEW_ENABLE && frame_descriptor[17] ? thumbnail_addr : App_rd_addr_r;
 assign rd_vld = (state == S_READ_BURST && burst_cnt >= BURST_SIZE);
 
 assign O_rd_busy = (state == S_READ_BURST);//读指令期间

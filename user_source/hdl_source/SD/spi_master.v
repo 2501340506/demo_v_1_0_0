@@ -25,6 +25,8 @@ localparam                   ACK_WAIT        = 5;
 reg                          DCLK_reg;
 reg[7:0]                     MOSI_shift;
 reg[7:0]                     MISO_shift;
+wire MISO_delay;
+(* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10)) u_miso_delay (.o(MISO_delay),.a(MISO));
 reg[2:0]                     state;
 reg[2:0]                     next_state;
 reg [15:0]                   clk_cnt;
@@ -130,8 +132,8 @@ begin
 		MISO_shift <= 8'h00;
 	else if(state == DCLK_EDGE)
 		if(CPHA == 1'b0 && clk_edge_cnt[0] == 1'b0)
-			MISO_shift <= {MISO_shift[6:0],MISO};
+			MISO_shift <= {MISO_shift[6:0],MISO_delay};
 		else if(CPHA == 1'b1 && (clk_edge_cnt[0] == 1'b1))
-			MISO_shift <= {MISO_shift[6:0],MISO};
+			MISO_shift <= {MISO_shift[6:0],MISO_delay};
 end
 endmodule

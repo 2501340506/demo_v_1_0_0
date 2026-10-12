@@ -10,6 +10,7 @@ module sd_card_bmp #(
     parameter integer USE_FRAME_RESULT   = 0,
     parameter integer AUDIO_ENABLE = 0,
     parameter integer SCALE_ENABLE = 0,
+    parameter integer PREVIEW_ENABLE = 0,
     parameter integer TRANSITION_ENABLE = 0
 )(
     output                      bgm_valid,bgm_active,
@@ -44,6 +45,7 @@ module sd_card_bmp #(
     input reader_underflow,
     input                       write_finish_toggle,
     input                       display_commit_ack,
+    input preview_ack,output preview_request,output [17:0] preview_descriptor,
     input                       transition_pix_clk, transition_pix_rst,
     input                       transition_frame_start, transition_commit_done,
     output reg                  display_commit_request,
@@ -111,6 +113,12 @@ end
 generate if(AUDIO_ENABLE)begin: g_audio
  wire player_enable,file_valid,file_ready,sector_permit,player_stopped;
  wire [7:0] file_byte;
+ wire player_low;
+ reg urgent_latched;
+ always @(posedge clk or posedge rst)begin
+  if(rst)urgent_latched<=1;else urgent_latched<=player_low;
+ end
+ assign a_urgent=urgent_latched;
  fat32_pcm_stream u_stream(
  .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(audio_found),
  .first_cluster(audio_cluster),.file_size(audio_size),.sectors_per_cluster(audio_spc),
@@ -123,7 +131,7 @@ generate if(AUDIO_ENABLE)begin: g_audio
  pcm_stream_player u_player(
  .wr_clk(clk),.wr_rst_n(!rst),.play_enable(player_enable),
  .file_valid(file_valid),.file_byte(file_byte),.file_ready(file_ready),
- .sector_permit(sector_permit),.buffer_low(a_urgent),.stopped(player_stopped),.write_level(),
+ .sector_permit(sector_permit),.buffer_low(player_low),.stopped(player_stopped),.write_level(),
  .rd_clk(transition_pix_clk),.rd_rst_n(!transition_pix_rst),.sample_ready(bgm_ready),
  .sample_valid(bgm_valid),.sample_left(bgm_left),.sample_right(bgm_right),
  .active(bgm_active),.underflow_count(),.output_overrun());
@@ -204,11 +212,13 @@ media_frame_load_control #(.USE_FRAME_RESULT(USE_FRAME_RESULT)) u_load_control(
  .source_complete(source_done_now),.write_complete(write_finish_now)
 );
 
+wire preview_intent,preview_selecting,preview_fullscreen_ready,preview_offer,preview_key_toggle;
+assign preview_key_toggle=PREVIEW_ENABLE && mode==3 && media_auto_toggle_request;
 wire cache_display_request,cache_display_ack;
 wire transition_permit, transition_busy;
 reg transition_auto;
 wire [1:0] cache_display_image,cache_display_bank;
-wire transition_needed=TRANSITION_ENABLE && first_image_committed &&
+wire transition_needed=TRANSITION_ENABLE && !preview_selecting && first_image_committed &&
                        display_valid && cache_display_bank!=current_bank;
 video_transition_sd_control #(.ENABLE(TRANSITION_ENABLE)) u_transition_sd_control(
  .clk(clk),.rst(rst),.display_request(cache_display_request),.display_valid(transition_needed),.request_wipe(transition_auto),
@@ -217,8 +227,8 @@ video_transition_sd_control #(.ENABLE(TRANSITION_ENABLE)) u_transition_sd_contro
  .transition_busy(transition_busy),.transition_active(transition_active),
  .transition_level(transition_level),.permit_commit(transition_permit),.wipe_active(transition_wipe));
 reg rescan_pending;
-wire rescan_wait=TRANSITION_ENABLE && (rescan_pending || rescan_raw);
-assign rescan_event=TRANSITION_ENABLE ? (rescan_pending && !transition_busy) : rescan_raw;
+wire rescan_wait=(rescan_pending || rescan_raw);
+assign rescan_event=(TRANSITION_ENABLE || PREVIEW_ENABLE) ? (rescan_pending && !transition_busy && preview_fullscreen_ready) : rescan_raw;
 always @(posedge clk or posedge rst) begin
  if(rst) rescan_pending<=0;
  else if(rescan_raw) rescan_pending<=1;
@@ -232,7 +242,7 @@ always @(posedge clk or posedge rst) begin
  if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;end
  else begin
   if(!cache_display_request) commit_pending<=0;
-  else if(!commit_pending && (!transition_needed || transition_permit)) begin
+  else if(!commit_pending && preview_fullscreen_ready && (!transition_needed || transition_permit)) begin
    disp_buf_idx<=cache_display_bank;
    display_commit_request<=~display_commit_request;
    commit_pending<=1;
@@ -243,7 +253,22 @@ wire ctrl_auto_play_en,ctrl_next_pending,ctrl_prev_pending,ctrl_auto_tick,ctrl_l
 wire ctrl_request_ready,ctrl_request_accept,ctrl_auto_load_request;
 wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || rescan_wait;
-wire ctrl_offer=ctrl_load_request && !transition_block;
+wire ctrl_offer=ctrl_load_request && !transition_block && !preview_intent && !preview_selecting;
+wire [1:0] preview_target;
+wire cache_offer=ctrl_offer || preview_offer;
+wire [1:0] cache_target=preview_offer?preview_target:ctrl_target_image;
+generate if(PREVIEW_ENABLE)begin:g_preview
+ media_preview_control control(.clk(clk),.rst(rst),.mode(mode),.scan_busy(scan_busy),
+ .first_image_committed(first_image_committed),.transition_busy(transition_busy),.foreground_busy(foreground_busy),
+ .rescan_wait(rescan_wait),.next_event(media_next_request),.previous_event(media_previous_request),.toggle_event(preview_key_toggle),
+ .current_image(img_idx),.image_count(image_count),.cache_valid(cache_valid),.cache_banks(cache_banks),
+ .request_ready(ctrl_request_ready),.request_failed(request_failed),.storage_stopped(timeout_stopped),.display_request(cache_display_request),.display_committed(cache_display_ack),
+ .request_valid(preview_offer),.request_image(preview_target),.preview_intent(preview_intent),.selecting(preview_selecting),
+ .fullscreen_ready(preview_fullscreen_ready),.preview_request(preview_request),.preview_descriptor(preview_descriptor),.preview_ack(preview_ack));
+end else begin:g_no_preview
+ assign preview_intent=0;assign preview_selecting=0;assign preview_fullscreen_ready=1;
+ assign preview_offer=0;assign preview_target=0;assign preview_request=0;assign preview_descriptor=0;
+end endgenerate
 assign ctrl_request_accept=ctrl_offer && ctrl_request_ready;
 // Capture origin at acceptance, not when queued keys or AUTO state later change.
 always @(posedge clk or posedge rst) begin
@@ -255,8 +280,8 @@ media_frame_cache_control u_cache_control(
  .clk(clk),.rst(rst),.rescan_event(rescan_event),
  .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),
  .scan_success(scan_success),.scan_image_count(img_found_count),.scan_result_ready(scan_result_ready),.scan_busy(scan_busy),
- .request_valid(ctrl_offer),.request_image(ctrl_target_image),
- .request_manual(ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
+ .request_valid(cache_offer),.request_image(cache_target),
+ .request_manual(preview_offer || ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
  .load_request(load_request),.load_accept(load_accept),.load_image(load_idx),.load_bank(write_buf_idx),
  .load_result_valid(load_result_valid),.load_success(load_success),.load_timeout(load_timeout),.load_result_ready(load_result_ready),
  .cancel_request(cancel_request),.cancel_ack(cancel_ack),.communication_fault(1'b0),
@@ -269,13 +294,13 @@ media_frame_cache_control u_cache_control(
  .retry_event(retry_event),
  .cache_complete_image(cache_complete_image),.cache_hit_image(cache_hit_image),.failed_image(failed_image)
 );
-mode_key_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
+mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
  .clk(clk),.rst(rst),.enable(!scan_busy),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
  .rescan_event(rescan_raw),.next_event(media_next_request),.previous_event(media_previous_request),
  .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity)
 );
 media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS)) u_media_player_control(
- .clk(clk),.rst(rst),.enable(!scan_busy),.scan_done(!scan_busy),
+ .clk(clk),.rst(rst),.enable(!scan_busy && !preview_intent && !preview_selecting),.scan_done(!scan_busy),
  .display_valid(display_valid),.load_busy(foreground_busy || transition_block),.first_image_committed(first_image_committed),
  .image_count(image_count),.current_image(img_idx),.mode(mode),.next_event(media_next_request),
  .previous_event(media_previous_request),.auto_toggle_event(media_auto_toggle_request),

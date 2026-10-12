@@ -3,6 +3,7 @@ module frame_fifo_write
 #
 (
 	parameter MEM_DATA_BITS          = 32,
+    parameter BURST_GATE_ENABLE = 0,
 	parameter ADDR_BITS              = 21,
 	parameter BURST_BITS             = 9,
 	parameter BURST_SIZE             = 128,
@@ -17,6 +18,7 @@ module frame_fifo_write
 	input							 Sdr_init_ref_vld,
     input							 Sdr_busy,
 	input							 App_rd_busy,
+	input                            burst_permit,
     output							 O_wr_busy,
 	
 	output 							 App_wr_en,
@@ -92,7 +94,7 @@ wire into_burst;
 // Sample the asynchronous FIFO occupancy before the burst decision.  Keeping
 // the wide compare local to this clocked boundary removes the direct FIFO
 // pointer-to-state timing path while preserving the existing one-cycle check.
-assign into_burst = !Sdr_busy && !Sdr_init_ref_vld && !cancel_active && (((write_len_latch <= (rdusedw_latched + write_cnt))||rdusedw_latched >= BURST_SIZE) && ~App_rd_busy);
+assign into_burst = (!BURST_GATE_ENABLE || burst_permit) && !Sdr_busy && !Sdr_init_ref_vld && !cancel_active && (((write_len_latch <= (rdusedw_latched + write_cnt))||rdusedw_latched >= BURST_SIZE) && ~App_rd_busy);
 
 assign App_wr_addr = {App_wr_addr_r[ADDR_BITS - 1:0]};
 //assign O_wr_busy = (state != S_IDLE || (S_IDLE && write_req_d2));

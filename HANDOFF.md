@@ -1,4 +1,32 @@
-# 当前交接：v0.14.0 S3 四宫格生产接入中（2026-10-12）
+# 当前交接：v0.14.0 S3 最终验证中（2026-10-12）
+
+- 本轮完成：streamer 增加 FAT 字段/current_cluster 快照及 ST_FAT_EVAL；SPI MISO 数据路径增加一级保持 LUT，解决器件输入 Hold 偏斜。fat32_7 的42项、stream3五尺寸逐像素、loader3真实双writer、SD扇区协议专项及 preview_final11 联合仿真均通过。attempt17 Setup +0.117ns、Hold +0.012ns，STA coverage 99.97%，审计完成。已固定 `releases/v0.14.0/s3-local.1/demo.bit`，97 个工程输入逐字节核对，尚未板测。
+
+- 当前任务：S2 用户已确认功能正常并完成 board 标签推送，继续 S3 四宫格生产接入；尚无 S3 固定候选。
+- 已完成：四宫格双写入、实际 bank 映射、独立帧描述应答、11 模式交互及叠加层控制；真实 SDRAM 双写、混合尺寸、预览/音乐/失败恢复、OSD、按键和既有系统回归已通过。最新 `scale_s3_fat32_3` 的 42 项和 `scale_s3_stream1` 五种尺寸完整字节流逐像素比较通过。
+- 当前阻塞：无本地实现阻塞；S3 等待用户对 `s3-local.1` 上板反馈。持续播放、Flash 和完全断电冷启动留给 S4。
+- Hold 细节：attempt9 的两条最短视频路径来自 `pcm_stream_player` 的音频 RAM 读地址，分别 −0.004ns/−0.003ns；abnormal 路径为 `fat32_file_streamer.next_self`，工具报告时钟偏斜 2130ps。attempt10 的布局/后置 Hold 选项未改变结果。不能把工具警告或负余量写成通过。
+- 最新源码：拆分 scanner 范围校验、预先寄存 header 簇移位量，并增加缩放输出两像素缓冲切断背压链，完成条件等待缓冲排空。`scale_s3_stream2` 五种尺寸逐像素通过，零错误警告；`scale_s3_fat32_4` 42 项全部通过。
+- 下一步：针对两条 video_clk 音频 RAM 最短路径及 streamer abnormal Hold 路径做最小 RTL/资源调整，再重新专项验证和 TD；在 Setup/Hold 均非负前不运行 timing audit、不打包候选、不建 S3 local/board 标签、不进入 S4。
+- 踩坑：实际 SDRAM 40MHz、连续 BL4 不能直接 stride-2 取图；采用空闲区紧凑缩略图。BMP 底向上抽取奇数流行，对应偶数屏幕行；预览描述应答不等于图片提交。ultra 优化曾布线失败，不能作为通过证据。保留用户素材、旧构建和 worktree。
+- 回退：`releases/v0.14.0/s2-local.1/demo.bit`；总回退 `releases/v0.13.0/demo.bit`。S3 板测及 S4 尚未完成。
+
+## 历史交接：S3 实施过程（以下“进行中”仅代表当时状态）
+
+- 最新（覆盖以下进度）：`scale_s3_regression1` 已通过 591 帧/22 提交/481827 PCM/17 转场/4 UART；`preview_final3` 已通过 165 帧/60 预览帧/10 提交和提示音/139171 PCM/4 会话，包括失败保预览、重试、超时后缓存切换。attempt5 时序仍失败（−0.205/−0.051ns），attempt6 ultra 因扫描器两条网络布线冲突失败，无最终合格报告。
+- 当前运行：`scale_s3_attempt7` high/high 完整 TD；`scale_s3_preview_final4` 最新代码预览/音频/失败恢复联合仿真；`scale_s3_fat32_2` 每簇扇区数等价合法值判断后的 42 项回归。本轮还寄存音频低水位请求，并给数码管状态码增加下降沿暂存，约束保持不变。
+- 更新（优先于下述历史进度）：attempt4 Setup −0.180ns/Hold −0.321ns，未通过；针对新增 FIFO 背压路径把可写余量判断寄存化，阈值 446 保留流水余量。`scale_s3_loader2` 真实 SDRAM 写入专项通过。最新完整 TD 为 `scale_s3_attempt5`；最新联合仿真为 `scale_s3_preview_final3`。final1 功能/PCM检查完成但末尾计数断言未等待 CDC，final2 修正测试等待后重跑，final3 另包含 FIFO ready 流水修改。无 S3 local 标签或固定 bit。
+- 最新进度：混合尺寸真实 SDRAM `preview3` 已通过 189 帧/172 预览帧、6 提交/6 提示音；音频 `preview_audio1` 通过 123 帧、105380 PCM 样本、两次会话。21 项模块回归、42 项 FAT32、碎片缩放、OSD、UART 均通过。`control4` 补充存储停止后选择未缓存格子恢复通过，`player1` AUTO 退出通过。
+- 最新阻塞：attempt1/2/3 均未达时序门槛；attempt3 Setup −0.071ns、Hold +0.067ns。当前 `scale_s3_attempt4` 用最新 UI 修正工程完整构建；`scale_s3_preview_final1` 补跑最终代码 PCM/失败保预览/重试/超时缓存选择；`scale_s3_regression1` 原 S2 配置完整系统兼容回归继续中。不能把进行中或失败记录写成通过，不能交付旧 bit。
+- 时序修正：UART 字符先校验再等价大小写折叠；数码管模式/AUTO 源域下降沿暂存；FAT32 扫描响应字节/索引/有效/结束整体流水。未修改约束。preview2 的旧 2.5秒仿真看门狗不足，preview3 在延长后的上限内正常完成；未改板端超时。
+- 下一步：等待最终系统和 TD；时序不过则继续针对报告修正。通过后执行 timing audit、97 个工程输入（以最终实际统计为准）逐字节比较、`package_s3.py` 固定候选、更新文档和阶段提交/local 标签。候选上板通过前不建 S3 board、不合并 main。
+
+- 当前任务：S2 board 已确认并推送，继续 S3；尚未产生 S3 可上板候选。
+- 本轮完成：新增 `media_thumbnail_loader` 双 FIFO/突发仲裁，增加紧凑缩略图；reader 接入帧描述与 packed 地址；新增 `media_preview_control`，接入 11 模式、焦点、KEY4、预览退出后重扫；顶层预览隐藏字幕/圆环并保留状态和计时。
+- 已验证：`scale_s3_loader1` 真实加密 SDRAM 控制器/物理模型逐像素比较完整帧和缩略图、取消后重载、背压及刷新通过；`scale_s3_control3` 交互/失败保预览/独立应答通过；`scale_s3_keys1` 短按、长按与跨模式按住通过。
+- 进行中：`scale_s3_preview2` 混合尺寸生产链路预览系统仿真、`scale_s3_regression1` 原系统回归、`scale_s3_attempt1` 完整 TD。随后按键接口做了兼容性调整，attempt1 即使通过也不能直接打包，必须以最终工程输入重建。
+- 尚缺：最终系统结果、叠加层与音乐预览验证、最终 TD/时序审计、固定 S3 local 候选及用户板测。下一步先解决实际失败，再完成这些门槛。
+- 踩坑：控制专项前两次 watchdog 来自测试台在正沿后仅半周期发提交信号，未跨采样正沿；修正测试激励后 control3 通过。preview1 为声明顺序编译错误，不算功能结果。保留用户测试图片、Qhc.wav、BGM.PCM 删除状态及旧 worktree/产物。
 
 - 当前任务：实现图片缩放与缩略图计划；S2 板测通过，进入 S3 四宫格生产接入。
 - 已完成：S0 计划标签；S1 缩放10组、完整字节流5组、尺寸/布局、原解码16项、真实SDRAM全屏/紧凑预览及48次交错写、5模块独立综合通过。证据 diagnostics/image_scaling/S1_VALIDATION.md。

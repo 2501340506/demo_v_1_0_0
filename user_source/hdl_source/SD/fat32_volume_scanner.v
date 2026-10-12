@@ -21,7 +21,8 @@ module fat32_volume_scanner #(
     localparam IDLE=0, ZERO_REQ=1, ZERO_WAIT=2, ZERO_PARSE=3,
         BOOT_REQ=4, BOOT_WAIT=5, BOOT_PARSE=6, LAYOUT=7, ROOT=8,
         DIR_REQ=9, DIR_WAIT=10, DIR_NEXT=11, FAT_REQ=12, FAT_WAIT=13,
-        FAT_PARSE=14, FINISH=15, LAYOUT_SUB=16, LAYOUT_SHIFT=17, LAYOUT_MAX=18, LAYOUT_CHECK=19, ROOT_SHIFT=20, ROOT_ADD=21;
+        FAT_PARSE=14, FINISH=15, LAYOUT_SUB=16, LAYOUT_SHIFT=17, LAYOUT_MAX=18, LAYOUT_CHECK=19, ROOT_SHIFT=20, ROOT_ADD=21,
+        LAYOUT_ACCEPT=22,FAT_CHECK=23;
     localparam ERR_SECTOR=8'h10, ERR_SIGNATURE=8'h20, ERR_BPB=8'h21,
         ERR_LOOP=8'h23, ERR_RANGE=8'h24, ERR_LIMIT=8'h26;
     localparam COUNT_BITS=$clog2(MAX_VISITED_CLUSTERS+1);
@@ -42,6 +43,7 @@ module fat32_volume_scanner #(
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
     wire [8:0] fat_offset={current_cluster[6:0],2'b00};
     reg [31:0] overhead,data_sectors,cluster_count,partition_reserved,cluster_offset;
+    reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
     wire bpb_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
         reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
         total_sectors!=0 && fat_sectors!=0 && root_cluster>=2 &&
@@ -66,6 +68,7 @@ module fat32_volume_scanner #(
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;
+            layout_bad<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
             resource_valid<=0;resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
             resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
@@ -190,9 +193,13 @@ module fat32_volume_scanner #(
                 LAYOUT_SHIFT:begin cluster_count<=data_sectors>>cluster_shift;state<=LAYOUT_MAX;end
                 LAYOUT_MAX:begin max_cluster<=cluster_count+1;state<=LAYOUT_CHECK;end
                 LAYOUT_CHECK:begin
-                    if(total_sectors<=overhead || cluster_count==0 ||
+                    layout_bad<=total_sectors<=overhead || cluster_count==0 ||
                        root_cluster>max_cluster || cluster_count>32'h0fffffee ||
-                       (max_cluster>>7)>=fat_sectors)fail(ERR_BPB);
+                       (max_cluster>>7)>=fat_sectors;
+                    state<=LAYOUT_ACCEPT;
+                end
+                LAYOUT_ACCEPT:begin
+                    if(layout_bad)fail(ERR_BPB);
                     else begin current_cluster<=root_cluster;visited<=1;dir_sector<=0;state<=ROOT;end
                 end
                 ROOT:begin cluster_offset<=current_cluster-2;state<=ROOT_SHIFT;end
@@ -209,10 +216,17 @@ module fat32_volume_scanner #(
                 FAT_REQ:if(!sector_busy)begin sector_req<=1;state<=FAT_WAIT;end
                 FAT_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=FAT_PARSE;end
                 FAT_PARSE:begin
-                    if(next_cluster>=32'h0ffffff8)state<=FINISH;
-                    else if(next_cluster<2 || next_cluster>max_cluster)fail(ERR_RANGE);
-                    else if(next_cluster==current_cluster)fail(ERR_LOOP);
-                    else if(visited>=MAX_VISITED_CLUSTERS)fail(ERR_LIMIT);
+                    fat_end<=next_cluster>=32'h0ffffff8;
+                    fat_bad<=next_cluster<2 || next_cluster>max_cluster;
+                    fat_loop<=next_cluster==current_cluster;
+                    fat_limit<=visited>=MAX_VISITED_CLUSTERS;
+                    state<=FAT_CHECK;
+                end
+                FAT_CHECK:begin
+                    if(fat_end)state<=FINISH;
+                    else if(fat_bad)fail(ERR_RANGE);
+                    else if(fat_loop)fail(ERR_LOOP);
+                    else if(fat_limit)fail(ERR_LIMIT);
                     else begin current_cluster<=next_cluster;visited<=visited+1'b1;dir_sector<=0;state<=ROOT;end
                 end
                 FINISH:begin scan_done<=1;state<=IDLE;end

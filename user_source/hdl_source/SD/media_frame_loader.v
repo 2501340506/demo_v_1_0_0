@@ -4,10 +4,12 @@
 module media_frame_loader #(
     parameter ADDR_BITS=21, BURST_SIZE=64,
     parameter WRITE_V_FLIP=1, FRAME_WIDTH=640, FRAME_HEIGHT=480,
+    parameter BURST_GATE_ENABLE=0,
     parameter STALL_CYCLES=65535
 )(
     input rst, mem_clk, write_clk, write_rst,
     input Sdr_init_done, Sdr_init_ref_vld, Sdr_busy, App_rd_busy,
+    input burst_permit,
     output O_wr_busy,
     output App_wr_en, output [ADDR_BITS-1:0] App_wr_addr,
     output [31:0] App_wr_din, output [3:0] App_wr_dm,
@@ -32,7 +34,12 @@ module media_frame_loader #(
     wire pixel_accept = write_en && !fifo_full && source_fault==0 && !source_failed;
     // Leave one burst free when black rows / magnified rows replay rapidly.
     // Backpressure pauses the scaler; this is not a source overflow error.
-    assign write_ready = !fifo_full && source_fifo_words<9'd448 && source_fault==0 && !source_failed && !write_req;
+    reg capacity_ready;
+    always @(posedge write_clk or posedge write_rst)begin
+        if(write_rst)capacity_ready<=0;
+        else capacity_ready<=!fifo_full && source_fifo_words<9'd446 && source_fault==0 && !source_failed;
+    end
+    assign write_ready = capacity_ready && !write_req;
     assign App_wr_dm=4'b0000;
     assign write_cancel_ack=core_cancel_ack && write_cancel_req;
 
@@ -65,11 +72,11 @@ module media_frame_loader #(
         .we(pixel_accept),.re(App_wr_en),.di(write_data),.dout(App_wr_din),
         .empty_flag(fifo_empty),.full_flag(fifo_full),.wrusedw(source_fifo_words),.rdusedw(fifo_words)
     );
-    frame_fifo_write #(.ADDR_BITS(ADDR_BITS),.BURST_BITS(9),.BURST_SIZE(BURST_SIZE),
+    frame_fifo_write #(.BURST_GATE_ENABLE(BURST_GATE_ENABLE),.ADDR_BITS(ADDR_BITS),.BURST_BITS(9),.BURST_SIZE(BURST_SIZE),
         .WRITE_V_FLIP(WRITE_V_FLIP),.FRAME_WIDTH(FRAME_WIDTH),.FRAME_HEIGHT(FRAME_HEIGHT)) writer(
         .rst(rst),.mem_clk(mem_clk),.Sdr_init_done(Sdr_init_done),
         .Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
-        .App_rd_busy(App_rd_busy),.O_wr_busy(O_wr_busy),
+        .burst_permit(burst_permit),.App_rd_busy(App_rd_busy),.O_wr_busy(O_wr_busy),
         .App_wr_en(App_wr_en),.App_wr_addr(App_wr_addr),
         .write_req(write_req && !internal_cancel && !core_cancel_ack),.write_req_ack(write_req_ack),
         .write_cancel_req(write_cancel_req || internal_cancel),.write_cancel_ack(core_cancel_ack),

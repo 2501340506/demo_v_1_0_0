@@ -44,7 +44,8 @@ module fat32_file_streamer #(
     localparam ST_FAT_PARSE  = 4'd5;
     localparam ST_FAT_CHECK  = 4'd6;
     localparam ST_FINISH     = 4'd7;
-    localparam ST_OFFSET=4'd8,ST_SHIFT=4'd9,ST_ADDRESS=4'd10;
+    localparam ST_OFFSET=4'd8,ST_SHIFT=4'd9,ST_ADDRESS=4'd10,ST_VALIDATE=4'd11,ST_FAT_EVAL=4'd12;
+    reg start_bad,start_empty;
     reg [31:0] cluster_offset;
 
     localparam integer CHAIN_COUNT_WIDTH = $clog2(MAX_VISITED_CLUSTERS + 1);
@@ -52,7 +53,8 @@ module fat32_file_streamer #(
     reg [3:0] state;
     reg [31:0] current_cluster;
     reg [31:0] next_cluster;
-    reg next_eoc,next_range_bad,next_self;
+    (* keep = "true" *) reg next_eoc,next_range_bad,next_self;
+    (* keep = "true" *) reg [31:0] fat_value_latched, fat_cluster_snapshot;
     reg [31:0] remaining_bytes;
     reg [7:0] sector_in_cluster;
     reg [8:0] fat_entry_offset;
@@ -73,6 +75,13 @@ module fat32_file_streamer #(
         end
     endfunction
 
+    function valid_spc;
+        input [7:0] value;
+        begin case(value)
+            1,2,4,8,16,32,64,128:valid_spc=1;
+            default:valid_spc=0;
+        endcase end
+    endfunction
     assign file_busy = (state != ST_IDLE);
 
     task finish_with_error;
@@ -94,7 +103,7 @@ module fat32_file_streamer #(
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            state <= ST_IDLE;cluster_offset<=0;
+            state <= ST_IDLE;cluster_offset<=0;start_bad<=0;start_empty<=0;
             file_done <= 1'b0;
             file_valid <= 1'b0;
             file_byte <= 8'd0;
@@ -104,7 +113,7 @@ module fat32_file_streamer #(
             sector_lba <= 32'd0;
             current_cluster <= 32'd0;
             next_cluster <= 32'd0;
-            next_eoc<=0;next_range_bad<=0;next_self<=0;
+            next_eoc<=0;next_range_bad<=0;next_self<=0;fat_value_latched<=0;fat_cluster_snapshot<=0;
             remaining_bytes <= 32'd0;
             sector_in_cluster <= 8'd0;
             fat_entry_offset <= 9'd0;
@@ -146,14 +155,17 @@ module fat32_file_streamer #(
                     chain_count <= 1;
                     size_latched <= file_size;
                     cluster_shift <= spc_shift(sectors_per_cluster);
-                    if (file_size == 0) begin
+                    current_cluster <= first_cluster;
+                    start_empty <= file_size==0;
+                    start_bad <= first_cluster<2 || first_cluster>max_cluster || !valid_spc(sectors_per_cluster);
+                    state<=ST_VALIDATE;
+                end
+                ST_VALIDATE:begin
+                    if (start_empty) begin
                         state <= ST_FINISH;
-                    end else if (first_cluster < 2 || first_cluster > max_cluster ||
-                                 sectors_per_cluster == 0 ||
-                                 (sectors_per_cluster & (sectors_per_cluster-1'b1)) != 0) begin
+                    end else if (start_bad) begin
                         finish_with_error(ERR_CLUSTER_RANGE);
                     end else begin
-                        current_cluster <= first_cluster;
                         state <= ST_OFFSET;
                     end
                 end
@@ -193,11 +205,15 @@ module fat32_file_streamer #(
                         state <= ST_FAT_PARSE;
                 end
                 ST_FAT_PARSE: begin
-                    next_cluster <= {4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0};
-                    next_eoc <= {fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}>=28'hffffff8;
-                    next_range_bad <= {4'd0,fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}<2 ||
-                                      {4'd0,fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}>max_cluster;
-                    next_self <= {4'd0,fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}==current_cluster;
+                    fat_value_latched <= {4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0};
+                    fat_cluster_snapshot <= current_cluster;
+                    state<=ST_FAT_EVAL;
+                end
+                ST_FAT_EVAL: begin
+                    next_cluster <= fat_value_latched;
+                    next_eoc <= fat_value_latched[27:0]>=28'hffffff8;
+                    next_range_bad <= fat_value_latched<2 || fat_value_latched>max_cluster;
+                    next_self <= fat_value_latched==fat_cluster_snapshot;
                     state<=ST_FAT_CHECK;
                 end
                 ST_FAT_CHECK: begin

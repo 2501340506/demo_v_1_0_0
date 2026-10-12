@@ -54,6 +54,11 @@ module fat32_bmp_reader #(
  begin case(v) 2:spc_shift=1;4:spc_shift=2;8:spc_shift=3;16:spc_shift=4;
  32:spc_shift=5;64:spc_shift=6;128:spc_shift=7;default:spc_shift=0;endcase end
  endfunction
+ reg [2:0] header_cluster_shift;
+ always @(posedge clk or posedge rst)begin
+  if(rst)header_cluster_shift<=0;
+  else header_cluster_shift<=spc_shift(spc);
+ end
  assign ready=(state==IDLE && sd_init_done);
  assign state_code=(state==IDLE)?4'd1:((state<=SCAN_FINISH || state==SELECT_CHECK)?4'd2:4'd3);
  assign write_req=(state==WRITE_WAIT && !load_cancel);
@@ -64,13 +69,25 @@ module fat32_bmp_reader #(
  assign audio_spc=spc;
  assign audio_fat_lba=fat_lba;assign audio_data_lba=data_lba;assign audio_max_cluster=max_cluster;
  assign a_byte=sector_byte;assign a_index=sector_index;
+ // Register the scanner response bundle together. This separates the shared
+ // owner/state decode from the scanner's byte-field write enables.
+ reg scan_sector_valid,scan_sector_done;
+ reg [7:0] scan_sector_byte,scan_sector_error;
+ reg [8:0] scan_sector_index;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin scan_sector_valid<=0;scan_sector_done<=0;scan_sector_byte<=0;scan_sector_error<=0;scan_sector_index<=0;end
+  else begin
+   scan_sector_valid<=scan_owner && sector_valid;scan_sector_done<=scan_owner && sector_done;
+   scan_sector_byte<=sector_byte;scan_sector_error<=sector_error;scan_sector_index<=sector_index;
+  end
+ end
  fat32_volume_scanner #(.SCAN_AUDIO(SCAN_AUDIO),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
  .clk(clk),.rst_n(!rst),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
  .resource_valid(mask),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
- .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_owner && sector_valid),
- .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(scan_owner && sector_done),.sector_error(sector_error));
+ .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_sector_valid),
+ .sector_byte(scan_sector_byte),.sector_byte_index(scan_sector_index),.sector_done(scan_sector_done),.sector_error(scan_sector_error));
  fat32_file_streamer #(.MAX_VISITED_CLUSTERS(SCALE_ENABLE?16384:MAX_VISITED_CLUSTERS),.DATA_GATE_ENABLE(SCALE_ENABLE)) streamer(
  .clk(clk),.rst_n(!rst && !abort_file),.file_start(file_go),.data_permit(data_permit),.first_cluster(task_cluster),.file_size(task_size),
  .sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
@@ -145,7 +162,7 @@ module fat32_bmp_reader #(
  else begin task_cluster<=selected_cluster;task_size<=selected_size;
  header_lba<=selected_cluster-2;state<=HEADER_SHIFT;end
  end
- HEADER_SHIFT:begin header_lba<=header_lba<<spc_shift(spc);state<=HEADER_ADD;end
+ HEADER_SHIFT:begin header_lba<=header_lba<<header_cluster_shift;state<=HEADER_ADD;end
  HEADER_ADD:begin header_lba<=data_lba+header_lba;state<=HEADER_RESET;end
  HEADER_RESET:state<=HEADER_REQ;
  HEADER_REQ:if(!sector_busy)begin header_go<=1;state<=HEADER_WAIT;end

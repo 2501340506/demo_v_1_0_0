@@ -2,6 +2,7 @@ param(
     [string]$BuildName = 'audio_s0_local1',
     [string]$TdRoot = 'D:/TD/anlogic/TD6.2.1',
     [switch]$HighFanoutOptimization,
+    [switch]$PlaceHoldFix,
     [ValidateSet('medium','high','ultra')][string]$TimingOptimization = 'medium',
     [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization = 'auto'
 )
@@ -47,6 +48,7 @@ foreach ($run in @('syn_1', 'phy_1')) {
     if ($run -eq 'phy_1') {
         $physicalOptions = @()
         if ($HighFanoutOptimization) { $physicalOptions += 'place hfn_opt_effort high' }
+        if ($PlaceHoldFix) { $physicalOptions += 'place fix_hold high' }
         if ($TimingOptimization -ne 'medium') { $physicalOptions += "place opt_timing $TimingOptimization" }
         if ($PostPlaceOptimization -ne 'auto') { $physicalOptions += "place post_place_opt $PostPlaceOptimization" }
         if ($physicalOptions.Count -gt 0) {

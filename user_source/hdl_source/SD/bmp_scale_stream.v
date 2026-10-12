@@ -9,6 +9,31 @@ module bmp_scale_stream (
  wire [7:0] bytes_data;wire [31:0] bytes_offset;
  wire [15:0] w,h,px,py;wire [23:0] raw_rgb;
  wire decoder_done,scaler_done;
+ // Two output slots break the coordinator/FIFO-ready path into the scaler.
+ // Occupancy alone drives scaler_ready; no combinational downstream ready.
+ wire scaler_valid,scaler_ready;
+ wire [23:0] scaler_rgb;
+ reg [23:0] pixel_slot[0:1];
+ reg read_slot,write_slot;
+ reg [1:0] pixel_count;
+ wire push_pixel=scaler_valid && scaler_ready;
+ wire pop_pixel=pixel_valid && pixel_ready;
+ assign scaler_ready=pixel_count<2;
+ assign pixel_valid=pixel_count!=0;
+ assign pixel_rgb=pixel_slot[read_slot];
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin read_slot<=0;write_slot<=0;pixel_count<=0;end
+  else if(file_start)begin read_slot<=0;write_slot<=0;pixel_count<=0;end
+  else begin
+   if(push_pixel)begin pixel_slot[write_slot]<=scaler_rgb;write_slot<=~write_slot;end
+   if(pop_pixel)read_slot<=~read_slot;
+   case({push_pixel,pop_pixel})
+    2'b10:pixel_count<=pixel_count+1'b1;
+    2'b01:pixel_count<=pixel_count-1'b1;
+    default:;
+   endcase
+  end
+ end
  reg decode_seen,scale_seen,reported;
  bmp_sector_buffer buffer(
   .clk(clk),.rst(rst || file_start),.in_valid(file_valid),.in_byte(file_byte),
@@ -25,8 +50,8 @@ module bmp_scale_stream (
   .image_width(w),.image_height(h));
  image_scale_nearest scaler(.clk(clk),.rst(rst || file_start),.start(header_valid),
   .image_width(w),.image_height(h),.in_valid(raw_valid),.in_ready(raw_ready),
-  .in_rgb(raw_rgb),.in_x(px),.in_y(py),.out_valid(pixel_valid),.out_ready(pixel_ready),
-  .out_rgb(pixel_rgb),.done(scaler_done));
+  .in_rgb(raw_rgb),.in_x(px),.in_y(py),.out_valid(scaler_valid),.out_ready(scaler_ready),
+  .out_rgb(scaler_rgb),.done(scaler_done));
  always @(posedge clk or posedge rst)begin
   if(rst)begin done<=0;decode_seen<=0;scale_seen<=0;reported<=0;end
   else begin
@@ -36,7 +61,7 @@ module bmp_scale_stream (
     if(decoder_done)decode_seen<=1;
     if(scaler_done)scale_seen<=1;
     if(!reported && error==0 && upstream_error==0 &&
-       (decode_seen || decoder_done) && (scale_seen || scaler_done))begin done<=1;reported<=1;end
+       (decode_seen || decoder_done) && scale_seen && pixel_count==0)begin done<=1;reported<=1;end
    end
   end
  end
