@@ -12,6 +12,17 @@
 
 ## 本地功能验证
 
+### local.2 时序修复增量（2026-10-13）
+
+- `timing_reader2`：本轮响应整束流水后的 42 项 FAT32 全部通过；`timing_reader_pipe1` 另覆盖缩放模式末字节与结束同拍。
+- `timing_stream_pipe1`：解码器到缩放器增加 ready/valid 寄存级后，160×120、640×480、801×601、1920×1080、1080×1920 五种完整字节流逐像素通过，每张 307200 像素，零错误警告。
+- `timing_loader_final1`：真实 SDRAM 双 writer、缩略图写入、背压和刷新通过。
+- `timing_preview_mixed4`：混合尺寸、音频与预览系统通过，253 帧、174 预览帧、6 次提交/提示音、206204 个正确 PCM 样本、2 个播放会话，无欠载/溢出。
+- `timing_preview_failure4`：失败恢复、重试、超时后缓存选择及音频通过，165 帧、60 预览帧、10 次提交/提示音、139171 个正确 PCM 样本、4 个播放会话，无欠载/溢出。
+- `timing_margin_attempt2`：原 SDC，high/high 并启用布局 Hold 修复；Routed Setup +0.096ns、Hold +0.076ns、STA coverage 99.97%。16757 LUT、43 BRAM9K、11 DSP、1 PLL；时序审计类别与既有工程一致。
+
+历史失败：`timing_margin_attempt1` 为 Setup −0.329ns、Hold −0.020ns，不交付。`timing_preview_final3` 同时开启 Mixed 与 Failure，测试台的 Mixed 断言会把预期超时停止视为失败；按既有验证合同拆为 mixed4 与 failure4 后分别通过，不修改测试台或生产 RTL规避断言。
+
 |运行|实际结果与范围|
 |---|---|
 |scale_s3_loader2|真实加密 SDRAM 控制器/BL4 物理模型，307200 全屏与76800缩略图逐像素；取消后重载、背压、刷新通过|

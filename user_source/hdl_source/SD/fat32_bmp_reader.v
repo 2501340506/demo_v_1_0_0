@@ -88,12 +88,28 @@ module fat32_bmp_reader #(
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
  .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_sector_valid),
  .sector_byte(scan_sector_byte),.sector_byte_index(scan_sector_index),.sector_done(scan_sector_done),.sector_error(scan_sector_error));
+ // Keep the file response in one pipeline bundle: the last byte may arrive
+ // with done. Cancellation discards the queued response while the service
+ // continues draining the physical read under its existing ownership.
+ reg file_sector_valid,file_sector_done;
+ reg [7:0] file_sector_byte,file_sector_error;
+ reg [8:0] file_sector_index;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin
+   file_sector_valid<=0;file_sector_done<=0;
+   file_sector_byte<=0;file_sector_error<=0;file_sector_index<=0;
+  end else begin
+   file_sector_valid<=file_owner && !abort_file && sector_valid;
+   file_sector_done<=file_owner && !abort_file && sector_done;
+   file_sector_byte<=sector_byte;file_sector_error<=sector_error;file_sector_index<=sector_index;
+  end
+ end
  fat32_file_streamer #(.MAX_VISITED_CLUSTERS(SCALE_ENABLE?16384:MAX_VISITED_CLUSTERS),.DATA_GATE_ENABLE(SCALE_ENABLE)) streamer(
  .clk(clk),.rst_n(!rst && !abort_file),.file_start(file_go),.data_permit(data_permit),.first_cluster(task_cluster),.file_size(task_size),
  .sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
  .file_busy(stream_busy),.file_done(stream_done),.file_valid(stream_valid),.file_byte(stream_byte),.file_byte_offset(stream_offset),.fs_error(stream_error),
- .sector_req(file_req),.sector_lba(file_lba),.sector_busy(sector_busy),.sector_valid(file_owner && sector_valid),
- .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(file_owner && sector_done),.sector_error(sector_error));
+ .sector_req(file_req),.sector_lba(file_lba),.sector_busy(sector_busy),.sector_valid(file_sector_valid),
+ .sector_byte(file_sector_byte),.sector_byte_index(file_sector_index),.sector_done(file_sector_done),.sector_error(file_sector_error));
  // Shared service retains per-client ownership through cancellation and drain.
  sd_sector_service #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(TIMEOUT_MS)) adapter(
  .clk(clk),.rst(rst),.p_req(scan_owner?scan_req:(file_owner?(file_req && request_allowed):header_go)),
@@ -135,7 +151,12 @@ module fat32_bmp_reader #(
  task_cluster<=0;task_size<=0;header_lba<=0;io_error<=0;stream_finished<=0;decode_finished<=0;ack_wait<=0;selected_bad<=0;
  end else begin
  scan_go<=0;file_go<=0;header_go<=0;scan_found_valid<=0;load_done<=0;load_error<=0;scan_error<=0;
- if(sector_done && sector_error!=0)io_error<=sector_error;
+ // Observe file errors with the same response bundle consumed by streamer.
+ // This preserves the existing distinction between a retryable stream error
+ // and a previously latched physical timeout.
+ if((file_owner ? file_sector_done : sector_done) &&
+    (file_owner ? file_sector_error : sector_error)!=0)
+  io_error<=file_owner ? file_sector_error : sector_error;
  // Cancel only the current file and drain an already issued sector. Scanner
  // geometry stays intact for a retry or the next cached image.
  if(load_cancel) begin

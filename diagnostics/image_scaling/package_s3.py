@@ -21,7 +21,7 @@ inputs += [(root / 'TD_project' / n).resolve().relative_to(root)
 for name in inputs:
     assert (root / name).read_bytes() == (build / name).read_bytes(), f'Build input changed: {name}'
 logs = {
-    'scale_s3_loader2/sim.log': 'PASS dual loader:',
+    'timing_loader_final1/sim.log': 'PASS dual loader:',
     'scale_s3_control4/sim.log': 'PASS preview control:',
     'scale_s3_keys1/sim.log': 'PASS preview keys:',
     'scale_s3_player1/sim.log': 'PASS preview player:',
@@ -29,8 +29,9 @@ logs = {
     'scale_s3_uart1/sim.log': 'PASS UART subtitle:',
     'scale_s3_preview3/system.log': 'PASS preview system:',
     'scale_s3_preview_audio1/system.log': 'PCM system observations:',
-    'scale_s3_preview_final11/system.log': 'PASS preview failure recovery:',
-    'scale_s3_stream2/sim.log': 'PASS byte stream suite',
+    'timing_preview_mixed4/system.log': 'PASS preview system:',
+    'timing_preview_failure4/system.log': 'PASS preview failure recovery:',
+    'timing_stream_pipe1/sim.log': 'PASS byte stream suite',
     'scale_s3_fragment1/reader0_gap2_mode0.log': 'PASS FAT32 reader',
     'scale_s3_regression1/system.log': 'PASS cache system:',
 }
@@ -38,7 +39,7 @@ unit_logs = [f for f in (output / 'scale_s3_units1').glob('tb_*.log') if '.conso
 assert len(unit_logs) == 21
 for f in unit_logs:
     logs[f.relative_to(output).as_posix()] = 'PASS '
-fat_logs=list((output / "scale_s3_fat32_7").glob("reader*.log"))
+fat_logs=list((output / "timing_reader2").glob("reader*.log"))
 assert len(fat_logs)==42
 for f in fat_logs:
     logs[f.relative_to(output).as_posix()]="PASS FAT32 reader"

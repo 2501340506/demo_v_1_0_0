@@ -24,6 +24,7 @@ module bmp24_decoder #(
  wire [33:0] pixel_end;
  wire header_ok,header_complete,is_32;
  reg active,checked,end_pending;
+ reg end_count_ok,end_row_ok;
  localparam ROW_BITS=RANGE_DIMENSIONS?11:32;
  localparam BYTE_BITS=RANGE_DIMENSIONS?13:32;
  localparam COUNT_BITS=RANGE_DIMENSIONS?22:32;
@@ -61,7 +62,7 @@ module bmp24_decoder #(
  wire accepted_header=header_ok && {2'b0,size_reg}>=pixel_end;
  always @(posedge clk or posedge rst) begin
   if(rst) begin
-   active<=0;checked<=0;end_pending<=0;size_reg<=0;header_good<=0;pixels_started<=0;
+   active<=0;checked<=0;end_pending<=0;end_count_ok<=0;end_row_ok<=0;size_reg<=0;header_good<=0;pixels_started<=0;
    header_accepted<=0;pixel_valid<=0;frame_commit<=0;bmp_done<=0;bmp_error<=0;
    pixel_rgb<=0;pixel_x<=0;pixel_y<=0;row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;
    blue<=0;green<=0;
@@ -69,7 +70,7 @@ module bmp24_decoder #(
    header_accepted<=0;frame_commit<=0;bmp_done<=0;
    if(!FLOW_CONTROL || pixel_ready) pixel_valid<=0;
    if(file_start) begin
-    active<=1;checked<=0;end_pending<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;
+    active<=1;checked<=0;end_pending<=0;end_count_ok<=0;end_row_ok<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;
     row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;pixel_valid<=0;
    end else if(active) begin
     if(header_complete && !checked) begin
@@ -91,10 +92,14 @@ module bmp24_decoder #(
      if(row_byte==row_last)begin row_byte<=0;row<=row+1;col<=0;phase<=0;end
      else row_byte<=row_byte+1;
     end
-    if(file_end)end_pending<=1;
+    if(file_end)begin
+     end_pending<=1;
+     end_count_ok<=checked && pixel_count==expected_pixels;
+     end_row_ok<=row==height && row_byte==0;
+    end
     if(end_pending && (!FLOW_CONTROL || !pixel_valid || pixel_ready))begin
      active<=0;end_pending<=0;
-     if(checked && pixel_count==expected_pixels && row==height && row_byte==0)begin
+     if(end_count_ok && end_row_ok)begin
       frame_commit<=1;bmp_done<=1;bmp_error<=0;
      end else bmp_error<=3;
     end

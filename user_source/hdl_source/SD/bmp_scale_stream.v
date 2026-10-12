@@ -35,6 +35,21 @@ module bmp_scale_stream (
   end
  end
  reg decode_seen,scale_seen,reported;
+ // Registered ready/valid boundary keeps decoder counters and coordinates
+ // out of the scaler's row-selection cone.
+ reg raw_pipe_valid;
+ reg [23:0] raw_pipe_rgb;
+ reg [15:0] raw_pipe_x,raw_pipe_y;
+ wire scaler_in_ready;
+ assign raw_ready=!raw_pipe_valid || scaler_in_ready;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin raw_pipe_valid<=0;raw_pipe_rgb<=0;raw_pipe_x<=0;raw_pipe_y<=0;end
+  else if(file_start)raw_pipe_valid<=0;
+  else if(raw_ready)begin
+   raw_pipe_valid<=raw_valid;
+   if(raw_valid)begin raw_pipe_rgb<=raw_rgb;raw_pipe_x<=px;raw_pipe_y<=py;end
+  end
+ end
  bmp_sector_buffer buffer(
   .clk(clk),.rst(rst || file_start),.in_valid(file_valid),.in_byte(file_byte),
   .in_offset(file_byte_offset),.in_done(file_end),.data_permit(data_permit),
@@ -49,8 +64,8 @@ module bmp_scale_stream (
   .frame_commit(),.bmp_done(decoder_done),.bmp_error(error),.file_ready(bytes_ready),
   .image_width(w),.image_height(h));
  image_scale_nearest scaler(.clk(clk),.rst(rst || file_start),.start(header_valid),
-  .image_width(w),.image_height(h),.in_valid(raw_valid),.in_ready(raw_ready),
-  .in_rgb(raw_rgb),.in_x(px),.in_y(py),.out_valid(scaler_valid),.out_ready(scaler_ready),
+  .image_width(w),.image_height(h),.in_valid(raw_pipe_valid),.in_ready(scaler_in_ready),
+  .in_rgb(raw_pipe_rgb),.in_x(raw_pipe_x),.in_y(raw_pipe_y),.out_valid(scaler_valid),.out_ready(scaler_ready),
   .out_rgb(scaler_rgb),.done(scaler_done));
  always @(posedge clk or posedge rst)begin
   if(rst)begin done<=0;decode_seen<=0;scale_seen<=0;reported<=0;end

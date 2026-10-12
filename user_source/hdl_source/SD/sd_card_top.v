@@ -137,13 +137,18 @@ sd_card_cmd #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .RESPONSE_TIMEOUT_MS(RESPONSE_TIMEOUT_M
 
 );
 
+wire MISO_delay_top;
+(* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10)) u_miso_delay_top (.o(MISO_delay_top),.a(SD_MISO));
+wire spi_miso_sample;
+assign spi_miso_sample = sd_init_done ? MISO_delay_top : SD_MISO;
+
 spi_master spi_master_m0(
 	.sys_clk                        (clk                    ),
 	.rst                            (protocol_rst           ),
 	.nCS                            (SD_nCS                 ),
 	.DCLK                           (SD_DCLK                ),
 	.MOSI                           (SD_MOSI                ),
-	.MISO                           (SD_MISO                ),
+	.MISO                           (spi_miso_sample         ),
 	.clk_div                        (clk_div                ),
 	.CPOL                           (1'b1                   ),
 	.CPHA                           (1'b1                   ),
