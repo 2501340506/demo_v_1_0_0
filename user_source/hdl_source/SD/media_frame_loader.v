@@ -15,7 +15,7 @@ module media_frame_loader #(
     input write_cancel_req, output write_cancel_ack,
     input [ADDR_BITS-1:0] write_addr_0, write_addr_1, write_addr_2, write_addr_3,
     input [1:0] write_addr_index, input [ADDR_BITS-1:0] write_len,
-    input write_en, input [31:0] write_data,
+    input write_en, input [31:0] write_data, output write_ready,
     input source_done, source_error,
     output reg write_finish,
     // Memory-domain error is held with a toggle; source decode failure already
@@ -24,11 +24,15 @@ module media_frame_loader #(
 );
     wire fifo_clear, fifo_empty, fifo_full, core_finish, core_cancel_ack;
     wire [8:0] fifo_words;
+    wire [8:0] source_fifo_words;
     reg internal_cancel;
     reg [ADDR_BITS:0] received;
     reg source_complete, source_failed, complete_pending;
     reg [2:0] source_fault;
     wire pixel_accept = write_en && !fifo_full && source_fault==0 && !source_failed;
+    // Leave one burst free when black rows / magnified rows replay rapidly.
+    // Backpressure pauses the scaler; this is not a source overflow error.
+    assign write_ready = !fifo_full && source_fifo_words<9'd448 && source_fault==0 && !source_failed && !write_req;
     assign App_wr_dm=4'b0000;
     assign write_cancel_ack=core_cancel_ack && write_cancel_req;
 
@@ -59,7 +63,7 @@ module media_frame_loader #(
     wfifo_32_32_512 write_buf(
         .clkr(mem_clk),.clkw(write_clk),.rst(fifo_clear || rst || write_rst),
         .we(pixel_accept),.re(App_wr_en),.di(write_data),.dout(App_wr_din),
-        .empty_flag(fifo_empty),.full_flag(fifo_full),.wrusedw(),.rdusedw(fifo_words)
+        .empty_flag(fifo_empty),.full_flag(fifo_full),.wrusedw(source_fifo_words),.rdusedw(fifo_words)
     );
     frame_fifo_write #(.ADDR_BITS(ADDR_BITS),.BURST_BITS(9),.BURST_SIZE(BURST_SIZE),
         .WRITE_V_FLIP(WRITE_V_FLIP),.FRAME_WIDTH(FRAME_WIDTH),.FRAME_HEIGHT(FRAME_HEIGHT)) writer(

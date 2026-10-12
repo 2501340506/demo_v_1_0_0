@@ -6,6 +6,7 @@ module media_frame_reader #(
     input rst, mem_clk, read_clk, read_rst,
     input Sdr_init_done, Sdr_init_ref_vld, Sdr_busy, App_wr_busy,
     output O_rd_busy, output App_rd_en, output [ADDR_BITS-1:0] App_rd_addr,
+    output refill_priority,
     input Sdr_rd_en, input [31:0] Sdr_rd_dout,
     input read_req, output read_req_ack, output read_finish,
     input display_commit_request, output display_commit_ack,
@@ -47,7 +48,7 @@ module media_frame_reader #(
         .Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),.Sdr_rd_en(Sdr_rd_en),
         .App_wr_busy(App_wr_busy),.O_rd_busy(O_rd_busy),.App_rd_en(App_rd_en),.App_rd_addr(App_rd_addr),
         .read_req(read_req),.read_req_ack(read_req_ack),.read_finish(read_finish),
-        .display_commit_request(display_commit_request),.display_commit_ack(display_commit_ack),
+        .display_commit_request(display_commit_request),.display_commit_ack(display_commit_ack),.refill_priority(refill_priority),
         .read_addr_0(read_addr_0),.read_addr_1(read_addr_1),.read_addr_2(read_addr_2),.read_addr_3(read_addr_3),
         .read_addr_index(read_addr_index),.read_len(read_len),
         .fifo_aclr(fifo_clear),.wrusedw({1'b0,fifo_words})

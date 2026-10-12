@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 // Real FIFOs, protected controller and command/DQ SDRAM model, 100/40/25 MHz.
 module tb_cache_system;
+ parameter SCALE_TEST=0;
+ parameter MIXED_TEST=0;
  reg src_clk=0,mem_clk=0,pix_clk=0,rst=1;
  always #5 src_clk=~src_clk;
  always #12.5 mem_clk=~mem_clk;
@@ -19,15 +21,15 @@ module tb_cache_system;
  sdram_bl4_model memory(.clk(sc),.ras(ras),.cas(cas),.we(we),.ba(ba),.addr(addr),.dm(dm),.dq(dq));
  wire req,src_we,source_done,source_error,cancel;
  wire [31:0] src_data;wire [1:0] write_bank;
- wire ack,finish,cancel_ack,error_toggle;wire [2:0] memory_error;
+ wire ack,finish,cancel_ack,error_toggle,write_ready,refill_priority;wire [2:0] memory_error;
  media_frame_loader loader(.rst(rst),.mem_clk(mem_clk),.write_clk(src_clk),.write_rst(rst),
   .Sdr_init_done(init_done),.Sdr_init_ref_vld(refresh),.Sdr_busy(busy),
-  .App_rd_busy(rd_busy || block_writer),.O_wr_busy(wr_busy),
+  .App_rd_busy(rd_busy || block_writer || (SCALE_TEST && refill_priority)),.O_wr_busy(wr_busy),
   .App_wr_en(wr_en),.App_wr_addr(wr_addr),.App_wr_din(wr_data),.App_wr_dm(),
   .write_req(req),.write_req_ack(ack),.write_cancel_req(cancel),.write_cancel_ack(cancel_ack),
   .write_addr_0(21'd0),.write_addr_1(21'd307200),.write_addr_2(21'd614400),.write_addr_3(21'd921600),
   .write_addr_index(write_bank),.write_len(21'd307200),.write_en(src_we),.write_data(src_data),
-  .source_done(source_done),.source_error(source_error),.write_finish(finish),
+  .source_done(source_done),.source_error(source_error),.write_finish(finish),.write_ready(write_ready),
   .error_toggle(error_toggle),.memory_error(memory_error));
  wire display_valid,commit_req; wire [1:0] display_bank;
  reg hold_commit=0,reader_commit_req=0;
@@ -42,7 +44,7 @@ module tb_cache_system;
  reg suppress_return=0;
  media_frame_reader reader(.rst(rst),.mem_clk(mem_clk),.read_clk(pix_clk),.read_rst(rst),
   .Sdr_init_done(init_done),.Sdr_init_ref_vld(refresh),.Sdr_busy(busy),
-  .App_wr_busy(wr_busy),.O_rd_busy(rd_busy),.App_rd_en(rd_en),.App_rd_addr(rd_addr),
+  .App_wr_busy(wr_busy),.O_rd_busy(rd_busy),.App_rd_en(rd_en),.App_rd_addr(rd_addr),.refill_priority(refill_priority),
   .Sdr_rd_en(rd_valid && !suppress_return),.Sdr_rd_dout(rd_data),
   .read_req(read_req),.read_req_ack(read_ack),.read_finish(read_finish),
   .display_commit_request(reader_commit_req),.display_commit_ack(commit_ack),
@@ -73,7 +75,7 @@ module tb_cache_system;
 `endif
  wire bgm_valid,bgm_ready,bgm_active;
  wire signed [15:0] bgm_left,bgm_right;
- sd_card_bmp #(.AUDIO_ENABLE(AUDIO_TEST),.TRANSITION_ENABLE(TRANSITION_TEST),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
+ sd_card_bmp #(.SCALE_ENABLE(SCALE_TEST),.AUDIO_ENABLE(AUDIO_TEST),.TRANSITION_ENABLE(TRANSITION_TEST),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.USE_FRAME_RESULT(1)) app(
   .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),.bgm_left(bgm_left),.bgm_right(bgm_right),
   .transition_pix_clk(pix_clk),.transition_pix_rst(rst),
   .transition_frame_start(transition_frame_start),.transition_commit_done(media_update),
@@ -85,7 +87,7 @@ module tb_cache_system;
   .write_cancel_req(cancel),.write_cancel_ack(cancel_ack),.source_frame_done(source_done),.source_frame_error(source_error),
   .frame_error_toggle(error_toggle),.frame_memory_error(memory_error),.reader_error(reader_error),.reader_underflow(underflow),
   .write_finish_toggle(finish_toggle),.display_commit_ack(commit_ack),.display_commit_request(commit_req),
-  .write_buf_idx(write_bank),.disp_buf_idx(display_bank),.write_req(req),.write_req_ack(ack),.write_en(src_we),.write_data(src_data),
+  .write_buf_idx(write_bank),.disp_buf_idx(display_bank),.write_req(req),.write_req_ack(ack),.write_ready(write_ready),.write_en(src_we),.write_data(src_data),
   .SD_nCS(),.SD_DCLK(),.SD_MOSI(),.SD_MISO(1'b1)
  );
  media_commit_cdc cdc(.src_clk(src_clk),.dst_clk(pix_clk),.src_rst(rst),.dst_rst(rst),
@@ -110,7 +112,31 @@ module tb_cache_system;
 
  // Sector-level card service only. FAT32, BMP, both asynchronous FIFOs,
  // protected SDRAM controller and the physical command/DQ model are real RTL.
- localparam FILE_BYTES=921654, FILE_CLUSTERS=15, FILE_SPAN=1920;
+ localparam FILE_BYTES=921654, FILE_CLUSTERS=MIXED_TEST?96:15, FILE_SPAN=FILE_CLUSTERS*128;
+ function integer source_width(input integer i);
+  if(!MIXED_TEST)source_width=640;
+  else case(i)0:source_width=MIXED_TEST==2?1920:160;1:source_width=801;2:source_width=1920;default:source_width=1080;endcase
+ endfunction
+ function integer source_height(input integer i);
+  if(!MIXED_TEST)source_height=480;
+  else case(i)0:source_height=MIXED_TEST==2?1080:120;1:source_height=601;2:source_height=1080;default:source_height=1920;endcase
+ endfunction
+ function integer source_bytes(input integer i);source_bytes=54+((source_width(i)*3+3)&~3)*source_height(i);endfunction
+ function [23:0] displayed_pattern(input integer i,g,n);
+  integer w,h,dw,dh,l,t,x,y,srcx,srcy;
+  begin
+   if(!MIXED_TEST)displayed_pattern=pattern(i,g,n);
+   else begin
+    w=source_width(i);h=source_height(i);x=n%640;y=479-n/640;
+    if(w*480>=h*640)begin dw=640;dh=h*640/w;end else begin dw=w*480/h;dh=480;end
+    l=(640-dw)/2;t=(480-dh)/2;displayed_pattern=0;
+    if(x>=l && x<l+dw && y>=t && y<t+dh)begin
+     srcx=(x-l)*w/dw;srcy=(y-t)*h/dh;
+     displayed_pattern={8'(32+i*40+g),8'(h-1-srcy),8'(srcx)};
+    end
+   end
+  end
+ endfunction
  integer card_generation=0;
  reg [3:0] card_mask=15;
  reg no_card=0;
@@ -143,14 +169,17 @@ module tb_cache_system;
   begin byte_at=0;
    case(pos)
     0:byte_at="B";1:byte_at="M";
-    2,3,4,5:byte_at=FILE_BYTES>>(8*(pos-2));
+    2,3,4,5:byte_at=source_bytes(id)>>(8*(pos-2));
     10:byte_at=54;14:byte_at=40;
-    18,19,20,21:byte_at=640>>(8*(pos-18));
-    22,23,24,25:byte_at=480>>(8*(pos-22));
+    18,19,20,21:byte_at=source_width(id)>>(8*(pos-18));
+    22,23,24,25:byte_at=source_height(id)>>(8*(pos-22));
     26:byte_at=1;28:byte_at=24;
-    default:if(pos>=54 && pos<FILE_BYTES) begin
+    default:if(pos>=54 && pos<source_bytes(id)) begin
      color=pattern(id,generation,(pos-54)/3);
-     byte_at=color>>(8*((pos-54)%3));
+     if(MIXED_TEST)begin
+      color={8'(32+id*40+generation),8'((pos-54)/((source_width(id)*3+3)&~3)),8'(((pos-54)%((source_width(id)*3+3)&~3))/3)};
+      byte_at=color>>(8*(((pos-54)%((source_width(id)*3+3)&~3))%3));
+     end else byte_at=color>>(8*((pos-54)%3));
     end
    endcase
   end
@@ -170,7 +199,7 @@ module tb_cache_system;
    end else if(lba<1025) begin
     entry=(lba-1)*128+off/4;
     if(entry<=2)v=32'h0fffffff;
-    else if(entry<63)v=((entry-3)%15==14)?32'h0fffffff:entry+1;
+    else if(entry<3+4*FILE_CLUSTERS)v=((entry-3)%FILE_CLUSTERS==FILE_CLUSTERS-1)?32'h0fffffff:entry+1;
     metadata=v>>(8*(off%4));
    end else if(lba==1025) begin
     id=off/32;part=off%32;
@@ -178,8 +207,8 @@ module tb_cache_system;
      case(part)
       0:metadata=card_mask[id]?"P":8'he5;1:metadata="I";2:metadata="C";3:metadata="1"+id;
       4,5,6,7:metadata=" ";8:metadata="B";9:metadata="M";10:metadata="P";11:metadata=8'h20;
-      26:metadata=3+id*15;
-      28,29,30,31:metadata=FILE_BYTES>>(8*(part-28));
+      26,27:metadata=(3+id*FILE_CLUSTERS)>>(8*(part-26));
+      28,29,30,31:metadata=source_bytes(id)>>(8*(part-28));
       default:;
      endcase
     end
@@ -235,10 +264,12 @@ module tb_cache_system;
    start_image[starts]=app.load_idx;starts=starts+1;epoch_writes=0;
   end
   if(app.cache_complete) begin
+   if(MIXED_TEST)$display("MIXED cached image=%0d time=%0t",app.cache_complete_image,$time);
    bank_id[write_bank]=file_id(app.cache_complete_image);bank_generation[write_bank]=card_generation;
    completed=completed+1;
   end
   if(app.cache_hit)hits=hits+1;
+  if(MIXED_TEST && app.timeout_stopped)$fatal(1,"mixed stopped load=%0d parser=%0d fat=%h memory=%0d loaderfault=%0d received=%0d sourcecomplete=%b fifo=%0d",app.load_idx,app.parser_error,app.bmp_read_m0.fat_error,memory_error,loader.source_fault,loader.received,loader.source_complete,loader.fifo_words);
   if(app.diag_commit)commits=commits+1;
   if(committed_valid && committed_ready) begin
    if(!display_valid || committed_image!==app.img_idx || sent>=commits)$fatal(1,"audio association before actual commit");
@@ -250,6 +281,7 @@ module tb_cache_system;
   cues=cues+1;#1;if(tone.blip_countdown!=4800)$fatal(1,"missing picture tone");
  end
  always @(posedge mem_clk) if(!rst) begin
+  if(MIXED_TEST && loader.stalled==65534)$fatal(1,"stall fifo=%0d srcfifo=%0d complete=%b written=%b corestate=%0d count=%0d len=%0d rdpriority=%b rdbusy=%b writerbusy=%b init=%b busy=%b",loader.fifo_words,loader.source_fifo_words,loader.complete_sync,loader.written,loader.writer.state,loader.writer.write_cnt,loader.writer.write_len_latch,refill_priority,rd_busy,wr_busy,init_done,busy);
   if(wr_en) begin
    if(!wr_prev && refresh)$fatal(1,"new write burst during refresh protection");
    if(display_valid && wr_addr/307200==app.current_bank)$fatal(1,"overwriting actual display bank");
@@ -279,7 +311,7 @@ module tb_cache_system;
  always @(negedge pix_clk) if(!rst && display_valid) begin
   if(underflow)$fatal(1,"unexpected displayed underflow");
   if(de) begin
-   if(rgb!==pattern(bank_id[app.current_bank],bank_generation[app.current_bank],(479-pixel/640)*640+pixel%640))
+   if(rgb!==displayed_pattern(bank_id[app.current_bank],bank_generation[app.current_bank],(479-pixel/640)*640+pixel%640))
     $fatal(1,"pixel mismatch bank=%0d image=%0d generation=%0d n=%0d got=%h",app.current_bank,
              bank_id[app.current_bank],bank_generation[app.current_bank],pixel,rgb);
    if(pixel==307199)begin pixel=0;frames=frames+1;if(TRANSITION_TEST && frames%32==0)$display("TRANSITION progress frames=%0d commits=%0d",frames,commits);end else pixel=pixel+1;
@@ -293,6 +325,12 @@ module tb_cache_system;
  integer saved_starts,saved_reads,saved_commits,saved_bank,saved_frames;
  initial begin
   #200;rst=0;
+  if(MIXED_TEST)begin
+   wait(app.cache_valid==15 && !app.load_busy);saved_frames=frames;wait(frames>=saved_frames+2);
+   for(integer k=1;k<4;k=k+1)begin key_next();wait_image(k);saved_frames=frames;wait(frames>=saved_frames+2);end
+   $display("PASS mixed physical system: four dimensions through FAT32/scaler/SDRAM/display frames=%0d",frames);
+   $display("PASS cache system: mixed");$finish;
+  end
   wait(display_valid && app.load_idx==1 && app.load_busy);
   if(app.cache_valid!=1)$fatal(1,"first image not displayed before background fill");
   key_prev();wait_image(3);

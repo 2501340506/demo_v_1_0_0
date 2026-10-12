@@ -42,6 +42,7 @@ module fat32_file_streamer #(
     localparam ST_FAT_REQ    = 4'd3;
     localparam ST_FAT_WAIT   = 4'd4;
     localparam ST_FAT_PARSE  = 4'd5;
+    localparam ST_FAT_CHECK  = 4'd6;
     localparam ST_FINISH     = 4'd7;
     localparam ST_OFFSET=4'd8,ST_SHIFT=4'd9,ST_ADDRESS=4'd10;
     reg [31:0] cluster_offset;
@@ -51,6 +52,7 @@ module fat32_file_streamer #(
     reg [3:0] state;
     reg [31:0] current_cluster;
     reg [31:0] next_cluster;
+    reg next_eoc,next_range_bad,next_self;
     reg [31:0] remaining_bytes;
     reg [7:0] sector_in_cluster;
     reg [8:0] fat_entry_offset;
@@ -102,6 +104,7 @@ module fat32_file_streamer #(
             sector_lba <= 32'd0;
             current_cluster <= 32'd0;
             next_cluster <= 32'd0;
+            next_eoc<=0;next_range_bad<=0;next_self<=0;
             remaining_bytes <= 32'd0;
             sector_in_cluster <= 8'd0;
             fat_entry_offset <= 9'd0;
@@ -191,17 +194,23 @@ module fat32_file_streamer #(
                 end
                 ST_FAT_PARSE: begin
                     next_cluster <= {4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0};
-                    if ({fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0} >= 28'hffffff8) begin
+                    next_eoc <= {fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}>=28'hffffff8;
+                    next_range_bad <= {4'd0,fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}<2 ||
+                                      {4'd0,fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}>max_cluster;
+                    next_self <= {4'd0,fat_byte3[3:0],fat_byte2,fat_byte1,fat_byte0}==current_cluster;
+                    state<=ST_FAT_CHECK;
+                end
+                ST_FAT_CHECK: begin
+                    if (next_eoc) begin
                         finish_with_error(ERR_EARLY_EOF);
-                    end else if ({4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0} < 2 ||
-                                 {4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0} > max_cluster) begin
+                    end else if (next_range_bad) begin
                         finish_with_error(ERR_CLUSTER_RANGE);
                     end else if (chain_count >= MAX_VISITED_CLUSTERS) begin
                         finish_with_error(ERR_VISITED_EXHAUSTED);
-                    end else if ({4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0} == current_cluster) begin
+                    end else if (next_self) begin
                         finish_with_error(ERR_FAT_LOOP);
                     end else begin
-                        advance_to_next_cluster({4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0});
+                        advance_to_next_cluster(next_cluster);
                     end
                 end
                 ST_FINISH: begin

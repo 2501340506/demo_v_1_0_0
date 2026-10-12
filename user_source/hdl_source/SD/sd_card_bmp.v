@@ -9,6 +9,7 @@ module sd_card_bmp #(
     parameter integer DIAG_DISPLAY       = 0,
     parameter integer USE_FRAME_RESULT   = 0,
     parameter integer AUDIO_ENABLE = 0,
+    parameter integer SCALE_ENABLE = 0,
     parameter integer TRANSITION_ENABLE = 0
 )(
     output                      bgm_valid,bgm_active,
@@ -54,6 +55,7 @@ module sd_card_bmp #(
 
     output                      write_req,
     input                       write_req_ack,
+    input                       write_ready,
     output                      write_en,
     output [31:0]               write_data,
     output                      SD_nCS,
@@ -385,7 +387,7 @@ always @(posedge clk or posedge rst) begin
  end
 end
 
-fat32_bmp_reader #(.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+fat32_bmp_reader #(.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
  .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
  .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
@@ -395,7 +397,7 @@ fat32_bmp_reader #(.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
  .load_start(load_start_pulse),.load_cancel(parser_cancel),.load_cluster(load_cluster),.load_size(load_size),
  .load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
- .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),.write_req(write_req),.write_req_ack(write_req_ack_sync),
+ .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),.write_req(write_req),.write_req_ack(write_req_ack_sync),.write_ready(write_ready),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),
  .bmp_data_wr_en(bmp_data_wr_en),.bmp_data(bmp_data)

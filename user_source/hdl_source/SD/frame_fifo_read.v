@@ -30,6 +30,7 @@ module frame_fifo_read
 	input                            read_req,                   // data read module read request,keep '1' until read_req_ack = '1'
     input                            display_commit_request,
     output reg                       display_commit_ack,
+    output                           refill_priority,
 	output reg                       read_req_ack,               // data read module read request response
 	output                           read_finish,                // data read module read request finish
 	input[ADDR_BITS - 1:0]           read_addr_0,                // data read module read request base address 0, used when read_addr_index = 0
@@ -97,6 +98,9 @@ assign O_rd_busy = (state == S_READ_BURST);//读指令期间
 assign rd_burst_finish = (rd_vld && rd_delay == 4'd10);
 assign read_finish = (state == S_END) ? 1'b1 : 1'b0;             //read finish at state 'S_END'
 assign App_rd_en = App_rd_en_d0;
+// A scaling replay can fill the write FIFO at line rate. Reserve a refill
+// before another write burst when fewer than half a read FIFO remain.
+assign refill_priority = state == S_CHECK_FIFO && wrusedw < FIFO_DEPTH/2;
 always@(posedge mem_clk or posedge rst)
 begin
 	if(rst == 1'b1)

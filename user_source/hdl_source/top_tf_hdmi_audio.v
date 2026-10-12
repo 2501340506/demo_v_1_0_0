@@ -239,12 +239,13 @@ end
 
 // ===================== TF 多图扫描与缓存（双缓冲） =====================
 wire bgm_valid,bgm_ready,bgm_active;
+wire frame_write_ready,frame_refill_priority;
 wire signed [15:0] bgm_left,bgm_right;
 sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE)
+    .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE)
 ) sd_card_bmp_m0(
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
     .bgm_left(bgm_left),.bgm_right(bgm_right),
@@ -283,6 +284,7 @@ sd_card_bmp #(
     .write_cancel_req(write_cancel_req), .write_cancel_ack(write_cancel_ack),
     .write_req         (sd_card_write_req),
     .write_req_ack     (sd_card_write_req_ack),
+    .write_ready       (frame_write_ready),
     .write_en          (sd_card_write_en),
     .write_data        (sd_card_write_data),
     .SD_nCS            (sd_ncs),
@@ -343,7 +345,7 @@ video_transition_pixels u_video_transition_pixels(
 media_frame_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
     .rst(rst_mem),.mem_clk(ext_mem_clk),.write_clk(sd_card_clk),.write_rst(rst_sd),
     .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
-    .App_rd_busy(frame_rd_busy),.O_wr_busy(frame_wr_busy),
+    .App_rd_busy(frame_rd_busy || frame_refill_priority),.O_wr_busy(frame_wr_busy),
     .App_wr_en(App_wr_en),.App_wr_addr(App_wr_addr),.App_wr_din(App_wr_din),.App_wr_dm(App_wr_dm),
     .write_req(sd_card_write_req),.write_req_ack(sd_card_write_req_ack),
     .write_cancel_req(write_cancel_req),.write_cancel_ack(write_cancel_ack),
@@ -351,12 +353,12 @@ media_frame_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_fr
     .error_toggle(frame_error_toggle),.memory_error(frame_memory_error),
     .write_addr_0(BUF0_ADDR),.write_addr_1(BUF1_ADDR),.write_addr_2(BUF2_ADDR),.write_addr_3(BUF3_ADDR),
     .write_addr_index(write_buf_idx),.write_len(FRAME_PIXELS),
-    .write_en(sd_card_write_en),.write_data(sd_card_write_data)
+    .write_en(sd_card_write_en),.write_data(sd_card_write_data),.write_ready(frame_write_ready)
 );
 media_frame_reader u_frame_reader(
     .rst(rst_mem),.mem_clk(ext_mem_clk),.read_clk(video_clk),.read_rst(rst_video),
     .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
-    .App_wr_busy(frame_wr_busy),.O_rd_busy(frame_rd_busy),
+    .App_wr_busy(frame_wr_busy),.O_rd_busy(frame_rd_busy),.refill_priority(frame_refill_priority),
     .App_rd_en(App_rd_en),.App_rd_addr(App_rd_addr),.Sdr_rd_en(Sdr_rd_en),.Sdr_rd_dout(Sdr_rd_dout),
     .read_req(video_read_req),.read_req_ack(video_read_req_ack),.read_finish(),
     .display_commit_request(display_commit_request),.display_commit_ack(display_commit_ack),

@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 module tb_fat32_reader;
     parameter integer CASE_ID=0;
+    parameter integer SCALE_TEST=0;
     parameter FIXTURE_DIR="diagnostics/output/fat32_core/fixtures";
     parameter integer BYTE_GAP=2;
     parameter integer TEST_MODE=0; // 1..3: rejected headers; 4: ack timeout; 5: last byte/end together
@@ -26,7 +27,9 @@ module tb_fat32_reader;
     reg ack=0;
     reg [31:0] table_cluster[0:3],table_size[0:3];
     integer found_n=0,delay_ack=0;
-    fat32_bmp_reader #(.CLK_FREQ_HZ(1000),.TIMEOUT_MS(500),.MAX_VISITED_CLUSTERS(4)) dut(
+    reg write_ready=1;integer ready_cycles=0;
+    always @(negedge clk)begin ready_cycles=ready_cycles+1;write_ready=!SCALE_TEST || ready_cycles%23<13;end
+    fat32_bmp_reader #(.SCALE_ENABLE(SCALE_TEST),.CLK_FREQ_HZ(1000),.TIMEOUT_MS(500),.MAX_VISITED_CLUSTERS(4)) dut(
       .audio_found(),.audio_cluster(),.audio_size(),.audio_spc(),.audio_fat_lba(),.audio_data_lba(),.audio_max_cluster(),
       .a_req(1'b0),.a_lba(32'd0),.a_cancel(1'b0),.a_urgent(1'b0),
       .a_busy(),.a_valid(),.a_done(),.a_error(),.a_byte(),.a_index(),
@@ -35,7 +38,7 @@ module tb_fat32_reader;
       .ready(ready),.scan_done(scan_done),.scan_error(scan_fault),.scan_found_valid(found),
       .scan_found_cluster(found_cluster),.scan_found_size(found_size),.scan_found_total(found_count),
       .load_done(load_done),.load_error(load_error),.bmp_error(bmp_error),.fat_error(fat_error),.state_code(),
-      .write_req(write_req),.write_req_ack(ack),.bmp_data_wr_en(pixel_valid),.bmp_data(pixel_rgb),
+      .write_req(write_req),.write_req_ack(ack),.write_ready(write_ready),.bmp_data_wr_en(pixel_valid),.bmp_data(pixel_rgb),
       .sd_sec_read(raw_req),.sd_sec_read_addr(raw_lba),.sd_sec_read_data(raw_byte),
       .sd_sec_read_data_valid(raw_valid),.sd_sec_read_end(raw_end),.sd_sec_read_failed(raw_failed));
     always @(negedge clk)begin
@@ -73,6 +76,13 @@ module tb_fat32_reader;
     always @(posedge clk) if(!rst && pixel_valid)begin
        row=pixels/3;col=pixels%3;seed=active_image*29+1;
        expected_rgb={8'(row*3+seed),8'(col+17),8'(row+seed)};
+       if(SCALE_TEST)begin
+        col=pixels%640;row=479-pixels/640;expected_rgb=0;
+        if(col>=312 && col<327)begin
+         col=(col-312)*3/15;row=90-row*91/480;
+         expected_rgb={8'(row*3+seed),8'(col+17),8'(row+seed)};
+        end
+       end
        if(meta[27+active_image]==0 && pixel_rgb!==expected_rgb)$fatal(1,"pixel %0d %h expected %h",pixels,pixel_rgb,expected_rgb);
        pixels=pixels+1;
     end
@@ -107,7 +117,7 @@ module tb_fat32_reader;
         if(TEST_MODE==4)begin
           if(!load_error || bmp_error!=2 || pixels!=0)$fatal(1,"ack timeout contract");
         end else if(meta[17+active_image]==0)begin
-          if(load_error || pixels!=273)$fatal(1,"good image failed code=%0d fat=%h pixels=%0d",bmp_error,fat_error,pixels);
+          if(load_error || pixels!=(SCALE_TEST?307200:273))$fatal(1,"good image failed code=%0d fat=%h pixels=%0d",bmp_error,fat_error,pixels);
         end else begin
           if(!load_error || load_done)$fatal(1,"bad image succeeded");
           if(meta[17+active_image]==8'h10 && bmp_error!=2)$fatal(1,"SD failure classification");
@@ -119,5 +129,5 @@ module tb_fat32_reader;
       if(!scan_done)$fatal(1,"scan_done not sticky");
       $display("PASS FAT32 reader case=%0d found=%0d requests=%0d mode=%0d",CASE_ID,found_n,requests,TEST_MODE);$finish;
     end
-    initial begin #10000000;$fatal(1,"reader watchdog");end
+    initial begin #(SCALE_TEST?200000000:10000000);$fatal(1,"reader watchdog");end
 endmodule
