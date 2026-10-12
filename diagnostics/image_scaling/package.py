@@ -55,4 +55,20 @@ manifest=['# S2 candidate inputs','',f'Baseline v0.13.0; build {a.build}; bit {(
           f'{len(logs)} verified simulation logs. Remaining inputs referenced through baseline.','']
 manifest += [f'- {n.as_posix()} ({(root/n).stat().st_size} bytes)' for n in inputs]
 (release/'MANIFEST.md').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
+(release/'README.md').write_text(f'''# v0.14.0 {a.candidate}：全屏图片缩放
+
+本地候选，尚未板测。基线 v0.13.0；构建 {a.build}。开发分支 feature/image-scaling-thumbnails。
+
+[固定 bit](demo.bit) · [四张测试 BMP 和参考图](board_samples.zip) · [板测步骤](BOARD_VALIDATION.md) · [验证记录](VALIDATION.md) · [输入清单](MANIFEST.md)
+
+支持正高度、24 位、非压缩 BMP：宽不超过 1920 且高不超过 1080，或宽不超过 1080 且高不超过 1920。加载时采用最近邻等比缩放、居中黑边，输出保持 640×480；四个全屏 bank 地址及像素格式不变。图片 FAT 链上限 16384 簇，扇区缓存和 ready/valid 控制放大时的背压。读 FIFO 补充优先及整 64 字启动修正保障显示和间歇输入。
+
+S2 仅接入全屏缩放；四宫格及 11 模式交互在 S2 板测通过后的 S3 接入。字幕、圆环、转场和音乐沿用全屏行为。大图首次加载需读取全部源文件，实际板级加载时间待测。
+
+完整 TD Setup +0.107ns、Hold +0.035ns，STA 覆盖率 99.97%；15716 LUT、8260 寄存器、41 BRAM9K、10 DSP、1 PLL，约束未修改。详细功能结果及历史失败见验证记录。
+
+bit 为 {(phy/'demo.bit').stat().st_size} 字节，归档与构建产物逐字节一致；{len(inputs)} 个工程输入与构建快照逐字节一致。仅归档相对基线变化的 {len(changed)} 个生产输入，未改输入通过基线引用。
+
+回退：[v0.13.0/demo.bit](../../v0.13.0/demo.bit)。用户确认本候选功能通过后记录 board 标签并推送分支和阶段标签，再继续 S3。20 分钟持续播放、Flash 和完全断电冷启动留在最终 S4，不以本地测试替代。
+''',encoding='utf-8')
 print(f'Packaged {release}: {len(inputs)} inputs, {len(logs)} logs, {len(changed)} changed inputs')

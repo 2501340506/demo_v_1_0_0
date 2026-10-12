@@ -1,3 +1,9 @@
+# 当前开发候选：v0.14.0 S2 local.1（待板测）
+
+已接入非固定尺寸 24 位 BMP 的最近邻等比缩放、居中黑边，输出 640×480。混合尺寸物理 SDRAM 测试、591 帧综合系统及完整 TD 通过（Setup +0.107ns、Hold +0.035ns）。四宫格/11 模式在 S2 板测通过后于 S3 接入，正式版仍为 v0.13.0。
+
+[候选 bit 与说明](releases/v0.14.0/s2-local.1/README.md) · [测试图片及参考图](releases/v0.14.0/s2-local.1/board_samples.zip) · [板测步骤](releases/v0.14.0/s2-local.1/BOARD_VALIDATION.md) · [阶段计划](docs/图片缩放与缩略图分阶段修改计划.md) · [交接](HANDOFF.md)。
+
 # 当前正式版：v0.13.0
 
 彩色圆形音频可视化已完成S2功能和S3持续播放20分钟、Flash及完全断电冷启动验收。正式版复用已验收local.2原bit，未重建。
