@@ -1,6 +1,7 @@
 """Check RTL-rendered frames against independent capsule geometry, save previews."""
 from pathlib import Path
 import math
+import colorsys
 import sys
 from PIL import Image
 
@@ -15,7 +16,9 @@ def expected(x, y, mode):
     across = -dx*math.sin(theta)+dy*math.cos(theta)
     h = [0,7,28,b%29][mode]
     if math.hypot(across, max(65.5-along, along-(65.5+h),0)) <= 1.5+1e-9:
-        return 0xffffff
+        hue=(b//16+(b%16)*12/191)/6
+        red,green,blue=(round(c*255) for c in colorsys.hsv_to_rgb(hue,191/255,1))
+        return (red<<16)|(green<<8)|blue
     return ((x%256)<<16)|((y%256)<<8)|0x60
 
 def main():

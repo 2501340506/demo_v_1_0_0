@@ -27,6 +27,21 @@ module audio_ring_overlay #(
  wire [6:0] quadrant_bar={2'b0,geometry[9:5]};
  assign bar_index = nx_q ? (ny_q ? 7'd48+quadrant_bar : 7'd48-quadrant_bar) :
                     (ny_q && quadrant_bar!=0 ? 7'd96-quadrant_bar : quadrant_bar);
+ // Six 16-bar hue sectors. A 64-channel floor keeps the colors bright.
+ wire [7:0] color_step={2'b0,bar_index[3:0],2'b0}+{1'b0,bar_index[3:0],3'b0};
+ wire [7:0] color_rise=8'd64+color_step;
+ wire [7:0] color_fall=8'd255-color_step;
+ reg [23:0] bar_color;
+ always @* begin
+  case(bar_index[6:4])
+   0: bar_color={8'd255,color_rise,8'd64};
+   1: bar_color={color_fall,8'd255,8'd64};
+   2: bar_color={8'd64,8'd255,color_rise};
+   3: bar_color={8'd64,color_fall,8'd255};
+   4: bar_color={color_rise,8'd64,8'd255};
+   default: bar_color={8'd255,8'd64,color_fall};
+  endcase
+ end
  always @(posedge clk or posedge rst) begin
   if(rst) begin
    nx_q<=0;ny_q<=0;visible_q<=0;hs_q<=1;vs_q<=1;de_q<=0;x_q<=0;rgb_q<=0;
@@ -36,7 +51,7 @@ module audio_ring_overlay #(
    hs_q<=hs;vs_q<=vs;de_q<=de;x_q<=pixel_x;rgb_q<=rgb_in;
    hs_out<=hs_q;vs_out<=vs_q;de_out<=de_q;x_out<=x_q;
    if(visible_q && geometry[11:10]==1) rgb_out<=24'h000000;
-   else if(visible_q && geometry[11:10]==2 && bar_height>=geometry[4:0]) rgb_out<=24'hffffff;
+   else if(visible_q && geometry[11:10]==2 && bar_height>=geometry[4:0]) rgb_out<=bar_color;
    else rgb_out<=rgb_q;
   end
  end
