@@ -1,6 +1,6 @@
-# 当前开发阶段：v0.14.0 S3 四宫格接入中
+# 当前开发阶段：v0.14.0 S3 功能板测通过
 
-全屏缩放 S2 已通过功能板测。S3 已实现四宫格、11 模式按键和紧凑缩略图缓存，最新系统仿真通过；TD 时序仍在收尾，尚无 S3 可上板候选。正式版仍为 v0.13.0。
+S3 local.3 已获用户确认功能均正常，记录 board.3。固定候选及板测结果见 [S3 说明](releases/v0.14.0/s3-local.3/README.md) 和 [板测记录](releases/v0.14.0/s3-local.3/BOARD_RESULT.md)。目前分析大图首次加载耗时；S4 持续播放、Flash 和完全断电冷启动尚待验收，正式版仍为 v0.13.0。
 
 [候选 bit 与说明](releases/v0.14.0/s2-local.1/README.md) · [测试图片及参考图](releases/v0.14.0/s2-local.1/board_samples.zip) · [板测步骤](releases/v0.14.0/s2-local.1/BOARD_VALIDATION.md) · [阶段计划](docs/图片缩放与缩略图分阶段修改计划.md) · [交接](HANDOFF.md)。
 

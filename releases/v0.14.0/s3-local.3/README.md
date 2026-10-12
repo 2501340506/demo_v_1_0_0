@@ -1,5 +1,7 @@
 # v0.14.0 S3 local.3
 
+2026-10-13 更新：用户确认本候选功能均正常，已记录 S3 board.3，详见 `BOARD_RESULT.md`。以下“尚未板测”描述为本地交付时的历史状态。原 bit 未变，S4 尚待验收。
+
 这是修复 SD MISO 保持 LUT 功能错误后的 S3 四宫格候选。请使用本目录的 `demo.bit` 上板；`s3-local.2` 已确认会在 `INIT_OK` 后扫描失败，仅保留为失败历史，不再使用。
 
 根因是 `AL_MAP_LUT1` 只设置了 `INIT(2'b10)`，但 TD 综合实际读取 `EQN` 参数；默认 `EQN="0"` 使初始化完成后启用的 MISO LUT 分支恒为 0。本候选显式设置 `EQN="A"`。生产代码相对 `v0.14.0-s3-local.2` 只修改 `user_source/hdl_source/SD/sd_card_top.v`，时钟和 SDC 均未改变。
