@@ -65,7 +65,7 @@ for name in ('music.gif','music.png','SOURCE.txt'):
     copy(output/'ring_s2_music4'/name,Path('preview')/name)
 changed=subprocess.check_output(['git','diff','v0.12.0','--name-only','--','user_source','TD_project'],cwd=root,text=True).splitlines()
 for name in changed:copy(root/name,Path('sources')/name)
-revision=subprocess.check_output(['git','describe','--always','--dirty'],cwd=root,text=True).strip()
+revision='v0.13.0-s2-local.1 (candidate tag created after packaging)'
 manifest=['# Candidate input manifest','',f'Baseline: v0.12.0; source revision: {revision}',
           f'Build: ring_s2_attempt1; bit: {(phy/"demo.bit").stat().st_size} bytes',
           f'{len(inputs)} project inputs compared byte-for-byte against the isolated build.',
