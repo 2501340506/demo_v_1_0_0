@@ -1,3 +1,9 @@
+# 当前开发候选：v0.13.0 S2 local.1
+
+新增右下圆形音量波形环：96根白色圆头柱随实际HDMI音频跳动，黑环中间透出原图片。音频/像素/OSD专项、21项回归、582帧系统仿真及完整TD通过，Setup +0.101ns、Hold +0.004ns。尚未上板确认，正式版仍为v0.12.0。
+
+[候选下载与上板说明](releases/v0.13.0/s2-local.1/README.md) · [音乐仿真预览](releases/v0.13.0/s2-local.1/preview/music.gif) · [验证记录](releases/v0.13.0/s2-local.1/VALIDATION.md) · [阶段计划](docs/圆形音频可视化分阶段计划.md) · [交接](HANDOFF.md)。开发分支feature/circular-audio-visualizer，等待S2板测后进入S3。
+
 # 当前正式版：v0.12.0
 
 TF 卡 PCM 循环背景音乐和 SD 初始化超时恢复已验收：功能正常、连续运行 20 分钟、Flash 烧录及完全断电冷启动通过。正式版复用 S3 local.2 原 bit，未重建。

@@ -1,0 +1,39 @@
+standard
+***Report Model: audio_ring_overlay Device: EG4S20BG256***
+
+IO Statistics
+#IO                        98   out of    188   52.13%
+  #input                   54
+  #output                  44
+  #inout                    0
+
+LUT Statistics
+#Total_luts               156
+  #lut4                   152
+  #lut5                     4
+  #lut6                     0
+  #lut5_mx41                0
+  #lut4_alu1b               0
+
+Utilization Statistics
+#lut                      206   out of  19600    1.05%
+#reg                        7   out of  19600    0.04%
+#bram                      21   out of     64   32.81%
+  #bram9k                  21
+  #fifo9k                   0
+#bram32k                    0   out of     16    0.00%
+#dsp                        0   out of     29    0.00%
+#pad                       98   out of    188   52.13%
+  #ireg                    37
+  #oreg                    37
+  #treg                     0
+#pll                        0   out of      4    0.00%
+#gclk                       0   out of     16    0.00%
+
+Report Hierarchy Area:
++--------------------------------------------------------------------------+
+|Instance |Module             |lut     |ripple  |seq     |bram    |dsp     |
++--------------------------------------------------------------------------+
+|top      |audio_ring_overlay |181     |25      |81      |21      |0       |
+|  rom    |audio_ring_rom     |24      |0       |4       |21      |0       |
++--------------------------------------------------------------------------+

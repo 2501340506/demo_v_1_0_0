@@ -1,0 +1,38 @@
+standard
+***Report Model: audio_ring_levels Device: EG4S20BG256***
+
+IO Statistics
+#IO                        48   out of    188   25.53%
+  #input                   43
+  #output                   5
+  #inout                    0
+
+LUT Statistics
+#Total_luts              1387
+  #lut4                   854
+  #lut5                   533
+  #lut6                     0
+  #lut5_mx41                0
+  #lut4_alu1b               0
+
+Utilization Statistics
+#lut                     1491   out of  19600    7.61%
+#reg                      547   out of  19600    2.79%
+#bram                       1   out of     64    1.56%
+  #bram9k                   1
+  #fifo9k                   0
+#bram32k                    0   out of     16    0.00%
+#dsp                        0   out of     29    0.00%
+#pad                       48   out of    188   25.53%
+  #ireg                     1
+  #oreg                     0
+  #treg                     0
+#pll                        0   out of      4    0.00%
+#gclk                       0   out of     16    0.00%
+
+Report Hierarchy Area:
++-------------------------------------------------------------------------+
+|Instance |Module            |lut     |ripple  |seq     |bram    |dsp     |
++-------------------------------------------------------------------------+
+|top      |audio_ring_levels |1439    |52      |548     |1       |0       |
++-------------------------------------------------------------------------+
