@@ -1,4 +1,4 @@
-module bmp_header_check #(parameter ALLOW_32=0) (
+module bmp_header_check #(parameter ALLOW_32=0, parameter RANGE_DIMENSIONS=0) (
  input clk,rst,file_valid, input [7:0] file_byte, input [31:0] file_byte_offset,
  input [15:0] bmp_width,bmp_height,
  output reg [31:0] file_len,pixel_offset,width,height,
@@ -25,6 +25,12 @@ reg [33:0] expected_bytes;
 reg [32:0] dib_end;
 reg header_format_ok;
 reg header_bounds_ok;
+wire [15:0] calc_width = RANGE_DIMENSIONS ? width[15:0] : bmp_width;
+wire [15:0] calc_height = RANGE_DIMENSIONS ? height[15:0] : bmp_height;
+wire dimensions_ok = RANGE_DIMENSIONS ?
+    (width != 0 && height != 0 &&
+     ((width <= 1920 && height <= 1080) || (width <= 1080 && height <= 1920))) :
+    (width == {16'd0,bmp_width} && height == {16'd0,bmp_height});
 
 assign is_32=ALLOW_32 && bit_count_32 && bit_count_hi_zero;
 always @(posedge clk or posedge rst) begin
@@ -75,15 +81,14 @@ always @(posedge clk or posedge rst) begin
         header_format_ok <= 0;
         header_bounds_ok <= 0;
     end else begin
-        expected_pixels <= {16'd0, bmp_width} * {16'd0, bmp_height};
-        row_stride <= is_32 ? ({16'd0,bmp_width}*4) : (({16'd0,bmp_width}*3+3)&32'hfffffffc);
-        expected_bytes <= {2'b00,row_stride} * bmp_height;
+        expected_pixels <= {16'd0, calc_width} * {16'd0, calc_height};
+        row_stride <= is_32 ? ({16'd0,calc_width}*4) : (({16'd0,calc_width}*3+3)&32'hfffffffc);
+        expected_bytes <= {2'b00,row_stride} * calc_height;
         required_end <= {2'b00, pixel_offset} + expected_bytes;
         dib_end <= {1'b0, dib_size} + 33'd14;
         header_format_ok <= header_0_is_b && header_1_is_m &&
                             (dib_size >= 32'd40) && (&planes_one) &&
-                            (width == {16'd0, bmp_width}) &&
-                            (height == {16'd0, bmp_height}) &&
+                            dimensions_ok &&
                             ((bit_count_24 && bit_count_hi_zero) || is_32) && (&compression_zero);
         header_bounds_ok <= ({1'b0, pixel_offset} >= dib_end) &&
                             (pixel_offset < file_len) &&
