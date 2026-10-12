@@ -1,5 +1,13 @@
 # 当前交接：v0.13.0 圆形音频可视化（2026-10-12）
 
+- 当前任务：S2彩色圆环功能板测通过，进入S3持续运行、Flash及完全断电冷启动验收。
+- 已完成：用户确认“上述功能均通过，进入下一阶段”；记录v0.13.0-s2-board.2。local.2 bit为654068字节，与标签内文件逐字节一致；源码/工程无变化，未重建。
+- 卡住的问题：S3三项硬件结果尚未反馈，不推定20分钟或Flash/冷启动通过。
+- 下一步计划：继续使用releases/v0.13.0/s2-local.2/demo.bit，按releases/v0.13.0/S3_VALIDATION.md完成验收；全部通过后复用原bit正式发布、归档并合并main。
+- 踩过的坑：功能通过不等于长时间/Flash/完全断电通过；不补造次数或时长，不重建已验收bit，不移动旧标签。保留用户Qhc.wav、既有worktree、best_result。
+
+## 历史交接：彩色local.2交付
+
 - 当前任务：彩色柱条s2-local.2本地候选已交付，等待用户上板。
 - 已完成：96根柱条沿圆周六色渐变，仅改RGB选择。ring_color_unit1的1228800像素/HSV参考、两拍接口、ring_color_osd1、ring_color_music1通过；TD ring_color_attempt1 Setup +0.010ns、Hold +0.036ns，15017 LUT、7928寄存器、34 BRAM9K、4 DSP、1 PLL，约束未改。
 - 交付：releases/v0.13.0/s2-local.2/demo.bit；90个工程输入与构建逐字节一致，4份本次仿真日志和新报告/彩色预览已固定；仅备份相对local.1变化的audio_ring_overlay.v。标签v0.13.0-s2-local.2，沿用feature/circular-audio-visualizer。

@@ -1,4 +1,10 @@
-# 当前开发候选：v0.13.0 S2 local.2（彩色柱条）
+# 当前阶段：v0.13.0 S3（S2彩色柱条已通过板测）
+
+用户确认彩色候选local.2功能全部通过，记录v0.13.0-s2-board.2。S3继续使用同一bit，待20分钟持续播放、Flash烧录和完全断电冷启动结果；本次未改源码或重新构建，正式版仍为v0.12.0。
+
+[S3验收说明](releases/v0.13.0/S3_VALIDATION.md) · [S2板测记录](releases/v0.13.0/s2-local.2/BOARD_RESULT.md) · [已验收bit](releases/v0.13.0/s2-local.2/demo.bit) · [交接](HANDOFF.md)。
+
+## 历史交付：v0.13.0 S2 local.2（彩色柱条）
 
 柱条已改为沿圆周六色渐变，随真实声音跳动。颜色/像素/OSD/音乐专项及完整TD通过（Setup +0.010ns、Hold +0.036ns），尚未上板确认。[新候选下载](releases/v0.13.0/s2-local.2/README.md) · [彩色动态预览](releases/v0.13.0/s2-local.2/preview/music.gif) · [交接](HANDOFF.md)。
 
