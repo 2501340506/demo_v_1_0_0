@@ -1,6 +1,7 @@
+param([string]$RunName='fat32_sector')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-$out=Join-Path $root 'diagnostics/output/fat32_sector'
+$out=Join-Path $root "diagnostics/output/$RunName"
 $lib="$out/work".Replace('\','/')
 $sim='D:/modelsim/win64'
 New-Item -ItemType Directory -Force $out | Out-Null
@@ -8,7 +9,7 @@ Push-Location $root
 try {
     if(!(Test-Path "$lib/_info")){& "$sim/vlib.exe" $lib}
     $rtl=@('sd_sector_adapter','sd_card_top','sd_card_sec_read_write','sd_card_cmd','spi_master') | ForEach-Object { "user_source/hdl_source/SD/$_.v" }
-    $rtl=@('D:/TD/anlogic/TD6.2.1/arch/al_lmacro.v')+$rtl
+    $rtl=@('D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v')+$rtl
     & "$sim/vlog.exe" -sv -work $lib -l "$out/compile.log" @rtl diagnostics/fat32/tb_sd_sector_adapter.sv diagnostics/fat32/tb_sd_sector_driver.sv
     if($LASTEXITCODE){throw 'sector compilation failed'}
     & "$sim/vsim.exe" -c -quiet -lib $lib tb_sd_sector_adapter -l "$out/test.log" -do 'run -all; quit -f'

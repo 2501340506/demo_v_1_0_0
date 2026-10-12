@@ -1,6 +1,7 @@
+param([string]$RunName='io_timing_sim')
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-$out = Join-Path $root 'diagnostics/output/io_timing_sim'
+$out = Join-Path $root "diagnostics/output/$RunName"
 $sim = 'D:/modelsim/win64'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 $lib = "$out/work".Replace('\','/')
@@ -20,7 +21,7 @@ foreach ($case in @(@('slow',248,0,0),@('data',1,0,0),@('fast',1,0,1),@('old25',
     else { Write-Output "PASS $name" }
 }
 $rtl = @('sd_card_cmd','sd_card_sec_read_write','sd_card_top','spi_master') | ForEach-Object { "$root/user_source/hdl_source/SD/$_.v" }
-& "$sim/vlog.exe" -sv -work $lib @rtl "$root/diagnostics/sd_recovery/tb_sd_spi_pins.sv" *> "$out/pins_compile.log"
+& "$sim/vlog.exe" -sv -work $lib D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v @rtl "$root/diagnostics/sd_recovery/tb_sd_spi_pins.sv" *> "$out/pins_compile.log"
 if ($LASTEXITCODE -ne 0) { throw 'Pin integration compile failed' }
 & "$sim/vsim.exe" -c -quiet -lib $lib tb_sd_spi_pins '-gOUT_DELAY=6.0' '-gMISO_DELAY=19.2' -l "$out/pins_delayed.log" -do 'run -all; quit -f' *> "$out/pins_console.log"
 $result=Get-Content "$out/pins_delayed.log" -Raw

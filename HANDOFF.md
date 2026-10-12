@@ -1,4 +1,12 @@
-# 当前交接：v0.14.0 S3 local.2 已交付，待上板（2026-10-13）
+# 当前交接：local.3 已固定，等待 MISO 修复板测（2026-10-13）
+
+- 当前任务：修复 local.2 在 INIT_OK 后 SCAN_DONE/STOP E=2 的板测失败；local.3 已完成本地门级、协议和时序验证，等待用户上板。
+- 已完成：确认 local.2 的 MISO_delay_top 物理 LUT 恒零；根因为 AL_MAP_LUT1 遗漏 TD 使用的 EQN 参数。生产 RTL 已显式设置 EQN="A"。SD 协议/初始化/引脚/重试、外部延迟和扇区测试通过；新 Routed 网表验证 MISO 0/1 均可透传。完整 TD Routed Setup +0.096ns、Hold +0.076ns、失败端点 0；时序审计无未定义时钟、无无效约束、无组合环和遗漏路径。已固定 releases/v0.14.0/s3-local.3，97 个构建输入逐字节一致，相对 local.2 只有 sd_card_top.v 一处生产变化。
+- 卡住的问题：local.3 尚未上板，不能宣称 SD 扫描和四宫格功能板级通过；不建立 board 标签，不进入 S4。
+- 下一步计划：下载 releases/v0.14.0/s3-local.3/demo.bit，先确认 INIT_OK 后不再 STOP E=2，再按同目录 BOARD_VALIDATION.md 检查四宫格、KEY1/KEY2/KEY4、图片音乐、重扫和复位。通过后记录 board.3，再进入 S4。
+- 踩过的坑：INIT 参数不能替代 TD 的 EQN；时序通过也不保证手工原语功能正确，必须检查实际 Routed 网表。arch/al_lmacro.v 只有声明，功能仿真要用 sim_release/common/al_map_lut.v。UART BOOT 仍是历史固定字符串，不能据此判断 bit 版本；SCAN_DONE 的 E=0 是事件编码，不代表扫描成功。
+
+## 历史交接：local.2 本地交付（现已板测失败）
 
 - 当前任务：S3 时序修复 local.2 已完成本地验证和固定，等待用户上板；尚未建立 board.2 或进入 S4。
 - 已完成：新建 feature/thumbnail-timing-margin。文件读取响应 byte/index/valid/done/error 整束流水；修正流水后的错误分类拍序；解码器到缩放器增加一深度 ready/valid 寄存级；文件结束计数/行判断预寄存。未修改 SDC 或时钟频率。
