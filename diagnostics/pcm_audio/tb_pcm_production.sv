@@ -31,7 +31,12 @@ module tb_pcm_production;
  wire hs,vs,de;wire [9:0] x;
  video_timing_data timing(.video_clk(pix),.rst(rst),.read_req(),.read_req_ack(1'b1),.hs(hs),.vs(vs),.de(de),.video_x(x));
  wire tap,seqerr;wire signed [15:0] tapl,tapr;
- media_hdmi_audio_bridge bridge(.pixel_clk(pix),.pixel_rst_n(!rst),.video_hsync(hs),.video_vsync(vs),.video_de(de),.video_x(x),.video_rgb(24'd0),
+ wire [8:0] ring_y;wire ring_frame;wire [6:0] ring_index;wire [4:0] ring_height;
+ wire ring_hs,ring_vs,ring_de;wire [9:0] ring_x;wire [23:0] ring_rgb;
+ osd_pixel_position ring_position(pix,rst,vs,de,ring_y,ring_frame, );
+ audio_ring_levels ring_levels(pix,rst,ring_frame,tap,tapl,tapr,ring_index,ring_height);
+ audio_ring_overlay ring(pix,rst,hs,vs,de,display_valid,x,ring_y,24'd0,ring_height,ring_index,ring_hs,ring_vs,ring_de,ring_x,ring_rgb);
+ media_hdmi_audio_bridge bridge(.pixel_clk(pix),.pixel_rst_n(!rst),.video_hsync(ring_hs),.video_vsync(ring_vs),.video_de(ring_de),.video_x(ring_x),.video_rgb(ring_rgb),
  .select_media(1'b1),.test_valid(1'b0),.test_ready(),.test_left(16'd0),.test_right(16'd0),
  .media_valid(mix_valid),.media_ready(mix_ready),.media_left(ml),.media_right(mr),
  .channel0_symbol(),.channel1_symbol(),.channel2_symbol(),.sequence_error(seqerr),.pcm_tap_valid(tap),.pcm_tap_left(tapl),.pcm_tap_right(tapr));

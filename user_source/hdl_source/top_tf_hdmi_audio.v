@@ -35,6 +35,7 @@ parameter integer SCROLL_ENABLE = 1;
 parameter integer BAND_ENABLE = 1;
 parameter integer TIMESTAMP_ENABLE = 1;
 parameter integer TRANSITION_ENABLE = 1;
+parameter integer AUDIO_VIS_ENABLE = 1;
 parameter MEM_DATA_BITS = 32;
 parameter integer UART_CLK_FREQ_HZ = 100_000_000;
 parameter integer UART_BAUD_RATE = 115200;
@@ -388,6 +389,28 @@ media_commit_cdc u_media_commit_cdc (
  .src_image(committed_image), .src_valid(committed_valid), .src_ready(committed_ready),
  .media_id(audio_image), .media_update(audio_update), .media_enable(audio_enable)
 );
+wire [8:0] ring_y;
+wire ring_frame_start, ring_tap_valid;
+wire signed [15:0] ring_tap_left,ring_tap_right;
+wire [6:0] ring_bar_index;
+wire [4:0] ring_bar_height;
+wire ring_hs,ring_vs,ring_de;
+wire [9:0] ring_x;
+wire [23:0] ring_rgb;
+osd_pixel_position u_ring_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
+ .line_y(ring_y),.frame_start(ring_frame_start),.first_active());
+generate if(AUDIO_VIS_ENABLE) begin:g_audio_vis
+ audio_ring_levels u_levels(.clk(video_clk),.rst(rst_video),.frame_start(ring_frame_start),
+  .pcm_valid(ring_tap_valid),.pcm_left(ring_tap_left),.pcm_right(ring_tap_right),
+  .bar_index(ring_bar_index),.bar_height(ring_bar_height));
+end else begin:g_no_audio_vis
+ assign ring_bar_height=5'd0;
+end endgenerate
+audio_ring_overlay #(.ENABLE(AUDIO_VIS_ENABLE)) u_audio_ring(
+ .clk(video_clk),.rst(rst_video),.hs(hs),.vs(vs),.de(de),.enable(audio_enable),
+ .pixel_x(video_x),.pixel_y(ring_y),.rgb_in(transition_rgb),.bar_height(ring_bar_height),
+ .bar_index(ring_bar_index),.hs_out(ring_hs),.vs_out(ring_vs),.de_out(ring_de),.x_out(ring_x),.rgb_out(ring_rgb));
+
 osd_status_cdc u_osd_status_cdc (
     .src_clk(sd_card_clk), .src_rst(rst_sd),
     .src_auto(auto_play_indicator), .src_error(osd_error_src),
@@ -396,24 +419,24 @@ osd_status_cdc u_osd_status_cdc (
 );
 // AUTO/error: acknowledged SD-domain mailbox. Image ID/valid: existing pixel
 // domain media commit. Status snapshots at first active pixel after blanking.
-// RGB layers are combinational; final HS/VS/DE/X pass directly to HDMI.
+// OSD uses the ring's two-cycle-delayed video bundle throughout.
 status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
-    .clk(video_clk), .rst(rst_video), .vs(vs), .de(de), .pixel_x(video_x),
-    .rgb_in(transition_rgb), .image_index(audio_image), .image_valid(audio_enable),
+    .clk(video_clk), .rst(rst_video), .vs(ring_vs), .de(ring_de), .pixel_x(ring_x),
+    .rgb_in(ring_rgb), .image_index(audio_image), .image_valid(audio_enable),
     .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
     .active(status_glyph_active)
 );
 scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1)) u_scroll_osd (
- .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),.image_valid(audio_enable),
+ .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.image_valid(audio_enable),
  .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active),
  .runtime_text(sub_text_pixel),.runtime_length(sub_length_pixel),
  .runtime_enable(sub_enable_pixel),.runtime_text_changed(sub_text_changed)
 );
 timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
- .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),
+ .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(scroll_rgb),.rgb_out(timestamp_rgb),.active(timestamp_glyph_active));
 osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_band(
- .clk(video_clk),.rst(rst_video),.vs(vs),.de(de),.pixel_x(video_x),
+ .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(timestamp_rgb),.glyph_active(status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
  .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && sub_length_pixel!=0)
 );
@@ -434,15 +457,15 @@ audio_source_mux u_audio_source_mux(
  .out_ready(mixed_ready),.out_valid(mixed_valid),.out_left(mixed_left),.out_right(mixed_right));
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
     .pixel_clk(video_clk), .pixel_rst_n(~rst_video),
-    .video_hsync(hs), .video_vsync(vs), .video_de(de),
-    .video_x(video_x), .video_rgb(band_rgb),
+    .video_hsync(ring_hs), .video_vsync(ring_vs), .video_de(ring_de),
+    .video_x(ring_x), .video_rgb(band_rgb),
     .select_media(1'b1), .test_valid(1'b0), .test_ready(),
     .test_left(16'sd0), .test_right(16'sd0),
     .media_valid(mixed_valid), .media_ready(mixed_ready),
     .media_left(mixed_left), .media_right(mixed_right),
     .channel0_symbol(tmds_ch0_data), .channel1_symbol(tmds_ch1_data),
     .channel2_symbol(tmds_ch2_data), .sequence_error(hdmi_sequence_error),
-    .pcm_tap_valid(), .pcm_tap_left(), .pcm_tap_right()
+    .pcm_tap_valid(ring_tap_valid), .pcm_tap_left(ring_tap_left), .pcm_tap_right(ring_tap_right)
 );
 assign tmds_clk_data = 10'b1111100000; // Serialized bit 0 first by existing PHY.
 assign HDMI_DDC_SCL = 1'bz;

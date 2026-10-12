@@ -10,3 +10,15 @@
 
 ## 复现
 先运行tools/generate_audio_ring.py，再运行run_unit.ps1（新RunName）、check_pixels.py对应输出目录、run_music.ps1和run_synthesis.ps1（新BuildName）。已有输出不覆盖。
+
+## S2 已完成的本地检查
+- ring_s2_production1：接入圆环与延迟后视频的生产HDMI音频桥，9,279个样本逐项比对通过；碎片循环、重扫排空、错误回退/重试、缺音乐、纯音频冷启动和短循环通过。
+- ring_s2_audio_units1：扫描、音源切换、流读取3项通过。ring_s2_regression1：21项按键/播放/音频/HDMI/SD/复位/日志/帧缓存/视频对齐回归通过。
+- ring_s2_osd1：全部OSD串接，1,695,744个圆环外像素与原显示链路一致，40,064个圆环变化像素；首次图片和图片切换通过。
+- ring_s2_attempt1：完整TD成功，bit 654,068字节；Setup +0.101ns、Hold +0.004ns，覆盖率99.97%；14,858 LUT、7,928寄存器、34 BRAM9K、4 DSP、1 PLL。约束未修改。
+- timing_audit：无无时钟节点、组合环或无效约束；保留基线相同分类的dummy节点、异步/低速接口延迟提示。PLL条目内部无未约束引脚、无频率不匹配。
+- ring_s2_gate5：独立综合后的圆环与RTL比对109,443个像素，覆盖0/14/28高度，验证BRAM初始化内容和流水线。1731条厂商模型警告：vopt-2675=1、vopt-2685=150、vopt-2718=1512、vsim-3016=68；不是零警告仿真，也不代表整机门级验证。
+- TD保留既有SDRAM ECO位置、局部时钟提示；新增geometry无驱动提示已通过BRAM推断及上述综合后比对验证。
+- 旧pcm_audio/audit_cdc.ps1的get_clocks多名称查询为空，输出实际是未筛选路径；该输出不作为专门CDC验证证据、不收入发布报告。新增PCM采集/快照/绘图均在video_clk，无新增跨域路径；原音频握手与跨域模块未改。
+- 历史gate1～4为脚本路径、Verilog语言模式、厂商库依赖问题；gate5修正运行环境后通过，未改生产RTL。
+- ring_s2_system1完整系统回归仍在运行；未形成local候选，板测及S3尚未执行。
