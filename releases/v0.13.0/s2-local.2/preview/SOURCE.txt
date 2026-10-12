@@ -1,0 +1,1 @@
+Local BGM.PCM, byte offset 960000, 48kHz signed 16-bit mono; production arithmetic shift right 1

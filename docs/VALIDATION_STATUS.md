@@ -1,5 +1,7 @@
 # 当前验证：v0.13.0 圆形音频可视化（2026-10-12）
 
+最新候选为彩色柱条 **s2-local.2**：[下载与说明](../releases/v0.13.0/s2-local.2/README.md)。颜色/像素/OSD/音乐专项通过，完整TD Setup +0.010ns、Hold +0.036ns；原音频/几何未改，本次未重跑整套系统。尚未板测，S3未开始。以下为白色候选历史验证。
+
 S0/S1/S2本地完成：音频、像素、OSD专项及21项回归通过；系统582帧、472955个PCM样本、17次转场和4组UART通过。TD ring_s2_attempt1时序通过（Setup +0.101ns、Hold +0.004ns）。90个工程输入与隔离构建逐字节一致；固定候选[demo.bit](../releases/v0.13.0/s2-local.1/demo.bit)，标签v0.13.0-s2-local.1。板测、20分钟、Flash和完全断电冷启动均未执行。
 
 [阶段计划](圆形音频可视化分阶段计划.md) · [详细验证与工具边界](../diagnostics/audio_vis/VALIDATION.md) · [交接](../HANDOFF.md)。当前正式版和回退仍为v0.12.0。

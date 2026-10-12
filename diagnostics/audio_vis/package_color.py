@@ -44,6 +44,7 @@ for name in ('ring_0.png','ring_1.png','ring_2.png','ring_3.png'):
 for name in ('music.gif','music.png','SOURCE.txt'):
     copy(output/'ring_color_music1'/name,Path('preview')/name)
 for name in changed:copy(root/name,Path('sources')/name)
+copy(root/'diagnostics/audio_vis/COLOR_VALIDATION.md',Path('VALIDATION.md'))
 manifest=['# Color candidate inputs','',
           'Baseline: v0.13.0-s2-local.1; candidate: v0.13.0-s2-local.2.',
           f'Build: ring_color_attempt1; bit: {(phy/"demo.bit").stat().st_size} bytes.',

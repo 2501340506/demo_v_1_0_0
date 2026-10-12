@@ -1,5 +1,7 @@
 # v0.13.0 验证记录
 
+最新彩色候选s2-local.2见[COLOR_VALIDATION.md](COLOR_VALIDATION.md)。以下是白色local.1的完整历史验证，不代表彩色候选重新执行所有测试。
+
 ## S1（2026-10-12）
 - ring_s1_unit3：幅度/负满幅/握手/饱和/上升下降/静音/缺样/历史回绕/帧快照通过；两拍RGB和HS/VS/DE/X、关闭透传通过。编译和仿真零错误零警告。
 - 独立Python胶囊几何参考与1,228,800个RTL像素一致；预览位于diagnostics/output/ring_s1_unit3/ring_0.png～ring_3.png。
