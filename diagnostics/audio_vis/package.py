@@ -32,7 +32,7 @@ def verify(relative, marker, warnings=()):
 
 verify('ring_s1_unit3/tb_audio_ring.log','PASS levels:')
 verify('ring_s1_unit3/tb_ring_pixels.log','PASS pixels:')
-verify('ring_s1_music3/music.log','PASS music:')
+verify('ring_s2_music4/music.log','PASS music:')
 verify('ring_s2_osd1/osd.log','PASS ring + all OSD:')
 verify('ring_s2_production1/tb_pcm_production.log','9279 exact comparisons')
 for name in ('tb_audio_scan','tb_audio_mux','tb_audio_stream'):
@@ -62,7 +62,7 @@ for path in logs:copy(path,Path('validation')/path.parent.name/path.name)
 for name in ('ring_0.png','ring_1.png','ring_2.png','ring_3.png'):
     copy(output/'ring_s1_unit3'/name,Path('preview')/name)
 for name in ('music.gif','music.png','SOURCE.txt'):
-    copy(output/'ring_s1_music3'/name,Path('preview')/name)
+    copy(output/'ring_s2_music4'/name,Path('preview')/name)
 changed=subprocess.check_output(['git','diff','v0.12.0','--name-only','--','user_source','TD_project'],cwd=root,text=True).splitlines()
 for name in changed:copy(root/name,Path('sources')/name)
 revision=subprocess.check_output(['git','describe','--always','--dirty'],cwd=root,text=True).strip()
@@ -75,4 +75,5 @@ manifest += [f'- {name.as_posix()} ({(root/name).stat().st_size} bytes)' for nam
 manifest += ['','## Changed production inputs','']+[f'- {name}' for name in changed]
 (release/'MANIFEST.md').write_text('\n'.join(manifest)+'\n',encoding='utf-8')
 copy(root/'diagnostics/audio_vis/VALIDATION.md',Path('VALIDATION.md'))
+copy(root/'diagnostics/audio_vis/CANDIDATE_README.md',Path('README.md'))
 print(f'Packaged {release}: {len(inputs)} inputs, {len(logs)} simulation logs, {len(changed)} changed production files')

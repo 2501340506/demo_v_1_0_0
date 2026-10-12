@@ -14,7 +14,8 @@ if action=='prepare':
         raw=raw[offset:offset+96000]
         values=list(struct.unpack('<'+'h'*(len(raw)//2),raw))
         values=(values*math.ceil(48000/len(values)))[:48000]
-        description=f'Local BGM.PCM, byte offset {offset}, 48kHz signed 16-bit mono'
+        values=[v >> 1 for v in values]  # Match production pcm_stream_player output gain.
+        description=f'Local BGM.PCM, byte offset {offset}, 48kHz signed 16-bit mono; production arithmetic shift right 1'
     else:
         values=[int((0.1+0.8*(i/48000))*16000*math.sin(i*2*math.pi*440/48000)) for i in range(48000)]
         description='Synthetic 440Hz amplitude sweep (local BGM.PCM unavailable)'
