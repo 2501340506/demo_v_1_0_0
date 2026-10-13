@@ -87,3 +87,44 @@ attempt25 最差 Setup：scanner/max_cluster → 音频 cluster_latched.ce，-0.
 - Hold：完整图写FIFO地址→RAM addra[8]，-0.003ns；另有完整图写FIFO跨域复位removal -0.005ns。后者来自异步复位释放路径，不能当成数据地址线一起加延时。
 
 当前保留已通过行为等价/联合验证的两项定点修正，但尚不具备S2候选。后续从attempt35开始，先结合打包变化评估BMP offset译码和UART选择链的结构，优先减少真实选择逻辑/高扇出控制；不继续随机改布局策略或对所有地址位加LUT。修改BMP流控制时须验证背压、取消、文件末字节同拍和缩放字节流，不得仅沿用本轮扫描验证。新Hold/removal均应按最终报告分别处理。
+
+## attempt35 字幕回复选择链（失败，生产修改已撤回）
+
+选择证据：attempt34中字幕`index-9`生成的sub2寄存器/组合链到UART reply_byte为-0.351ns，8级逻辑、最大扇出55。subtitle_uart_controller物理868 LUT/452 seq，综合842 LUT/450 seq。源代码先按宽下标从125位snapshot选择8位，再按index奇偶选4位；本轮仅将其改为固定120位文本字段上直接选择4位，下标`((index[4:0]-5'd9)^5'd1)`限定为5位。合法文本0至15字节都在30个半字节以内，字符32处按模32回绕恰好对应后续文本；不改reply_valid/last、队列、配置或握手周期。
+
+adjust_reply_fields1通过124928次旧新查询格式化比较（每个文本源位、长度0..15、index0..63及随机文本），并在现有真实RX/TX串口/回复仲裁集成中逐周期比较新旧控制器全部输出，零错误、零警告。BMP流控制未改，本轮无需重跑其回归；attempt35已启动固定HighFanoutOptimization/strategy5完整TD。最终资源、时序待补，Hold/removal暂不叠加修改。
+
+最终：字幕模块综合842→847 LUT、物理868→888 LUT，并无资源收益；全设计17363 LUT/9347寄存器、4801 MSlice/4808 LSlice，Setup -1.632ns（124失败端点）、Hold -0.020ns（3失败端点）。完整TD无工具ERROR但不合格。已将subtitle_uart_controller.v恢复至1c0efbb内容，失败源码快照及结果保留attempt35，不能用它代表当前源码或候选。格式化等价测试作为这项实验的诊断保留；不以源码看起来简单代替硬件收益。
+
+## attempt36 UART队列BRAM化（完整TD结束，时序失败）
+
+当前生产修改仅在UART事件队列：attempt34综合日志确认它是8×154位Logic DRAM。改为同步BRAM读口，显式使用本项目IP已有的`fehdl force_ram=1, ram_style="bram"`属性；新增一拍loading，将BRAM读出的记录装入原serializer后才置active。保留日志格式、时间戳取样、八条可用队列容量、DROP和回复独占仲裁，记录发送前多一个系统时钟的内部装载时间。物理环深度16、可用容量仍8，使满队列同时出入队时读写地址不同，不依赖BRAM同址读写模式。Hold/removal未叠加修改。
+
+adjust_queue_fields2：52864次字段格式化旧新比对、原线级UART日志（CR/LF、同时事件、快照、DROP=2、CACHE消息）通过；新队列专项448装载、440次满队列同时出入队、576溢出事件，多次指针回绕且无同址读写，数据/计数一致。adjust_queue_subtitle1真实RX/TX及回复仲裁集成通过，均零错误/零警告。attempt36固定strategy5完整TD运行中，待确认实际BRAM映射、资源和时序。
+
+综合已确认实际队列映射9个BRAM9K，总BRAM52/64；相对attempt34，UART综合LUT1170→910，全设计16635→16350（-285）。不是只接受属性而仍用Logic DRAM。adjust_queue_gate1独立TD综合后的网表（测试时钟/波特率、QUEUE_DEPTH=2，仍映射9个BRAM）在线级UART专项通过：实际厂商BRAM模型下字节、快照、时间戳、DROP及CACHE记录正确。该门级日志有2446条厂商原语未接端口/端口类型警告，零错误，不声称零警告；与生产完整TD的容量8配置区分，容量8的队列压力已由RTL专项验证。
+
+### attempt36 最终资源与时序
+
+完整综合、布局布线及bit生成结束，无工具ERROR；门槛脚本因负时序退出1，正确拒绝产物。当前102个工程输入（包括工程、引脚及SDC）与attempt36快照逐字节一致。保留队列BRAM改动作为资源优化阶段结果，没有合格S2候选。
+
+| 指标 | attempt34 | attempt36 |
+|---|---:|---:|
+| 全设计LUT | 17224 | 16929 |
+| 寄存器 / LE | 9349 / 18647 | 9339 / 18224 |
+| MSlice / LSlice | 4818 / 4813 | 4695 / 4697 |
+| BRAM9K / DSP | 43 / 15 | 52 / 15 |
+| Setup WNS / TNS ns | -0.356 / -4.390 | -1.009 / -23.488 |
+| 最大延迟失败端点（含recovery） | 24 | 72 |
+| Hold WNS / TNS ns | -0.005 / -0.008 | -0.020 / -0.070 |
+| 最小延迟失败端点 | 2 | 6 |
+
+UART物理899 LUT（840 lut + 59 ripple）、382 seq、9 BRAM。全设计LUT减少295，MSlice减少123，LSlice减少116，是真实资源和打包收益；时序反而变差，不称为收敛。代价是新增9个BRAM、总占用52/64，及出队记录开始发送前增加一个系统时钟。
+
+已导出`adjust_s2_attempt36/timing_analysis/expanded.timing`（每组100端点）和`routed.v`。72个最大延迟失败端点实际为71条setup及1条recovery；默认报告前10条漏掉的recovery是`u_reset_sd/release_pipe`→BMP streamer `remaining_bytes.sr`，-0.038ns，不能按数据Hold处理。
+
+Setup按目的模块分布：decoder头检查20、decoder像素控制5、scanner9、preflight5、SD扇区读写15、UART3，其余14分散于读取/写FIFO/音频/缓存控制。最差为buffer实际`file_byte_offset[21]`→header `file_len.ce`，-1.009ns，8级LUT，cell 2.612ns、net 8.117ns（76%）、最大扇出12。头检查内部使用32位offset选择0..33字节并控制header_complete，实际路径穿过共享高位译码与多级使能；像素控制仍有pixel_offset→green.ce -0.845ns。下一项优先调查如何切断这两类宽偏移译码，而不是假定只有大扇出或仅靠减少LUT就能通过。
+
+六条负Hold：streamer数据→sector buffer RAM -0.020ns；UART pending→队列RAM -0.020ns；完整图写FIFO地址→RAM -0.012ns；缩放raw_pipe_x→RAM -0.011ns；PCM rd_bin→RAM -0.004ns；UART rd_ptr→队列RAM -0.003ns。实际网表确认UART `ramread0_syn_64.dib[0]`对应`pending[1]`，`addrb[5]`对应`rd_ptr[1]`，不能直接按源寄存器编号推断RTL位。尚未添加新保持LUT；应在下一项结构变化的最终报告上重新定位。
+
+下一轮从attempt37起，固定HighFanoutOptimization/strategy5。若改变BMP头或流接口，专项覆盖连续字节、背压、取消、末字节/结束同拍和缩放逐像素；sector buffer有FETCH气泡不代表所有decoder调用者均有气泡，不能据此无条件提前采样。attempt35实验复现可用`run_subtitle_fields.ps1 -SourceRoot diagnostics/output/adjust_s2_attempt35 -RunName <新目录>`；默认使用当前生产源码，不能将默认运行称为重跑已撤回优化。

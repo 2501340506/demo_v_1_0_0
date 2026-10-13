@@ -22,7 +22,9 @@ module uart_event_logger #(
 );
 localparam integer MS_CYCLES = CLK_FREQ_HZ / 1000;
 localparam integer MS_BITS = MS_CYCLES > 1 ? $clog2(MS_CYCLES) : 1;
-localparam integer PTR_BITS = $clog2(QUEUE_DEPTH);
+// Keep QUEUE_DEPTH usable records in a twice-sized BRAM ring. At full
+// occupancy, simultaneous read/write addresses remain distinct.
+localparam integer PTR_BITS = $clog2(2*QUEUE_DEPTH);
 localparam integer COUNT_BITS = $clog2(QUEUE_DEPTH+1);
 localparam integer CLKS_PER_BIT = (CLK_FREQ_HZ + BAUD_RATE/2) / BAUD_RATE;
 reg [MS_BITS-1:0] ms_div;
@@ -42,24 +44,30 @@ always @(posedge clk or posedge rst) begin
     else pending<={milliseconds,events,image_index,sector,error_code,phase,auto_enabled};
 end
 wire [63:0] event_debug = ((pending[50] && pending[7:5] == 3'd2) || pending[43]) ? sd_debug : 64'd0;
-reg [153:0] queue [0:QUEUE_DEPTH-1];
+reg [153:0] queue [0:2*QUEUE_DEPTH-1]; /* fehdl force_ram=1, ram_style="bram" */
+reg [153:0] queue_read;
 reg [PTR_BITS-1:0] wr_ptr, rd_ptr;
 reg [COUNT_BITS-1:0] count;
 reg [31:0] dropped;
-reg active, boot;
+reg active, boot, loading;
 reg [153:0] snapshot;
 reg [15:0] remaining;
 reg reply_owner, reply_wait, reply_start, reply_end;
 reg [7:0] reply_byte;
-wire pop = !boot && !active && !reply_owner && (count != 0);
+wire pop = !boot && !active && !loading && !reply_owner && (count != 0);
 wire push = pending_valid && ((count < QUEUE_DEPTH) || pop);
 wire lost = pending_valid && !push;
-wire report_drop = !boot && !active && !reply_owner && (count == 0) && (dropped != 0);
+wire report_drop = !boot && !active && !loading && !reply_owner && (count == 0) && (dropped != 0);
+// Synchronous read without reset allows BRAM inference. The loading state
+// transfers this word to the serializer before active is asserted.
+always @(posedge clk) begin
+    if(push) queue[wr_ptr]<={pending,event_debug};
+    if(pop) queue_read<=queue[rd_ptr];
+end
 always @(posedge clk or posedge rst) begin
     if(rst) begin wr_ptr<=0; rd_ptr<=0; count<=0; dropped<=0; end
     else begin
         if(push) begin
-            queue[wr_ptr]<={pending,event_debug};
             wr_ptr<=wr_ptr+1'b1;
         end
         if(pop) rd_ptr<=rd_ptr+1'b1;
@@ -161,7 +169,7 @@ always @(posedge clk or posedge rst) begin
     if(rst) begin reply_owner<=0;reply_wait<=0;reply_start<=0;reply_end<=0;reply_byte<=0;end
     else begin
         reply_start<=0;
-        if(REPLY_ENABLE && !reply_owner && !boot && !active && count==0 &&
+        if(REPLY_ENABLE && !reply_owner && !boot && !active && !loading && count==0 &&
            dropped==0 && !pending_valid && reply_valid) reply_owner<=1;
         if(reply_ready && reply_valid) begin
             reply_byte<=reply_data; reply_end<=reply_last; reply_start<=1;reply_wait<=1;
@@ -173,12 +181,13 @@ always @(posedge clk or posedge rst) begin
 end
 always @(posedge clk or posedge rst) begin
     if(rst) begin
-        boot<=1; active<=0; snapshot<=0; remaining<=0;
+        boot<=1; active<=0; loading<=0; snapshot<=0; remaining<=0;
         char_index<=0; start<=0; waiting<=0;
     end else begin
         start<=0;
-        if(pop) begin
-            snapshot<=queue[rd_ptr]; remaining<=queue[rd_ptr][121:106];
+        loading<=pop;
+        if(loading) begin
+            snapshot<=queue_read; remaining<=queue_read[121:106];
             active<=1; char_index<=0;
         end else if(report_drop) begin
             // DROP.S holds the number of discarded snapshots, not an SD sector.

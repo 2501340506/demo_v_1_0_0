@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt34定点修正与完整验证已结束，仍无合格候选、尚未上板。
-- 已完成：scanner目录项第30字节预寄存五路提交使能、第31字节原周期提交；短音频cache_write[3]增加显式EQN恒等LUT。adjust_scanner_commit1三种间隔/七场景逐周期等价、adjust_commit_audio1（含512字节缓存循环）、adjust_commit_reader1全部42项、adjust_commit_production2生产联合9279样本通过。attempt34完整TD及实际网表检查完成，三处恒等LUT厂商模型0/1通过。原UART优化、S1及历史回归覆盖见S2_VALIDATION。
-- 卡住的问题：attempt34固定strategy5无工具ERROR但Setup -0.356ns（24失败端点）、Hold -0.005ns（2失败端点含removal）。原scanner/短缓存负路径消除，最差转为BMP buffer out_offset→decoder pixel_count使能（7级、71%布线）；另有UART/字幕等。17224 LUT、9349寄存器、4818 MSlice、43 BRAM9K、15 DSP：相对attempt33 LUT减133但MSlice增32，全局未收敛。频率/引脚/约束未改，无local/board标签。
-- 下一步计划：从attempt35起，结合打包变化调查BMP宽offset译码和UART选择链，按真实资源/路径选择结构修改，不盲换布局策略。新的Hold为完整图写FIFO地址→RAM（-0.003ns），另一条为跨域复位removal（-0.005ns），必须分开处理；不能继续修旧PCM/短缓存端点。修改BMP流控制需覆盖背压、取消、末字节同拍、缩放字节流。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。合格后才打包S2，板测前不进入S3。
-- 踩过的坑：LUT下降不等于Slice打包下降；默认时序报告每组仅10端点，本轮已导出100端点报告。按报告pin名直接查询未命中，空查询不作证据。旧production测试漏连七个新端口，补齐后production2零警告；实际物理LUT抽取模型有未接端口警告，如实保留。恒等LUT须有EQN；网表寄存器号不等于RTL位号。中文显式UTF-8，不混用历史覆盖、不打包失败bit、不批量删除。
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt36完整TD和扩展路径分析已结束，仍无合格候选、尚未上板。
+- 已完成：UART队列改为同步BRAM读及一拍loading，保留八条可用容量、日志格式、DROP和回复仲裁。adjust_queue_fields2通过52864字段比较、线级UART及448装载/440满队列替换/576溢出事件；adjust_queue_subtitle1回复集成通过，均零错误警告。adjust_queue_gate1厂商BRAM门级线级UART通过（测试容量2，2446条模型端口警告；生产容量8压力由RTL覆盖）。实际映射9 BRAM；102个工程输入与attempt36快照逐字节一致。scanner/缓存和历史功能覆盖见S2_VALIDATION。
+- 卡住的问题：attempt36无工具ERROR但Setup -1.009ns、Hold -0.020ns；72个最大延迟失败端点实为71 setup和1 recovery，6个Hold失败端点。16929 LUT、9339寄存器、4695 MSlice/4697 LSlice、52 BRAM9K、15 DSP；相对attempt34 LUT减少295、MSlice减少123，但时序变差。最差BMP buffer offset→header file_len使能（8级、76%布线），header占20个Setup失败端点；复位release_pipe→streamer.sr另有recovery -0.038ns。频率/引脚/约束未改，无local/board标签。
+- 下一步计划：保留有实际资源收益的UART BRAM改动；从attempt37起固定HighFanoutOptimization/strategy5。优先按实际路径调查BMP头/像素区域的宽offset译码，实施一项可验证的结构切断后，验证连续字节、背压、取消、末字节同拍及缩放逐像素，再完整TD。六条数据Hold与复位Recovery分别按最终报告处理，不能套用旧端点。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
+- 踩过的坑：attempt35字幕选择简化物理LUT反增20、Setup -1.632ns，已撤回生产修改。资源和打包下降仍不保证时序收敛；默认报告仅10端点，attempt36已导出100端点并发现遗漏的Recovery。UART物理dib[0]实际接pending[1]，addrb[5]接rd_ptr[1]，不能按寄存器编号猜位号。sector buffer气泡不能外推给全部decoder调用者。恒等LUT须有EQN，模型警告如实保留；中文显式UTF-8，不混用历史覆盖、不打包失败bit、不批量删除。
 
 ## 历史交接
 

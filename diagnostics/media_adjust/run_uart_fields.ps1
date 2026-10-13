@@ -11,11 +11,11 @@ $reference=$reference -replace '\bmodule uart_event_logger\b','module uart_event
 $sim='D:/modelsim/win64';$lib="$out/work".Replace('\','/')
 & "$sim/vlib.exe" $lib *> "$out/library.log"
 if($LASTEXITCODE){throw 'vlib failed'}
-& "$sim/vlog.exe" -sv -work $lib "$root/user_source/hdl_source/uart/uart_tx_byte.v" "$root/user_source/hdl_source/uart/uart_event_logger.v" "$out/uart_event_logger_reference.v" "$PSScriptRoot/tb_uart_field_equivalence.sv" "$root/diagnostics/uart_fastboot/tb_uart_event_logger.sv" *> "$out/compile.log"
+& "$sim/vlog.exe" -sv -work $lib "$root/user_source/hdl_source/uart/uart_tx_byte.v" "$root/user_source/hdl_source/uart/uart_event_logger.v" "$out/uart_event_logger_reference.v" "$PSScriptRoot/tb_uart_field_equivalence.sv" "$PSScriptRoot/tb_uart_queue.sv" "$root/diagnostics/uart_fastboot/tb_uart_event_logger.sv" *> "$out/compile.log"
 if($LASTEXITCODE){throw "Compile failed: $out/compile.log"}
 Push-Location $out
 try {
- foreach($test in @('tb_uart_field_equivalence','tb_uart_event_logger')){
+ foreach($test in @('tb_uart_field_equivalence','tb_uart_event_logger','tb_uart_queue')){
   & "$sim/vsim.exe" -c -quiet -lib $lib $test -l "$out/$test.log" -do 'run -all; quit -f' *> "$out/$test.console.log"
   $rc=$LASTEXITCODE;$log=Get-Content "$out/$test.log" -Raw
   if($rc -or $log -match '\*\* (Fatal|Error|Warning):' -or $log -notmatch 'PASS ' -or $log -notmatch 'Errors: 0, Warnings: 0'){throw "Test failed: $out/$test.log"}
