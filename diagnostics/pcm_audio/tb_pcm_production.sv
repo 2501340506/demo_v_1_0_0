@@ -11,6 +11,8 @@ module tb_pcm_production;
  wire image_valid,display_valid;
  sd_card_bmp #(.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.AUDIO_ENABLE(1)) app(
  .clk(clk),.rst(rst),.sdram_ready(1'b1),.key1(key1),.key2(key2),.key4(key4),.mode(2'd0),
+ .preview_ack(1'b0),.preview_request(),.preview_descriptor(),
+ .adjust_select(),.adjust_restore(),.adjust_increase(),.adjust_decrease(),
  .state_code(),.sd_debug(),.diagnostics(),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),.osd_error_code(),
  .bmp_width(16'd1),.bmp_height(16'd1),.display_valid(display_valid),.committed_image(image),.committed_valid(image_valid),.committed_ready(1'b1),
  .write_cancel_req(cancel),.write_cancel_ack(cancel),.source_frame_done(done),.source_frame_error(),

@@ -15,7 +15,7 @@ try {
   $p=$_.GetAttribute('Path');if((Split-Path $p -Leaf) -notin $modeled){Join-Path "$root/TD_project" $p}
  })
  $benches=@($Tests | ForEach-Object {"diagnostics/pcm_audio/$_.sv"})
- & "$sim/vlog.exe" -sv -work $lib @rtl @benches *> "$out/compile.log"
+ & "$sim/vlog.exe" -sv -work $lib @rtl @benches D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v *> "$out/compile.log"
  if($LASTEXITCODE){throw 'compile failed'}
  foreach($test in $Tests){
   & "$sim/vsim.exe" -c -quiet -lib $lib $test -l "$out/$test.log" -do 'run -all; quit -f' *> "$out/$test.console.log"

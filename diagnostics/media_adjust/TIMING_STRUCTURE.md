@@ -64,3 +64,26 @@ attempt25 最差 Setup：scanner/max_cluster → 音频 cluster_latched.ce，-0.
 - 唯一负Hold：`g_audio$u_stream/cache_write_reg[2]_syn_4.clk` → `g_audio$u_stream/ramread0_syn_6.addra[6]`，-0.020ns；实际逻辑网名为`cache_write[3]`，不是源RTL第2位。数据延迟0.325ns（cell 0.109ns、net 0.216ns）。它是短音频循环缓存，已经不同于attempt25的PCM FIFO；后续只按最终路径定点处理，显式恒等LUT须配置EQN并验证实际网表。
 
 这两处尚未改动。新构建从attempt34起，继续同一strategy5以隔离RTL效果。若后续修改scanner或音频缓存，必须补相应扫描/音频专项及联合场景，不能沿用本轮仅UART受影响的验证范围。时钟、引脚、约束保持原值；无合格候选时不运行发布打包、不进入板测或S3。
+
+## attempt34 定点修正
+
+按attempt33报告处理两处：scanner在目录项第30字节预寄存五个目的地提交使能，第31字节仍原周期写入cluster/size/valid；结果写入不再直接依赖状态/名称/重复项的组合链。音频短缓存仅在`cache_write[3]`写地址增加保留的`AL_MAP_LUT1`，显式`INIT=2'b10, EQN="A"`，不改变读写周期。
+
+已通过：adjust_scanner_commit1在GAP=0/1/5下，各七种目录场景的所有scanner输出逐周期对比ebc494d旧实现一致；adjust_commit_audio1扫描、音源mux及音频流通过，新增512字节短缓存逐样本循环，覆盖全部写地址。adjust_commit_reader1的42项FAT32读取回归通过；adjust_commit_production2生产音频联合9279样本精确比对通过，含四图、碎片循环、事务中重扫、故障回退/恢复、无BGM、音频独立启动和短循环。attempt34已启动固定strategy5完整TD，尚待结果及实际网表恒等LUT检查。
+
+验证脚本修正：受影响脚本显式加载厂商AL_MAP_LUT1模型。旧production测试台漏连七个后续新增端口，adjust_commit_production1虽数值检查通过但被八条端口警告拒绝；仅补测试台端口连接后，production2重跑零错误、零警告，不把第一轮记作合格通过。
+
+### attempt34 最终结果
+
+完整TD已结束，无工具ERROR、无最终布线冲突，但仍不合格：Setup WNS/TNS=-0.356/-4.390ns（24个失败端点），Hold WNS/TNS=-0.005/-0.008ns（2个失败端点，包含一条removal）。全设计17224 LUT、9349寄存器、18647 LE、4818 MSlice/4813 LSlice、43 BRAM9K、15 DSP。相对attempt33，LUT减少133，但LE增加155、MSlice增加32；不能把这次局部修正描述为全局时序或打包收敛。
+
+实际网表五位entry_accept均为寄存器。新增cache_write[3]经物理LSLICE的恒等功能接至短缓存RAM addra[6]，未被折叠；原MISO、缩放行数据恒等LUT也保留。三个实际物理LUT厂商模型0/1验证通过：adjust_commit_cache_gate1、adjust_commit_miso1、adjust_commit_scaler_gate1。抽取物理LSLICE时未接与被测组合功能无关的厂商引脚，日志分别保留10/10/13条模型端口警告；无错误或数值不一致，不写成零警告仿真。
+
+默认报告每组仅10个端点，不足以列全本轮24个Setup失败端点；已导出`adjust_s2_attempt34/miso_gate_export/expanded.timing`（每组100端点）交叉检查。原scanner/resource1_size路径和短音频cache_write[3]→RAM均不在负路径内。一次直接按报告pin名调用report_timing_path未找到目标，两个空查询未作为验证依据。
+
+当前关键阻塞：
+
+- 最差Setup：BMP sector buffer out_offset[24]→decoder pixel_count使能，-0.356ns，7级逻辑，net占71%。其他负路径分散于BMP header宽offset译码、读错误→缩略图FIFO使能、字幕回复→UART（8级、fanout55）、UART事件名称选择、SD nCS。
+- Hold：完整图写FIFO地址→RAM addra[8]，-0.003ns；另有完整图写FIFO跨域复位removal -0.005ns。后者来自异步复位释放路径，不能当成数据地址线一起加延时。
+
+当前保留已通过行为等价/联合验证的两项定点修正，但尚不具备S2候选。后续从attempt35开始，先结合打包变化评估BMP offset译码和UART选择链的结构，优先减少真实选择逻辑/高扇出控制；不继续随机改布局策略或对所有地址位加LUT。修改BMP流控制时须验证背压、取消、文件末字节同拍和缩放字节流，不得仅沿用本轮扫描验证。新Hold/removal均应按最终报告分别处理。

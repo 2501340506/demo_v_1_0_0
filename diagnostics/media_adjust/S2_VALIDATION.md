@@ -14,6 +14,8 @@
 
 ## 当前阻塞
 
+- 最新attempt34（strategy5）为Setup -0.356ns、Hold -0.005ns，24个Setup失败端点及2个Hold/removal失败端点，仍无合格S2。原scanner提交与短缓存地址负路径消除，但布局出现BMP offset→pixel_count、UART/字幕等其他负路径。17224 LUT、9349寄存器、4818 MSlice；LUT相对attempt33减少133，打包MSlice却增加32。完整分析见TIMING_STRUCTURE.md。
+- 本轮scanner五路提交预寄存及短缓存写地址第3位恒等LUT已验证：adjust_scanner_commit1三种间隔、七种场景逐周期等价；adjust_commit_audio1包含512字节缓存循环；adjust_commit_reader1全部42项；adjust_commit_production2生产联合9279样本均通过。实际Routed MISO/缩放/短缓存恒等LUT厂商模型0/1验证通过，保留模型端口警告。production1因旧测试台漏连端口被拒绝，补齐后以production2为准。
 - 前33次构建全部结束，无合格S2候选。按续接任务完成模块资源/真实路径分析后，本轮只将UART的T/S/D宽快照选择改为字段内选择；attempt33固定strategy5完整TD为Setup -0.216ns、Hold -0.020ns。UART物理LUT减少111，全设计LUT增加16、MSlice减少15，不能声称全设计LUT优化成功。详见TIMING_STRUCTURE.md。
 - 本轮受影响验证：adjust_uart_fields1的52864次新旧格式化等价比对、原UART线级字节专项通过；adjust_uart_subtitle1的字幕命令/回复/日志仲裁集成通过。未将历史系统测试描述为本轮重跑。
 - 最新源码已通过adjust_unit7六专项、adjust_syn3独立综合、adjust_gate4门级算术、adjust_top6生产顶层336271像素/1148样本；区域预计算adjust_scaler_edges1及计数器adjust_control_width1通过。长系统测试早于这些局部修正，不能冒称最终源码完整长系统重跑。
@@ -40,6 +42,7 @@
 - attempt26/28/29/30/31（strategy6/8/9/10/11）：TD路径折线优化报PHY-8103 x_offset.size() <= 0。attempt30虽报告Setup +0.113ns，仍有Hold -0.008ns及工具错误，不能交付。
 - attempt27（strategy7）：PHY-8023布线资源冲突。attempt32（strategy4）：-0.703/-0.012ns。所有失败产物仅保留diagnostics/output，未建立local标签。
 - attempt33：UART字段选择器局部优化后，strategy5完整构建无工具ERROR，但Setup -0.216ns、Hold -0.020ns。仅各一条负路径：scanner状态→resource1_size（85%布线），以及短音频缓存cache_write[3]→RAM写地址。尚未修正这两处；不能复用attempt25的旧Hold端点。物理17357 LUT、9339寄存器、4786 MSlice、43 BRAM9K、15 DSP。未打包候选。
+- attempt34：scanner提交使能预寄存+短缓存地址定点LUT后，完整构建无工具ERROR，但Setup -0.356ns、Hold -0.005ns，仍不打包候选。实际五路寄存器和恒等LUT均保留，功能验证通过；失败端点转移，整体MSlice占用上升，未建立local标签。
 - 顶层注入初版未提供完整0–799行坐标，无法产生HDMI数据岛；adjust_top4补齐后通过，未为此修改生产RTL。
 - adjust_preview1混合尺寸+故障注入运行到主动超时，被正常加载断言误判；现仅在显式预期超时时解除该断言，重新验证故障流程。不将失败日志计为完整通过。
 

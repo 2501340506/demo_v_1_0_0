@@ -58,7 +58,8 @@ module tb_audio_stream;
   if(pv && data!=8'ha5)$fatal(1,"audio bytes leaked to picture");
  end
  always @(posedge rd)if(!rst && sv && check_mode!=0)begin
-  expected=check_mode==1 ? ((received%601)*62-20000)/2 : -10000;
+  expected=check_mode==1 ? ((received%601)*62-20000)/2 :
+           check_mode==3 ? ((received%256)*62-20000)/2 : -10000;
   if(left!==expected || right!==expected)$fatal(1,"PCM #%0d got %0d expected %0d mode%0d",received,left,expected,check_mode);
   received++;
  end
@@ -71,6 +72,10 @@ module tb_audio_stream;
   wait(ab && av);@(negedge clk);enable=0;check_mode=0;wait(stop);
   received=0;size=2;check_mode=2;@(negedge clk);enable=1;
   wait(received>=300);if(loops<300 || uf || overrun)$fatal(1,"short file prefill/loop");
+  @(negedge clk);enable=0;check_mode=0;wait(stop);
+  // Exercise every short-cache write address, including the hold-fixed bit 3.
+  received=0;size=512;check_mode=3;@(negedge clk);enable=1;
+  wait(received>=600);if(loops<2 || uf || overrun)$fatal(1,"512-byte cache replay");
   @(negedge clk);enable=0;check_mode=0;wait(stop);
   size=1202;inject=1;enable=1;wait(err!=0);wait(!active && player_stop);
   if(err!=8'h10)$fatal(1,"read failure not reported");

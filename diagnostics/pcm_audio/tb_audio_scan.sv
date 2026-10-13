@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
-module tb_audio_scan;
+module tb_audio_scan #(parameter integer GAP=0);
  reg clk=0;always #5 clk=~clk;reg rst=1,start=0;
  wire busy,done,req,found;wire [7:0] err;wire [31:0] lba,cluster,size;wire [3:0] pics;
  reg sbusy=0,valid=0,sdone=0;reg [7:0] byte_data=0;reg [8:0] idx=0;
- reg [7:0] disk[0:2047];integer base=0,pos=0,reads=0,scenario=0;
+ reg [7:0] disk[0:2047];integer base=0,pos=0,reads=0,scenario=0,gap_count=0;
  fat32_volume_scanner #(.SCAN_AUDIO(1)) dut(
  .clk(clk),.rst_n(!rst),.scan_start(start),.scan_busy(busy),.scan_done(done),.fs_error(err),
  .partition_lba(),.sectors_per_cluster(),.fat_start_lba(),.data_start_lba(),.max_cluster(),
@@ -19,7 +19,8 @@ module tb_audio_scan;
    if(lba>3)$fatal(1,"unexpected directory LBA %d",lba);
    base=lba*512;pos=0;sbusy=1;reads++;
   end else if(sbusy)begin
-   if(pos<512)begin valid=1;byte_data=disk[base+pos];idx=pos;pos++;end
+   if(pos<512 && gap_count<GAP)gap_count++;
+   else if(pos<512)begin valid=1;byte_data=disk[base+pos];idx=pos;pos++;gap_count=0;end
    else begin sdone=1;sbusy=0;end
   end
  end
@@ -55,7 +56,12 @@ module tb_audio_scan;
   setup();entry(1024,"BGM     PCM",10,600,16);entry(1056,"BGM     PCM",10,600,8);disk[1088]=0;scan(0,0,0);
   setup();entry(1024,"BGM     WAV",10,600,32);disk[1056]=0;scan(0,0,0);
   setup();entry(1024,"BGM     PCM",10,2,32);entry(1056,"BGM     PCM",11,88,32);disk[1088]=0;scan(0,1,2);
-  $display("PASS audio scan: 6 scenarios; after four images across root cluster, only audio, rescan, attributes, extension, duplicate");$finish;
+  setup();entry(1024,"PIC1    BMP",4,32'h12345678,32);entry(1056,"PIC1    BMP",9,32'hffffffff,32);
+  entry(1088,"PIC2    BMP",5,32'h87654321,32);entry(1120,"PIC3    BMP",6,32'h55aa55aa,32);
+  entry(1152,"PIC4    BMP",7,32'haa55aa55,32);disk[1184]=0;scan(15,0,0);
+  if(dut.resource0_cluster!=4 || dut.resource0_size!=32'h12345678 || dut.resource1_size!=32'h87654321 ||
+     dut.resource2_size!=32'h55aa55aa || dut.resource3_size!=32'haa55aa55)$fatal(1,"picture metadata/duplicate mismatch");
+  $display("PASS audio scan: 7 scenarios gap=%0d; directory FAT chain, only audio, rescan, attributes, extension, duplicates, all picture size bytes",GAP);$finish;
  end
  initial begin #1000000;$fatal(1,"scan watchdog");end
 endmodule

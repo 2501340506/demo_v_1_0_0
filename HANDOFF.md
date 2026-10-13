@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：继续v0.15.0 S2时序修复，在原feature/brightness-contrast-volume分支实施一项有资源证据的结构优化，尚无合格候选、尚未上板。
-- 已完成：本轮已对照v0.14.0/attempt25/32分析模块资源和路径，实施UART的T/S/D字段局部选择器；adjust_uart_fields1的52864次等价比较及线级日志、adjust_uart_subtitle1字幕回复集成通过，attempt33完整TD已结束。UART物理LUT减少111、MSlice减少15，但全设计LUT增加16。原S1、21项回归、adjust_unit7/syn3/gate4/top6、scaler_edges1/control_width1通过范围及历史长系统证据见S2_VALIDATION，未冒称本轮重跑。
-- 卡住的问题：attempt33（固定strategy5）无工具ERROR但Setup -0.216ns、Hold -0.020ns，仍无合格S2。物理17357 LUT、9339寄存器、4786 MSlice、43 BRAM9K、15 DSP。唯一负Setup为scanner状态→resource1_size（85%布线、最大扇出66）；唯一负Hold为短音频缓存cache_write[3]→RAM地址，已不同于attempt25的PCM FIFO。频率/引脚/约束未改，无local/board标签。
-- 下一步计划：按[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)定位scanner目录项第31字节提交/scan_start清零中的共享数据选择及高扇出使能，评估提前形成提交使能；对最终Hold端点定点处理。两处本轮尚未修改，后续需扫描/音频专项及相关联合场景。新构建从attempt34起、固定HighFanoutOptimization/strategy5，不继续盲试策略。合格后审查打包S2，板测前不进入S3；回退v0.14.0。
-- 踩过的坑：局部LUT下降不等于全设计下降，未改模块也会重映射；层次LUT需加ripple、父子不可重复累计。网表寄存器编号不等于RTL位号，attempt33 Hold实际是cache_write[3]。旧回归缺AL_MAP_LUT1模型，恒等LUT须有EQN；顶层注入须完整行坐标；复位检查最终pcm_tap。中文显式UTF-8；不混用旧测试覆盖、不打包失败bit、不批量删除。
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt34定点修正与完整验证已结束，仍无合格候选、尚未上板。
+- 已完成：scanner目录项第30字节预寄存五路提交使能、第31字节原周期提交；短音频cache_write[3]增加显式EQN恒等LUT。adjust_scanner_commit1三种间隔/七场景逐周期等价、adjust_commit_audio1（含512字节缓存循环）、adjust_commit_reader1全部42项、adjust_commit_production2生产联合9279样本通过。attempt34完整TD及实际网表检查完成，三处恒等LUT厂商模型0/1通过。原UART优化、S1及历史回归覆盖见S2_VALIDATION。
+- 卡住的问题：attempt34固定strategy5无工具ERROR但Setup -0.356ns（24失败端点）、Hold -0.005ns（2失败端点含removal）。原scanner/短缓存负路径消除，最差转为BMP buffer out_offset→decoder pixel_count使能（7级、71%布线）；另有UART/字幕等。17224 LUT、9349寄存器、4818 MSlice、43 BRAM9K、15 DSP：相对attempt33 LUT减133但MSlice增32，全局未收敛。频率/引脚/约束未改，无local/board标签。
+- 下一步计划：从attempt35起，结合打包变化调查BMP宽offset译码和UART选择链，按真实资源/路径选择结构修改，不盲换布局策略。新的Hold为完整图写FIFO地址→RAM（-0.003ns），另一条为跨域复位removal（-0.005ns），必须分开处理；不能继续修旧PCM/短缓存端点。修改BMP流控制需覆盖背压、取消、末字节同拍、缩放字节流。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。合格后才打包S2，板测前不进入S3。
+- 踩过的坑：LUT下降不等于Slice打包下降；默认时序报告每组仅10端点，本轮已导出100端点报告。按报告pin名直接查询未命中，空查询不作证据。旧production测试漏连七个新端口，补齐后production2零警告；实际物理LUT抽取模型有未接端口警告，如实保留。恒等LUT须有EQN；网表寄存器号不等于RTL位号。中文显式UTF-8，不混用历史覆盖、不打包失败bit、不批量删除。
 
 ## 历史交接
 

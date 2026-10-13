@@ -23,9 +23,15 @@ module fat32_pcm_stream #(
  wire replaying=(state==REPLAY_REQ || state==REPLAY_OUT);
  reg [7:0] short_mem[0:511];
  reg [8:0] cache_write,replay_offset;
+ // attempt33 measured a hold violation on cache_write[3] to short_mem.
+ wire [8:0] cache_write_ram;
+ assign cache_write_ram[8:4]=cache_write[8:4];
+ assign cache_write_ram[2:0]=cache_write[2:0];
+ (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_cache_write_hold (.o(cache_write_ram[3]),.a(cache_write[3]));
  reg [7:0] cached_byte;
  always @(posedge clk)begin
-  if(state==READ && valid && size_latched<=512)short_mem[cache_write]<=byte_data;
+  if(state==READ && valid && size_latched<=512)short_mem[cache_write_ram]<=byte_data;
   if(state==REPLAY_REQ)cached_byte<=short_mem[replay_offset];
  end
  assign stopped=state==IDLE && player_stopped && !sector_busy;

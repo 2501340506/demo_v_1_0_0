@@ -64,20 +64,52 @@ module fat32_volume_scanner #(
         input [7:0] code;
         begin fs_error<=code;state<=FINISH;end
     endtask
+    // Names, attributes and duplicate status are settled before byte 30.
+    // Register per-destination enables there; commit at byte 31 as before.
+    // Hold the enables across byte gaps and clear them after the commit.
+    (* keep = "true" *) reg [4:0] entry_accept;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) entry_accept<=0;
+        else if(state!=DIR_WAIT) entry_accept<=0;
+        else if(sector_valid) begin
+            if(sector_byte_index[4:0]==30) begin
+                entry_accept[0]<=!dir_end && name_match && resource_index==0 && !resource_valid[0];
+                entry_accept[1]<=!dir_end && name_match && resource_index==1 && !resource_valid[1];
+                entry_accept[2]<=!dir_end && name_match && resource_index==2 && !resource_valid[2];
+                entry_accept[3]<=!dir_end && name_match && resource_index==3 && !resource_valid[3];
+                entry_accept[4]<=!dir_end && audio_match && !audio_found;
+            end else if(sector_byte_index[4:0]==31) entry_accept<=0;
+        end
+    end
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;
+            resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
+            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
+        end else if(state==IDLE && scan_start) begin
+            resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;
+            resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
+            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
+        end else if(sector_valid && sector_byte_index[4:0]==31) begin
+            if(entry_accept[0])begin resource_valid[0]<=1;resource0_cluster<=entry_cluster;resource0_size<={sector_byte,entry_size[23:0]};end
+            if(entry_accept[1])begin resource_valid[1]<=1;resource1_cluster<=entry_cluster;resource1_size<={sector_byte,entry_size[23:0]};end
+            if(entry_accept[2])begin resource_valid[2]<=1;resource2_cluster<=entry_cluster;resource2_size<={sector_byte,entry_size[23:0]};end
+            if(entry_accept[3])begin resource_valid[3]<=1;resource3_cluster<=entry_cluster;resource3_size<={sector_byte,entry_size[23:0]};end
+            if(entry_accept[4])begin audio_found<=1;audio_cluster<=entry_cluster;audio_size<={sector_byte,entry_size[23:0]};end
+        end
+    end
     integer j;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;
             layout_bad<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
-            resource_valid<=0;resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
-            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
             overhead<=0;data_sectors<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
-            audio_found<=0;audio_cluster<=0;audio_size<=0;audio_match<=0;
+            audio_match<=0;
         end else begin
             scan_done<=0;sector_req<=0;
             if(sector_valid && (state==ZERO_WAIT || state==BOOT_WAIT)) begin
@@ -126,18 +158,6 @@ module fat32_volume_scanner #(
                     21:entry_cluster[31:24]<={4'b0,sector_byte[3:0]};
                     26:entry_cluster[7:0]<=sector_byte;27:entry_cluster[15:8]<=sector_byte;
                     28:entry_size[7:0]<=sector_byte;29:entry_size[15:8]<=sector_byte;30:entry_size[23:16]<=sector_byte;
-                    31:begin
-                    if(audio_match && !audio_found) begin audio_found<=1;audio_cluster<=entry_cluster;audio_size<={sector_byte,entry_size[23:0]};end
-                    if(name_match && !resource_valid[resource_index]) begin
-                        resource_valid[resource_index]<=1;
-                        case(resource_index)
-                            0:begin resource0_cluster<=entry_cluster;resource0_size<={sector_byte,entry_size[23:0]};end
-                            1:begin resource1_cluster<=entry_cluster;resource1_size<={sector_byte,entry_size[23:0]};end
-                            2:begin resource2_cluster<=entry_cluster;resource2_size<={sector_byte,entry_size[23:0]};end
-                            3:begin resource3_cluster<=entry_cluster;resource3_size<={sector_byte,entry_size[23:0]};end
-                        endcase
-                    end
-                    end
                     default:;
                 endcase
             end
@@ -149,9 +169,7 @@ module fat32_volume_scanner #(
             end
             case(state)
                 IDLE:if(scan_start) begin
-                    fs_error<=0;resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;partition_lba<=0;mbr_match<=0;dir_end<=0;
-                    resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
-                    resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
+                    fs_error<=0;partition_lba<=0;mbr_match<=0;dir_end<=0;
                     sector_lba<=0;state<=ZERO_REQ;
                 end
                 ZERO_REQ:if(!sector_busy)begin sector_req<=1;state<=ZERO_WAIT;end

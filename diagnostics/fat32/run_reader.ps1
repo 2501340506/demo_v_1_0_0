@@ -10,7 +10,7 @@ try {
     if($LASTEXITCODE){throw 'fixture generation failed'}
     if(!(Test-Path "$lib/_info")){& "$sim/vlib.exe" $lib}
     $rtl=@('fat32_bmp_reader','sd_sector_adapter','sd_sector_service','fat32_volume_scanner','fat32_file_streamer','bmp_header_check','bmp24_decoder','bmp_scale_stream','bmp_sector_buffer','image_scale_nearest') | ForEach-Object { "user_source/hdl_source/SD/$_.v" }
-    & "$sim/vlog.exe" -sv -work $lib -l "$out/compile.log" @rtl diagnostics/fat32/tb_fat32_reader.sv
+    & "$sim/vlog.exe" -sv -work $lib -l "$out/compile.log" @rtl diagnostics/fat32/tb_fat32_reader.sv D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v
     if($LASTEXITCODE){throw 'core compilation failed'}
     $manifest=Get-Content "$out/fixtures/manifest.json" -Raw | ConvertFrom-Json
     if($Cases.Count -eq 0){$Cases=@($manifest | ForEach-Object {$_.id})}

@@ -11,7 +11,7 @@ Push-Location $root
 try {
  $rtl=@('user_source/hdl_source/SD/fat32_volume_scanner.v','user_source/hdl_source/SD/fat32_file_streamer.v','user_source/hdl_source/SD/sd_sector_adapter.v','user_source/hdl_source/SD/sd_sector_service.v','user_source/hdl_source/audio/fat32_pcm_stream.v','user_source/hdl_source/audio/pcm_stream_player.v','user_source/hdl_source/audio/audio_source_mux.v')
  $benches=@($Tests | ForEach-Object {"diagnostics/pcm_audio/$_.sv"})
- & "$sim/vlog.exe" -sv -work $lib @rtl @benches *> "$out/compile.log"
+ & "$sim/vlog.exe" -sv -work $lib @rtl @benches D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v *> "$out/compile.log"
  if($LASTEXITCODE){throw 'compile failed'}
  foreach($test in $Tests){
   & "$sim/vsim.exe" -c -quiet -lib $lib $test -l "$out/$test.log" -do 'run -all; quit -f' *> "$out/$test.console.log"
