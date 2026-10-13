@@ -1,3 +1,13 @@
+# 当前任务：v0.15.0 S2 LUT缩减（功能不变）
+
+- 当前任务：原feature/brightness-contrast-volume分支，按docs/亮度对比度与音量调节分阶段修改计划.md“S2 LUT缩减子计划”分6批降LUT，缓解attempt40布线拥塞，从attempt41起。
+- 已完成：子计划落盘；依据attempt40物理层次表及源码确认主要来源（audio_ring_levels寄存器阵列、video_delay移位链、OSD字库/选择、SD多份运算与拷贝、字幕并行校验）。尚未改RTL。
+- 卡住的问题：attempt40时序仍负（Setup -0.587ns、Hold -0.020ns），无合格候选、无local/board标签。
+- 下一步计划：批1 audio_ring_levels heights分布式RAM化，旧新等价及圆环回归后完整TD；按全设计物理LUT决定保留。
+- 踩过的坑：局部LUT下降不等于全设计下降（attempt33/35）；RAM化须核实实际映射及ROM初值；保留用户未跟踪素材、旧worktree，不批量删除。本机Git Bash无python，文档写入用heredoc。
+
+## 历史交接
+
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
 - 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt40完整TD及网表检查结束，原预览→音频负路径消除，但整体时序变差，仍无合格候选。
