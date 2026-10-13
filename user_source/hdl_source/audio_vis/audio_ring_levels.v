@@ -14,25 +14,43 @@ module audio_ring_levels(
  reg [4:0] sample_count;
  reg [6:0] write_pointer, history_count;
  reg [4:0] history [0:127];
- reg [4:0] heights [0:95];
+ // Heights live in two identically written distributed RAMs: one read by the
+ // display, one by the copy update. Copies always write 0,1,2... so the
+ // entries written since reset form a prefix; the rest read as reset zero.
+ reg [4:0] display_heights [0:95];
+ reg [4:0] update_heights [0:95];
+ reg [6:0] filled;
  reg seen_sample;
  reg copying, copy_valid, copy_zero;
  reg [6:0] copy_pointer, copy_index, missing, result_index;
  reg [4:0] history_q;
  reg result_zero;
- integer i;
- assign bar_height = bar_index < 96 ? heights[bar_index] : 5'd0;
+ wire [4:0] old_height = result_index < filled ? update_heights[result_index] : 5'd0;
+ reg [4:0] new_height;
+ assign bar_height = bar_index < filled ? display_heights[bar_index] : 5'd0;
+ always @* begin
+  if(!result_zero && history_q >= old_height) new_height = history_q;
+  else if(old_height>3) begin
+   if(!result_zero && history_q > old_height-5'd3) new_height = history_q;
+   else new_height = old_height-5'd3;
+  end else new_height = result_zero ? 5'd0 : history_q;
+ end
  // Read port has a synchronous RAM latency; unwritten entries are masked.
  always @(posedge clk) history_q <= history[copy_pointer];
  always @(posedge clk) begin
   if (pcm_valid && !rst && sample_count == 31) history[write_pointer] <= level;
  end
+ always @(posedge clk) begin
+  if (copy_valid && !rst) begin
+   display_heights[result_index] <= new_height;
+   update_heights[result_index] <= new_height;
+  end
+ end
  always @(posedge clk or posedge rst) begin
   if (rst) begin
    peak<=0; sample_count<=0; write_pointer<=0; history_count<=0; seen_sample<=0;
    copying<=0; copy_valid<=0; copy_zero<=1; copy_pointer<=0; copy_index<=0;
-   missing<=96; result_index<=0; result_zero<=1;
-   for(i=0;i<96;i=i+1) heights[i]<=0;
+   missing<=96; result_index<=0; result_zero<=1; filled<=0;
   end else begin
    if(pcm_valid) begin
     seen_sample<=1;
@@ -53,13 +71,7 @@ module audio_ring_levels(
    copy_valid<=copying;
    result_index<=copy_index;
    result_zero<=copy_zero || copy_index<missing;
-   if(copy_valid) begin
-    if(!result_zero && history_q >= heights[result_index]) heights[result_index]<=history_q;
-    else if(heights[result_index]>3) begin
-     if(!result_zero && history_q > heights[result_index]-5'd3) heights[result_index]<=history_q;
-     else heights[result_index]<=heights[result_index]-5'd3;
-    end else heights[result_index]<=result_zero ? 5'd0 : history_q;
-   end
+   if(copy_valid && result_index==filled) filled<=filled+1'b1;
   end
  end
 endmodule

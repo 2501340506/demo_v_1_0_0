@@ -265,3 +265,21 @@ Hold实际端点（已核对Q网络和RAM拼接）：
 - PCM rd_bin[0]→RAM addrb[3]：-0.003ns，video_clk。
 
 这些不是attempt39的pending[75]/wr_bin[11]端点，下一次结构变更后仍应按最终报告重核。原cache_write[3]、MISO和缩放ram_input_rgb[5]恒等LUT实际保留且INIT为D透传；本轮未添加新的Hold LUT，未重跑它们的独立门级测试。后续涉及像素边界时需真实SDRAM双writer逐像素及错误/取消/重扫验证，再完整TD；失败bit继续留diagnostics，不打包、不建标签。
+
+## attempt41 LUT缩减批1：audio_ring_levels heights分布式RAM化（完整TD结束，Setup通过，Hold差1端点）
+
+依据attempt40：audio_ring_levels物理1232 LUT（1194+38）、563 seq；heights[0:95]因复位循环无法推断RAM，成为480 FF加显示与更新两套96:1选择。改为两份同写96×5分布式RAM（显示异步读bar_index、拷贝读result_index），删除复位循环；拷贝始终从0逐项写入，复位后已写条目是前缀，以filled计数屏蔽未写条目读0，与原复位清零逐周期一致。history、拷贝时序、对外端口不变。
+
+验证：lut_ring_levels1旧新并行逐周期比较bar_height 400000周期（498帧、56次拷贝中途重启、7次复位、231746次非零读取）零差异，零错误警告；去掉filled屏蔽的变异体能被检出。lut_b1_ring_unit1（tb_audio_ring、tb_ring_pixels）、lut_b1_ring_osd1圆环及全部OSD对齐通过。lut_b1_ring_music3真实PCM 20帧通过，20张高度表及20帧像素转储与ring_color_music1逐字节一致；tb_ring_music原层次导出levels.heights，改为导出等价可观察值（已写读RAM、未写0），仅测试台改动。lut_b1_production1生产PCM 9279样本精确比较通过；该测试按工程文件编译但不实例化圆环，不作为圆环证据。
+
+| 指标 | attempt40 | attempt41 |
+|---|---:|---:|
+| LUT / 寄存器 | 16966 / 9356 | 16269 / 8895 |
+| LE | 18219 | 17575 |
+| MSlice / LSlice | 4732 / 4731 | 4517 / 4554 |
+| BRAM9K / DSP | 52 / 15 | 52 / 15 |
+| audio_ring_levels LUT / seq | 1232 / 563 | 444 / 88 |
+| Setup WNS / TNS ns | -0.587 / -1.030 | +0.148 / 0 |
+| Hold WNS / TNS ns | -0.020 / -0.072 | -0.011 / -0.011（1端点） |
+
+综合日志确认display_heights、update_heights均“extracting RAM”。完整TD无工具ERROR，门槛脚本因Hold负值正确拒绝，无候选、无标签。全设计LUT减少697，Setup首次非负。唯一Hold：u_cache_control/retry_used_reg_syn_54（实际Q网名g_audio$u_player/wr_bin[11]）→ PCM RAM ramread0_syn_53.addra[12]，-0.011ns，1级EMB，与历史PCM写地址短路径同类；按以往经验网表位名不一定对应RTL位，且下一批会改变布局，暂不加保持LUT，待批2最终报告定点。

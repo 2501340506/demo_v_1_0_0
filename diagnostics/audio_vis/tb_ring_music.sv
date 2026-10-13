@@ -22,7 +22,7 @@ module tb_ring_music;
    if(file==0)begin
     file=$fopen($sformatf("music_%02d.hex",number),"w");
     tablefile=$fopen($sformatf("heights_%02d.txt",number),"w");
-    for(integer i=0;i<96;i++)$fdisplay(tablefile,"%0d",levels.heights[i]);
+    for(integer i=0;i<96;i++)$fdisplay(tablefile,"%0d",(i<levels.filled ? levels.display_heights[i] : 0));
     $fclose(tablefile);
    end
    $fdisplay(file,"%06x",rgb);pixels++;
