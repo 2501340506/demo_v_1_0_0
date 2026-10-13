@@ -23,7 +23,9 @@ module seg7_panel #(
     wire [7:0] blank_digit = 8'hff;
     wire [6:0] debug0,debug1,debug2,debug3;
     wire show_sd_failure = state_code == 4'hf;
-    reg [31:0] debug_timer;
+    // debug_timer never passes 2*CLK_FREQ-1.
+    localparam integer DEBUG_BITS = $clog2(2*CLK_FREQ);
+    reg [DEBUG_BITS-1:0] debug_timer;
     reg [1:0] debug_page;
     wire [15:0] debug_word = (debug_page==0) ? sd_debug[15:0] :
                             (debug_page==1) ? sd_debug[31:16] :

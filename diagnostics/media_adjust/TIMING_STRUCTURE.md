@@ -325,3 +325,30 @@ Hold实际端点（已核对Q网络和RAM拼接）：
 | Hold WNS / TNS ns | -0.020 / -0.066 | -0.020 / -0.040 |
 
 scanner局部真实下降（综合-96、物理-68、seq-91），streamer综合不变，说明FAT字节捕获综合器原本已优化；全设计物理LUT反增53且Setup变负（最差cache_control load_state→…）。按保留判据撤回scanner/streamer至4ba1f23，被拒源码存diagnostics/output/adjust_s2_attempt43/rejected_batch3。scanner MBR单项捕获可在后续与其他改动合批时再评估。
+
+## attempt44/45 LUT缩减批5（字幕解析、数码管计数器）：资源达标，TD路由Hold修复阶段崩溃
+
+改动：subtitle_uart_controller接收时逐字节校验并折叠ASCII小写，前7字节保存“原为小写”位使SUB/ON/OFF/NC保持原字节精确匹配，文本直接取line[127:32]，删除12字符并行区间比较；删除pending_snapshot（查询提升时读取cfg，pending期间任何新行使pending转ERR，配置不可能已变）。seg_scan.scan_timer、seg7_panel.debug_timer按其上限收窄位宽。
+
+验证（零错误警告）：lut_subtitle_parser1旧新（4ba1f23）随机2万行逐周期全部输出等价（7526次更新、查询1056/OK 6712/ERR 10304回复、5次复位）；去掉SUB小写屏蔽、text_bad不粘滞两变异体均检出。lut_b5_reply_pipeline1：tb_subtitle_fields、tb_reply_pipeline、tb_uart_subtitle真实RX/TX通过。lut_seg_equiv2缩放与生产参数逐周期等价150万周期（33次调试翻页）。
+
+attempt44结果：全设计LUT 16068→15702（-366）、寄存器8565、LE 16917、MSlice/LSlice 4377/4405、BRAM9K 53、DSP 15；字幕控制器物理987→442 LUT、454→373 seq；数码管149→167（波动）。Slice利用率89.59%，首次低于90%，布局日志未再提示跳过hold fixing；布局QoR为FMAX 103.95MHz、Hold WNS +39ps、违例端点0。随后在路由“Stage 3 | Hold Fix”工具崩溃（Oops! coredump minidump-20261013-194110.dmp），无final_timing.rpt与bit。attempt45以逐字节相同输入重跑，同一阶段再次崩溃（minidump-20261013-194642.dmp），布局QoR相同，确认可复现、与输入确定相关，不是偶发。两次均无候选。
+
+## attempt46 批5补UART文本ROM（完整TD通过：Setup/Hold均非负）
+
+在attempt44源码上增加：uart_event_logger 18个事件名（含CACHE_DONE/HIT）与BOOT横幅移入1024×8 BRAM ROM（与audio_ring_rom同样的initial常量写法），地址{text_sel,char_index[4:0]}，与prepared_data同一边沿读出，以寄存的prepared_text选择，所有字符保持原周期；删除80位名称选择和横幅动态选择。
+
+验证（零错误）：lut_uart_rom3旧（4ba1f23）新线级逐周期比较uart_tx/reply_ready 250万周期（679条记录覆盖16种事件、4次BOOT、72条CACHE、44条DROP、5528回复字节、3次复位），零警告；lut_uart_rom_fields1：格式化52864次比较（新实现按有效字符=ROM位取text_rom否则tx_data，参考f5ede4e，测试台其余不变）、tb_uart_event_logger线级字节、tb_uart_queue，零警告；lut_b5_reply_pipeline2字幕回复/真实RX/TX集成通过。lut_uart_rom_gate1独立TD综合门级网表（厂商BRAM模型）逐字节通过INIT_OK/DROP/COMMIT/CACHE_DONE/CACHE_HIT等记录，证明ROM初值经综合保留；2540条为厂商原语未接端口类警告，零错误，不写成零警告。生产综合日志对text_rom与已上板验证的audio_ring_rom geometry给出相同的“extracting RAM / does not have a driver”提示，且text_rom不在eram_init忽略初值列表中。
+
+| 指标 | attempt40 | attempt42 | attempt46 |
+|---|---:|---:|---:|
+| LUT / 寄存器 | 16966 / 9356 | 16068 / 8643 | 15402 / 8551 |
+| LE | 18219 | 17242 | 16609 |
+| MSlice / LSlice | 4732 / 4731 | 4462 / 4499 | 4284 / 4308 |
+| Slice利用率 | 96.56% | 91.44% | 87.72% |
+| BRAM9K / DSP | 52 / 15 | 53 / 15 | 54 / 15 |
+| 字幕控制器 / UART logger LUT | 996 / 807 | 987 / — | 403 / 687 |
+| Setup WNS / TNS ns | -0.587 / -1.030 | +0.131 / 0 | +0.139 / 0 |
+| Hold WNS / TNS ns | -0.020 / -0.072 | -0.020 / -0.066 | +0.004 / 0 |
+
+完整综合、布局布线、bit生成结束，无工具ERROR，门槛脚本输出PASS routed timing。路由Hold修复已执行且未崩溃。相对attempt40全设计LUT减少1564（-9.2%）。本结果为本地TD通过，尚未运行时序审计、工程输入逐字节固定和打包，未上板，不建local/board标签前不称为候选。

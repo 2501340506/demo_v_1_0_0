@@ -16,18 +16,20 @@ module seg_scan #(
 );
 parameter SCAN_COUNT = CLK_FREQ /(SCAN_FREQ * 6) - 1;
 
-reg[31:0] scan_timer;  //scan time counter
+// The timer never passes SCAN_COUNT, so it needs only that many bits.
+localparam integer TIMER_BITS = (SCAN_COUNT > 0) ? $clog2(SCAN_COUNT + 1) : 1;
+reg[TIMER_BITS - 1:0] scan_timer;  //scan time counter
 reg[3:0] scan_sel;     //Scan select counter
 always@(posedge clk or negedge rst_n)
 begin
 	if(rst_n == 1'b0)
 	begin
-		scan_timer <= 32'd0;
+		scan_timer <= {TIMER_BITS{1'b0}};
 		scan_sel <= 4'd0;
 	end
 	else if(scan_timer >= SCAN_COUNT)
 	begin
-		scan_timer <= 32'd0;
+		scan_timer <= {TIMER_BITS{1'b0}};
 		if(scan_sel == 4'd5)
 			scan_sel <= 4'd0;
 		else
@@ -35,7 +37,7 @@ begin
 	end
 	else
 		begin
-			scan_timer <= scan_timer + 32'd1;
+			scan_timer <= scan_timer + 1'b1;
 		end
 end
 always@(posedge clk or negedge rst_n)

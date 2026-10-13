@@ -91,30 +91,44 @@ always @* begin
     for(k=15;k>=0;k=k-1) if(remaining[k]) kind=k;
 end
 wire [15:0] rest = remaining & ~(16'b1 << kind);
-function [79:0] event_name;
-    input [3:0] value;
-    begin
-        case(value)
-            0:event_name="INIT_OK   "; 1:event_name="INIT_FAIL ";
-            2:event_name="SCAN_START"; 3:event_name="SCAN_DONE ";
-            4:event_name="LOAD      "; 5:event_name="RETRY     ";
-            6:event_name="SKIP      "; 7:event_name="COMMIT    ";
-            8:event_name="ERROR     "; 9:event_name="RESCAN    ";
-            10:event_name="MODE      "; 11:event_name="WAIT      ";
-            12:event_name="NO_IMAGE  "; 13:event_name="STOP      ";
-            14:event_name="RECOVERED "; default:event_name="DROP      ";
-        endcase
-    end
-endfunction
 function [7:0] hex;
     input [3:0] value;
     begin hex=(value<10) ? 8'h30+{4'd0,value} : 8'h41+{4'd0,value}-8'd10; end
 endfunction
+// Event names (10 characters each) and the "BOOT v0.5.4-s3-local.2" banner
+// live in one BRAM ROM at {text_sel, char_index}. It is read on the same edge
+// that registers prepared_data, so every character keeps its original cycle.
 // New cache records share WAIT's reserved phase codes; all old IDs, fields,
 // queue framing and DROP semantics remain unchanged.
-wire [79:0] name_text=(kind==11 && snapshot[68:65]==4'hc)?"CACHE_DONE":
-                      (kind==11 && snapshot[68:65]==4'hd)?"CACHE_HIT ":event_name(kind);
-localparam [175:0] BANNER="BOOT v0.5.4-s3-local.2";
+reg [7:0] text_rom [0:1023];
+initial begin
+    text_rom[0]=8'h49; text_rom[1]=8'h4e; text_rom[2]=8'h49; text_rom[3]=8'h54; text_rom[4]=8'h5f; text_rom[5]=8'h4f; text_rom[6]=8'h4b; text_rom[7]=8'h20; text_rom[8]=8'h20; text_rom[9]=8'h20;
+    text_rom[32]=8'h49; text_rom[33]=8'h4e; text_rom[34]=8'h49; text_rom[35]=8'h54; text_rom[36]=8'h5f; text_rom[37]=8'h46; text_rom[38]=8'h41; text_rom[39]=8'h49; text_rom[40]=8'h4c; text_rom[41]=8'h20;
+    text_rom[64]=8'h53; text_rom[65]=8'h43; text_rom[66]=8'h41; text_rom[67]=8'h4e; text_rom[68]=8'h5f; text_rom[69]=8'h53; text_rom[70]=8'h54; text_rom[71]=8'h41; text_rom[72]=8'h52; text_rom[73]=8'h54;
+    text_rom[96]=8'h53; text_rom[97]=8'h43; text_rom[98]=8'h41; text_rom[99]=8'h4e; text_rom[100]=8'h5f; text_rom[101]=8'h44; text_rom[102]=8'h4f; text_rom[103]=8'h4e; text_rom[104]=8'h45; text_rom[105]=8'h20;
+    text_rom[128]=8'h4c; text_rom[129]=8'h4f; text_rom[130]=8'h41; text_rom[131]=8'h44; text_rom[132]=8'h20; text_rom[133]=8'h20; text_rom[134]=8'h20; text_rom[135]=8'h20; text_rom[136]=8'h20; text_rom[137]=8'h20;
+    text_rom[160]=8'h52; text_rom[161]=8'h45; text_rom[162]=8'h54; text_rom[163]=8'h52; text_rom[164]=8'h59; text_rom[165]=8'h20; text_rom[166]=8'h20; text_rom[167]=8'h20; text_rom[168]=8'h20; text_rom[169]=8'h20;
+    text_rom[192]=8'h53; text_rom[193]=8'h4b; text_rom[194]=8'h49; text_rom[195]=8'h50; text_rom[196]=8'h20; text_rom[197]=8'h20; text_rom[198]=8'h20; text_rom[199]=8'h20; text_rom[200]=8'h20; text_rom[201]=8'h20;
+    text_rom[224]=8'h43; text_rom[225]=8'h4f; text_rom[226]=8'h4d; text_rom[227]=8'h4d; text_rom[228]=8'h49; text_rom[229]=8'h54; text_rom[230]=8'h20; text_rom[231]=8'h20; text_rom[232]=8'h20; text_rom[233]=8'h20;
+    text_rom[256]=8'h45; text_rom[257]=8'h52; text_rom[258]=8'h52; text_rom[259]=8'h4f; text_rom[260]=8'h52; text_rom[261]=8'h20; text_rom[262]=8'h20; text_rom[263]=8'h20; text_rom[264]=8'h20; text_rom[265]=8'h20;
+    text_rom[288]=8'h52; text_rom[289]=8'h45; text_rom[290]=8'h53; text_rom[291]=8'h43; text_rom[292]=8'h41; text_rom[293]=8'h4e; text_rom[294]=8'h20; text_rom[295]=8'h20; text_rom[296]=8'h20; text_rom[297]=8'h20;
+    text_rom[320]=8'h4d; text_rom[321]=8'h4f; text_rom[322]=8'h44; text_rom[323]=8'h45; text_rom[324]=8'h20; text_rom[325]=8'h20; text_rom[326]=8'h20; text_rom[327]=8'h20; text_rom[328]=8'h20; text_rom[329]=8'h20;
+    text_rom[352]=8'h57; text_rom[353]=8'h41; text_rom[354]=8'h49; text_rom[355]=8'h54; text_rom[356]=8'h20; text_rom[357]=8'h20; text_rom[358]=8'h20; text_rom[359]=8'h20; text_rom[360]=8'h20; text_rom[361]=8'h20;
+    text_rom[384]=8'h4e; text_rom[385]=8'h4f; text_rom[386]=8'h5f; text_rom[387]=8'h49; text_rom[388]=8'h4d; text_rom[389]=8'h41; text_rom[390]=8'h47; text_rom[391]=8'h45; text_rom[392]=8'h20; text_rom[393]=8'h20;
+    text_rom[416]=8'h53; text_rom[417]=8'h54; text_rom[418]=8'h4f; text_rom[419]=8'h50; text_rom[420]=8'h20; text_rom[421]=8'h20; text_rom[422]=8'h20; text_rom[423]=8'h20; text_rom[424]=8'h20; text_rom[425]=8'h20;
+    text_rom[448]=8'h52; text_rom[449]=8'h45; text_rom[450]=8'h43; text_rom[451]=8'h4f; text_rom[452]=8'h56; text_rom[453]=8'h45; text_rom[454]=8'h52; text_rom[455]=8'h45; text_rom[456]=8'h44; text_rom[457]=8'h20;
+    text_rom[480]=8'h44; text_rom[481]=8'h52; text_rom[482]=8'h4f; text_rom[483]=8'h50; text_rom[484]=8'h20; text_rom[485]=8'h20; text_rom[486]=8'h20; text_rom[487]=8'h20; text_rom[488]=8'h20; text_rom[489]=8'h20;
+    text_rom[512]=8'h43; text_rom[513]=8'h41; text_rom[514]=8'h43; text_rom[515]=8'h48; text_rom[516]=8'h45; text_rom[517]=8'h5f; text_rom[518]=8'h44; text_rom[519]=8'h4f; text_rom[520]=8'h4e; text_rom[521]=8'h45;
+    text_rom[544]=8'h43; text_rom[545]=8'h41; text_rom[546]=8'h43; text_rom[547]=8'h48; text_rom[548]=8'h45; text_rom[549]=8'h5f; text_rom[550]=8'h48; text_rom[551]=8'h49; text_rom[552]=8'h54; text_rom[553]=8'h20;
+    text_rom[576]=8'h42; text_rom[577]=8'h4f; text_rom[578]=8'h4f; text_rom[579]=8'h54; text_rom[580]=8'h20; text_rom[581]=8'h76; text_rom[582]=8'h30; text_rom[583]=8'h2e; text_rom[584]=8'h35; text_rom[585]=8'h2e; text_rom[586]=8'h34;
+    text_rom[587]=8'h2d; text_rom[588]=8'h73; text_rom[589]=8'h33; text_rom[590]=8'h2d; text_rom[591]=8'h6c; text_rom[592]=8'h6f; text_rom[593]=8'h63; text_rom[594]=8'h61; text_rom[595]=8'h6c; text_rom[596]=8'h2e; text_rom[597]=8'h32;
+end
+wire [4:0] text_sel = boot ? 5'd18 :
+                      (kind==11 && snapshot[68:65]==4'hc) ? 5'd16 :
+                      (kind==11 && snapshot[68:65]==4'hd) ? 5'd17 : {1'b0,kind};
+wire text_char = boot ? char_index<22 : char_index<10;
+reg [7:0] text_q;
+always @(posedge clk) text_q <= text_rom[{text_sel,char_index[4:0]}];
 reg [7:0] tx_data;
 reg tx_hex;
 // Select inside each field, not across the entire 154-bit snapshot. The
@@ -129,12 +143,10 @@ always @* begin
     tx_data=8'h20;
     tx_hex=1'b0;
     if(boot) begin
-        if(char_index<22) tx_data=BANNER[(21-char_index)*8 +: 8];
-        else if(char_index==22) tx_data=8'h0d;
-        else tx_data=8'h0a;
+        if(char_index==22) tx_data=8'h0d;
+        else if(char_index>22) tx_data=8'h0a;
     end else begin
-        if(char_index<10) tx_data=name_text[(9-char_index)*8 +: 8];
-        else if(char_index>=13 && char_index<=20) begin tx_data={4'd0,time_field[{time_nibble,2'b00} +: 4]};tx_hex=1;end
+        if(char_index>=13 && char_index<=20) begin tx_data={4'd0,time_field[{time_nibble,2'b00} +: 4]};tx_hex=1;end
         else if(char_index==24) tx_data=8'h30+{6'd0,snapshot[105:104]};
         else if(char_index>=28 && char_index<=35) begin tx_data={4'd0,sector_field[{sector_nibble,2'b00} +: 4]};tx_hex=1;end
         else if(char_index==39) begin tx_data={5'd0,snapshot[71:69]};tx_hex=1;end
@@ -153,14 +165,14 @@ end
 // Field selection is stable before registered start is consumed. Register
 // raw characters/nibbles before hexadecimal conversion and serial framing.
 reg [7:0] prepared_data;
-reg prepared_hex;
+reg prepared_hex, prepared_text;
 always @(posedge clk or posedge rst) begin
-    if(rst) begin prepared_data<=8'h20;prepared_hex<=0;end
-    else begin prepared_data<=tx_data;prepared_hex<=tx_hex;end
+    if(rst) begin prepared_data<=8'h20;prepared_hex<=0;prepared_text<=0;end
+    else begin prepared_data<=tx_data;prepared_hex<=tx_hex;prepared_text<=text_char;end
 end
 uart_tx_byte #(.CLKS_PER_BIT(CLKS_PER_BIT)) u_tx(
     .clk(clk),.rst(rst),.start(start || reply_start),
-    .data(reply_owner ? reply_byte : (prepared_hex ? hex(prepared_data[3:0]) : prepared_data)),
+    .data(reply_owner ? reply_byte : (prepared_hex ? hex(prepared_data[3:0]) : (prepared_text ? text_q : prepared_data))),
     .tx(uart_tx),.busy(),.done(done)
 );
 // Acquire only between complete log records; keep ownership through reply LF.

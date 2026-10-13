@@ -13,38 +13,38 @@ module subtitle_uart_controller(
     input reply_ready
 );
     localparam [119:0] DEFAULT_TEXT=120'h0000002041475046208c8b8b8a8389;
+    // Bytes are validated and ASCII-lowercase folded once as they arrive.
+    // Unreceived line bytes stay zero, so the text is line[127:32] directly.
+    // lower[] keeps the command bytes 0..6 exact: folded==X && !lower is raw==X.
     reg [127:0] line;
+    reg [6:0] lower;
     reg [4:0] length;
-    reg bad_line, discard_lf;
+    reg bad_line, discard_lf, text_bad;
     reg [119:0] parsed;
     reg [3:0] parsed_length;
     reg parsed_enable, good, query;
-    reg [7:0] c;
-    integer i;
     wire eol=rx_data==13 || rx_data==10;
     wire finish_line=rx_valid && eol && !(discard_lf && rx_data==10) &&
                      (length!=0 || bad_line);
+    wire rx_lower=rx_data>="a" && rx_data<="z";
+    wire rx_text_ok=(rx_data>=32 && rx_data<=126) || (rx_data>=128 && rx_data<=140);
+    wire [7:0] rx_folded=rx_lower ? (rx_data & 8'hdf) : rx_data;
     always @* begin
         parsed=cfg_text; parsed_length=cfg_length; parsed_enable=cfg_enable;
-        good=0; query=0; c=0;
-        if(!bad_line && line[23:0]==24'h425553) begin // SUB
+        good=0; query=0;
+        if(!bad_line && line[23:0]==24'h425553 && lower[2:0]==0) begin // SUB
             if(length==4 && line[31:24]=="?") begin good=1; query=1; end
             else if(length>=4 && line[31:24]=="=") begin
                 good=1;
-                if(length==6 && line[47:32]==16'h4e4f) parsed_enable=1; // ON
-                else if(length==7 && line[55:32]==24'h46464f) parsed_enable=0;
-                else if(length==6 && line[47:32]==16'h4e43) begin
+                if(length==6 && line[47:32]==16'h4e4f && lower[5:4]==0) parsed_enable=1; // ON
+                else if(length==7 && line[55:32]==24'h46464f && lower[6:4]==0) parsed_enable=0;
+                else if(length==6 && line[47:32]==16'h4e43 && lower[5:4]==0) begin
                     parsed=120'h0000000000000000008c8b8b8a8389; parsed_length=6;
                 end else begin
-                    parsed=0; parsed_length=length-4;
-                    for(i=0;i<12;i=i+1) if(length>i+4) begin
-                        c=line[(i+4)*8 +: 8];
-                        // Validate the original byte: folding ASCII lowercase
-                        // cannot change whether a byte belongs to this set.
-                        if(!((c>=32 && c<=126) || (c>=128 && c<=140))) good=0;
-                        if(c>="a" && c<="z") c=c & 8'hdf;
-                        parsed[i*8 +: 8]=c;
-                    end
+                    parsed=line[127:32]; parsed_length=length-4;
+                    // Validation used the original byte: folding ASCII lowercase
+                    // cannot change whether a byte belongs to this set.
+                    if(text_bad) good=0;
                 end
             end
         end
@@ -52,7 +52,10 @@ module subtitle_uart_controller(
     // Reply descriptor captures the queried configuration, never a live bus.
     reg active, pending;
     reg [1:0] kind, pending_kind; // 0 OK, 1 ERR, 2 query
-    reg [124:0] snapshot, pending_snapshot;
+    // A pending query is promoted before any later line can change cfg: a
+    // response arriving while one is pending and active becomes ERR. Its
+    // snapshot is therefore taken from cfg at promotion.
+    reg [124:0] snapshot;
     reg [5:0] index;
     wire response = finish_line;
     wire [1:0] response_kind = !good ? 1 : (query ? 2 : 0);
@@ -104,23 +107,27 @@ module subtitle_uart_controller(
     always @(posedge clk or posedge rst) begin
         if(rst) begin
             cfg_text<=DEFAULT_TEXT; cfg_length<=12; cfg_enable<=1; cfg_update_valid<=0;
-            line<=0; length<=0; bad_line<=0; discard_lf<=0;
+            line<=0; lower<=0; length<=0; bad_line<=0; discard_lf<=0; text_bad<=0;
             active<=0; pending<=0; kind<=0; pending_kind<=0;
-            snapshot<=0; pending_snapshot<=0; index<=0;
+            snapshot<=0; index<=0;
         end else begin
             cfg_update_valid<=0;
             if(rx_framing_error) bad_line<=1;
             if(rx_valid) begin
                 if(discard_lf && rx_data==10) discard_lf<=0;
                 else if(eol) begin
-                    discard_lf<=rx_data==13; length<=0; line<=0; bad_line<=0;
+                    discard_lf<=rx_data==13; length<=0; line<=0; lower<=0; bad_line<=0; text_bad<=0;
                     if(finish_line && good && !query) begin
                         cfg_text<=parsed; cfg_length<=parsed_length; cfg_enable<=parsed_enable;
                         cfg_update_valid<=1;
                     end
                 end else begin
                     discard_lf<=0;
-                    if(length<16) begin line[length*8 +: 8]<=rx_data; length<=length+1'b1; end
+                    if(length<16) begin
+                        line[length*8 +: 8]<=rx_folded; length<=length+1'b1;
+                        if(length<7) lower[length]<=rx_lower;
+                        if(length>=4 && !rx_text_ok) text_bad<=1;
+                    end
                     else bad_line<=1;
                 end
             end
@@ -129,7 +136,7 @@ module subtitle_uart_controller(
                 else index<=index+1'b1;
             end
             if(!active && pending) begin
-                active<=1;kind<=pending_kind;snapshot<=pending_snapshot;index<=0;pending<=0;
+                active<=1;kind<=pending_kind;snapshot<={cfg_enable,cfg_length,cfg_text};index<=0;pending<=0;
             end
             if(response) begin
                 if(!active && !pending) begin
@@ -137,7 +144,6 @@ module subtitle_uart_controller(
                 end else begin
                     pending<=1;
                     pending_kind<=pending && active ? 1 : response_kind;
-                    pending_snapshot<={cfg_enable,cfg_length,cfg_text};
                 end
             end
         end
