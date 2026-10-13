@@ -13,6 +13,7 @@ module image_scale_nearest (
  reg [3:0] state;
  reg [10:0] sw,sh,dw,dh,left,top,x,y;
  reg [10:0] source_last_x; // Frame-constant row endpoint, computed before capture.
+ reg [10:0] right_edge,bottom_edge;
  reg [20:0] dividend;
  reg [10:0] divisor,quotient;
  reg width_fit;
@@ -29,8 +30,8 @@ module image_scale_nearest (
  (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
   u_line_data_hold (.o(ram_input_rgb[5]),.a(in_rgb[5]));
  reg pixel_black;
- wire row_inside = y>=top && y<top+dh;
- wire col_inside = x>=left && x<left+dw;
+ wire row_inside = y>=top && y<bottom_edge;
+ wire col_inside = x>=left && x<right_edge;
  wire [11:0] xsum={1'b0,xrem}+{1'b0,xr};
  wire [11:0] yborrow={1'b0,yrem}+{1'b0,dh}-{1'b0,yr};
  assign in_ready=state==CAPTURE || state==DRAIN;
@@ -42,7 +43,7 @@ module image_scale_nearest (
  end
  always @(posedge clk or posedge rst) begin
   if(rst) begin
-   state<=IDLE;source_last_x<=0;sw<=0;sh<=0;dw<=0;dh<=0;left<=0;top<=0;x<=0;y<=0;
+   state<=IDLE;source_last_x<=0;right_edge<=0;bottom_edge<=0;sw<=0;sh<=0;dw<=0;dh<=0;left<=0;top<=0;x<=0;y<=0;
    dividend<=0;divisor<=1;quotient<=0;width_fit<=0;
    xq<=0;xr<=0;yq<=0;yr<=0;sx<=0;xrem<=0;sy<=0;yrem<=0;
    buffered_y<=0;row_valid<=0;pixel_black<=1;done<=0;
@@ -71,6 +72,8 @@ module image_scale_nearest (
      else begin yq<=quotient;yr<=dividend[10:0];state<=SETUP;end
     SETUP: begin
      left<=(11'd640-dw)>>1;top<=(11'd480-dh)>>1;
+     right_edge<=((11'd640-dw)>>1)+dw;
+     bottom_edge<=((11'd480-dh)>>1)+dh;
      x<=0;y<=479;sx<=0;xrem<=0;
      sy<=sh-yq-(yr!=0);yrem<=yr==0?11'd0:dh-yr;
      state<=ROW;
