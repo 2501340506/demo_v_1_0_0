@@ -10,11 +10,12 @@ module key_press_debounce #(
 );
 
 localparam integer DEBOUNCE_CYCLES = (CLK_FREQ_HZ / 1000) * DEBOUNCE_MS;
+localparam integer COUNT_WIDTH = (DEBOUNCE_CYCLES > 1) ? $clog2(DEBOUNCE_CYCLES) : 1;
 
 reg button_sync0;
 reg button_sync1;
 reg button_stable;
-reg [31:0] cnt;
+reg [COUNT_WIDTH-1:0] cnt;
 
 assign button_stable_out = button_stable;
 

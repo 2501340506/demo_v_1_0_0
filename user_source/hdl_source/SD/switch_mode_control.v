@@ -9,8 +9,9 @@ module switch_mode_control #(
     output reg [1:0] mode
 );
     localparam integer STABLE_CYCLES = (CLK_FREQ_HZ / 1000) * DEBOUNCE_MS;
+    localparam integer COUNT_WIDTH = (STABLE_CYCLES > 1) ? $clog2(STABLE_CYCLES + 1) : 1;
     reg [1:0] sync0, sync1, candidate;
-    reg [31:0] stable_count;
+    reg [COUNT_WIDTH-1:0] stable_count;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
