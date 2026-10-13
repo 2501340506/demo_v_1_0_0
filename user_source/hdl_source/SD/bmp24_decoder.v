@@ -4,7 +4,10 @@ module bmp24_decoder #(
     parameter integer RUNTIME_DIMENSIONS = 0,
     parameter integer ALLOW_32 = 1,
     parameter integer RANGE_DIMENSIONS = 0,
-    parameter integer FLOW_CONTROL = 0
+    parameter integer FLOW_CONTROL = 0,
+    // Enable only when offset is stable at least one clock before file_valid.
+    // bmp_sector_buffer's FETCH/PRESENT interface provides that lookahead.
+    parameter integer HEADER_OFFSET_LOOKAHEAD = 0
 ) (
     input wire clk, input wire rst,
     input wire [15:0] expected_width, expected_height,
@@ -38,6 +41,14 @@ module bmp24_decoder #(
  reg [1:0] phase;
  reg [7:0] blue,green;
  wire take_byte = file_valid && file_ready;
+ // The header uses offsets 0..53 only. Capture its small address during the
+ // upstream FETCH cycle; 63 is an inert address for all non-header bytes.
+ // Generic callers may supply consecutive bytes and retain the direct path.
+ reg [5:0] header_offset;
+ always @(posedge clk)
+  header_offset <= (file_byte_offset[31:6]==0) ? file_byte_offset[5:0] : 6'd63;
+ wire [31:0] header_byte_offset = HEADER_OFFSET_LOOKAHEAD ?
+    {26'd0,header_offset} : file_byte_offset;
  // The range-mode sector buffer delivers every byte in order. Once the
  // payload starts, row completion bounds it without a wide offset comparator
  // on every pixel/row write-enable path. Fixed legacy mode retains its check.
@@ -54,7 +65,7 @@ module bmp24_decoder #(
  end
  bmp_header_check #(.ALLOW_32(ALLOW_32),.RANGE_DIMENSIONS(RANGE_DIMENSIONS)) u_header (
   .clk(clk),.rst(rst || file_start),.file_valid(active && take_byte),
-  .file_byte(file_byte),.file_byte_offset(file_byte_offset),.bmp_width(tw),.bmp_height(th),
+  .file_byte(file_byte),.file_byte_offset(header_byte_offset),.bmp_width(tw),.bmp_height(th),
   .file_len(declared_size),.pixel_offset(pixel_offset),.width(width),.height(height),
   .required_end(pixel_end),.header_match(header_ok),.skip_format(),
   .expected_pixels(expected_pixels),.header_complete(header_complete),.is_32(is_32),.row_stride(row_stride)

@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt36完整TD和扩展路径分析已结束，仍无合格候选、尚未上板。
-- 已完成：UART队列改为同步BRAM读及一拍loading，保留八条可用容量、日志格式、DROP和回复仲裁。adjust_queue_fields2通过52864字段比较、线级UART及448装载/440满队列替换/576溢出事件；adjust_queue_subtitle1回复集成通过，均零错误警告。adjust_queue_gate1厂商BRAM门级线级UART通过（测试容量2，2446条模型端口警告；生产容量8压力由RTL覆盖）。实际映射9 BRAM；102个工程输入与attempt36快照逐字节一致。scanner/缓存和历史功能覆盖见S2_VALIDATION。
-- 卡住的问题：attempt36无工具ERROR但Setup -1.009ns、Hold -0.020ns；72个最大延迟失败端点实为71 setup和1 recovery，6个Hold失败端点。16929 LUT、9339寄存器、4695 MSlice/4697 LSlice、52 BRAM9K、15 DSP；相对attempt34 LUT减少295、MSlice减少123，但时序变差。最差BMP buffer offset→header file_len使能（8级、76%布线），header占20个Setup失败端点；复位release_pipe→streamer.sr另有recovery -0.038ns。频率/引脚/约束未改，无local/board标签。
-- 下一步计划：保留有实际资源收益的UART BRAM改动；从attempt37起固定HighFanoutOptimization/strategy5。优先按实际路径调查BMP头/像素区域的宽offset译码，实施一项可验证的结构切断后，验证连续字节、背压、取消、末字节同拍及缩放逐像素，再完整TD。六条数据Hold与复位Recovery分别按最终报告处理，不能套用旧端点。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
-- 踩过的坑：attempt35字幕选择简化物理LUT反增20、Setup -1.632ns，已撤回生产修改。资源和打包下降仍不保证时序收敛；默认报告仅10端点，attempt36已导出100端点并发现遗漏的Recovery。UART物理dib[0]实际接pending[1]，addrb[5]接rd_ptr[1]，不能按寄存器编号猜位号。sector buffer气泡不能外推给全部decoder调用者。恒等LUT须有EQN，模型警告如实保留；中文显式UTF-8，不混用历史覆盖、不打包失败bit、不批量删除。
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt37完整TD、扩展路径和实际网表检查已结束，仍无合格候选、尚未上板。
+- 已完成：仅在缩放流显式启用HEADER_OFFSET_LOOKAHEAD，在buffer的FETCH拍提前形成6位头地址，通用decoder默认关闭。adjust_header_lookahead3五尺寸旧新逐周期等价/逐像素、背压、取消/不复位重启、输入末字节同拍、16项通用解码通过；adjust_header_scaler1、adjust_header_reader1全部42项、adjust_header_reader_scaled1碎片缩放/末字节同拍通过，均零错误警告。实际六位寄存边界保留，原20个头检查负端点消除；102个工程输入与attempt37逐字节一致。UART BRAM和历史验证见S2_VALIDATION。
+- 卡住的问题：attempt37无工具ERROR，Setup -0.346ns（TNS -1.767ns、13端点）、Hold -0.020ns（TNS -0.042ns、3端点）；扩展报告无负recovery/removal。16988 LUT、9343寄存器、4727 MSlice/4729 LSlice、52 BRAM9K、15 DSP。比attempt36的72/6端点减少，但LUT+59、MSlice+32，不能称面积下降或全局通过。剩余Setup为candidate→header_lba一条及scanner total_sectors→sector_lba使能12条。频率/引脚/约束未改，无local/board标签。
+- 下一步计划：保留已验证的头地址预译码，从attempt38起固定HighFanoutOptimization/strategy5。优先调查SELECT拍提前捕获选中cluster/size、或在BPB字段收齐后寄存bpb_ok，切断剩余选择/减法及宽判定链；保留signature/sector_error/重扫语义。按改动范围补reader/scanner及生产联合验证再完整TD。新Hold为PCM rd_bin[9]、缩放raw_pipe_rgb[8]、UART pending[7]到RAM，应按下一轮最终报告重核。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
+- 踩过的坑：旧通用decoder测试直接给末字节同拍file_end，44792e9基线也报err=3；本轮按生产重放合同延后一拍给decoder结束，输入端同拍结束另由完整buffer链路验证，未修改生产结束逻辑。新增检查器须有timescale。sector buffer气泡不能外推给全部调用者，故使用默认关闭的显式参数。attempt35字幕简化已撤回；网表寄存器号不等于RTL位号、LUT减少不保证Slice减少。恒等LUT须有EQN，模型警告如实记录；不打包失败bit、不批量删除。
 
 ## 历史交接
 

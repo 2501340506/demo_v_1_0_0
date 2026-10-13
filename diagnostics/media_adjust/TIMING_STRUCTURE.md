@@ -128,3 +128,38 @@ Setup按目的模块分布：decoder头检查20、decoder像素控制5、scanner
 六条负Hold：streamer数据→sector buffer RAM -0.020ns；UART pending→队列RAM -0.020ns；完整图写FIFO地址→RAM -0.012ns；缩放raw_pipe_x→RAM -0.011ns；PCM rd_bin→RAM -0.004ns；UART rd_ptr→队列RAM -0.003ns。实际网表确认UART `ramread0_syn_64.dib[0]`对应`pending[1]`，`addrb[5]`对应`rd_ptr[1]`，不能直接按源寄存器编号推断RTL位。尚未添加新保持LUT；应在下一项结构变化的最终报告上重新定位。
 
 下一轮从attempt37起，固定HighFanoutOptimization/strategy5。若改变BMP头或流接口，专项覆盖连续字节、背压、取消、末字节/结束同拍和缩放逐像素；sector buffer有FETCH气泡不代表所有decoder调用者均有气泡，不能据此无条件提前采样。attempt35实验复现可用`run_subtitle_fields.ps1 -SourceRoot diagnostics/output/adjust_s2_attempt35 -RunName <新目录>`；默认使用当前生产源码，不能将默认运行称为重跑已撤回优化。
+
+## attempt37 BMP头地址提前译码（完整TD结束，时序仍失败）
+
+依据attempt36：缩放decoder/u_header物理476 LUT（316+160）、247 seq，20个Setup失败端点；最差buffer offset高位经8级译码到file_len.ce，-1.009ns。只在bmp_scale_stream显式启用新的HEADER_OFFSET_LOOKAHEAD参数：利用buffer已有FETCH/PRESENT合同，将32位offset提前寄存为6位header地址。0..63保留，其他地址映射为63（头检查不对63写字段或改变header_complete）。缩放字节消费、ready/valid、数据和结束时序不变；通用decoder参数默认关闭，连续字节调用者仍走原32位地址。
+
+验证计划：以44792e9旧decoder为参考，在完整BMP缩放字节流上逐周期比较全部decoder输出及头字段，断言每次有效消费时预译码地址正确；补取消/重启和末字节同拍场景，通用连续字节解码回归、42项FAT32读取。通过后固定strategy5完整TD，检查原20个头译码负端点与整体资源；本轮暂不叠加Hold修改。
+
+验证边界：旧`tb_bmp24_decoder`直接在最后一个解码字节同拍给file_end；当前44792e9基线也会得到307200像素、err=3而不提交（`adjust_header_lookahead2/baseline.log`），不是本次预译码回归。本轮通用decoder专项按生产重放合同在最后消费字节后一拍给结束，连续字节、头拒绝、截断及上游取消仍保留，并增加旧新逐周期比较。输入端末字节与结束同拍通过完整buffer→decoder链路验证，不声称直接decoder同拍结束通过。首轮检查器缺timescale装载失败，补测试生成文件的timescale后重跑，未改生产时序。
+
+实际通过：adjust_header_lookahead3五尺寸逐周期等价/逐像素（每图307200像素）、取消/不复位重启、输入末字节同拍、16项通用decoder场景；adjust_header_scaler1十尺寸缩放及原五尺寸字节流；adjust_header_reader1全部42项；adjust_header_reader_scaled1为case0碎片文件、ScaleTest=1、ByteGap=0、TestMode=5。所有通过日志零错误警告。attempt37完整TD已启动，固定HighFanoutOptimization/strategy5，尚待最终资源和时序。
+
+### attempt37 最终结果与下一步
+
+完整综合、布局布线及bit生成结束，无工具ERROR；中间一处布线冲突最终消除。门槛脚本因负时序正确拒绝。102个工程输入（含工程/引脚/SDC）与attempt37快照逐字节一致，无候选、无local/board标签。
+
+| 指标 | attempt36 | attempt37 |
+|---|---:|---:|
+| LUT / 寄存器 | 16929 / 9339 | 16988 / 9343 |
+| LE | 18224 | 18171 |
+| MSlice / LSlice | 4695 / 4697 | 4727 / 4729 |
+| BRAM9K / DSP | 52 / 15 | 52 / 15 |
+| Setup WNS / TNS ns | -1.009 / -23.488 | -0.346 / -1.767 |
+| 最大延迟失败端点 | 72（含1 recovery） | 13（均setup） |
+| Hold WNS / TNS ns | -0.020 / -0.070 | -0.020 / -0.042 |
+| 最小延迟失败端点 | 6 | 3（均hold） |
+
+实际Routed网表中三个物理Slice的Q分别驱动header地址[1,2]、[3,5]、[4,0]，六位寄存边界保留。`timing_analysis/expanded.timing`每组100端点列全13/3条负路径，所有decoder/u_header端点及decoder像素控制均无负路径，原20个头检查负端点消除，本轮没有负recovery/removal。预译码结构保留；这是路径切断，不是面积改善：物理header LUT 476→481、整个decoder 726→739；全设计LUT+59、MSlice+32，但LE-53、Setup总负余量显著减少。
+
+下一轮从attempt38起，固定HighFanoutOptimization/strategy5，优先处理剩余Setup控制链：
+
+- `candidate`→`header_lba[31]`，-0.346ns，7级（含2级加法）、最大扇出53、70%布线。RTL在SELECT_CHECK同时做clusters[candidate]选择及减2；可调查在前一SELECT拍捕获选中cluster/size，再计算头扇区地址，保留候选推进/无效项/重扫语义。
+- scanner `total_sectors`→12个`sector_lba`使能，最差-0.265ns，8级、最大扇出18、70%布线。RTL的bpb_ok是宽字段联合判定，参与ZERO_PARSE选择MBR/直接BPB及BOOT_PARSE。字段在扇区早段收齐，可调查提前寄存BPB判定，不要把最终signature或sector_error提前漏判。
+- Hold实际位已从网表确认：PCM `rd_bin[9]`→RAM addrb[10] -0.020ns；缩放`raw_pipe_rgb[8]`→RAM dia[0] -0.011ns；UART `pending[7]`→RAM dib[6] -0.011ns。与attempt36不同，尚未添加新保持LUT，应在下一次结构变化后的最终报告重核。
+
+若动reader/scanner，重跑对应专项及受影响生产联合场景。已通过的BMP功能验证可作本轮保留改动证据，不能据此宣称后续reader/scanner修改也已通过；失败bit继续留在diagnostics/output。

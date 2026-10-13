@@ -55,7 +55,10 @@ module bmp_scale_stream (
   .in_offset(file_byte_offset),.in_done(file_end),.data_permit(data_permit),
   .out_valid(bytes_valid),.out_ready(bytes_ready),.out_byte(bytes_data),
   .out_offset(bytes_offset),.out_done(bytes_done));
- bmp24_decoder #(.ALLOW_32(0),.RANGE_DIMENSIONS(1),.FLOW_CONTROL(1)) decoder(
+ // FETCH registers data one clock before PRESENT. The decoder can capture
+ // the header address on that same FETCH edge without delaying consumption.
+ bmp24_decoder #(.ALLOW_32(0),.RANGE_DIMENSIONS(1),.FLOW_CONTROL(1),
+                 .HEADER_OFFSET_LOOKAHEAD(1)) decoder(
   .clk(clk),.rst(rst),.expected_width(16'd0),.expected_height(16'd0),
   .file_start(file_start),.file_size(file_size),.file_valid(bytes_valid),
   .file_byte(bytes_data),.file_byte_offset(bytes_offset),.file_end(bytes_done),
