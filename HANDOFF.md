@@ -1,3 +1,13 @@
+# 当前任务：v0.15.0 S2 LUT缩减（功能不变）——attempt46时序首次通过
+
+- 当前任务：原feature/brightness-contrast-volume分支，按“S2 LUT缩减子计划”降LUT以解除布线拥塞；attempt46完整TD Setup +0.139ns、Hold +0.004ns，尚未时序审计/打包/上板。
+- 已完成：保留批1（圆环heights分布式RAM，attempt41）、批2（video_delay BRAM环、提示音常数增益，attempt42）、批5（字幕逐字节校验、UART文本ROM、数码管计数器，attempt46）。全设计16966→15402 LUT，Slice 96.56%→87.72%，BRAM 52→54。批3（scanner/streamer等价改写，attempt43）全设计LUT+53，已撤回。各批旧新等价、变异及相关回归见diagnostics/media_adjust/TIMING_STRUCTURE.md。attempt46输入与2cc5b57逐文件一致（统一换行）。
+- 卡住的问题：无阻塞。待用户决定：①是否以attempt46作S2候选继续时序审计、补系统回归并打包s2-local.1；②scanner scan_start清零（测试台契约）与滚动字幕字库BRAM化（需pixel_x逐拍递增前提）是否放宽“功能不变”边界。attempt44/45在路由Hold修复阶段TD可复现崩溃，attempt46网表变化后未再出现。
+- 下一步计划：用户确认后，以2cc5b57/attempt46执行timing audit、工程输入逐字节核对、真实SDRAM预览系统及生产联合回归，固定releases/v0.15.0/s2-local.1并建local标签交板测。
+- 踩过的坑：Slice>90%时TD跳过Hold修复，此前Hold负值的根源；局部LUT降不等于全设计降（attempt43）；ROM“does not have a driver”提示与已验证audio_ring_rom相同，需门级仿真证明初值保留；历史脚本固定输出目录，用重定向副本；Git Bash PATH里无python，需临时加Python313目录。
+
+## 历史交接
+
 # 当前任务：v0.15.0 S2 LUT缩减（功能不变）
 
 - 当前任务：原feature/brightness-contrast-volume分支，按docs/亮度对比度与音量调节分阶段修改计划.md“S2 LUT缩减子计划”分6批降LUT，缓解attempt40布线拥塞，从attempt41起。
