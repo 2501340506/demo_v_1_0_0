@@ -1,4 +1,4 @@
-param([string]$RunName='four_bank_s3_regression1')
+param([string]$RunName='four_bank_s3_regression1',[string[]]$OnlyTests=@())
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$RunName"
@@ -27,9 +27,10 @@ try {
   $source=$source -replace '\bcolor_bar\b','s1_color_bar' -replace '\bvideo_timing_data\b','s1_video_timing_data' -replace '\bvideo_delay\b','s1_video_delay'
   $path="$out/s1_$module.v";[IO.File]::WriteAllText($path,$source,[Text.UTF8Encoding]::new($false));$baseline+=$path
  }
- & "$sim/vlog.exe" -sv -work $lib '+incdir+user_source/hdl_source/SD' @rtl @baseline @benches D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_logic_io.v D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_glbl.v *> "$out/compile.log"
+ & "$sim/vlog.exe" -sv -work $lib '+incdir+user_source/hdl_source/SD' @rtl @baseline @benches D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_logic_io.v D:/TD/anlogic/TD6.2.1/sim_release/eg4/eg_phy_glbl.v *> "$out/compile.log"
  if($LASTEXITCODE){throw "Regression compile failed: $out/compile.log"}
  $tests=$control+$audio+$sd+@('tb_flash_reset','tb_startup','tb_uart_event_logger','tb_frame_cache_control','tb_video_alignment')
+ if($OnlyTests.Count){$tests=@($tests | Where-Object {$_ -in $OnlyTests})}
  foreach($test in $tests){
   $options=@()
   if($test -in @('tb_hdmi_packets','tb_hdmi_s6_phy')){$options+=@('-gMEDIA=1','-gSILENCE=0')}

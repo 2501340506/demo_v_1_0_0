@@ -23,6 +23,7 @@ module sd_card_bmp #(
     input                       key2,
     input                       key4,
     input [1:0]                 mode,
+    output adjust_decrease,adjust_increase,adjust_restore,adjust_select,
     output     [3:0]            state_code,
     output [63:0]               sd_debug,
     output reg [57:0]          diagnostics,
@@ -297,7 +298,8 @@ media_frame_cache_control u_cache_control(
 mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
  .clk(clk),.rst(rst),.enable(!scan_busy),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
  .rescan_event(rescan_raw),.next_event(media_next_request),.previous_event(media_previous_request),
- .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity)
+ .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity),
+ .adjust_decrease(adjust_decrease),.adjust_increase(adjust_increase),.adjust_restore(adjust_restore),.adjust_select(adjust_select)
 );
 media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS)) u_media_player_control(
  .clk(clk),.rst(rst),.enable(!scan_busy && !preview_intent && !preview_selecting),.scan_done(!scan_busy),

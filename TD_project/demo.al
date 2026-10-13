@@ -565,6 +565,11 @@
 <File Path="../user_source/hdl_source/SD/image_scale_nearest.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="220"/></FileInfo></File>
 <File Path="../user_source/hdl_source/SD/bmp_sector_buffer.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="221"/></FileInfo></File>
 <File Path="../user_source/hdl_source/SD/bmp_scale_stream.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="222"/></FileInfo></File>
+<File Path="../user_source/hdl_source/adjust/adjust_osd_overlay.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="230"/></FileInfo></File>
+<File Path="../user_source/hdl_source/adjust/brightness_contrast_adjust.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="231"/></FileInfo></File>
+<File Path="../user_source/hdl_source/adjust/media_adjust_cdc.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="232"/></FileInfo></File>
+<File Path="../user_source/hdl_source/adjust/media_adjust_control.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="233"/></FileInfo></File>
+<File Path="../user_source/hdl_source/adjust/pcm_master_volume.v"><FileInfo><Attr Name="UsedInSyn" Val="true"/><Attr Name="UsedInP&R" Val="true"/><Attr Name="BelongTo" Val="design_1"/><Attr Name="CompileOrder" Val="234"/></FileInfo></File>
 </Verilog>
         <ADC_FILE>
             <File Path="../user_source/constraints_source/pin.adc">

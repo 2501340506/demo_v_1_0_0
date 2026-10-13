@@ -2,7 +2,7 @@
 module tb_mode_key_control;
  reg clk=0,rst=1,enable=1,key1=1,key2=1,key4=1; reg [1:0] mode=0;
  wire next_event,previous_event,auto_toggle_event,manual_activity,rescan_event;
- mode_key_control #(.CLK_FREQ_HZ(1000)) dut(.*);
+ mode_key_control #(.CLK_FREQ_HZ(1000)) dut(.adjust_decrease(),.adjust_increase(),.adjust_restore(),.adjust_select(),.*);
  always #5 clk=~clk;
  reg seen_next, seen_prev, seen_auto;
  always @(posedge clk) begin

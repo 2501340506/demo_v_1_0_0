@@ -195,8 +195,26 @@ always @(posedge sd_card_clk or posedge rst_sd) begin
     else sdram_ready_sync <= {sdram_ready_sync[0], Sdr_init_done};
 end
 
-// Mode and key routing share the SD control clock. Synchronize mode for panel display.
 wire [1:0] switch_mode;
+wire [8:0] ring_y;
+// Session parameters: SD-domain gestures, atomic mailbox, VS-boundary commit.
+wire adjust_decrease,adjust_increase,adjust_restore,adjust_select;
+wire [7:0] brightness_src,contrast_src;
+wire [3:0] volume_src;
+wire [1:0] selected_src;
+wire [23:0] adjust_frame;
+wire [1:0] adjust_mode=adjust_frame[23:22],adjust_selected=adjust_frame[21:20];
+wire [7:0] brightness_frame=adjust_frame[19:12],contrast_frame=adjust_frame[11:4];
+wire [3:0] volume_frame=adjust_frame[3:0];
+media_adjust_control u_adjust_control(.clk(sd_card_clk),.rst(rst_sd),.mode(switch_mode),
+ .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select),
+ .brightness(brightness_src),.contrast(contrast_src),.volume_level(volume_src),.selected(selected_src));
+media_adjust_cdc u_adjust_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
+ .src_state({switch_mode,selected_src,brightness_src,contrast_src,volume_src}),
+ .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(adjust_frame));
+
+// Mode and key routing share the SD control clock. Synchronize mode for panel display.
+
 reg [1:0] mode_panel_sync0, mode_panel_sync1, mode_panel_half;
 reg auto_panel_half;
 reg [3:0] state_panel_half,state_panel_sync;
@@ -269,6 +287,8 @@ sd_card_bmp #(
     .key2              (key2),
     .key4              (key4),
     .mode              (switch_mode),
+    .adjust_decrease(adjust_decrease),.adjust_increase(adjust_increase),
+    .adjust_restore(adjust_restore),.adjust_select(adjust_select),
     .state_code        (state_code),
     .sd_debug(sd_debug), .diagnostics(uart_diagnostics),
     .combo_event_count (combo_event_count),
@@ -351,8 +371,19 @@ video_delay video_delay_m0(
 // 首图提交前黑屏；提交后一直显示当前显示缓冲区内容
 assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
+wire adjust_hs,adjust_vs,adjust_de,adjust_wipe,adjust_valid,adjust_audio;
+wire [9:0] adjust_x;wire [8:0] adjust_y;wire [17:0] adjust_descriptor;
+wire [4:0] adjust_level;wire [23:0] adjusted_rgb_raw;
+wire [47:0] adjust_side;
+assign {adjust_hs,adjust_vs,adjust_de,adjust_x,adjust_y,adjust_descriptor,adjust_level,adjust_wipe,adjust_valid,adjust_audio}=adjust_side;
+wire adjust_preview=adjust_descriptor[17];
+wire [23:0] adjusted_rgb=(adjust_valid && adjust_de)?adjusted_rgb_raw:24'd0;
+brightness_contrast_adjust #(.SIDE_WIDTH(48)) u_picture_adjust(
+ .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.brightness(brightness_frame),.contrast(contrast_frame),
+ .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor,transition_level,transition_wipe,display_valid,audio_enable}),
+ .rgb_out(adjusted_rgb_raw),.side_out(adjust_side));
 video_transition_pixels u_video_transition_pixels(
-    .level(transition_level), .wipe_active(transition_wipe), .de(de), .pixel_x(video_x), .rgb_in(vout_data), .rgb_out(transition_rgb)
+    .level(adjust_level), .wipe_active(adjust_wipe), .de(adjust_de), .pixel_x(adjust_x), .rgb_in(adjusted_rgb), .rgb_out(transition_rgb)
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.
@@ -407,7 +438,7 @@ media_commit_cdc u_media_commit_cdc (
  .src_image(committed_image), .src_valid(committed_valid), .src_ready(committed_ready),
  .media_id(audio_image), .media_update(audio_update), .media_enable(audio_enable)
 );
-wire [8:0] ring_y;
+
 wire ring_frame_start, ring_tap_valid;
 wire signed [15:0] ring_tap_left,ring_tap_right;
 wire [6:0] ring_bar_index;
@@ -416,9 +447,9 @@ wire ring_hs,ring_vs,ring_de;
 wire [9:0] ring_x;
 wire [23:0] ring_rgb;
 wire thumb_valid,thumb_border;
-wire [23:0] preview_rgb=preview_pixel ? (thumb_border ? 24'hffff00 : thumb_valid ? vout_data : 24'd0) : transition_rgb;
-thumbnail_layout u_thumbnail_layout(.in_de(de),.pixel_x(video_x),.pixel_y(ring_y),
- .focus_index(pixel_descriptor[16:15]),.image_count(pixel_descriptor[14:12]),.image_complete(pixel_descriptor[11:8]),
+wire [23:0] preview_rgb=adjust_preview ? (thumb_border ? 24'hffff00 : thumb_valid ? adjusted_rgb : 24'd0) : transition_rgb;
+thumbnail_layout u_thumbnail_layout(.in_de(adjust_de),.pixel_x(adjust_x),.pixel_y(adjust_y),
+ .focus_index(adjust_descriptor[16:15]),.image_count(adjust_descriptor[14:12]),.image_complete(adjust_descriptor[11:8]),
  .thumb_de(thumb_valid),.source_index(),.source_x(),.source_y(),.focus_border(thumb_border));
 osd_pixel_position u_ring_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
  .line_y(ring_y),.frame_start(ring_frame_start),.first_active());
@@ -430,9 +461,19 @@ end else begin:g_no_audio_vis
  assign ring_bar_height=5'd0;
 end endgenerate
 audio_ring_overlay #(.ENABLE(AUDIO_VIS_ENABLE)) u_audio_ring(
- .clk(video_clk),.rst(rst_video),.hs(hs),.vs(vs),.de(de),.enable(audio_enable && !preview_pixel),
- .pixel_x(video_x),.pixel_y(ring_y),.rgb_in(preview_rgb),.bar_height(ring_bar_height),
+ .clk(video_clk),.rst(rst_video),.hs(adjust_hs),.vs(adjust_vs),.de(adjust_de),.enable(adjust_audio && !adjust_preview),
+ .pixel_x(adjust_x),.pixel_y(adjust_y),.rgb_in(preview_rgb),.bar_height(ring_bar_height),
  .bar_index(ring_bar_index),.hs_out(ring_hs),.vs_out(ring_vs),.de_out(ring_de),.x_out(ring_x),.rgb_out(ring_rgb));
+
+reg [1:0] preview_after_ring;
+always @(posedge video_clk or posedge rst_video)
+ if(rst_video)preview_after_ring<=0;else preview_after_ring<={preview_after_ring[0],adjust_preview};
+wire [23:0] parameter_rgb;
+wire parameter_glyph_active;
+adjust_osd_overlay #(.ENABLE(OSD_ENABLE)) u_parameter_osd(
+ .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.rgb_in(osd_rgb),
+ .mode(adjust_mode),.selected(adjust_selected),.brightness(brightness_frame),.contrast(contrast_frame),
+ .volume_level(volume_frame),.rgb_out(parameter_rgb),.active(parameter_glyph_active));
 
 osd_status_cdc u_osd_status_cdc (
     .src_clk(sd_card_clk), .src_rst(rst_sd),
@@ -451,17 +492,17 @@ status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
 );
 scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1)) u_scroll_osd (
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.image_valid(audio_enable),
- .rgb_in(osd_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active),
+ .rgb_in(parameter_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active),
  .runtime_text(sub_text_pixel),.runtime_length(sub_length_pixel),
- .runtime_enable(sub_enable_pixel && !preview_pixel),.runtime_text_changed(sub_text_changed)
+ .runtime_enable(sub_enable_pixel && !preview_after_ring[1]),.runtime_text_changed(sub_text_changed)
 );
 timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(scroll_rgb),.rgb_out(timestamp_rgb),.active(timestamp_glyph_active));
 osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_band(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
- .rgb_in(timestamp_rgb),.glyph_active(status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
- .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_pixel && sub_length_pixel!=0)
+ .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
+ .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0)
 );
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
@@ -478,14 +519,19 @@ audio_source_mux u_audio_source_mux(
  .wav_valid(bgm_valid),.wav_ready(bgm_ready),.wav_left(bgm_left),.wav_right(bgm_right),.wav_active(bgm_active),
  .arp_valid(pcm_valid),.arp_ready(pcm_ready),.arp_left(pcm_left),.arp_right(pcm_right),
  .out_ready(mixed_ready),.out_valid(mixed_valid),.out_left(mixed_left),.out_right(mixed_right));
+wire volume_valid,volume_ready;
+wire signed [15:0] volume_left,volume_right;
+pcm_master_volume u_master_volume(.clk(video_clk),.rst(rst_video),.volume_level(volume_frame),
+ .in_valid(mixed_valid),.in_ready(mixed_ready),.in_left(mixed_left),.in_right(mixed_right),
+ .out_valid(volume_valid),.out_ready(volume_ready),.out_left(volume_left),.out_right(volume_right));
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
     .pixel_clk(video_clk), .pixel_rst_n(~rst_video),
     .video_hsync(ring_hs), .video_vsync(ring_vs), .video_de(ring_de),
     .video_x(ring_x), .video_rgb(band_rgb),
     .select_media(1'b1), .test_valid(1'b0), .test_ready(),
     .test_left(16'sd0), .test_right(16'sd0),
-    .media_valid(mixed_valid), .media_ready(mixed_ready),
-    .media_left(mixed_left), .media_right(mixed_right),
+    .media_valid(volume_valid), .media_ready(volume_ready),
+    .media_left(volume_left), .media_right(volume_right),
     .channel0_symbol(tmds_ch0_data), .channel1_symbol(tmds_ch1_data),
     .channel2_symbol(tmds_ch2_data), .sequence_error(hdmi_sequence_error),
     .pcm_tap_valid(ring_tap_valid), .pcm_tap_left(ring_tap_left), .pcm_tap_right(ring_tap_right)

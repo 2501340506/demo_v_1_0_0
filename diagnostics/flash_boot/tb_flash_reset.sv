@@ -28,7 +28,7 @@ module tb_flash_reset;
    if(dut.audio_update) updates=updates+1;
    if(dut.u_media_hdmi_audio_bridge.pcm_tap_valid) begin
     samples=samples+1;
-    if(!dut.audio_enable && (dut.pcm_left!==0 || dut.pcm_right!==0)) $fatal(1,"not silent after restart");
+    if(!dut.audio_enable && (dut.u_media_hdmi_audio_bridge.pcm_tap_left!==0 || dut.u_media_hdmi_audio_bridge.pcm_tap_right!==0)) $fatal(1,"not silent after restart");
    end
    if(dut.pcm_overflow || dut.hdmi_sequence_error) $fatal(1,"PCM/packet restart failure");
   end
