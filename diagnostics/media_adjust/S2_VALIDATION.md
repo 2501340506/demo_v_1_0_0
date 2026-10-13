@@ -1,5 +1,14 @@
 # v0.15.0 S2验证记录
 
+## 当前候选：s2-local.1（attempt46，源码2cc5b57）
+
+- 完整TD：Setup WNS +0.139ns、Hold WNS +0.004ns，TNS均为0，无工具ERROR。15402 LUT、8551寄存器、4284 MSlice/4308 LSlice（Slice 87.72%）、54 BRAM9K、15 DSP、1 PLL。时序审计（timing_audit）12类检查结果与v0.14.0 s3-local.3一致：无时钟0、组合环0、无效约束0、被遮蔽/忽略例外0；dummy node 4、PLL时钟约束1、无输入/输出延迟9/16同基线。
+- 102个工程输入与attempt46快照逐字节一致；bit 662216字节与构建产物逐字节一致。
+- 最终源码重跑（零错误）：s2c_regression1基础21项；s2c_unit1亮度/对比度/音量6项；s2c_scaler1缩放与完整字节流；s2c_preview_keys1四宫格按键；s2c_top1生产顶层336271像素/1148样本（43条PLL模型/未接物理端口警告，与adjust_top6同类同数）；s2c_preview1真实SDRAM预览/音乐/重扫/故障恢复165帧、60预览、10提交/提示音（26条模型警告同adjust_preview_final1）；s2c_system1真实SDRAM完整系统591帧、22提交/提示音、481827个PCM精确样本5会话无欠载/溢出、17次淡变、UART四阶段、时间戳（32条模型警告同adjust_system1）。
+- LUT缩减专项（旧新等价、变异、门级）见TIMING_STRUCTURE.md attempt41～46；adjust_gate4图像/音量门级算术模块源码未改，沿用。
+- 尚未上板，不建board标签，不进入S3。
+
+
 ## 已通过
 
 - S1五项专项；最终按键事件寄存/计时位宽和OSD共享BCD修改后，adjust_unit5六项通过，增加全部256个画面值和11档音量的十进制转换检查。
@@ -12,7 +21,7 @@
 - adjust_preview_final1：最终按键RTL的真实SDRAM预览/音乐/重扫/故障恢复165帧、60预览帧、10提交/提示音、139171个PCM样本通过，无欠载/溢出。使用标准尺寸，混合尺寸历史失败日志不计为完整通过。
 - 后续根据attempt6实际最长路径，将缩放器每图不变的行末坐标提前寄存，接口和有效输入的周期行为不变。adjust_scaler_endpoint1十尺寸逐像素及取消通过，adjust_stream_endpoint2五尺寸完整BMP字节流逐像素通过；上述长系统测试在这处等价预计算之前执行，未冒称重跑。
 
-## 当前阻塞
+## 历史阻塞（attempt40前，已由LUT缩减解除）
 
 - 最新attempt40（strategy5）：完整TD无工具ERROR，但Setup WNS/TNS -0.587/-1.030ns（2端点）、Hold -0.020/-0.072ns（7端点），无负Recovery/Removal。16966 LUT、9356寄存器、4732 MSlice/4731 LSlice、52 BRAM9K、15 DSP；整体较attempt39变差，仍无合格S2。audio_run改为现有audio_session寄存器输出，scan_accept新增!audio_run以等待停止和事务排空，网表寄存边界保留，原预览→音频负路径消除。新的Setup为图片streamer fs_error[2]到双writer FIFO使能，Hold实际位见TIMING_STRUCTURE。
 - 本轮adjust_audio_stop_units1三项音频专项、adjust_audio_stop_production1原生产9279样本及预览配置9280样本通过，零错误警告。新增首次启动边界scan_request注入、真实KEY2预览退出及延迟帧应答后重扫恢复；模拟SD和writer握手，未重跑真实SDRAM像素系统。102个工程输入与attempt40快照逐字节一致。

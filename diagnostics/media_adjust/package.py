@@ -8,7 +8,7 @@ import subprocess
 p = argparse.ArgumentParser()
 p.add_argument('build')
 p.add_argument('--candidate', default='s2-local.1')
-p.add_argument('--top-run', default='adjust_top6')
+p.add_argument('--top-run', default='s2c_top1')
 a = p.parse_args()
 root = Path(__file__).resolve().parents[2]
 output = root / 'diagnostics/output'
@@ -25,30 +25,34 @@ inputs += [(root / 'TD_project' / n).resolve().relative_to(root)
 for name in inputs:
     assert (root / name).read_bytes() == (build / name).read_bytes(), f'Changed build input: {name}'
 logs = {}
-for test in ('tb_adjust','tb_volume','tb_adjust_cdc','tb_adjust_keys','tb_adjust_osd','tb_adjust_decimal'):
-    logs[f'adjust_unit7/{test}.log'] = 'PASS '
-for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
-    logs[f'adjust_gate4/{module}/gate.log'] = 'PASS '
-for run in ('adjust_regression2', 'adjust_regression_tail1'):
+# Final-source (2cc5b57) runs for this candidate.
+for run in ('s2c_regression1', 's2c_unit1', 's2c_scaler1'):
     for f in (output / run).glob('tb_*.log'):
         if '.console.' not in f.name:
-            # The corrected reset assertion is validated in the tail run.
-            if run == 'adjust_regression2' and f.name == 'tb_flash_reset.log':
-                continue
             logs[f.relative_to(output).as_posix()] = 'PASS '
-for f in (output / 'adjust_control_final1').glob('tb_*.log'):
-    if '.console.' not in f.name:
-        logs[f.relative_to(output).as_posix()] = 'PASS '
-logs['adjust_preview_keys1/sim.log'] = 'PASS preview keys:'
-logs['adjust_scaler_endpoint1/sim.log'] = 'PASS scaler suite:'
-logs['adjust_stream_endpoint2/sim.log'] = 'PASS byte stream suite'
-for test in ('tb_mode_key_control','tb_key_gesture_control','tb_switch_mode_panel','tb_rescan_key'):
-    logs[f'adjust_control_width1/{test}.log'] = 'PASS '
-for test in ('tb_scaler','tb_scale_stream'):
-    logs[f'adjust_scaler_edges1/{test}.log'] = 'PASS '
-logs['adjust_system1/system.log'] = 'PASS cache system:'
-logs['adjust_preview_final1/system.log'] = 'PASS preview system:'
+logs['s2c_preview_keys1/sim.log'] = 'PASS preview keys:'
+logs['s2c_system1/system.log'] = 'PASS cache system:'
+logs['s2c_preview1/system.log'] = 'PASS preview system:'
 logs[f'{a.top_run}/top.log'] = 'PASS production top'
+# LUT-reduction equivalence and directly affected regressions.
+logs['lut_ring_levels1/tb_ring_levels_equiv.log'] = 'PASS '
+for test in ('tb_audio_ring', 'tb_ring_pixels'):
+    logs[f'lut_b1_ring_unit1/{test}.log'] = 'PASS '
+logs['lut_b1_ring_music3/music.log'] = 'PASS music:'
+logs['lut_batch2_equiv1/tb_batch2_equiv.log'] = 'PASS '
+logs['lut_b2_video_align1/video_test.log'] = 'PASS reset/restart'
+logs['lut_subtitle_parser1/tb_subtitle_parser_equiv.log'] = 'PASS '
+logs['lut_seg_equiv2/tb_seg_equiv.log'] = 'PASS '
+logs['lut_uart_rom3/tb_uart_text_rom_equiv.log'] = 'PASS '
+for test in ('tb_uart_field_equivalence', 'tb_uart_event_logger', 'tb_uart_queue'):
+    logs[f'lut_uart_rom_fields1/{test}.log'] = 'PASS '
+for test in ('tb_subtitle_fields', 'tb_reply_pipeline', 'tb_uart_subtitle'):
+    logs[f'lut_b5_reply_pipeline2/{test}.log'] = 'PASS '
+for test in ('tb_pcm_production', 'tb_pcm_preview_rescan'):
+    logs[f'lut_b3_preview_rescan2/{test}.log'] = 'PASS '
+# Unchanged picture/volume arithmetic: gate-level evidence of the same RTL.
+for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
+    logs[f'adjust_gate4/{module}/gate.log'] = 'PASS '
 for name, marker in logs.items():
     text = (output / name).read_text(errors='replace')
     assert marker in text and 'Errors: 0,' in text and not re.search(r'\*\* (Fatal|Error):', text), name

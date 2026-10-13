@@ -1,3 +1,13 @@
+# 当前任务：v0.15.0 S2 local.1 已固定，等待板测
+
+- 当前任务：亮度、对比度、总音量S2；经功能不变的LUT缩减后得到首个时序合格构建，已固定为releases/v0.15.0/s2-local.1，交用户上板。
+- 已完成：attempt46（源码2cc5b57）Setup +0.139ns、Hold +0.004ns，15402 LUT/54 BRAM9K/15 DSP；时序审计12类与v0.14.0一致；102个输入及bit逐字节核对。最终源码重跑21项基础回归、6项调节专项、缩放、四宫格按键、生产顶层、真实SDRAM预览（165帧）与完整系统（591帧、481827 PCM），全部零错误，警告数及类别同历史。标签v0.15.0-s2-local.1。
+- 卡住的问题：无本地阻塞；s2-local.1尚未上板，不建board标签、不进入S3、不推送。Hold余量仅4ps。
+- 下一步计划：用户按releases/v0.15.0/s2-local.1/BOARD_VALIDATION.md 1–12项板测；通过后记录s2-board.1并推送分支及S2标签，再进入S3（20分钟、Flash、完全断电冷启动）。失败则按实际现象定点修复，生成s2-local.2。
+- 踩过的坑：tb_pcm_preview_rescan需与tb_pcm_production同批编译；Windows Python不认Git Bash的/tmp；PATH需临时加Python313；attempt44/45路由Hold修复TD可复现崩溃，网表变化后消失，后续构建可能复现。未做的LUT项（批4、批6、scanner清零）记录在TIMING_STRUCTURE.md，作为将来需要空间时的备选。
+
+## 历史交接
+
 # 当前任务：v0.15.0 S2 LUT缩减（功能不变）——attempt46时序首次通过
 
 - 当前任务：原feature/brightness-contrast-volume分支，按“S2 LUT缩减子计划”降LUT以解除布线拥塞；attempt46完整TD Setup +0.139ns、Hold +0.004ns，尚未时序审计/打包/上板。
