@@ -1,6 +1,10 @@
-# 当前开发：v0.15.0 亮度、对比度与总音量
+# 当前正式版：v0.15.0
 
-功能已接入，模块专项、受影响回归及联合仿真已完成；完整TD时序仍在收敛，尚无可交付S2候选。正式基线与回退仍为v0.14.0。见[阶段计划](docs/亮度对比度与音量调节分阶段修改计划.md)、[验证记录](diagnostics/media_adjust/S2_VALIDATION.md)和[交接](HANDOFF.md)。
+亮度、对比度与总音量调节完成：SW2/SW1=01/10 调画面参数，KEY4 切换总音量，参数条显示 B/C/V。S2 功能及 S3 Flash 持续运行 20 分钟、完全断电冷启动均获用户确认。复用 s2-local.1 原 bit。
+
+[下载与使用](releases/v0.15.0/README.md) · [最终验证](releases/v0.15.0/FINAL_VALIDATION.md) · [历史归档](docs/history/2026-10-13/brightness-contrast-volume/README.md)。回退 v0.14.0。
+
+## 历史记录
 
 # 当前正式版：v0.14.0
 
