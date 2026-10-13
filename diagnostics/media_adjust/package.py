@@ -40,6 +40,8 @@ for f in (output / 'adjust_control_final1').glob('tb_*.log'):
     if '.console.' not in f.name:
         logs[f.relative_to(output).as_posix()] = 'PASS '
 logs['adjust_preview_keys1/sim.log'] = 'PASS preview keys:'
+logs['adjust_scaler_endpoint1/sim.log'] = 'PASS scaler suite:'
+logs['adjust_stream_endpoint2/sim.log'] = 'PASS byte stream suite'
 logs['adjust_system1/system.log'] = 'PASS cache system:'
 logs['adjust_preview_final1/system.log'] = 'PASS preview system:'
 logs[f'{a.top_run}/top.log'] = 'PASS production top'

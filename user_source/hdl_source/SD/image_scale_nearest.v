@@ -12,6 +12,7 @@ module image_scale_nearest (
             ROW=6,CAPTURE=7,FETCH=8,EMIT=9,DRAIN=10;
  reg [3:0] state;
  reg [10:0] sw,sh,dw,dh,left,top,x,y;
+ reg [10:0] source_last_x; // Frame-constant row endpoint, computed before capture.
  reg [20:0] dividend;
  reg [10:0] divisor,quotient;
  reg width_fit;
@@ -34,14 +35,14 @@ module image_scale_nearest (
  end
  always @(posedge clk or posedge rst) begin
   if(rst) begin
-   state<=IDLE;sw<=0;sh<=0;dw<=0;dh<=0;left<=0;top<=0;x<=0;y<=0;
+   state<=IDLE;source_last_x<=0;sw<=0;sh<=0;dw<=0;dh<=0;left<=0;top<=0;x<=0;y<=0;
    dividend<=0;divisor<=1;quotient<=0;width_fit<=0;
    xq<=0;xr<=0;yq<=0;yr<=0;sx<=0;xrem<=0;sy<=0;yrem<=0;
    buffered_y<=0;row_valid<=0;pixel_black<=1;done<=0;
   end else begin
    done<=0;
    if(start) begin
-    sw<=image_width[10:0];sh<=image_height[10:0];
+    sw<=image_width[10:0];sh<=image_height[10:0];source_last_x<=image_width[10:0]-11'd1;
     row_valid<=0;state<=ASPECT;
    end else case(state)
     ASPECT: begin
@@ -72,7 +73,7 @@ module image_scale_nearest (
      if(!row_inside || (row_valid && buffered_y==sy)) state<=FETCH;
      else state<=CAPTURE;
     end
-    CAPTURE: if(in_valid && in_ready && in_x==sw-1'b1) begin
+    CAPTURE: if(in_valid && in_ready && in_x=={5'd0,source_last_x}) begin
      buffered_y<=in_y[10:0];row_valid<=1;
      if(in_y==sy) state<=FETCH;
     end
