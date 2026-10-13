@@ -1,4 +1,5 @@
 # v0.15.0 开发中（未发布）
+
 - 接入四拍亮度/对比度、帧边界参数邮箱、调节按键与参数OSD，以及音源选择后的立体声总音量和增益渐变。
 - 功能不变的LUT缩减解除布线拥塞（16966→15402 LUT、Slice 96.56%→87.72%），使TD Hold修复得以执行；圆环高度分布式RAM、视频延迟BRAM环、提示音常数增益、字幕逐字节校验、UART文本ROM、数码管计数器收窄。
 - S2 local.1：attempt46完整TD Setup +0.139ns、Hold +0.004ns，时序审计与基线一致，最终源码21项回归及真实SDRAM完整/预览系统通过；固定releases/v0.15.0/s2-local.1，待板测。详见diagnostics/media_adjust/S2_VALIDATION.md。
