@@ -306,3 +306,22 @@ Hold实际端点（已核对Q网络和RAM拼接）：
 综合确认delay_ram为RAM，实际占1个BRAM9K。提示音常数乘法仍映射1个DSP，未释放DSP，仅LUT下降。完整TD无工具ERROR，门槛脚本正确拒绝，无候选。
 
 关键发现：attempt40/41/42布局日志均为“Slice utilization of current design is higher than 90%, hold fixing is skipped”，Slice利用率96.56%→92.56%→91.44%。即此前各轮Hold负值是在路由Hold修复被跳过的情况下出现，逐点加保持LUT不是根本办法；继续降LUT使利用率低于90%后，工具Hold修复才会执行。attempt42七条负Hold分散于全图写FIFO、音频短缓存、UART队列、缩略图写FIFO、video_delay BRAM、PCM读地址等BRAM输入及一条读FIFO复位removal，均-0.004～-0.020ns，暂不定点修改。
+
+## attempt43 LUT缩减批3：scanner/streamer等价改写（完整TD结束，未达保留门槛，生产修改已撤回）
+
+改动：scanner MBR四组LBA改为只捕获首个匹配项的单寄存器；scanner与两个streamer的FAT表项字节捕获由offset+1/+2/+3比较改为index[8:2]相等加index[1:0]选字节（offset为4的倍数，精确等价）。原计划还删除scanner在scan_start时对320位cluster/size的同步清零，但lut_b3_scanner_equiv1在scenario=1即失败：tb_audio_scan不复位连续扫描并显式断言“rescan retained metadata”，这是模块契约，故恢复清零，不计入本轮。是否放宽该契约（生产每次扫描前均有parser复位，消费者只在valid/found下读取）留给用户决定。
+
+验证（均零错误警告）：lut_b3_scanner_equiv2参考9d22e06 GAP=0/1/5逐周期等价；lut_b3_reader1全部42项ByteGap=0（含MBR第1～4分区、多分区取首个匹配）；lut_b3_scaled1碎片缩放case0/ScaleTest=1/TestMode=5；lut_b3_production1生产PCM 9279样本；lut_b3_preview_rescan2生产与预览退出/重扫联合（9280样本）。preview_rescan需与tb_pcm_production同批编译，lut_b3_preview_rescan1单独编译装载失败，不记RTL失败。
+
+| 指标 | attempt42 | attempt43 |
+|---|---:|---:|
+| 全设计LUT / 寄存器 | 16068 / 8643 | 16121 / 8537 |
+| MSlice / LSlice | 4462 / 4499 | 4441 / 4493 |
+| Slice利用率 | 91.44% | 91.16% |
+| 综合全设计LUT | 15444 | 15447 |
+| scanner物理LUT / seq | 1647 / 1144 | 1579 / 1053 |
+| 图片/音频streamer物理LUT | 744 / 797 | 794 / 802 |
+| Setup WNS / TNS ns | +0.131 / 0 | -0.322 / -0.502 |
+| Hold WNS / TNS ns | -0.020 / -0.066 | -0.020 / -0.040 |
+
+scanner局部真实下降（综合-96、物理-68、seq-91），streamer综合不变，说明FAT字节捕获综合器原本已优化；全设计物理LUT反增53且Setup变负（最差cache_control load_state→…）。按保留判据撤回scanner/streamer至4ba1f23，被拒源码存diagnostics/output/adjust_s2_attempt43/rejected_batch3。scanner MBR单项捕获可在后续与其他改动合批时再评估。
