@@ -109,6 +109,14 @@ wire [79:0] name_text=(kind==11 && snapshot[68:65]==4'hc)?"CACHE_DONE":
 localparam [175:0] BANNER="BOOT v0.5.4-s3-local.2";
 reg [7:0] tx_data;
 reg tx_hex;
+// Select inside each field, not across the entire 154-bit snapshot. The
+// enclosing character ranges guarantee these modulo indices are exact.
+wire [31:0] time_field = snapshot[153:122];
+wire [31:0] sector_field = snapshot[103:72];
+wire [63:0] debug_field = snapshot[63:0];
+wire [2:0] time_nibble = 3'd4 - char_index[2:0];
+wire [2:0] sector_nibble = 3'd3 - char_index[2:0];
+wire [3:0] debug_nibble = 4'd2 - char_index[3:0];
 always @* begin
     tx_data=8'h20;
     tx_hex=1'b0;
@@ -118,13 +126,13 @@ always @* begin
         else tx_data=8'h0a;
     end else begin
         if(char_index<10) tx_data=name_text[(9-char_index)*8 +: 8];
-        else if(char_index>=13 && char_index<=20) begin tx_data={4'd0,snapshot[153-(char_index-13)*4 -: 4]};tx_hex=1;end
+        else if(char_index>=13 && char_index<=20) begin tx_data={4'd0,time_field[{time_nibble,2'b00} +: 4]};tx_hex=1;end
         else if(char_index==24) tx_data=8'h30+{6'd0,snapshot[105:104]};
-        else if(char_index>=28 && char_index<=35) begin tx_data={4'd0,snapshot[103-(char_index-28)*4 -: 4]};tx_hex=1;end
+        else if(char_index>=28 && char_index<=35) begin tx_data={4'd0,sector_field[{sector_nibble,2'b00} +: 4]};tx_hex=1;end
         else if(char_index==39) begin tx_data={5'd0,snapshot[71:69]};tx_hex=1;end
         else if(char_index==43) begin tx_data={4'd0,snapshot[68:65]};tx_hex=1;end
         else if(char_index==47) tx_data=8'h30+{7'd0,snapshot[64]};
-        else if(char_index>=51 && char_index<=66) begin tx_data={4'd0,snapshot[63-(char_index-51)*4 -: 4]};tx_hex=1;end
+        else if(char_index>=51 && char_index<=66) begin tx_data={4'd0,debug_field[{debug_nibble,2'b00} +: 4]};tx_hex=1;end
         else case(char_index)
             11:tx_data="T"; 12,23,27,38,42,46,50:tx_data="=";
             22:tx_data="I"; 26:tx_data="S"; 37:tx_data="E";

@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：生成亮度/对比度/总音量S2硬件候选，尚未上板。
-- 已完成：S1、生产接入及21项基础回归；最新adjust_unit7六专项、adjust_syn3独立综合、adjust_gate4门级图像9216组/音量4710样本、adjust_top6顶层336271像素/1148音频样本通过。缩放最终adjust_scaler_edges1十尺寸及五尺寸字节流、计数器adjust_control_width1四项回归通过。系统591帧/481827 PCM及预览故障165帧/139171 PCM的历史通过覆盖范围见验证记录。
-- 卡住的问题：32次构建尝试仍无同时满足资源、无工具错误、Setup/Hold非负的候选。当前源码strategy5（attempt25）为-0.233/-0.004ns；最新attempt32为-0.703/-0.012ns。部分策略触发TD内部x_offset错误或布线冲突。所有构建已结束，未改时钟或约束，无local/board标签。
-- 下一步计划：转入新对话，先按[续接任务](docs/v0.15.0时序修复续接任务.md)分析当前源码按模块资源及关键路径，选一项有证据的硬件结构优化减少实际占用/布线压力，再跑受影响验证和固定策略完整TD。停止以连续换策略为主要办法；功能不删减，目录整理不作为LUT优化。Hold按最终报告定点修正；合格后再审查、打包S2候选，板测前不进入S3。基线及回退v0.14.0。
-- 踩过的坑：旧回归缺AL_MAP_LUT1模型；复位检查最终pcm_tap；顶层注入须提供完整0–799行坐标；网表端口会重排，测试用具名连接；主动超时须区分正常加载。TD接受选项不代表器件实际使用；存在ERROR时即使生成bit也不能交付。中文读取显式UTF-8。失败输出保留，不打包候选。
+- 当前任务：继续v0.15.0 S2时序修复，在原feature/brightness-contrast-volume分支实施一项有资源证据的结构优化，尚无合格候选、尚未上板。
+- 已完成：本轮已对照v0.14.0/attempt25/32分析模块资源和路径，实施UART的T/S/D字段局部选择器；adjust_uart_fields1的52864次等价比较及线级日志、adjust_uart_subtitle1字幕回复集成通过，attempt33完整TD已结束。UART物理LUT减少111、MSlice减少15，但全设计LUT增加16。原S1、21项回归、adjust_unit7/syn3/gate4/top6、scaler_edges1/control_width1通过范围及历史长系统证据见S2_VALIDATION，未冒称本轮重跑。
+- 卡住的问题：attempt33（固定strategy5）无工具ERROR但Setup -0.216ns、Hold -0.020ns，仍无合格S2。物理17357 LUT、9339寄存器、4786 MSlice、43 BRAM9K、15 DSP。唯一负Setup为scanner状态→resource1_size（85%布线、最大扇出66）；唯一负Hold为短音频缓存cache_write[3]→RAM地址，已不同于attempt25的PCM FIFO。频率/引脚/约束未改，无local/board标签。
+- 下一步计划：按[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)定位scanner目录项第31字节提交/scan_start清零中的共享数据选择及高扇出使能，评估提前形成提交使能；对最终Hold端点定点处理。两处本轮尚未修改，后续需扫描/音频专项及相关联合场景。新构建从attempt34起、固定HighFanoutOptimization/strategy5，不继续盲试策略。合格后审查打包S2，板测前不进入S3；回退v0.14.0。
+- 踩过的坑：局部LUT下降不等于全设计下降，未改模块也会重映射；层次LUT需加ripple、父子不可重复累计。网表寄存器编号不等于RTL位号，attempt33 Hold实际是cache_write[3]。旧回归缺AL_MAP_LUT1模型，恒等LUT须有EQN；顶层注入须完整行坐标；复位检查最终pcm_tap。中文显式UTF-8；不混用旧测试覆盖、不打包失败bit、不批量删除。
 
 ## 历史交接
 
