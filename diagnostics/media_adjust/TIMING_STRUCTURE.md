@@ -196,3 +196,32 @@ Recovery -0.074ns：报告源实例名为`u_picture_adjust/rgb_out_b12[8]_syn_4`
 四条Hold实际位：streamer file_byte[3]→sector buffer RAM dia[3] -0.011ns；UART pending[10]→RAM dia[0] -0.011ns；UART pending[27]→RAM dib[8] -0.011ns；UART wr_ptr[3]→RAM addra[7] -0.004ns。已查实际网表拼接，不沿用attempt37的PCM/缩放RGB端点。
 
 下一轮从attempt39起，继续固定HighFanoutOptimization/strategy5。最差再次是字幕查询格式化到UART接收寄存器；attempt35直接半字节选择已失败撤回，不重复。优先调查按字符握手预计算/寄存回复数据，保持query快照、index/last推进与日志仲裁；或处理有明确寄存边界的candidate选择链。每次只实施有证据的一项，验证后完整TD，再按最终报告重核Hold和Recovery。
+
+## attempt39 字幕回复寄存切分（完整TD结束，时序仍失败）
+
+attempt38字幕模块物理915 LUT（661+254）、430 seq；index→UART reply_byte为最差-0.141ns、9级、fanout51。此次保留原字节选择表达式，在选出的原始ASCII/半字节与hex转换之间增加prepared_data/hex/last/valid寄存级。只有reply_valid&&reply_ready推进index；每字符增加一个内部准备拍，背压时数据与last保持，快照/active/pending与溢出ERR语义保持。没有重试attempt35的直接半字节选择，没有叠加Hold或复位改动。先验证全部字段、握手/背压/排队/重置和真实RX/TX日志仲裁，再固定strategy5完整TD。
+
+adjust_reply_pipeline2已通过：124928次旧新字段比较；102个接受字节、106个背压周期（含0/2/12字长度、连续ready、快照、pending溢出ERR、背压复位）；真实RX/TX 8N1字幕/日志仲裁、ASCII/CN/mixed、12/13边界、坏停止位、帧提交与复位，全部零错误警告。参考b5b48c9控制器按新实现的实际接受时刻握手，比较有效数据/last和逐周期配置更新，不把新增准备拍声称为valid逐周期等价。首轮测试台用Verilog不支持的字符串CR转义，改为八进制015后重跑；生产RTL未因此修改。旧run_subtitle_fields是组合输出合同的历史实验工具，当前流水请使用run_reply_pipeline；重现attempt35需旧快照SourceRoot。attempt39完整TD已启动，结果待补。
+
+### attempt39 最终结果
+
+完整综合、布局布线和bit生成结束，无工具ERROR；门槛脚本因负时序正确拒绝。102个工程输入与attempt39逐字节一致。实际网表prepared_data[6:0]、prepared_hex、reply_last（prepared_last重命名）和prepared_valid均由Q驱动，数据最高位恒0被优化，寄存边界保留。扩展报告每组200端点：只剩1条setup、2条hold，无负recovery/removal，原字幕回复负路径消除。保留本轮改动，尚无S2候选。
+
+| 指标 | attempt38 | attempt39 |
+|---|---:|---:|
+| LUT / 寄存器 | 17126 / 9346 | 16955 / 9345 |
+| LE | 18230 | 18107 |
+| MSlice / LSlice | 4703 / 4706 | 4693 / 4699 |
+| BRAM9K / DSP | 52 / 15 | 52 / 15 |
+| Setup WNS / TNS ns | -0.141 / -0.703 | -0.151 / -0.151 |
+| 最大延迟失败端点 | 9 setup + 1 recovery | 1 setup |
+| Hold WNS / TNS ns | -0.011 / -0.037 | -0.011 / -0.022 |
+| 最小延迟失败端点 | 4 | 2 |
+
+全设计LUT减少171、LE减少123、MSlice减少10、LSlice减少7；Setup最差略差0.010ns，但总负余量和端点明显减少。字幕物理974 LUT/484 seq，UART logger793 LUT/369 seq；模块间映射有变化，不能只看字幕单模块判断总收益。
+
+唯一负Setup：报告`u_cache_control/cache_failed_reg[3]_syn_16.clk`→音频streamer `sector_lba_reg[10].ce`，-0.151ns，7级、fanout20、76%布线。实际起点Q网络是`g_preview$control/preview_request`，经过fullscreen_ready、重扫/音频停止控制进入streamer使能，不是cache_failed数据。下一轮优先研究`sd_card_bmp`的rescan_event/audio_run与`fat32_pcm_stream`取消/启动路径的寄存切分，保持音频事务排空后再接受扫描的合同，不能只延迟单个取消脉冲。
+
+两个Hold均-0.011ns：PCM `wr_bin[11]`→RAM csa[1]（深度分块片选），UART `pending[75]`→RAM dib[1]。后者报告源实例为subtitle/lt74，实际是共用Slice内的UART时间戳寄存器。已查实际网表；不能继续处理旧pending[10]/[27]、地址wr_ptr[3]或将它误判为字幕字段。
+
+下一轮从attempt40起，固定HighFanoutOptimization/strategy5。若修改音频/重扫控制，补生产联合和事务中取消/重扫验证；按新完整TD重核Hold及实际恒等LUT，Setup/Hold均非负前不打包、不建local标签。

@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt38完整TD、扩展路径和实际网表检查已结束，仍无合格候选、尚未上板。
-- 已完成：scanner BPB字段判定预寄存，最终签名/sector_error保持原拍。adjust_bpb_equivalence1参考86bad25在GAP=0/1/5逐周期等价，adjust_bpb_reader1全部42项零间隔FAT32、adjust_bpb_scaled1碎片缩放/末字节同拍、adjust_bpb_production1生产联合9279样本全部通过，零错误警告。实际bpb_ok寄存器保留，原12个BPB→sector_lba负端点消除；102个工程输入与attempt38逐字节一致。历史BMP/UART验证见S2_VALIDATION。
-- 卡住的问题：attempt38无工具ERROR，Setup -0.141ns（TNS -0.703ns，9 setup+1 recovery）、Hold -0.011ns（TNS -0.037ns、4端点）。17126 LUT、9346寄存器、4703 MSlice/4706 LSlice、52 BRAM9K、15 DSP。比attempt37 LUT+138、MSlice-24，scanner物理LUT-19。最差为字幕index→UART reply_byte，其他负路径分散在扫描/预检查/音频/候选选择；另有reset release_pipe[2]→UART的半周期Recovery -0.074ns。频率/引脚/约束未改，无local/board标签。
-- 下一步计划：保留已验证的BPB预寄存，从attempt39起固定HighFanoutOptimization/strategy5。优先调查字幕按字符握手预计算/寄存回复数据（9级、fanout51），保留快照/index/last/日志仲裁；不要重复attempt35失败的直接半字节选择。也可评估candidate选择与减2分拍。新Hold实际位为streamer file_byte[3]、UART pending[10]/[27]及wr_ptr[3]，按下一轮最终报告重核；Recovery单独处理。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
-- 踩过的坑：Recovery源实例看似picture_adjust，但该物理Slice的Q[0]实际是reset release_pipe[2]，不是图像数据串到UART；需查实际网络，不能按实例名判断。LUT/LE和Slice占用方向可不同。旧通用decoder末字节同拍测试在修改前也失败，实际输入端同拍结束由buffer链路验证；预译码参数仅缩放流启用。恒等LUT须有EQN，模型警告如实记录；不打包失败bit、不批量删除。
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt39完整TD和实际网表检查已结束，仅剩1条Setup/2条Hold，仍无合格候选。
+- 已完成：字幕字段选择与hex转换间寄存raw/hex/last/valid，字符多一拍准备、接受后推进index。adjust_reply_pipeline2的124928字段比较、102接受字节/106背压周期、快照/排队溢出/复位及真实RX/TX字幕日志仲裁全部通过，零错误警告。实际寄存边界保留、原字幕负路径消除，102个工程输入与attempt39逐字节一致。历史BPB/BMP及生产联合验证见S2_VALIDATION。
+- 卡住的问题：attempt39无工具ERROR，Setup WNS/TNS -0.151/-0.151ns（1端点）、Hold -0.011/-0.022ns（2端点），无负Recovery/Removal。16955 LUT、9345寄存器、4693 MSlice/4699 LSlice、52 BRAM9K、15 DSP；比attempt38 LUT-171、MSlice-10。唯一Setup实际为preview_request经预览/重扫控制到音频streamer sector_lba使能（7级、76%布线）。Hold实际为PCM wr_bin[11]→RAM片选、UART pending[75]→RAM数据，均-0.011ns。无local/board标签。
+- 下一步计划：从attempt40起固定HighFanoutOptimization/strategy5，优先调查sd_card_bmp的rescan_event/audio_run和fat32_pcm_stream取消/启动链的寄存切分，保持音频事务排空后才接受扫描；补生产联合及事务中取消/重扫验证，再完整TD。两条Hold按最终网表定点处理。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
+- 踩过的坑：物理实例cache_failed的实际Q是preview_request；subtitle/lt74的实际Q是UART pending[75]，不能按名字猜功能。回复增加准备拍，测试比较实际接受字节而非旧新valid逐周期一致；旧run_subtitle_fields仅用于历史组合合同，当前用run_reply_pipeline。Verilog字符串CR用八进制015。恒等LUT须有EQN，模型警告如实记录；不打包失败bit、不批量删除。
 
 ## 历史交接
 

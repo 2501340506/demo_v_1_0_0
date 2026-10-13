@@ -61,29 +61,46 @@ module subtitle_uart_controller(
         input [3:0] n;
         begin hex=n<10 ? 8'd48+{4'd0,n} : 8'd55+{4'd0,n}; end
     endfunction
-    reg [7:0] query_char;
+    reg [7:0] query_char, reply_raw;
+    reg reply_hex;
     always @* begin
-        reply_data=10; query_char=0;
+        reply_raw=10; query_char=0; reply_hex=0;
         if(kind==2) begin
             case(index)
-                0:reply_data="S"; 1:reply_data="U"; 2:reply_data="B"; 3:reply_data="=";
-                4:reply_data=snapshot[124]?"1":"0"; 5:reply_data=",";
-                6:reply_data="0"; 7:reply_data=hex(snapshot[123:120]); 8:reply_data=",";
+                0:reply_raw="S"; 1:reply_raw="U"; 2:reply_raw="B"; 3:reply_raw="=";
+                4:reply_raw=snapshot[124]?"1":"0"; 5:reply_raw=",";
+                6:reply_raw="0";
+                7:begin reply_raw={4'd0,snapshot[123:120]};reply_hex=1;end
+                8:reply_raw=",";
                 default:begin
                     if(index<last_index-1) begin
                         query_char=snapshot[((index-9)>>1)*8 +: 8];
-                        reply_data=hex(index[0] ? query_char[7:4] : query_char[3:0]);
-                    end else reply_data=index==last_index-1 ? 13 : 10;
+                        reply_raw={4'd0,(index[0] ? query_char[7:4] : query_char[3:0])};reply_hex=1;
+                    end else reply_raw=index==last_index-1 ? 13 : 10;
                 end
             endcase
         end else if(kind==1) begin
-            case(index) 0:reply_data="E";1,2:reply_data="R";3:reply_data=13;default:reply_data=10;endcase
+            case(index) 0:reply_raw="E";1,2:reply_raw="R";3:reply_raw=13;default:reply_raw=10;endcase
         end else begin
-            case(index) 0:reply_data="O";1:reply_data="K";2:reply_data=13;default:reply_data=10;endcase
+            case(index) 0:reply_raw="O";1:reply_raw="K";2:reply_raw=13;default:reply_raw=10;endcase
         end
     end
-    assign reply_valid=active;
-    assign reply_last=index==last_index;
+    // Split snapshot selection from hex conversion. Prepare one character,
+    // then hold the whole beat until accepted; index advances only on transfer.
+    reg [7:0] prepared_data;
+    reg prepared_hex, prepared_last, prepared_valid;
+    always @(posedge clk or posedge rst) begin
+        if(rst) begin
+            prepared_data<=0;prepared_hex<=0;prepared_last<=0;prepared_valid<=0;
+        end else if(reply_valid && reply_ready) prepared_valid<=0;
+        else if(active && !prepared_valid) begin
+            prepared_data<=reply_raw;prepared_hex<=reply_hex;
+            prepared_last<=index==last_index;prepared_valid<=1;
+        end
+    end
+    always @* reply_data=prepared_hex ? hex(prepared_data[3:0]) : prepared_data;
+    assign reply_valid=active && prepared_valid;
+    assign reply_last=prepared_last;
     always @(posedge clk or posedge rst) begin
         if(rst) begin
             cfg_text<=DEFAULT_TEXT; cfg_length<=12; cfg_enable<=1; cfg_update_valid<=0;
@@ -107,7 +124,7 @@ module subtitle_uart_controller(
                     else bad_line<=1;
                 end
             end
-            if(active && reply_ready) begin
+            if(reply_valid && reply_ready) begin
                 if(reply_last) begin active<=0;index<=0;end
                 else index<=index+1'b1;
             end
