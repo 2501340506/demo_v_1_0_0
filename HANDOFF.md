@@ -2,8 +2,8 @@
 
 - 当前任务：生成亮度/对比度/总音量S2硬件候选，尚未上板。
 - 已完成：S1及最终5项专项、6个独立综合；生产顶层接入；21项基础回归通过，最终按键及复位补测通过；门级图像9216组/音量4710样本通过；adjust_top4顶层336271像素、1148音频样本通过。
-- 卡住的问题：attempt2时序负余量；attempt3 ultra布线冲突；attempt4高扇出优化后MSlice超限2个。attempt5关闭额外高扇出优化构建中，尚无候选，未改约束。
-- 下一步计划：等待adjust_system1和adjust_preview_final1联合仿真、attempt5完整TD及随后时序审查，再固定local候选。验证细节见diagnostics/media_adjust/S2_VALIDATION.md。
+- 卡住的问题：attempt5关闭高扇出后仍时序失败（-1.076/-0.011ns）。OSD已改为消隐期共享BCD，六项专项和最终顶层测试通过；attempt6恢复高扇出构建中，尚无候选，未改约束。
+- 下一步计划：联合仿真已通过（系统591帧/481827 PCM，预览故障165帧/139171 PCM）；等待attempt6完整TD及随后时序审查，再固定local候选。验证细节及范围见diagnostics/media_adjust/S2_VALIDATION.md。
 - 踩过的坑：旧回归缺AL_MAP_LUT1模型；复位检查最终pcm_tap；顶层注入须提供完整0–799行坐标才能发HDMI音频；网表导出端口会重排，测试用具名连接；主动超时场景不能被正常加载监控误判。失败输出保留，不打包候选。
 
 ## 历史交接

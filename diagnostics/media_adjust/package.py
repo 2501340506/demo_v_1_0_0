@@ -8,7 +8,7 @@ import subprocess
 p = argparse.ArgumentParser()
 p.add_argument('build')
 p.add_argument('--candidate', default='s2-local.1')
-p.add_argument('--top-run', default='adjust_top4')
+p.add_argument('--top-run', default='adjust_top5')
 a = p.parse_args()
 root = Path(__file__).resolve().parents[2]
 output = root / 'diagnostics/output'
@@ -25,8 +25,8 @@ inputs += [(root / 'TD_project' / n).resolve().relative_to(root)
 for name in inputs:
     assert (root / name).read_bytes() == (build / name).read_bytes(), f'Changed build input: {name}'
 logs = {}
-for test in ('tb_adjust','tb_volume','tb_adjust_cdc','tb_adjust_keys','tb_adjust_osd'):
-    logs[f'adjust_unit3/{test}.log'] = 'PASS '
+for test in ('tb_adjust','tb_volume','tb_adjust_cdc','tb_adjust_keys','tb_adjust_osd','tb_adjust_decimal'):
+    logs[f'adjust_unit5/{test}.log'] = 'PASS '
 for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
     logs[f'adjust_gate3/{module}/gate.log'] = 'PASS '
 for run in ('adjust_regression2', 'adjust_regression_tail1'):

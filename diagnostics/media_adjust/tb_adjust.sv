@@ -23,6 +23,25 @@ module tb_adjust;
  end
 endmodule
 
+module tb_adjust_decimal;
+ reg clk=0,rst=1,vs=1;always #5 clk=~clk;
+ reg [7:0] b=128,c=128;reg [3:0] v=10;
+ adjust_osd_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(1'b0),.pixel_x(10'd0),.rgb_in(24'd0),
+ .mode(2'd1),.selected(2'd0),.brightness(b),.contrast(c),.volume_level(v),.rgb_out(),.active());
+ function integer number(input [11:0] bcd);
+  begin number=bcd[11:8]*100+bcd[7:4]*10+bcd[3:0];end
+ endfunction
+ initial begin
+  repeat(3)@(negedge clk);rst=0;
+  for(integer i=0;i<256;i++)begin
+   @(negedge clk);b=i;c=255-i;v=i%11;vs=0;
+   repeat(3)@(negedge clk);vs=1;repeat(26)@(negedge clk);
+   if(number(dut.b_bcd)!=i || number(dut.c_bcd)!=255-i || number(dut.v_bcd)!=(i%11)*10)$fatal(1,"BCD value %0d",i);
+  end
+  $display("PASS decimal all 256 picture values and 11 volume levels within blanking");$finish;
+ end
+endmodule
+
 module tb_volume;
  reg clk=0,rst=1;always #5 clk=~clk;
  reg [3:0] level=10;reg iv=0,ready=0;wire ir,ov;reg signed [15:0] l,r;wire signed [15:0] ol,orr;
@@ -131,6 +150,7 @@ module tb_adjust_osd;
    end
    @(negedge clk);de=0;repeat(3)@(negedge clk);
   end
+  if(dut.b_digits!==24'h313238 || dut.c_digits!==24'h323535 || dut.v_digits!==24'h313030)$fatal(1,"decimal conversion");
   if(yellow==0 || white==0 || percent==0)$fatal(1,"missing glyphs");
   mode=0;de=1;x=10;#1;if(rgb!==24'h804020 || active)$fatal(1,"hidden mode");
   $display("PASS OSD bounds highlight decimal and percent pixels");$finish;
