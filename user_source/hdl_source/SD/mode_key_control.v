@@ -8,7 +8,8 @@ module mode_key_control #(
     input wire key1, key2, key4,
     input wire [1:0] mode,
     output reg next_event, rescan_event,
-    output wire previous_event, auto_toggle_event,
+    output wire previous_event,
+    output reg auto_toggle_event,
     output wire adjust_decrease,adjust_increase,adjust_restore,adjust_select,
     output wire manual_activity
 );
@@ -71,7 +72,10 @@ module mode_key_control #(
     adjust_key_gestures #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) adjust_keys(
         .clk(clk),.rst(rst),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
         .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select));
-    assign auto_toggle_event = enable && press4 && press_mode==mode && (mode==0 || mode==3);
+    // Register the media toggle to break mode -> preview -> cache request logic.
+    always @(posedge clk or posedge rst)
+        if(rst)auto_toggle_event<=0;
+        else auto_toggle_event<=enable && press4 && press_mode==mode && (mode==0 || mode==3);
     assign manual_activity = enable &&
         (!stable1 || !stable2 || !stable4 || press1 || press2 || press4);
 endmodule
@@ -85,7 +89,8 @@ module adjust_key_gestures #(parameter CLK_FREQ_HZ=100_000_000)(
  localparam LONG=CLK_FREQ_HZ;
  reg [1:0] mode_q,state;
  reg armed,s1_q,s2_q,s4_q,key4_active;
- reg [31:0] count,hold4;
+ reg [$clog2(WINDOW+1)-1:0] count;
+ reg [$clog2(LONG+1)-1:0] hold4;
  wire p1=s1_q && !stable1,p2=s2_q && !stable2;
  always @(posedge clk or posedge rst)begin
   if(rst)begin

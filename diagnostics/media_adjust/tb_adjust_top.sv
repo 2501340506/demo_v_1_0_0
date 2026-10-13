@@ -23,6 +23,10 @@ module tb_adjust_top;
   #1;
   if(count>=4)begin
    if(dut.adjusted_rgb!==expected[3] || dut.adjust_x!==xs[3] || {dut.adjust_hs,dut.adjust_vs,dut.adjust_de}!==syncs[3])$fatal(1,"top pixel/timing alignment");
+   if(dut.adjust_preview && dut.adjust_de)begin
+    if(dut.thumb_border && dut.preview_rgb!==24'hffff00)$fatal(1,"adjusted focus border");
+    if(!dut.thumb_border && !dut.thumb_valid && dut.preview_rgb!==0)$fatal(1,"empty preview");
+   end
    checks++;
   end
  end
@@ -39,8 +43,9 @@ module tb_adjust_top;
   begin
    @(negedge pix);vs=0;de=0;repeat(12)@(negedge pix);vs=1;
    for(integer y=0;y<lines;y++)begin
-    for(integer px=0;px<640;px++)begin @(negedge pix);de=1;x=px;input_rgb={8'(px),8'(y*7),8'(255-px)};end
-    @(negedge pix);de=0;hs=0;repeat(8)@(negedge pix);hs=1;repeat(8)@(negedge pix);
+    for(integer px=0;px<800;px++)begin
+     @(negedge pix);de=px<640;x=px;hs=!(px>=656 && px<752);input_rgb={8'(px),8'(y*7),8'(255-px)};
+    end
    end
    repeat(20)@(negedge pix);
   end
@@ -61,8 +66,8 @@ module tb_adjust_top;
   de=0;wipe=0;fade=16;descriptor={1'b1,2'd0,3'd4,4'b1111,8'd0};mode=3;frame(60);
   descriptor=0;valid_picture=0;c=0;repeat(20)@(negedge pix);frame(60);
   valid_picture=1;b=128;c=128;wav_active=0;frame(60);
-  volume=0;repeat(20)@(negedge pix);frame(360);
-  if(dut.u_master_volume.gain!==0 || dut.volume_left!==0 || dut.volume_right!==0)$fatal(1,"top mute");
+  volume=0;repeat(20)@(negedge pix);frame(120);
+  if(dut.u_master_volume.gain!==0 || dut.volume_left!==0 || dut.volume_right!==0)$fatal(1,"top mute gain=%0d accepted=%0d",dut.u_master_volume.gain,audio_checks);
   if(checks<100000 || audio_checks==0)$fatal(1,"missing observations");
   $display("PASS production top injected pixels=%0d audio=%0d default/adjust/preview/black/mute",checks,audio_checks);$finish;
  end

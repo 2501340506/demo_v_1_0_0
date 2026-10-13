@@ -146,6 +146,7 @@ module tb_preview_system;
  reg [3:0] card_mask=15;
  reg no_card=0;
  integer short_image=-1,short_left=0,timeout_image=-1;
+ reg expected_timeout=0;
  reg [7:0] sector_data=0;
  reg sector_valid=0,sector_end=0,sector_failed=0;
  wire card_initialized=!app.sd_local_rst && !no_card;
@@ -276,7 +277,7 @@ module tb_preview_system;
    completed=completed+1;
   end
   if(app.cache_hit)hits=hits+1;
-  if(MIXED_TEST && app.timeout_stopped)$fatal(1,"mixed stopped load=%0d parser=%0d fat=%h memory=%0d loaderfault=%0d received=%0d sourcecomplete=%b fifo=%0d",app.load_idx,app.parser_error,app.bmp_read_m0.fat_error,memory_error,loader.full_writer.source_fault,loader.full_writer.received,loader.full_writer.source_complete,loader.full_writer.fifo_words);
+  if(MIXED_TEST && !expected_timeout && app.timeout_stopped)$fatal(1,"mixed stopped load=%0d parser=%0d fat=%h memory=%0d loaderfault=%0d received=%0d sourcecomplete=%b fifo=%0d",app.load_idx,app.parser_error,app.bmp_read_m0.fat_error,memory_error,loader.full_writer.source_fault,loader.full_writer.received,loader.full_writer.source_complete,loader.full_writer.fifo_words);
   if(app.diag_commit)commits=commits+1;
   if(committed_valid && committed_ready) begin
    if(!display_valid || committed_image!==app.img_idx || sent>=commits)$fatal(1,"audio association before actual commit");
@@ -369,7 +370,7 @@ module tb_preview_system;
    saved_commits=commits;key_auto();wait(app.foreground_busy);wait(!app.foreground_busy && !app.preview_selecting);
    if(!pixel_desc[17] || commits!=saved_commits || !app.cache_failed[1])$fatal(1,"failed load lost preview/committed");
    key_auto();wait_image(1);wait(!pixel_desc[17]);
-   key_auto();wait(pixel_desc[17]);card_mask=7;card_generation=3;timeout_image=2;key_rescan();
+   key_auto();wait(pixel_desc[17]);card_mask=7;card_generation=3;expected_timeout=1;timeout_image=2;key_rescan();
    wait(app.timeout_stopped && !app.load_busy);wait(pixel_desc[17]);
    key_next();key_next();wait(pixel_desc[16:15]==2);key_auto();repeat(100)@(negedge src_clk);
    if(app.preview_selecting || !pixel_desc[17])$fatal(1,"timeout trapped preview");

@@ -3,7 +3,7 @@ module tb_adjust;
  reg clk=0,rst=1;always #5 clk=~clk;
  reg [23:0] rgb;reg [7:0] b=128,c=128;reg [15:0] tag;
  wire [23:0] result;wire [15:0] result_tag;
- brightness_contrast_adjust #(.SIDE_WIDTH(16)) dut(clk,rst,rgb,b,c,tag,result,result_tag);
+ brightness_contrast_adjust #(.SIDE_WIDTH(16)) dut(.clk(clk),.rst(rst),.rgb_in(rgb),.brightness(b),.contrast(c),.side_in(tag),.rgb_out(result),.side_out(result_tag));
  reg [23:0] expected[0:3];reg [15:0] tags[0:3];integer n=0,i,x,bi,ci;
  function [7:0] model(input integer p,input integer bv,input integer cv);
   integer t,v;begin t=(p*bv)/128;if(t>255)t=255;v=(((t-128)*cv)>>>7)+128;model=v<0?0:v>255?255:v;end
@@ -26,7 +26,7 @@ endmodule
 module tb_volume;
  reg clk=0,rst=1;always #5 clk=~clk;
  reg [3:0] level=10;reg iv=0,ready=0;wire ir,ov;reg signed [15:0] l,r;wire signed [15:0] ol,orr;
- pcm_master_volume dut(clk,rst,level,iv,ir,l,r,ov,ready,ol,orr);
+ pcm_master_volume dut(.clk(clk),.rst(rst),.volume_level(level),.in_valid(iv),.in_ready(ir),.in_left(l),.in_right(r),.out_valid(ov),.out_ready(ready),.out_left(ol),.out_right(orr));
  integer gain=65536,target,next_gain,accepted=0,consumed=0;reg signed [15:0] ql[$],qr[$];reg signed [15:0] el,er;
  reg stalled=0;reg signed [15:0] sl,sr;
  function integer coefficient(input integer v);

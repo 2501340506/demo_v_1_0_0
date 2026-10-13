@@ -21,7 +21,7 @@ try {
  if($LASTEXITCODE){throw 'Encrypted compile failed'}
  & "$sim/vlog.exe" -sv +define+SIMULATION -work $lib '+incdir+../user_source/hdl_source/include' @plain "$PSScriptRoot/tb_adjust_top.sv" *> "$out/compile.log"
  if($LASTEXITCODE){throw 'Top compile failed'}
- & "$sim/vsim.exe" -c -quiet -voptargs=+acc -lib $lib tb_adjust_top glbl -l "$out/top.log" -do 'run -all; quit -f' *> "$out/console.log"
+ & "$sim/vsim.exe" -c -quiet -lib $lib tb_adjust_top glbl -l "$out/top.log" -do 'run -all; quit -f' *> "$out/console.log"
  $log=Get-Content "$out/top.log" -Raw
  if($LASTEXITCODE -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS production top') {throw "Top test failed: $out/top.log"}
  Write-Output 'PASS production top wiring and datapaths'

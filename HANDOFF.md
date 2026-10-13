@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 S2生产接入与验证中
 
 - 当前任务：生成亮度/对比度/总音量S2硬件候选，尚未上板。
-- 已完成：S1独立验证；生产顶层接入四拍图片处理、参数OSD和总音量；21项基础回归分两批通过（adjust_regression2前16项、adjust_regression_tail1后5项）。
-- 卡住的问题：TD attempt2 Setup -0.031ns / Hold -0.060ns，不能交付候选；attempt3使用ultra策略进行中，未改约束。
-- 下一步计划：完成顶层注入测试、真实SDRAM/PCM/预览联合仿真、门级算术验证和TD时序审查，再固定local候选。
-- 踩过的坑：旧回归缺AL_MAP_LUT1模型；音量新增弹性级后复位测试应检查最终pcm_tap，不能读取已出队的源FIFO数据；TD Tcl路径用正斜线。顶层静音验证须等待至少256个实际接收样本，不能按像素时钟估计。
+- 已完成：S1及最终5项专项、6个独立综合；生产顶层接入；21项基础回归通过，最终按键及复位补测通过；门级图像9216组/音量4710样本通过；adjust_top4顶层336271像素、1148音频样本通过。
+- 卡住的问题：attempt2时序负余量；attempt3 ultra布线冲突；attempt4高扇出优化后MSlice超限2个。attempt5关闭额外高扇出优化构建中，尚无候选，未改约束。
+- 下一步计划：等待adjust_system1和adjust_preview_final1联合仿真、attempt5完整TD及随后时序审查，再固定local候选。验证细节见diagnostics/media_adjust/S2_VALIDATION.md。
+- 踩过的坑：旧回归缺AL_MAP_LUT1模型；复位检查最终pcm_tap；顶层注入须提供完整0–799行坐标才能发HDMI音频；网表导出端口会重排，测试用具名连接；主动超时场景不能被正常加载监控误判。失败输出保留，不打包候选。
 
 ## 历史交接
 
