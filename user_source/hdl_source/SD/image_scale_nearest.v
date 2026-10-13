@@ -21,6 +21,13 @@ module image_scale_nearest (
  reg row_valid;
  reg [23:0] line [0:1919];
  reg [23:0] ram_pixel;
+ // Preserve a combinational delay on the measured short BRAM data path.
+ // INIT and EQN both describe identity; this does not add a clock of latency.
+ wire [23:0] ram_input_rgb;
+ assign ram_input_rgb[23:6]=in_rgb[23:6];
+ assign ram_input_rgb[4:0]=in_rgb[4:0];
+ (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_line_data_hold (.o(ram_input_rgb[5]),.a(in_rgb[5]));
  reg pixel_black;
  wire row_inside = y>=top && y<top+dh;
  wire col_inside = x>=left && x<left+dw;
@@ -30,7 +37,7 @@ module image_scale_nearest (
  assign out_valid=state==EMIT;
  assign out_rgb=pixel_black ? 24'd0 : ram_pixel;
  always @(posedge clk) begin
-  if(in_valid && in_ready && state==CAPTURE) line[in_x[10:0]]<=in_rgb;
+  if(in_valid && in_ready && state==CAPTURE) line[in_x[10:0]]<=ram_input_rgb;
   if(state==FETCH) ram_pixel<=line[sx];
  end
  always @(posedge clk or posedge rst) begin
