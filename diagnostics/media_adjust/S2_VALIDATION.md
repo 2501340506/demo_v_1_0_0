@@ -14,7 +14,7 @@
 
 ## 进行中
 
-- adjust_s2_attempt14：根据attempt12缩放区域控制长路径，将每图不变的显示区域终点提前寄存；adjust_scaler_edges1十尺寸缩放和五尺寸BMP字节流逐像素通过，周期不变。high完整TD运行中。此前局部RAM数据恒等LUT的adjust_scaler_hold1、adjust_unit6六专项和adjust_control_width1四项回归通过。
+- adjust_s2_attempt17：与attempt14相同源码，尝试TD自带策略中的route post_route_opt high及postrt_opt_extra_round 4，需核对实际支持。区域预计算后的adjust_scaler_edges1十尺寸缩放和五尺寸BMP字节流逐像素通过，周期不变。此前局部RAM数据恒等LUT的adjust_scaler_hold1、adjust_unit6六专项和adjust_control_width1四项回归通过。
 
 ## 历史失败及修正
 
@@ -30,6 +30,7 @@
 - attempt10：high/high构建Setup +0.120ns、Hold -0.011ns；唯一失败端点为缩放行RAM数据输入。attempt11使用ultra/ultra，结果与attempt9相同，不能交付。
 - attempt12：局部恒等LUT后high构建Setup -2.110ns、Hold -0.004ns，布局变化使Setup恶化；不能交付。
 - attempt13：同源码ultra最终完成布线，但Setup -0.368ns、Hold -0.020ns；不能交付。
+- attempt14：区域预计算后high为Setup -0.046ns、Hold -0.025ns；attempt15 ultra为-0.712/-0.020ns；attempt16不加高扇出优化的ultra出现布线资源冲突，均不能交付。
 - 顶层注入初版未提供完整0–799行坐标，无法产生HDMI数据岛；adjust_top4补齐后通过，未为此修改生产RTL。
 - adjust_preview1混合尺寸+故障注入运行到主动超时，被正常加载断言误判；现仅在显式预期超时时解除该断言，重新验证故障流程。不将失败日志计为完整通过。
 

@@ -26,7 +26,7 @@ for name in inputs:
     assert (root / name).read_bytes() == (build / name).read_bytes(), f'Changed build input: {name}'
 logs = {}
 for test in ('tb_adjust','tb_volume','tb_adjust_cdc','tb_adjust_keys','tb_adjust_osd','tb_adjust_decimal'):
-    logs[f'adjust_unit5/{test}.log'] = 'PASS '
+    logs[f'adjust_unit6/{test}.log'] = 'PASS '
 for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
     logs[f'adjust_gate3/{module}/gate.log'] = 'PASS '
 for run in ('adjust_regression2', 'adjust_regression_tail1'):
@@ -42,6 +42,10 @@ for f in (output / 'adjust_control_final1').glob('tb_*.log'):
 logs['adjust_preview_keys1/sim.log'] = 'PASS preview keys:'
 logs['adjust_scaler_endpoint1/sim.log'] = 'PASS scaler suite:'
 logs['adjust_stream_endpoint2/sim.log'] = 'PASS byte stream suite'
+for test in ('tb_mode_key_control','tb_key_gesture_control','tb_switch_mode_panel','tb_rescan_key'):
+    logs[f'adjust_control_width1/{test}.log'] = 'PASS '
+for test in ('tb_scaler','tb_scale_stream'):
+    logs[f'adjust_scaler_edges1/{test}.log'] = 'PASS '
 logs['adjust_system1/system.log'] = 'PASS cache system:'
 logs['adjust_preview_final1/system.log'] = 'PASS preview system:'
 logs[f'{a.top_run}/top.log'] = 'PASS production top'
