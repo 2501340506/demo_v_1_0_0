@@ -163,3 +163,36 @@ Setup按目的模块分布：decoder头检查20、decoder像素控制5、scanner
 - Hold实际位已从网表确认：PCM `rd_bin[9]`→RAM addrb[10] -0.020ns；缩放`raw_pipe_rgb[8]`→RAM dia[0] -0.011ns；UART `pending[7]`→RAM dib[6] -0.011ns。与attempt36不同，尚未添加新保持LUT，应在下一次结构变化后的最终报告重核。
 
 若动reader/scanner，重跑对应专项及受影响生产联合场景。已通过的BMP功能验证可作本轮保留改动证据，不能据此宣称后续reader/scanner修改也已通过；失败bit继续留在diagnostics/output。
+
+## attempt38 BPB合法性判定预寄存（完整TD结束，时序仍失败）
+
+本轮只处理attempt37中scanner total_sectors→sector_lba使能的12个Setup失败端点，最差-0.265ns、8级、70%布线；scanner物理资源以attempt37报告为准。BPB参与字段最晚在byte47收齐，ZERO_PARSE/BOOT_PARSE在512字节扇区结束后使用，故将原组合bpb_ok拆为同表达式bpb_fields_ok及一拍寄存的bpb_ok。签名510/511字节与sector_error检查不变，不改扫描状态拍序/输出/时钟约束，暂不改candidate路径或Hold。验证以86bad25为逐周期参考，补42项FAT32（包含MBR、坏BPB、错误与重扫）、碎片缩放及生产音频联合，再做固定strategy5完整TD。
+
+attempt37 scanner物理1646 LUT（1398+248）、1165 seq。直接专项adjust_bpb_equivalence1（参考86bad25，GAP=0/1/5）逐周期全部输出等价通过；adjust_bpb_scaled1碎片缩放（case0、ByteGap=0、TestMode=5）通过；adjust_bpb_production1生产联合9279个PCM精确比较通过，覆盖四图、碎片循环、事务中重扫、故障回退/重试、无BGM、音频独立启动及短循环，均零错误警告。42项零间隔FAT32回归及完整TD结果待补。
+
+adjust_bpb_reader1全部42项零间隔FAT32回归通过，零错误警告。attempt38已启动固定HighFanoutOptimization/strategy5完整TD，尚待最终结果。
+
+### attempt38 最终结果
+
+完整TD结束，无工具ERROR，中途布线冲突最终消除；门槛脚本因负时序正确拒绝。102个工程输入与attempt38快照逐字节一致。实际网表bpb_ok_reg_syn_5的Q驱动scanner/bpb_ok，预寄存没有被消掉；每组200端点的`timing_analysis/expanded.timing`确认原total_sectors→sector_lba的12个负端点全部消除。保留本轮BPB改动，无S2候选或local/board标签。
+
+| 指标 | attempt37 | attempt38 |
+|---|---:|---:|
+| LUT / 寄存器 | 16988 / 9343 | 17126 / 9346 |
+| LE | 18171 | 18230 |
+| MSlice / LSlice | 4727 / 4729 | 4703 / 4706 |
+| BRAM9K / DSP | 52 / 15 | 52 / 15 |
+| Setup WNS / TNS ns | -0.346 / -1.767 | -0.141 / -0.703 |
+| 最大延迟失败端点 | 13 setup | 9 setup + 1 recovery |
+| Hold WNS / TNS ns | -0.020 / -0.042 | -0.011 / -0.037 |
+| 最小延迟失败端点 | 3 | 4 |
+
+scanner同口径综合LUT 1415→1370（-45），seq1169→1170；物理LUT1646→1627（-19），seq1165→1143。整体LUT增加138，但MSlice减少24、LSlice减少23；不能将局部LUT收益写成全设计LUT下降。Setup和Hold最差余量均改善，但还有负路径。
+
+剩余Setup：字幕index→UART reply_byte -0.141ns（9级、fanout51、52%布线）；reader sector_byte→scanner audio_match -0.116ns；task_size→scan_found_size -0.085ns；load_control state→preflight dib_size两条-0.072ns；preview ack→音频控制两条-0.047/-0.043ns；candidate→header_lba -0.032ns；decoder预译码寄存器→pixel_count使能-0.021ns。原BPB路径消除不代表整个scanner或BMP链路所有路径都已通过。
+
+Recovery -0.074ns：报告源实例名为`u_picture_adjust/rgb_out_b12[8]_syn_4`，但实际Q[0]是共用物理Slice内的`u_reset_sd/release_pipe[2]`，不是图像数据串到UART。到UART物理`tx_data[5]_syn_27.sr`为上升沿→下降沿5ns预算，reset网络fanout1262、95%布线。应按实际复位释放处理，不能按实例名或数据Hold加延迟。
+
+四条Hold实际位：streamer file_byte[3]→sector buffer RAM dia[3] -0.011ns；UART pending[10]→RAM dia[0] -0.011ns；UART pending[27]→RAM dib[8] -0.011ns；UART wr_ptr[3]→RAM addra[7] -0.004ns。已查实际网表拼接，不沿用attempt37的PCM/缩放RGB端点。
+
+下一轮从attempt39起，继续固定HighFanoutOptimization/strategy5。最差再次是字幕查询格式化到UART接收寄存器；attempt35直接半字节选择已失败撤回，不重复。优先调查按字符握手预计算/寄存回复数据，保持query快照、index/last推进与日志仲裁；或处理有明确寄存边界的candidate选择链。每次只实施有证据的一项，验证后完整TD，再按最终报告重核Hold和Recovery。

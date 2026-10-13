@@ -14,7 +14,9 @@
 
 ## 当前阻塞
 
-- 最新attempt37（strategy5）为Setup -0.346ns（TNS -1.767ns、13端点）、Hold -0.020ns（TNS -0.042ns、3端点），仍无合格S2。头地址预译码的六位寄存边界在实际网表保留，原20个头检查负端点消除。扩展100端点报告无负Recovery/Removal。剩余Setup为candidate→header_lba及scanner BPB判定→sector_lba使能；Hold实际位为PCM rd_bin[9]、缩放raw_pipe_rgb[8]、UART pending[7]。16988 LUT、9343寄存器、4727 MSlice/4729 LSlice、52 BRAM9K、15 DSP，102个工程输入与attempt37逐字节一致。
+- 最新attempt38（strategy5）为Setup -0.141ns（TNS -0.703ns，9 setup+1 recovery）、Hold -0.011ns（TNS -0.037ns、4端点），仍无合格S2。实际bpb_ok寄存器保留、原12个BPB→sector_lba负端点消除。17126 LUT、9346寄存器、4703 MSlice/4706 LSlice、52 BRAM9K、15 DSP；102个工程输入与attempt38逐字节一致。最差为字幕index→UART reply_byte，另有复位半周期Recovery -0.074ns。详细路径和位映射见TIMING_STRUCTURE。
+- 本轮BPB预寄存验证：adjust_bpb_equivalence1参考86bad25在GAP=0/1/5逐周期等价；adjust_bpb_reader1全部42项ByteGap=0；adjust_bpb_scaled1碎片缩放case0/ByteGap=0/TestMode=5；adjust_bpb_production1生产联合9279样本（四图、碎片循环、事务中重扫、故障回退/重试、无BGM、音频独立启动和短循环）。均零错误警告，没有把其他旧长系统测试写成本轮重跑。
+- attempt37（历史）为Setup -0.346ns、Hold -0.020ns、13/3端点。头地址预译码的六位寄存边界保留，原20个头检查负端点消除。16988 LUT、9343寄存器、4727 MSlice/4729 LSlice、52 BRAM9K、15 DSP。
 - 本轮BMP验证：adjust_header_lookahead3五尺寸（每图307200像素）逐周期旧新等价/逐像素、背压、取消/不复位重启、输入末字节同拍、16项通用解码；adjust_header_scaler1十尺寸缩放与原五尺寸完整流；adjust_header_reader1全部42项；adjust_header_reader_scaled1碎片文件ScaleTest=1/ByteGap=0/TestMode=5。均零错误警告。旧generic测试直接同拍结束在44792e9也失败，当前专项按生产重放合同后移一拍；输入端同拍结束在完整buffer链路通过，不冒称直接decoder支持同拍结束。未重跑无关长系统。
 - attempt36（历史）为Setup -1.009ns（TNS -23.488ns）、Hold -0.020ns（TNS -0.070ns）。扩展报告确认71条setup、1条recovery及6条Hold负路径。16929 LUT、9339寄存器、4695 MSlice/4697 LSlice、52 BRAM9K、15 DSP；相对attempt34减少295 LUT和123 MSlice，但时序变差。
 - 本轮保留UART队列同步BRAM及loading阶段，八条可用容量不变。adjust_queue_fields2：52864字段比较、真实UART字节、448次装载、440次满替换及576溢出事件通过；adjust_queue_subtitle1真实串口回复/日志仲裁通过，均零错误警告。adjust_queue_gate1在独立TD综合网表及厂商BRAM模型下通过线级日志（测试容量2），零错误、2446条厂商端口警告；生产容量8队列压力在RTL覆盖。未将旧长系统测试声称为本轮重跑。
@@ -51,6 +53,7 @@
 - attempt35：字幕回复字节选择改为直接半字节选择，完整TD无工具ERROR，但Setup -1.632ns（124端点）、Hold -0.020ns（3端点）；字幕LUT 868→888，无收益，生产修改已撤回。
 - attempt36：UART队列实际映射9 BRAM，LUT/打包资源下降，完整TD无工具ERROR，但Setup -1.009ns、Hold -0.020ns；门槛脚本正确拒绝。新队列带来pending[1]→RAM和rd_ptr[1]→RAM两条负Hold，另有BMP/缩放/写FIFO/PCM RAM共四条。还有一条复位Recovery负路径，不能统一加数据延迟。无候选、无local/board标签，下一构建attempt37。
 - attempt37：BMP头地址预译码后完整TD无工具ERROR，途中布线冲突最终消除；Setup -0.346ns、Hold -0.020ns，13/3端点，门槛脚本正确拒绝。头译码负路径消除，保留局部修改；LUT+59、MSlice+32，不称面积改善。下一构建attempt38，未打包候选或建立local/board标签。
+- attempt38：BPB合法性预寄存后完整TD无工具ERROR，原12个BPB负端点消除；Setup -0.141ns、Hold -0.011ns仍不合格。9 setup+1 recovery及4 hold负端点，保持修正、未打包候选。Recovery源物理实例名picture_adjust，实际Q为u_reset_sd/release_pipe[2]；不要误判成图像跨域数据。下一构建attempt39。
 - 顶层注入初版未提供完整0–799行坐标，无法产生HDMI数据岛；adjust_top4补齐后通过，未为此修改生产RTL。
 - adjust_preview1混合尺寸+故障注入运行到主动超时，被正常加载断言误判；现仅在显式预期超时时解除该断言，重新验证故障流程。不将失败日志计为完整通过。
 

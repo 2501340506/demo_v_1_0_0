@@ -44,10 +44,18 @@ module fat32_volume_scanner #(
     wire [8:0] fat_offset={current_cluster[6:0],2'b00};
     reg [31:0] overhead,data_sectors,cluster_count,partition_reserved,cluster_offset;
     reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
-    wire bpb_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
+    wire bpb_fields_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
         reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
         total_sectors!=0 && fat_sectors!=0 && root_cluster>=2 &&
         (!flags[7] || {4'd0,flags[3:0]}<fat_count);
+    // BPB fields finish at byte 47, well before the sector-end parse states.
+    // Register their joint test so it is not in the MBR address enable cone.
+    // Signature (bytes 510/511) and sector_error retain their original checks.
+    reg bpb_ok;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n)bpb_ok<=0;
+        else bpb_ok<=bpb_fields_ok;
+    end
     assign scan_busy=(state!=IDLE);
 
     function [2:0] spc_shift;

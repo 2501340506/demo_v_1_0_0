@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt37完整TD、扩展路径和实际网表检查已结束，仍无合格候选、尚未上板。
-- 已完成：仅在缩放流显式启用HEADER_OFFSET_LOOKAHEAD，在buffer的FETCH拍提前形成6位头地址，通用decoder默认关闭。adjust_header_lookahead3五尺寸旧新逐周期等价/逐像素、背压、取消/不复位重启、输入末字节同拍、16项通用解码通过；adjust_header_scaler1、adjust_header_reader1全部42项、adjust_header_reader_scaled1碎片缩放/末字节同拍通过，均零错误警告。实际六位寄存边界保留，原20个头检查负端点消除；102个工程输入与attempt37逐字节一致。UART BRAM和历史验证见S2_VALIDATION。
-- 卡住的问题：attempt37无工具ERROR，Setup -0.346ns（TNS -1.767ns、13端点）、Hold -0.020ns（TNS -0.042ns、3端点）；扩展报告无负recovery/removal。16988 LUT、9343寄存器、4727 MSlice/4729 LSlice、52 BRAM9K、15 DSP。比attempt36的72/6端点减少，但LUT+59、MSlice+32，不能称面积下降或全局通过。剩余Setup为candidate→header_lba一条及scanner total_sectors→sector_lba使能12条。频率/引脚/约束未改，无local/board标签。
-- 下一步计划：保留已验证的头地址预译码，从attempt38起固定HighFanoutOptimization/strategy5。优先调查SELECT拍提前捕获选中cluster/size、或在BPB字段收齐后寄存bpb_ok，切断剩余选择/减法及宽判定链；保留signature/sector_error/重扫语义。按改动范围补reader/scanner及生产联合验证再完整TD。新Hold为PCM rd_bin[9]、缩放raw_pipe_rgb[8]、UART pending[7]到RAM，应按下一轮最终报告重核。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
-- 踩过的坑：旧通用decoder测试直接给末字节同拍file_end，44792e9基线也报err=3；本轮按生产重放合同延后一拍给decoder结束，输入端同拍结束另由完整buffer链路验证，未修改生产结束逻辑。新增检查器须有timescale。sector buffer气泡不能外推给全部调用者，故使用默认关闭的显式参数。attempt35字幕简化已撤回；网表寄存器号不等于RTL位号、LUT减少不保证Slice减少。恒等LUT须有EQN，模型警告如实记录；不打包失败bit、不批量删除。
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt38完整TD、扩展路径和实际网表检查已结束，仍无合格候选、尚未上板。
+- 已完成：scanner BPB字段判定预寄存，最终签名/sector_error保持原拍。adjust_bpb_equivalence1参考86bad25在GAP=0/1/5逐周期等价，adjust_bpb_reader1全部42项零间隔FAT32、adjust_bpb_scaled1碎片缩放/末字节同拍、adjust_bpb_production1生产联合9279样本全部通过，零错误警告。实际bpb_ok寄存器保留，原12个BPB→sector_lba负端点消除；102个工程输入与attempt38逐字节一致。历史BMP/UART验证见S2_VALIDATION。
+- 卡住的问题：attempt38无工具ERROR，Setup -0.141ns（TNS -0.703ns，9 setup+1 recovery）、Hold -0.011ns（TNS -0.037ns、4端点）。17126 LUT、9346寄存器、4703 MSlice/4706 LSlice、52 BRAM9K、15 DSP。比attempt37 LUT+138、MSlice-24，scanner物理LUT-19。最差为字幕index→UART reply_byte，其他负路径分散在扫描/预检查/音频/候选选择；另有reset release_pipe[2]→UART的半周期Recovery -0.074ns。频率/引脚/约束未改，无local/board标签。
+- 下一步计划：保留已验证的BPB预寄存，从attempt39起固定HighFanoutOptimization/strategy5。优先调查字幕按字符握手预计算/寄存回复数据（9级、fanout51），保留快照/index/last/日志仲裁；不要重复attempt35失败的直接半字节选择。也可评估candidate选择与减2分拍。新Hold实际位为streamer file_byte[3]、UART pending[10]/[27]及wr_ptr[3]，按下一轮最终报告重核；Recovery单独处理。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
+- 踩过的坑：Recovery源实例看似picture_adjust，但该物理Slice的Q[0]实际是reset release_pipe[2]，不是图像数据串到UART；需查实际网络，不能按实例名判断。LUT/LE和Slice占用方向可不同。旧通用decoder末字节同拍测试在修改前也失败，实际输入端同拍结束由buffer链路验证；预译码参数仅缩放流启用。恒等LUT须有EQN，模型警告如实记录；不打包失败bit、不批量删除。
 
 ## 历史交接
 

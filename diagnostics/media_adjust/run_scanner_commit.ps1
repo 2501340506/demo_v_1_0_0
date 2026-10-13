@@ -1,10 +1,10 @@
-param([string]$RunName='adjust_scanner_commit1')
+param([string]$RunName='adjust_scanner_commit1',[string]$ReferenceCommit='ebc494d')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$RunName"
 if(Test-Path $out){throw 'Choose a new RunName'}
 New-Item -ItemType Directory -Path $out | Out-Null
-$reference=(& git -C $root show 'ebc494d:user_source/hdl_source/SD/fat32_volume_scanner.v') -join "`n"
+$reference=(& git -C $root show "${ReferenceCommit}:user_source/hdl_source/SD/fat32_volume_scanner.v") -join "`n"
 if($LASTEXITCODE){throw 'Cannot read pre-change scanner'}
 $reference=$reference -replace '\bmodule fat32_volume_scanner\b','module fat32_volume_scanner_reference'
 [IO.File]::WriteAllText("$out/reference.v",$reference)
