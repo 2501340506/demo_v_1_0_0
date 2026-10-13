@@ -12,9 +12,10 @@
 - adjust_preview_final1：最终按键RTL的真实SDRAM预览/音乐/重扫/故障恢复165帧、60预览帧、10提交/提示音、139171个PCM样本通过，无欠载/溢出。使用标准尺寸，混合尺寸历史失败日志不计为完整通过。
 - 后续根据attempt6实际最长路径，将缩放器每图不变的行末坐标提前寄存，接口和有效输入的周期行为不变。adjust_scaler_endpoint1十尺寸逐像素及取消通过，adjust_stream_endpoint2五尺寸完整BMP字节流逐像素通过；上述长系统测试在这处等价预计算之前执行，未冒称重跑。
 
-## 进行中
+## 当前阻塞
 
-- adjust_s2_attempt23/24/25：同一份已验证源码分别使用pr_strategy 2/3/5；工具实际参数表确认生效。内部图像乘法数据级自由运行，保留输出及旁带复位；adjust_unit7六专项、adjust_syn3独立综合、adjust_gate4门级算术、adjust_top6生产顶层336271像素/1148样本均通过。区域预计算后的adjust_scaler_edges1和计数器adjust_control_width1通过。
+- 全部构建已结束，无合格S2候选。当前源码较接近门槛的attempt25为Setup -0.233ns、Hold -0.004ns，仍不能交付。待针对音频启动控制/缩放行控制和PCM FIFO地址短路径继续收敛。
+- 最新源码已通过adjust_unit7六专项、adjust_syn3独立综合、adjust_gate4门级算术、adjust_top6生产顶层336271像素/1148样本；区域预计算adjust_scaler_edges1及计数器adjust_control_width1通过。长系统测试早于这些局部修正，不能冒称最终源码完整长系统重跑。
 
 ## 历史失败及修正
 
@@ -34,6 +35,9 @@
 - attempt17/18/19：布局后及布线后选项、high布局/路由effort均未改善最终余量，仍为-0.046/-0.025ns。post_route_opt和额外轮次未列入器件生效参数表；effort已列入，但结果未改善。
 - attempt20：无额外高扇出、high路由，Setup -0.464ns，Hold +0.011ns，尚不能交付。
 - attempt21：内部乘法数据级自由运行后高扇出high为-0.548/-0.004ns；attempt22无额外高扇出/high路由为-2.692/-0.008ns，均不能交付。
+- attempt23/24/25（strategy2/3/5）：分别-0.548/-0.004ns、-0.703/-0.012ns、-0.233/-0.004ns。
+- attempt26/28/29/30/31（strategy6/8/9/10/11）：TD路径折线优化报PHY-8103 x_offset.size() <= 0。attempt30虽报告Setup +0.113ns，仍有Hold -0.008ns及工具错误，不能交付。
+- attempt27（strategy7）：PHY-8023布线资源冲突。attempt32（strategy4）：-0.703/-0.012ns。所有失败产物仅保留diagnostics/output，未建立local标签。
 - 顶层注入初版未提供完整0–799行坐标，无法产生HDMI数据岛；adjust_top4补齐后通过，未为此修改生产RTL。
 - adjust_preview1混合尺寸+故障注入运行到主动超时，被正常加载断言误判；现仅在显式预期超时时解除该断言，重新验证故障流程。不将失败日志计为完整通过。
 
