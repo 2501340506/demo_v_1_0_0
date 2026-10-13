@@ -283,3 +283,26 @@ Hold实际端点（已核对Q网络和RAM拼接）：
 | Hold WNS / TNS ns | -0.020 / -0.072 | -0.011 / -0.011（1端点） |
 
 综合日志确认display_heights、update_heights均“extracting RAM”。完整TD无工具ERROR，门槛脚本因Hold负值正确拒绝，无候选、无标签。全设计LUT减少697，Setup首次非负。唯一Hold：u_cache_control/retry_used_reg_syn_54（实际Q网名g_audio$u_player/wr_bin[11]）→ PCM RAM ramread0_syn_53.addra[12]，-0.011ns，1级EMB，与历史PCM写地址短路径同类；按以往经验网表位名不一定对应RTL位，且下一批会改变布局，暂不加保持LUT，待批2最终报告定点。
+
+## attempt42 LUT缩减批2：video_delay BRAM环与提示音常数增益（完整TD结束，Setup通过，Hold 7端点）
+
+- video_delay：x/hs/vs共12位由21级FF移位链改为32深BRAM环（显式fehdl force_ram），读槽落后写槽20项保持原21拍延迟；复位后以fill_count/primed屏蔽20拍，等效原复位零值。de_d仍为FF（使用tap18/19/20）。
+- pcm_media_tone：新增FIXED_VOLUME参数（默认-1沿用端口），顶层设128；速率累加器按CLOCK_HZ/SAMPLE_HZ公因数8000等比缩小（25MHz时12位），累加值恒为其倍数，tick时刻不变。
+
+验证：lut_batch2_equiv1旧新并行逐周期比较30万周期、8次复位：video_delay全部输出；提示音生产参数（旧端口128对新FIXED_VOLUME=128）与端口随机音量/另一CLOCK_HZ两组全部输出，随机背压/使能/切换，零差异零警告；读槽偏移改19的变异体被检出。lut_b2_video_align1（v0.3.0 tb_video_alignment：与S1基线等价、全光栅、复位重启）通过；lut_b2_hdmi_s9（tb_hdmi_packets、tb_hdmi_s6_phy、tb_pcm_media_tone完整旋律/固定音量/停顿FIFO、tb_media_commit_cdc）通过。两项历史脚本固定输出目录，改用重定向副本（diagnostics/output/lut_b2_scripts）运行，测试源码未改。
+
+| 指标 | attempt41 | attempt42 |
+|---|---:|---:|
+| LUT / 寄存器 | 16269 / 8895 | 16068 / 8643 |
+| LE | 17575 | 17242 |
+| MSlice / LSlice | 4517 / 4554 | 4462 / 4499 |
+| Slice利用率（布局日志） | 92.56% | 91.44% |
+| BRAM9K / DSP | 52 / 15 | 53 / 15 |
+| video_delay LUT / seq / BRAM | 254 / 265 / 0（attempt40） | 47 / 48 / 1 |
+| pcm_media_tone LUT / DSP | 254 / 1（attempt40） | 215 / 1 |
+| Setup WNS / TNS ns | +0.148 / 0 | +0.131 / 0 |
+| Hold WNS / TNS ns | -0.011 / -0.011（1） | -0.020 / -0.066（7） |
+
+综合确认delay_ram为RAM，实际占1个BRAM9K。提示音常数乘法仍映射1个DSP，未释放DSP，仅LUT下降。完整TD无工具ERROR，门槛脚本正确拒绝，无候选。
+
+关键发现：attempt40/41/42布局日志均为“Slice utilization of current design is higher than 90%, hold fixing is skipped”，Slice利用率96.56%→92.56%→91.44%。即此前各轮Hold负值是在路由Hold修复被跳过的情况下出现，逐点加保持LUT不是根本办法；继续降LUT使利用率低于90%后，工具Hold修复才会执行。attempt42七条负Hold分散于全图写FIFO、音频短缓存、UART队列、缩略图写FIFO、video_delay BRAM、PCM读地址等BRAM输入及一条读FIFO复位removal，均-0.004～-0.020ns，暂不定点修改。

@@ -506,7 +506,7 @@ osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_b
 );
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
-pcm_media_tone u_pcm_clock (
+pcm_media_tone #(.FIXED_VOLUME(128)) u_pcm_clock (
     .clk(video_clk), .rst_n(~rst_video), .enable(audio_enable),
     .media_id(audio_image), .media_update(audio_update), .volume(8'd128),
     .sample_valid(pcm_valid), .sample_ready(pcm_ready),

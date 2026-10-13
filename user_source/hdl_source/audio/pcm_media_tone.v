@@ -11,7 +11,8 @@ module pcm_media_tone #(
     parameter integer SAMPLE_HZ = 48000,
     parameter [19:0] BLIP_INC = 20'd32768,   // ~1500 Hz switch cue
     parameter integer BLIP_SAMPLES = 4800,   // 100 ms at 48 kHz
-    parameter integer NOTE_SAMPLES = 12000   // 250 ms per melody note
+    parameter integer NOTE_SAMPLES = 12000,  // 250 ms per melody note
+    parameter integer FIXED_VOLUME = -1      // 0..255 fixes the gain at elaboration
 ) (
     input  wire               clk,
     input  wire               rst_n,
@@ -26,7 +27,12 @@ module pcm_media_tone #(
     output reg                overflow,
     output wire               blip_active
 );
-    reg [24:0] rate_accumulator;
+    // Accumulator values stay multiples of RATE_DIV, so scaling keeps every tick.
+    localparam integer RATE_DIV = (CLOCK_HZ % 8000 == 0 && SAMPLE_HZ % 8000 == 0) ? 8000 : 1;
+    localparam integer RATE_CLOCK = CLOCK_HZ / RATE_DIV;
+    localparam integer RATE_SAMPLE = SAMPLE_HZ / RATE_DIV;
+    localparam integer RATE_BITS = $clog2(RATE_CLOCK + RATE_SAMPLE);
+    reg [RATE_BITS-1:0] rate_accumulator;
     reg [19:0] phase;
     reg [1:0] media_id_q;
     reg [12:0] blip_countdown;
@@ -44,7 +50,7 @@ module pcm_media_tone #(
     assign sample_left = fifo[read_pointer];
     assign sample_right = fifo[read_pointer];
     assign sample_pop = sample_valid && sample_ready;
-    assign sample_tick = rate_accumulator >= CLOCK_HZ - SAMPLE_HZ;
+    assign sample_tick = rate_accumulator >= RATE_CLOCK - RATE_SAMPLE;
     assign sample_push = sample_tick && (fifo_count != 8 || sample_pop);
     assign blip_active = blip_countdown != 0;
 
@@ -115,14 +121,15 @@ module pcm_media_tone #(
     endfunction
 
     wire signed [15:0] raw_sample = sine_sample(phase[19:16]);
-    wire signed [23:0] scaled = raw_sample * $signed({1'b0, volume});
+    wire [7:0] gain = (FIXED_VOLUME < 0) ? volume : FIXED_VOLUME;
+    wire signed [23:0] scaled = raw_sample * $signed({1'b0, gain});
     wire signed [15:0] scaled_clamped =
         (scaled > 24'sd8388352)  ? 16'sd32767 :
         (scaled < -24'sd8388608) ? -16'sd32768 : scaled >>> 8;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            rate_accumulator <= 25'd0;
+            rate_accumulator <= {RATE_BITS{1'b0}};
             phase <= 20'd0;
             media_id_q <= 2'd0;
             blip_countdown <= 13'd0;
@@ -136,9 +143,9 @@ module pcm_media_tone #(
             if (media_update) media_id_q <= media_id;
 
             if (sample_tick)
-                rate_accumulator <= rate_accumulator + SAMPLE_HZ - CLOCK_HZ;
+                rate_accumulator <= rate_accumulator + RATE_SAMPLE - RATE_CLOCK;
             else
-                rate_accumulator <= rate_accumulator + SAMPLE_HZ;
+                rate_accumulator <= rate_accumulator + RATE_SAMPLE;
 
             if (sample_push) begin
                 fifo[write_pointer] <= enable ? scaled_clamped : 16'sd0;

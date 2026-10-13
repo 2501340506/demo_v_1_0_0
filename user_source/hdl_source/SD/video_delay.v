@@ -19,28 +19,35 @@ module video_delay
 	output [9:0]               video_x_r
 
 );
-reg [20:0] hs_d;
-reg [20:0] vs_d;
 reg [20:0] de_d;
-reg [9:0] x_d [0:20];
-integer i;
 reg[DATA_WIDTH - 1:0]  vout_data_r;
+// x/hs/vs share one 32-entry BRAM ring. The read slot trails the write slot by
+// 20 entries, keeping the original 21-clock delay; outputs stay zero until 20
+// clocks after reset, as the reset shift chain did.
+reg [11:0] delay_ram [0:31]; /* fehdl force_ram=1, ram_style="bram" */
+reg [11:0] delay_q;
+reg [4:0] write_slot;
+reg [4:0] fill_count;
+reg primed;
 
 assign read_en = de_d[18];
-assign hs_r = hs_d[20];
-assign vs_r = vs_d[20];
 assign de_r = de_d[20];
 assign vout_data = vout_data_r;
-assign video_x_r = x_d[20];
+assign {video_x_r,hs_r,vs_r} = primed ? delay_q : 12'd0;
+always @(posedge video_clk) begin
+	delay_ram[write_slot] <= {video_x,hs,vs};
+	delay_q <= delay_ram[write_slot - 5'd20];
+end
 always @(posedge video_clk or posedge rst) begin
-    if (rst) begin
-        for (i = 0; i < 21; i = i + 1)
-            x_d[i] <= 10'd0;
-    end else begin
-        x_d[0] <= video_x;
-        for (i = 1; i < 21; i = i + 1)
-            x_d[i] <= x_d[i-1];
-    end
+	if(rst) begin
+		write_slot <= 5'd0;
+		fill_count <= 5'd0;
+		primed <= 1'b0;
+	end else begin
+		write_slot <= write_slot + 1'b1;
+		if(fill_count != 5'd20) fill_count <= fill_count + 1'b1;
+		primed <= fill_count == 5'd20;
+	end
 end
 always@(posedge video_clk or posedge rst)
 begin
@@ -52,16 +59,9 @@ begin
 		vout_data_r <= {DATA_WIDTH{1'b0}};
 end
 always @(posedge video_clk or posedge rst)begin
-	if(rst)begin
-    	hs_d <= 20'b0;
-        vs_d <= 20'b0;
-        de_d <= 20'b0;
-    end
-	else begin
-    	
-    	hs_d <= {hs_d[19:0],hs};
-        vs_d <= {vs_d[19:0],vs};
-        de_d <= {de_d[19:0],de};
-    end
+	if(rst)
+		de_d <= 21'b0;
+	else
+		de_d <= {de_d[19:0],de};
 end
 endmodule
