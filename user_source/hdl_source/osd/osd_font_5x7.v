@@ -50,6 +50,7 @@ module osd_font_5x7(input [7:0] character, input [2:0] row, output [4:0] pixels)
                 "-": case(row) 3:glyph_row=5'b11111;default:glyph_row=0;endcase
                 "_": case(row) 6:glyph_row=5'b11111;default:glyph_row=0;endcase
                 "/": case(row) 0:glyph_row=5'b00001;1:glyph_row=5'b00010;2:glyph_row=5'b00010;3:glyph_row=5'b00100;4:glyph_row=5'b01000;5:glyph_row=5'b01000;6:glyph_row=5'b10000;default:glyph_row=0;endcase
+                "%": case(row) 0:glyph_row=5'b11001;1:glyph_row=5'b11010;2:glyph_row=5'b00100;3:glyph_row=5'b00100;4:glyph_row=5'b01000;5:glyph_row=5'b10110;6:glyph_row=5'b00110;default:glyph_row=0;endcase
                 default: glyph_row = 5'b00000;
             endcase
         end

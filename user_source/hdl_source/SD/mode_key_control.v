@@ -9,6 +9,7 @@ module mode_key_control #(
     input wire [1:0] mode,
     output reg next_event, rescan_event,
     output wire previous_event, auto_toggle_event,
+    output wire adjust_decrease,adjust_increase,adjust_restore,adjust_select,
     output wire manual_activity
 );
     wire press1, press2, press4;
@@ -36,23 +37,24 @@ module mode_key_control #(
     localparam integer HOLD_CYCLES = (CLK_FREQ_HZ / 1000) * RESCAN_HOLD_MS;
     localparam integer HOLD_BITS = $clog2(HOLD_CYCLES + 1);
     reg [HOLD_BITS-1:0] held_cycles;
-    reg stable2_d, long_fired, short_allowed;
+    reg stable2_d, long_fired, short_allowed, rescan_allowed;
     reg [1:0] short_mode;
     // Track KEY2 independently of media readiness. Only release re-arms it.
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             short_mode<=0; stable2_d <= 1; held_cycles <= 0; long_fired <= 0;
-            short_allowed <= 0; next_event <= 0; rescan_event <= 0;
+            rescan_allowed <= 0; short_allowed <= 0; next_event <= 0; rescan_event <= 0;
         end else begin
             stable2_d <= stable2;
             next_event <= 0; rescan_event <= 0;
             if (stable2_d && !stable2) begin
                 short_allowed <= enable && (mode == 0 || (PREVIEW_ENABLE && mode == 3));
-                short_mode<=mode;
+                short_mode<=mode; rescan_allowed <= (mode==0 || mode==3);
                 held_cycles <= 1;
             end else if (!stable2) begin
                 if (!enable || mode != short_mode) short_allowed <= 0;
-                if (!long_fired) begin
+                if(mode!=short_mode)rescan_allowed<=0;
+                if (!long_fired && rescan_allowed && mode==short_mode) begin
                     if (held_cycles >= HOLD_CYCLES - 1) begin
                         rescan_event <= 1;
                         long_fired <= 1;
@@ -66,7 +68,60 @@ module mode_key_control #(
             end
         end
     end
-    assign auto_toggle_event = enable && press4 && press_mode==mode;
+    adjust_key_gestures #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) adjust_keys(
+        .clk(clk),.rst(rst),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
+        .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select));
+    assign auto_toggle_event = enable && press4 && press_mode==mode && (mode==0 || mode==3);
     assign manual_activity = enable &&
         (!stable1 || !stable2 || !stable4 || press1 || press2 || press4);
+endmodule
+
+// All inputs are already debounced. Wait for release after mode changes.
+module adjust_key_gestures #(parameter CLK_FREQ_HZ=100_000_000)(
+ input clk,rst,input [1:0] mode,input stable1,stable2,stable4,
+ output reg decrease,increase,restore,select_next
+);
+ localparam WINDOW=CLK_FREQ_HZ/10;
+ localparam LONG=CLK_FREQ_HZ;
+ reg [1:0] mode_q,state;
+ reg armed,s1_q,s2_q,s4_q,key4_active;
+ reg [31:0] count,hold4;
+ wire p1=s1_q && !stable1,p2=s2_q && !stable2;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin
+   mode_q<=0;state<=0;armed<=0;s1_q<=1;s2_q<=1;s4_q<=1;
+   key4_active<=0;count<=0;hold4<=0;
+   decrease<=0;increase<=0;restore<=0;select_next<=0;
+  end else begin
+   mode_q<=mode;s1_q<=stable1;s2_q<=stable2;s4_q<=stable4;
+   decrease<=0;increase<=0;restore<=0;select_next<=0;
+   if(mode!=mode_q || !(mode==1 || mode==2))begin
+    armed<=0;state<=0;count<=0;key4_active<=0;hold4<=0;
+   end else if(!armed)begin
+    if(stable1 && stable2 && stable4)armed<=1;
+   end else begin
+    case(state)
+     0:begin
+      count<=0;
+      if(p1 && p2)begin restore<=1;state<=3;end
+      else if(p1)begin state<=1;count<=1;end
+      else if(p2)begin state<=2;count<=1;end
+     end
+     1,2:begin
+      if((state==1 && p2) || (state==2 && p1))begin restore<=1;state<=3;end
+      else if(count>=WINDOW-1 || (state==1 && stable1) || (state==2 && stable2))begin
+       decrease<=state==1;increase<=state==2;state<=3;
+      end else count<=count+1'b1;
+     end
+     3:if(stable1 && stable2)state<=0;
+    endcase
+    if(s4_q && !stable4)begin key4_active<=1;hold4<=1;end
+    else if(!stable4 && key4_active)begin if(hold4<LONG)hold4<=hold4+1'b1;end
+    else if(stable4 && key4_active)begin
+     if(hold4<LONG && state==0 && stable1 && stable2)select_next<=1;
+     key4_active<=0;hold4<=0;
+    end
+   end
+  end
+ end
 endmodule
