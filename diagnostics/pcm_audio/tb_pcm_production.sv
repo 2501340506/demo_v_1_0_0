@@ -1,17 +1,23 @@
 `timescale 1ns/1ps
-module tb_pcm_production;
+module tb_pcm_production #(parameter PREVIEW_TEST=0);
  reg clk=0,pix=0,rst=1;
  always #5 clk=~clk;
  always #20 pix=~pix;
  reg key4=1,key1=1,key2=1;
+ reg [1:0] app_mode=0;
+ reg preview_ack=0,hold_preview_ack=0;
+ wire preview_request;
+ wire [17:0] preview_descriptor;
+ always @(posedge pix)if(rst)preview_ack<=0;
+ else if(!hold_preview_ack)preview_ack<=preview_request;
  wire req,cancel,done,commit,bvalid,bactive,bready;
  wire signed [15:0] bl,br;
  reg finish=0;
  wire [1:0] image;
  wire image_valid,display_valid;
- sd_card_bmp #(.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.AUDIO_ENABLE(1)) app(
- .clk(clk),.rst(rst),.sdram_ready(1'b1),.key1(key1),.key2(key2),.key4(key4),.mode(2'd0),
- .preview_ack(1'b0),.preview_request(),.preview_descriptor(),
+ sd_card_bmp #(.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(5000),.AUDIO_ENABLE(1),.PREVIEW_ENABLE(PREVIEW_TEST)) app(
+ .clk(clk),.rst(rst),.sdram_ready(1'b1),.key1(key1),.key2(key2),.key4(key4),.mode(app_mode),
+ .preview_ack(preview_ack),.preview_request(preview_request),.preview_descriptor(preview_descriptor),
  .adjust_select(),.adjust_restore(),.adjust_increase(),.adjust_decrease(),
  .state_code(),.sd_debug(),.diagnostics(),.combo_event_count(),.combo_debug_active(),.auto_play_indicator(),.osd_error_code(),
  .bmp_width(16'd1),.bmp_height(16'd1),.display_valid(display_valid),.committed_image(image),.committed_valid(image_valid),.committed_ready(1'b1),
@@ -112,12 +118,44 @@ module tb_pcm_production;
  end
  task rescan;
  begin key2=0;repeat(2030)@(negedge clk);key2=1;wait(app.scan_busy);wait(!app.scan_busy);repeat(30)@(negedge clk);end endtask
+ always @(posedge clk)if(!rst && app.scan_accept)
+  if(app.audio_run || !app.audio_stopped || app.a_busy)$fatal(1,"scan accepted before audio stop");
+ task preview_rescan;
+ begin
+  app_mode=3;wait(preview_descriptor[17]);wait(preview_ack==preview_request);
+  repeat(5)@(negedge clk);
+  hold_preview_ack=1;
+  // Real KEY2 requests exit, but frame-mailbox acknowledgement is delayed.
+  key2=0;repeat(2030)@(negedge clk);key2=1;
+  wait(app.rescan_pending && !preview_descriptor[17] && preview_ack!=preview_request);
+  repeat(40)begin @(negedge clk);
+   if(app.rescan_event || app.scan_accept || app.sd_local_rst)$fatal(1,"rescan before fullscreen ack");
+  end
+  hold_preview_ack=0;wait(app.scan_busy);wait(!app.scan_busy);
+  app_mode=0;repeat(30)@(negedge clk);
+  $display("PASS preview exit: delayed frame ack, audio drain, scan and restart");
+ end endtask
  integer prev_count;
  initial begin
   setup(1,1,1202);repeat(5)@(negedge clk);rst=0;
+  if(PREVIEW_TEST)begin
+   // Inject at the scan interface on the first enabled-but-stopped cycle.
+   // This isolates the start/stop race without changing streamer state.
+   wait(app.audio_session);@(negedge clk);
+   if(!app.audio_stopped)$fatal(1,"missed first audio start boundary");
+   force app.scan_request=1'b1;
+   @(posedge clk);
+   if(app.scan_accept)$fatal(1,"scan reset overlaps audio start");
+   wait(app.scan_accept);@(negedge clk);@(negedge clk);
+   release app.scan_request;
+   $display("PASS audio start/scan boundary waits for registered stop and drain");
+   rst=1;repeat(5)@(negedge clk);rst=0;
+  end
   wait(received>=5300);if(app.image_count!=4)$fatal(1,"images changed by audio scan");
   // Physical audio transaction must drain before rescan resets the card.
-  wait(app.a_busy && raw_valid);rescan();wait(received>=700);
+  wait(app.a_busy && raw_valid);
+  if(PREVIEW_TEST)preview_rescan();else rescan();
+  wait(received>=700);
   inject=1;wait(app.g_audio.u_stream.error_code!=0);mode=0;wait(!bactive);
   prev_count=fallback;wait(fallback>prev_count+100);
   inject=0;rescan();mode=1;wait(received>=700);

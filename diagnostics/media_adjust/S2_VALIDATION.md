@@ -14,7 +14,9 @@
 
 ## 当前阻塞
 
-- 最新attempt39（strategy5）为Setup WNS/TNS -0.151/-0.151ns（1端点）、Hold -0.011/-0.022ns（2端点），无负Recovery/Removal，仍无合格S2。实际字幕准备寄存级保留、原回复负路径消除。16955 LUT、9345寄存器、4693 MSlice/4699 LSlice、52 BRAM9K、15 DSP；102个工程输入与attempt39逐字节一致。唯一Setup实际为preview_request经预览/重扫控制到音频streamer使能；Hold为PCM wr_bin[11]和UART pending[75]到RAM。详细网表位映射见TIMING_STRUCTURE。
+- 最新attempt40（strategy5）：完整TD无工具ERROR，但Setup WNS/TNS -0.587/-1.030ns（2端点）、Hold -0.020/-0.072ns（7端点），无负Recovery/Removal。16966 LUT、9356寄存器、4732 MSlice/4731 LSlice、52 BRAM9K、15 DSP；整体较attempt39变差，仍无合格S2。audio_run改为现有audio_session寄存器输出，scan_accept新增!audio_run以等待停止和事务排空，网表寄存边界保留，原预览→音频负路径消除。新的Setup为图片streamer fs_error[2]到双writer FIFO使能，Hold实际位见TIMING_STRUCTURE。
+- 本轮adjust_audio_stop_units1三项音频专项、adjust_audio_stop_production1原生产9279样本及预览配置9280样本通过，零错误警告。新增首次启动边界scan_request注入、真实KEY2预览退出及延迟帧应答后重扫恢复；模拟SD和writer握手，未重跑真实SDRAM像素系统。102个工程输入与attempt40快照逐字节一致。
+- attempt39（历史，strategy5）为Setup WNS/TNS -0.151/-0.151ns（1端点）、Hold -0.011/-0.022ns（2端点），无负Recovery/Removal。实际字幕准备寄存级保留、原回复负路径消除。16955 LUT、9345寄存器、4693 MSlice/4699 LSlice、52 BRAM9K、15 DSP；102个工程输入与attempt39逐字节一致。当时唯一Setup实际为preview_request经预览/重扫控制到音频streamer使能；Hold为PCM wr_bin[11]和UART pending[75]到RAM。详细网表位映射见TIMING_STRUCTURE。
 - 本轮字幕验证adjust_reply_pipeline2：124928次组合字段等价；102个接受字节/106背压周期，独立期望字符串和旧实现共同检查，包含0/2/12字、连续ready、快照、pending溢出ERR及背压复位；真实RX/TX、CR/LF、中英文混合、12/13边界、查询、日志仲裁、坏停止位、帧提交及复位通过。均零错误警告。回复每字符多一个内部准备拍，旧参考按实际接受时刻握手；仅配置更新逐周期等价，不宣称valid逐周期相同。
 - attempt38（历史）为Setup -0.141ns、Hold -0.011ns（9 setup+1 recovery及4 hold）。BPB寄存器保留、原12个BPB使能负端点消除。17126 LUT、9346寄存器、4703 MSlice/4706 LSlice、52 BRAM9K、15 DSP。
 - 本轮BPB预寄存验证：adjust_bpb_equivalence1参考86bad25在GAP=0/1/5逐周期等价；adjust_bpb_reader1全部42项ByteGap=0；adjust_bpb_scaled1碎片缩放case0/ByteGap=0/TestMode=5；adjust_bpb_production1生产联合9279样本（四图、碎片循环、事务中重扫、故障回退/重试、无BGM、音频独立启动和短循环）。均零错误警告，没有把其他旧长系统测试写成本轮重跑。

@@ -1,10 +1,10 @@
 # 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
 
-- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt39完整TD和实际网表检查已结束，仅剩1条Setup/2条Hold，仍无合格候选。
-- 已完成：字幕字段选择与hex转换间寄存raw/hex/last/valid，字符多一拍准备、接受后推进index。adjust_reply_pipeline2的124928字段比较、102接受字节/106背压周期、快照/排队溢出/复位及真实RX/TX字幕日志仲裁全部通过，零错误警告。实际寄存边界保留、原字幕负路径消除，102个工程输入与attempt39逐字节一致。历史BPB/BMP及生产联合验证见S2_VALIDATION。
-- 卡住的问题：attempt39无工具ERROR，Setup WNS/TNS -0.151/-0.151ns（1端点）、Hold -0.011/-0.022ns（2端点），无负Recovery/Removal。16955 LUT、9345寄存器、4693 MSlice/4699 LSlice、52 BRAM9K、15 DSP；比attempt38 LUT-171、MSlice-10。唯一Setup实际为preview_request经预览/重扫控制到音频streamer sector_lba使能（7级、76%布线）。Hold实际为PCM wr_bin[11]→RAM片选、UART pending[75]→RAM数据，均-0.011ns。无local/board标签。
-- 下一步计划：从attempt40起固定HighFanoutOptimization/strategy5，优先调查sd_card_bmp的rescan_event/audio_run和fat32_pcm_stream取消/启动链的寄存切分，保持音频事务排空后才接受扫描；补生产联合及事务中取消/重扫验证，再完整TD。两条Hold按最终网表定点处理。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
-- 踩过的坑：物理实例cache_failed的实际Q是preview_request；subtitle/lt74的实际Q是UART pending[75]，不能按名字猜功能。回复增加准备拍，测试比较实际接受字节而非旧新valid逐周期一致；旧run_subtitle_fields仅用于历史组合合同，当前用run_reply_pipeline。Verilog字符串CR用八进制015。恒等LUT须有EQN，模型警告如实记录；不打包失败bit、不批量删除。
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt40完整TD及网表检查结束，原预览→音频负路径消除，但整体时序变差，仍无合格候选。
+- 已完成：audio_run直接由现有audio_session寄存器驱动，scan_accept同时等待!audio_run和audio_stopped；原组合停止延后一拍，事务排空后才复位SD。adjust_audio_stop_units1三项、adjust_audio_stop_production1原配置9279样本/预览配置9280样本通过，零错误警告；新增启动边界注入、真实KEY2预览退出延迟应答后重扫。实际使能Q边界保留，102个工程输入与attempt40逐字节一致。未重跑真实SDRAM像素系统。
+- 卡住的问题：attempt40无工具ERROR，Setup WNS/TNS -0.587/-1.030ns（2端点）、Hold -0.020/-0.072ns（7端点），无负Recovery/Removal。16966 LUT、9356寄存器、4732 MSlice/4731 LSlice、52 BRAM9K、15 DSP；比attempt39 LUT+11、MSlice+39。两条Setup实际为图片streamer fs_error[2]经像素接受控制到全图/缩略图FIFO写使能（7级、79%/81%布线）。Hold在UART、缩略图写FIFO、音频短缓存和PCM RAM，具体位见结构记录。无local/board标签。
+- 下一步计划：从attempt41起固定HighFanoutOptimization/strategy5，优先调查fat32_bmp_reader到media_thumbnail_loader/media_frame_loader的像素接受寄存边界，数据/valid/结束/错误/取消需保持事务顺序。补真实SDRAM双writer逐像素和错误/取消/重扫验证，再完整TD并重核Hold。详见[结构优化记录](diagnostics/media_adjust/TIMING_STRUCTURE.md)。
+- 踩过的坑：audio_session在网表重命名为u_stream/enable，由物理image_count实例Q驱动。Hold物理pending[67]实际是pending[70]，count[0]实际是rd_ptr[3]，PCM wr_bin[11]实际是wr_bin[0]，不能按实例名字猜信号。新测试只在首次启动边界注入scan_request，其余预览重扫用真实KEY2；writer/SD为模型，不冒称完整预览系统重跑。回复验证用run_reply_pipeline，恒等LUT须有EQN；不打包失败bit、不批量删除。
 
 ## 历史交接
 

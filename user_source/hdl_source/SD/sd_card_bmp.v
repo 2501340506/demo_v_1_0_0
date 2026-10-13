@@ -104,8 +104,11 @@ wire [7:0] a_error,a_byte;
 wire [8:0] a_index;
 // Hold the scan request until the audio transaction and both ring pointers
 // have stopped. The physical SD reset must never cut an audio sector short.
-wire audio_run=audio_session && !scan_request && !rescan_event;
-assign scan_accept=scan_request && scan_state==SC_IDLE && audio_stopped;
+// Register the stop through audio_session: preview/rescan decisions must not
+// feed the file streamer's same-cycle enable path. A start can coincide with
+// that final enabled edge, so wait for both enable low and the stopped ack.
+wire audio_run=audio_session;
+assign scan_accept=scan_request && scan_state==SC_IDLE && !audio_run && audio_stopped;
 always @(posedge clk or posedge rst) begin
  if(rst)audio_session<=0;
  else if(scan_request || rescan_event)audio_session<=0;

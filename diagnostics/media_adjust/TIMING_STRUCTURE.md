@@ -225,3 +225,43 @@ adjust_reply_pipeline2已通过：124928次旧新字段比较；102个接受字�
 两个Hold均-0.011ns：PCM `wr_bin[11]`→RAM csa[1]（深度分块片选），UART `pending[75]`→RAM dib[1]。后者报告源实例为subtitle/lt74，实际是共用Slice内的UART时间戳寄存器。已查实际网表；不能继续处理旧pending[10]/[27]、地址wr_ptr[3]或将它误判为字幕字段。
 
 下一轮从attempt40起，固定HighFanoutOptimization/strategy5。若修改音频/重扫控制，补生产联合和事务中取消/重扫验证；按新完整TD重核Hold及实际恒等LUT，Setup/Hold均非负前不打包、不建local标签。
+
+## attempt40 音频停止寄存边界（完整TD结束，时序仍失败）
+
+attempt39物理层次报告：sd_card_bmp整体8165 LUT（6658+1507 ripple）、4784 seq；其中音频流969 LUT（758+211）、436 seq、1 BRAM，内部source为741 LUT/354 seq；预览控制45 LUT/28 seq、无RAM/DSP。两个小控制域跨越至较大的音频streamer，瓶颈来自组合控制传播及布线，因此选择已有会话寄存边界，暂不改音频数据通路或RAM。
+
+针对attempt39唯一Setup：preview_request经过fullscreen_ready/rescan_event/scan_request组合控制进入音频streamer使能，7级、76%布线、-0.151ns。生产修改只在sd_card_bmp：audio_run直接取现有audio_session，停止请求由该寄存器下一拍生效；scan_accept新增!audio_run条件，同时等待audio_stopped。若停止与音频启动同沿，允许该次启动进入排空，扫描必须等使能关闭且停止应答到达后才复位SD。原有scan_result握手和会话清除优先级不变，无新寄存器、无约束改动；预期切断组合控制链，不预设面积或整体时序一定改善。
+
+adjust_audio_stop_units1的音频扫描、mux和stream三项通过。adjust_audio_stop_production1原生产配置9279样本、新增PREVIEW_ENABLE配置9280样本精确比较均通过，零错误警告。覆盖四图、碎片循环、事务中重扫、错误回退/重试、缺BGM、音频独立启动、短循环；新增首次audio_session有效但stream仍stopped时注入scan_request，验证不能同沿接受扫描，并等待停止应答。另以真实KEY2进入预览退出重扫，延迟帧邮箱应答40个系统周期，确认未应答前不触发rescan_event/scan_accept/SD复位，之后完成排空、扫描和播放恢复。
+
+该生产控制测试使用模拟SD扇区和writer完成握手，真实音频播放器/HDMI桥；不代表真实SDRAM四宫格像素系统重跑，也不代表板测。复现：`run_s2.ps1 -RunName <新目录>`；`& diagnostics/pcm_audio/run_production.ps1 -RunName <新目录> -Tests @('tb_pcm_production','tb_pcm_preview_rescan')`。
+
+### attempt40 最终结果
+
+完整TD使用HighFanoutOptimization/strategy5，综合、布局布线和bit生成结束，无工具ERROR，时序门槛正确拒绝。102个工程输入与快照逐字节一致。扩展200端点报告及routed.v在`adjust_s2_attempt40/timing_analysis/`，实际`g_audio$u_stream/enable`由物理`u_cache_control/image_count_reg[1]_syn_10.q[0]`驱动，即audio_session优化后的别名；原preview_request→音频使能负路径消除。保留寄存切分及停止握手改动，但整体时序和打包变差，不能声称收敛或面积优化。没有合格S2候选。
+
+| 指标 | attempt39 | attempt40 |
+|---|---:|---:|
+| LUT / 寄存器 | 16955 / 9345 | 16966 / 9356 |
+| LE | 18107 | 18219 |
+| MSlice / LSlice | 4693 / 4699 | 4732 / 4731 |
+| BRAM9K / DSP | 52 / 15 | 52 / 15 |
+| Setup WNS / TNS ns | -0.151 / -0.151 | -0.587 / -1.030 |
+| Setup失败端点 | 1 | 2 |
+| Hold WNS / TNS ns | -0.011 / -0.022 | -0.020 / -0.072 |
+| Hold失败端点 | 2 | 7 |
+
+无负Recovery/Removal。sd_card_bmp整体物理LUT8165→8156（-9）、seq4784→4767；音频流969→1002 LUT、436→440 seq，内部source741→769 LUT；预览45→43 LUT、28→29 seq。全设计LUT+11、LE+112、MSlice+39、LSlice+32，不能从某一层次减少推断全局改善。
+
+剩余两条Setup同源：实际Q为图片streamer `fs_error[2]`，经过`fat32_bmp_reader.pixel_ready/bmp_data_wr_en`和writer的pixel_accept到FIFO写地址CE：缩略图-0.587ns（7级，79%布线，fanout7）、全图-0.443ns（7级，81%布线，fanout8）。`source_fault`等中间网名经过工具共享，不能据此当作source_fault寄存器起点。下一轮从attempt41起优先调查reader到双writer像素接受边界的寄存切分，数据/valid及结束、错误、取消必须保持同一事务顺序；不能只将错误标志延后一拍。
+
+Hold实际端点（已核对Q网络和RAM拼接）：
+- UART pending[70]→RAM dia[5]：-0.020ns（源物理名pending[67]）。
+- 缩略图FIFO wr_addr[6]→RAM addra[10]：-0.012ns。
+- 音频短缓存byte_data[7]→RAM dia[7]：-0.011ns。
+- UART pending[44]→RAM dib[7]：-0.011ns。
+- UART rd_ptr[3]→RAM addrb[7]：-0.011ns（源物理名count[0]）。
+- PCM wr_bin[0]→RAM addra[3]：-0.004ns（源物理名wr_bin[11]）。
+- PCM rd_bin[0]→RAM addrb[3]：-0.003ns，video_clk。
+
+这些不是attempt39的pending[75]/wr_bin[11]端点，下一次结构变更后仍应按最终报告重核。原cache_write[3]、MISO和缩放ram_input_rgb[5]恒等LUT实际保留且INIT为D透传；本轮未添加新的Hold LUT，未重跑它们的独立门级测试。后续涉及像素边界时需真实SDRAM双writer逐像素及错误/取消/重扫验证，再完整TD；失败bit继续留diagnostics，不打包、不建标签。
