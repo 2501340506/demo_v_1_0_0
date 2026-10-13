@@ -14,7 +14,7 @@
 
 ## 进行中
 
-- adjust_s2_attempt21/22：内部图像乘法数据级改为自由运行，保留输出及旁带复位；adjust_unit7六专项、adjust_syn3独立综合、adjust_gate4门级算术、adjust_top6生产顶层336271像素/1148样本均通过。完整TD分别验证高扇出high和无额外高扇出/high路由策略。区域预计算后的adjust_scaler_edges1和计数器adjust_control_width1通过。
+- adjust_s2_attempt23/24/25：同一份已验证源码分别使用pr_strategy 2/3/5；工具实际参数表确认生效。内部图像乘法数据级自由运行，保留输出及旁带复位；adjust_unit7六专项、adjust_syn3独立综合、adjust_gate4门级算术、adjust_top6生产顶层336271像素/1148样本均通过。区域预计算后的adjust_scaler_edges1和计数器adjust_control_width1通过。
 
 ## 历史失败及修正
 
@@ -33,6 +33,7 @@
 - attempt14：区域预计算后high为Setup -0.046ns、Hold -0.025ns；attempt15 ultra为-0.712/-0.020ns；attempt16不加高扇出优化的ultra出现布线资源冲突，均不能交付。
 - attempt17/18/19：布局后及布线后选项、high布局/路由effort均未改善最终余量，仍为-0.046/-0.025ns。post_route_opt和额外轮次未列入器件生效参数表；effort已列入，但结果未改善。
 - attempt20：无额外高扇出、high路由，Setup -0.464ns，Hold +0.011ns，尚不能交付。
+- attempt21：内部乘法数据级自由运行后高扇出high为-0.548/-0.004ns；attempt22无额外高扇出/high路由为-2.692/-0.008ns，均不能交付。
 - 顶层注入初版未提供完整0–799行坐标，无法产生HDMI数据岛；adjust_top4补齐后通过，未为此修改生产RTL。
 - adjust_preview1混合尺寸+故障注入运行到主动超时，被正常加载断言误判；现仅在显式预期超时时解除该断言，重新验证故障流程。不将失败日志计为完整通过。
 

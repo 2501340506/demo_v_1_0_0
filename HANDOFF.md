@@ -3,7 +3,7 @@
 - 当前任务：生成亮度/对比度/总音量S2硬件候选，尚未上板。
 - 已完成：S1、6个独立综合、生产接入及21项基础回归；门级图像9216组/音量4710样本、adjust_top5顶层336271像素/1148音频样本通过。缩放行末预计算通过十尺寸缩放及五尺寸字节流；消抖计数器收窄后adjust_unit6六专项及adjust_control_width1四项回归通过。
 - 卡住的问题：attempt10已到Setup +0.120ns/Hold -0.011ns，但仍非候选。针对唯一缩放RAM数据Hold端点加恒等LUT后，attempt12为-2.110/-0.004ns，重新布局影响明显。未改时钟或约束，尚无候选。
-- 下一步计划：attempt17–19均为-0.046/-0.025ns；attempt20为-0.464/+0.011ns。内部图像乘法数据级改为自由运行，保留输出和旁带复位，adjust_unit7/syn3/gate4/top6均通过；attempt21完成但时序失败，attempt22采用无额外高扇出/high路由正在构建。时序通过并审查后再固定local候选。各轮源码覆盖范围见diagnostics/media_adjust/S2_VALIDATION.md。
+- 下一步计划：内部图像乘法数据级自由运行后，adjust_unit7/syn3/gate4/top6均通过；attempt21为-0.548/-0.004ns，attempt22为-2.692/-0.008ns。attempt23/24/25正在同源码验证pr_strategy 2/3/5，已确认器件参数表生效。时序通过并审查后再固定local候选。各轮源码覆盖范围见diagnostics/media_adjust/S2_VALIDATION.md。
 - 踩过的坑：旧回归缺AL_MAP_LUT1模型；复位检查最终pcm_tap；顶层注入须提供完整0–799行坐标才能发HDMI音频；网表导出端口会重排，测试用具名连接；主动超时场景不能被正常加载监控误判。失败输出保留，不打包候选。
 
 ## 历史交接
