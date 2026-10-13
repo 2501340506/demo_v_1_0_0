@@ -1,3 +1,11 @@
+# 当前正式版：v0.14.0
+
+图片等比缩放与四宫格缩略图已完成，S3 功能及 S4 持续运行 20 分钟、Flash、完全断电冷启动均已获用户确认。复用 local.3 原 bit。
+
+[下载与使用](releases/v0.14.0/README.md) · [最终验证](releases/v0.14.0/FINAL_VALIDATION.md) · [历史归档](docs/history/2026-10-13/image-scaling-thumbnails/README.md)。回退 v0.13.0。大图首次加载仍顺序读取完整文件。
+
+## 历史记录
+
 # 当前开发阶段：v0.14.0 S3 功能板测通过
 
 S3 local.3 已获用户确认功能均正常，记录 board.3。固定候选及板测结果见 [S3 说明](releases/v0.14.0/s3-local.3/README.md) 和 [板测记录](releases/v0.14.0/s3-local.3/BOARD_RESULT.md)。目前分析大图首次加载耗时；S4 持续播放、Flash 和完全断电冷启动尚待验收，正式版仍为 v0.13.0。
