@@ -4,6 +4,8 @@ param(
     [switch]$HighFanoutOptimization,
     [switch]$PlaceHoldFix,
     [switch]$PostRouteOptimization,
+    [switch]$HighPlaceEffort,
+    [switch]$HighRouteEffort,
     [ValidateSet('medium','high','ultra')][string]$TimingOptimization = 'medium',
     [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization = 'auto'
 )
@@ -51,6 +53,8 @@ foreach ($run in @('syn_1', 'phy_1')) {
         if ($HighFanoutOptimization) { $physicalOptions += 'place hfn_opt_effort high' }
         if ($PlaceHoldFix) { $physicalOptions += 'place fix_hold high' }
         if ($PostRouteOptimization) { $physicalOptions += 'route post_route_opt high route postrt_opt_extra_round 4' }
+        if ($HighPlaceEffort) { $physicalOptions += 'place effort high' }
+        if ($HighRouteEffort) { $physicalOptions += 'route effort high' }
         if ($TimingOptimization -ne 'medium') { $physicalOptions += "place opt_timing $TimingOptimization" }
         if ($PostPlaceOptimization -ne 'auto') { $physicalOptions += "place post_place_opt $PostPlaceOptimization" }
         if ($physicalOptions.Count -gt 0) {

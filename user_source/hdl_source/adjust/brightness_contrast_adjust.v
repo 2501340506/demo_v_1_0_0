@@ -23,18 +23,24 @@ module brightness_contrast_adjust #(parameter SIDE_WIDTH=1)(
   end
  endfunction
  assign side_out=side[3];
+ // Internal arithmetic is ignored until the reset sideband pipeline refills.
+ // Keep these registers free-running so DSP registers need no async reset.
+ integer channel;
+ always @(posedge clk)begin
+  for(channel=0;channel<3;channel=channel+1)begin
+   bright_mul[channel]<=rgb_in[channel*8+:8]*brightness;
+   center[channel]<=centered(bright_mul[channel]);
+   contrast_mul[channel]<=center[channel]*$signed({1'b0,contrast_2});
+  end
+ end
  always @(posedge clk or posedge rst)begin
   if(rst)begin
    rgb_out<=0;contrast_1<=128;contrast_2<=128;
    for(i=0;i<4;i=i+1)side[i]<=0;
-   for(i=0;i<3;i=i+1)begin bright_mul[i]<=0;center[i]<=0;contrast_mul[i]<=0;end
   end else begin
    side[0]<=side_in;for(i=1;i<4;i=i+1)side[i]<=side[i-1];
    contrast_1<=contrast;contrast_2<=contrast_1;
    for(i=0;i<3;i=i+1)begin
-    bright_mul[i]<=rgb_in[i*8+:8]*brightness;
-    center[i]<=centered(bright_mul[i]);
-    contrast_mul[i]<=center[i]*$signed({1'b0,contrast_2});
     rgb_out[i*8+:8]<=saturated(contrast_mul[i]);
    end
   end

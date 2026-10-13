@@ -1,4 +1,4 @@
-param([string]$BuildName='adjust_s2_attempt5',[switch]$PlaceHoldFix,[switch]$HighFanoutOptimization,[switch]$PostRouteOptimization,
+param([string]$BuildName='adjust_s2_attempt5',[switch]$PlaceHoldFix,[switch]$HighFanoutOptimization,[switch]$PostRouteOptimization,[switch]$HighPlaceEffort,[switch]$HighRouteEffort,
  [ValidateSet('high','ultra')][string]$TimingOptimization='high',
  [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization='high')
 $ErrorActionPreference='Stop'
@@ -12,7 +12,9 @@ Copy-Item "$root/diagnostics/run_td_build.ps1" "$out/diagnostics/run_td_build.ps
 $fanoutArgs=@();if($HighFanoutOptimization){$fanoutArgs=@('-HighFanoutOptimization')}
 $holdArgs=@();if($PlaceHoldFix){$holdArgs=@('-PlaceHoldFix')}
 $routeArgs=@();if($PostRouteOptimization){$routeArgs=@('-PostRouteOptimization')}
-& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName @fanoutArgs -TimingOptimization $TimingOptimization -PostPlaceOptimization $PostPlaceOptimization @holdArgs @routeArgs
+$effortArgs=@();if($HighPlaceEffort){$effortArgs=@('-HighPlaceEffort')}
+if($HighRouteEffort){$effortArgs+=@('-HighRouteEffort')}
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName @fanoutArgs -TimingOptimization $TimingOptimization -PostPlaceOptimization $PostPlaceOptimization @holdArgs @routeArgs @effortArgs
 if($LASTEXITCODE){throw 'TD build failed'}
 $report=Get-Content "$out/TD_project/demo_Runs/phy_1/final_timing.rpt" -Raw
 $setup=[regex]::Match($report,'SWNS:\s*([-\d.]+)ns');$hold=[regex]::Match($report,'HWNS:\s*([-\d.]+)ns')
