@@ -13,17 +13,22 @@ module subtitle_frame_commit(
     localparam [119:0] DEFAULT_TEXT = 120'h0000002041475046208c8b8b8a8389;
     reg [124:0] held;
     reg request, acknowledge;
+    // A new payload is taken only after the previous one was applied, and both
+    // sides reset to the same default, so dst always holds the previous payload
+    // when the next applies; the text/length change is decided at load time.
+    reg held_changed;
     (* ASYNC_REG = "TRUE" *) reg [1:0] req_sync, ack_sync;
     wire [124:0] live = {src_enable,src_length,src_text};
     wire apply_now = frame_start && req_sync[1] != acknowledge;
-    assign text_changed = apply_now &&
-        (held[123:120] != dst_length || held[119:0] != dst_text);
+    assign text_changed = apply_now && held_changed;
     always @(posedge src_clk or posedge src_rst) begin
         if(src_rst) begin
-            held <= {1'b1,4'd12,DEFAULT_TEXT}; request<=0; ack_sync<=0;
+            held <= {1'b1,4'd12,DEFAULT_TEXT}; held_changed<=0; request<=0; ack_sync<=0;
         end else begin
             ack_sync <= {ack_sync[0],acknowledge};
-            if(request==ack_sync[1] && live!=held) begin held<=live; request<=~request; end
+            if(request==ack_sync[1] && live!=held) begin
+                held<=live; held_changed<=live[123:0]!=held[123:0]; request<=~request;
+            end
         end
     end
     always @(posedge dst_clk or posedge dst_rst) begin
