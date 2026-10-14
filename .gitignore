@@ -32,3 +32,4 @@ work/
 /_cleanup/
 /diagnostics/output/
 /diagnostics/local_tools/
+__pycache__/
