@@ -59,10 +59,11 @@ localparam S_END                     = 5;                        //a frame of da
 reg                                  read_req_d0;                //asynchronous read request, synchronize to 'mem_clk' clock domain,first beat
 reg                                  read_req_d1;                //second
 reg                                  read_req_d2;                //third,Why do you need 3 ? Here's the design habit
-reg[ADDR_BITS - 1:0]                 read_len_d0;                //asynchronous read_len(read data length), synchronize to 'mem_clk' clock domain first
-reg[ADDR_BITS - 1:0]                 read_len_d1;                //second
-reg[ADDR_BITS - 1:0]                 read_len_latch;             //lock read data length
-reg[ADDR_BITS - 1:0]                 read_cnt;                   //read data counter
+// read_len is held static by every user; whole bursts are counted against
+// ceil(read_len / BURST_SIZE) (BURST_SIZE is a power of two).
+localparam BURST_LOG2                = $clog2(BURST_SIZE);
+wire [ADDR_BITS:0]                   read_len_round = read_len + (BURST_SIZE - 1);
+reg[ADDR_BITS - BURST_LOG2:0]        read_cnt;                   //read bursts
 reg[3:0]                             state;                      //state machine
 reg[1:0]                             read_addr_index_d0;         //synchronize to 'mem_clk' clock domain first
 reg[1:0]                             read_addr_index_d1;         //synchronize to 'mem_clk' clock domain second
@@ -131,8 +132,6 @@ begin
 		read_req_d0    <=  1'b0;
 		read_req_d1    <=  1'b0;
 		read_req_d2    <=  1'b0;
-		read_len_d0    <=  ZERO[ADDR_BITS - 1:0];               //equivalent to read_len_d0 <= 0;
-		read_len_d1    <=  ZERO[ADDR_BITS - 1:0];               //equivalent to read_len_d1 <= 0;
 		read_addr_index_d0 <= 2'b00;
 		read_addr_index_d1 <= 2'b00;
 	end
@@ -141,8 +140,6 @@ begin
 		read_req_d0    <=  read_req;
 		read_req_d1    <=  read_req_d0;
 		read_req_d2    <=  read_req_d1;     
-		read_len_d0    <=  read_len;
-		read_len_d1    <=  read_len_d0; 
 		read_addr_index_d0 <= read_addr_index;
 		read_addr_index_d1 <= read_addr_index_d0;
 		
@@ -203,13 +200,12 @@ begin
 	if(rst == 1'b1)
 	begin
 		state <= S_IDLE;
-		read_len_latch <= ZERO[ADDR_BITS - 1:0];
 		
 		//rd_burst_addr <= ZERO[ADDR_BITS - 1:0];
 		//rd_burst_req <= 1'b0;
 		App_rd_en_r <= 1'b0;
 		
-		read_cnt <= ZERO[ADDR_BITS - 1:0];
+		read_cnt <= 0;
 		fifo_aclr <= 1'b0;
 		//rd_burst_len <= ZERO[BURST_BITS - 1:0];
 		read_req_ack <= 1'b0;
@@ -251,11 +247,9 @@ begin
 					else if(read_addr_index_d1 == 2'd3)
 						App_rd_addr <= read_addr_3;
 					*/
-					//latch data length
-					read_len_latch <= read_len_d1;
 				end
 				//read data counter reset, read_cnt <= 0;
-				read_cnt <= ZERO[ADDR_BITS - 1:0];
+				read_cnt <= 0;
 			end
 			S_CHECK_FIFO:
 			begin
@@ -282,7 +276,7 @@ begin
 					App_rd_en_r <= 1'b0;
 					state <= S_READ_BURST_END;
 					//read counter + burst length
-					read_cnt <= read_cnt + BURST_SIZE[ADDR_BITS - 1:0];
+					read_cnt <= read_cnt + 1'b1;
 					//the next burst read address is generated
 					//rd_burst_addr <= rd_burst_addr + BURST_SIZE[ADDR_BITS - 1:0];
 				end     
@@ -296,7 +290,7 @@ begin
 				end
 				//if the read counter value is less than the frame length, continue read,
 				//otherwise the read is complete
-				else if(read_cnt < read_len_latch)
+				else if(read_cnt < read_len_round[ADDR_BITS:BURST_LOG2])
 				begin
 					state <= S_CHECK_FIFO;
 				end

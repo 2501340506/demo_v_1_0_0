@@ -12,8 +12,21 @@ module thumbnail_address (
  wire [8:0] local_y=y>=240?y-9'd240:y;
  // The protected controller returns contiguous BL4 words. Thumbnails are
  // packed during loading in the unused region following the four full frames.
- wire [18:0] offset=active_preview ? local_y*19'd320+local_x : y*19'd640+x;
- assign address=active_preview ? 21'd1228800+bank*21'd76800+offset : bank*21'd307200+offset;
+ // row*320 and row*640 share one row*5, shifted by 6 or 7.
+ wire [8:0] row=active_preview ? local_y : y;
+ wire [9:0] column=active_preview ? local_x : x;
+ wire [11:0] row5={row,2'b00}+row;
+ wire [18:0] offset=(active_preview ? {row5,6'd0} : {row5,7'd0})+column;
+ reg [20:0] base;
+ always @* begin
+  case({active_preview,bank})
+   3'b000:base=21'd0;      3'b001:base=21'd307200;
+   3'b010:base=21'd614400; 3'b011:base=21'd921600;
+   3'b100:base=21'd1228800;3'b101:base=21'd1305600;
+   3'b110:base=21'd1382400;default:base=21'd1459200;
+  endcase
+ end
+ assign address=base+offset;
  always @(posedge clk or posedge rst) begin
   if(rst) begin x<=0;y<=0;active_preview<=0;banks<=0;full_bank<=0;end
   else if(reload) begin x<=0;y<=0;active_preview<=preview;banks<=bank_map;full_bank<=fullscreen_bank;end

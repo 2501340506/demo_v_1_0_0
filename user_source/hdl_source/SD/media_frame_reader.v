@@ -65,16 +65,16 @@ module media_frame_reader #(
         .fifo_aclr(fifo_clear),.wrusedw({1'b0,fifo_words})
     );
     reg [ADDR_BITS:0] returned;
-    reg [ADDR_BITS-1:0] expected;
     always @(posedge mem_clk or posedge rst) begin
-        if(rst) begin returned<=0; expected<=0; reader_error<=0; end
-        else if(fifo_clear) begin returned<=0; expected<=read_len; reader_error<=0; end
+        if(rst) begin returned<=0; reader_error<=0; end
+        else if(fifo_clear) begin returned<=0; reader_error<=0; end
         else begin
             if(Sdr_rd_en) begin
                 returned<=returned+1'b1;
                 if(fifo_full) reader_error<=3'd1;
             end
-            if(read_finish && returned!={1'b0,expected}) reader_error<=3'd2;
+            // read_len is static, so it equals the length latched at the last clear.
+            if(read_finish && returned!={1'b0,read_len}) reader_error<=3'd2;
         end
     end
 endmodule
