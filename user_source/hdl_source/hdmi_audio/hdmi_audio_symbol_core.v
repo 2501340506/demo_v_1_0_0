@@ -100,7 +100,7 @@ module hdmi_audio_symbol_core #(
     wire packet_valid;
     wire packet_claim;
     wire packet_ready;
-    wire [1:0] packet_source_unused;
+    wire [1:0] packet_source;
     wire [23:0] packet_header;
     wire [7:0] packet_header_ecc;
     wire [223:0] packet_body;
@@ -118,7 +118,7 @@ module hdmi_audio_symbol_core #(
         .audio_body(audio_body), .audio_body_ecc(audio_body_ecc),
         .packet_valid(packet_valid), .packet_lock(packet_claim),
         .packet_ready(packet_ready),
-        .packet_source(packet_source_unused),
+        .packet_source(packet_source),
         .packet_header(packet_header),
         .packet_header_ecc(packet_header_ecc),
         .packet_body(packet_body), .packet_body_ecc(packet_body_ecc)
@@ -152,16 +152,64 @@ module hdmi_audio_symbol_core #(
         .sequence_error(sequence_error)
     );
 
-    wire [3:0] island0, island1, island2;
+    // ACR and InfoFrame packets are constants, so only the audio packet and
+    // the claimed source are captured; the constant packets map straight to
+    // TERC4 nibbles. The claim edge is the scheduler's own capture edge, so
+    // the nibbles equal those of its active packet registers.
+    reg [1:0] claimed_source;
+    reg [23:0] audio_header_q;
+    reg [7:0] audio_header_ecc_q;
+    reg [223:0] audio_body_q;
+    reg [31:0] audio_body_ecc_q;
+    always @(posedge pixel_clk or negedge rst_n) begin
+        if (!rst_n) begin
+            claimed_source <= 2'd2;
+            audio_header_q <= 24'd0;
+            audio_header_ecc_q <= 8'd0;
+            audio_body_q <= 224'd0;
+            audio_body_ecc_q <= 32'd0;
+        end else if (packet_claim) begin
+            claimed_source <= packet_source;
+            audio_header_q <= audio_header;
+            audio_header_ecc_q <= audio_header_ecc;
+            audio_body_q <= audio_body;
+            audio_body_ecc_q <= audio_body_ecc;
+        end
+    end
+    wire [3:0] audio_island0, audio_island1, audio_island2;
+    wire [3:0] acr_island0, acr_island1, acr_island2;
+    wire [3:0] info_island0, info_island1, info_island2;
     hdmi_data_island_mapper u_island_mapper (
         .pixel_index(packet_pixel_index),
         .hsync(video_hsync), .vsync(video_vsync),
-        .packet_header(active_header),
-        .packet_header_ecc(active_header_ecc),
-        .packet_body(active_body), .packet_body_ecc(active_body_ecc),
-        .channel0_terc4(island0), .channel1_terc4(island1),
-        .channel2_terc4(island2)
+        .packet_header(audio_header_q),
+        .packet_header_ecc(audio_header_ecc_q),
+        .packet_body(audio_body_q), .packet_body_ecc(audio_body_ecc_q),
+        .channel0_terc4(audio_island0), .channel1_terc4(audio_island1),
+        .channel2_terc4(audio_island2)
     );
+    hdmi_data_island_mapper u_acr_mapper (
+        .pixel_index(packet_pixel_index),
+        .hsync(video_hsync), .vsync(video_vsync),
+        .packet_header(acr_header), .packet_header_ecc(acr_header_ecc),
+        .packet_body(acr_body), .packet_body_ecc(acr_body_ecc),
+        .channel0_terc4(acr_island0), .channel1_terc4(acr_island1),
+        .channel2_terc4(acr_island2)
+    );
+    hdmi_data_island_mapper u_info_mapper (
+        .pixel_index(packet_pixel_index),
+        .hsync(video_hsync), .vsync(video_vsync),
+        .packet_header(info_header), .packet_header_ecc(info_header_ecc),
+        .packet_body(info_body), .packet_body_ecc(info_body_ecc),
+        .channel0_terc4(info_island0), .channel1_terc4(info_island1),
+        .channel2_terc4(info_island2)
+    );
+    wire [3:0] island0 = (claimed_source == 2'd0) ? acr_island0 :
+                         (claimed_source == 2'd1) ? info_island0 : audio_island0;
+    wire [3:0] island1 = (claimed_source == 2'd0) ? acr_island1 :
+                         (claimed_source == 2'd1) ? info_island1 : audio_island1;
+    wire [3:0] island2 = (claimed_source == 2'd0) ? acr_island2 :
+                         (claimed_source == 2'd1) ? info_island2 : audio_island2;
 
     hdmi_tmds_channel_encoder #(.CHANNEL(0)) u_encoder0 (
         .clk(pixel_clk), .rst_n(rst_n), .mode(mode),
