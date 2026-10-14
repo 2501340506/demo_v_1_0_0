@@ -27,7 +27,7 @@ for field in ('SWNS', 'HWNS'):
     value = re.search(field + r':\s*([-\d.]+)ns', timing)
     assert value and float(value[1]) > 0, f'Nonpositive timing: {field}'
 for run in ('syn_1', 'phy_1'):
-    log = (build / f'TD_project/demo_Runs/{run}/build_{a.build}.log').read_text(errors='replace')
+    log = read_log(build / f'TD_project/demo_Runs/{run}/build_{a.build}.log')
     assert not re.search(r'\bERROR:', log, re.I)
     if run == 'phy_1':
         assert 'Generate bitstream completely' in log
@@ -59,7 +59,7 @@ audit = build / 'timing_audit'
 assert (audit / 'check_timing.txt').exists() and (audit / 'audit.timing').exists()
 baseline_audit = root / 'releases/v0.16.0/s2-local.1/reports/check_timing.txt'
 def audit_summary(path):
-    return [line.strip() for line in path.read_text().splitlines()
+    return [line.strip() for line in read_log(path).splitlines()
             if re.search(r'There (are|is)|DummyNode|set_(multicycle_path|max_delay|input_delay)', line)]
 assert audit_summary(audit / 'check_timing.txt') == audit_summary(baseline_audit), 'Changed timing audit categories/exceptions'
 release.mkdir(parents=True)

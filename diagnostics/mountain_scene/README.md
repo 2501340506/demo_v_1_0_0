@@ -23,6 +23,8 @@ py -I diagnostics/mountain_scene/make_test_bmps.py diagnostics/output/mountain_m
 
 默认使用 `F:/modelsim/win64` 的 ModelSim SE-64 10.6e 和 E:/TD。本次 decoder/scaler/FAT32 已用 Intel Starter 10.5b 通过；长回归因 Starter 容量限速改用 SE，保留主动停止的旧输出。适配器复用旧脚本的测试矩阵，不改写旧路径设置。原始日志保留：已知 IP 可选端口告警 `vsim-3017/3722`、受保护模型未定宽常数 `2121`、Starter 容量提示与历史 vopt 类别可接受。SE 的完整系统编译另有一条 `vlog-13288`（`Multiple macros defined in +define+ command line switch.`），来自旧 runner 将多个宏放在同一参数；打包器仅接受该准确文本，未知编译告警仍拒绝。其他告警和所有错误均拒绝。不能把含已知告警的日志写成零告警。实际结果以候选 `VALIDATION.md` 及原始日志为准。
 
+PowerShell 重定向的编译/TD 日志为 UTF-16，打包器按 BOM 解码检查并保存原日志。
+
 构建快照仅放 `diagnostics/output/`。打包器逐字节核对工程全部输入、bit 和备份，源文件仅保存相对 `v0.16.0` 的变化，不使用文件哈希。
 
 ## 上板素材
