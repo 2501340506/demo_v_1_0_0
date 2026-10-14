@@ -1,3 +1,13 @@
+# 当前交接：v0.16.0 S1 local.1 已固定，等待板测（2026-10-14）
+
+- 当前任务：LUT 极致优化（功能不变）S1；候选 releases/v0.16.0/s1-local.1，标签 v0.16.0-s1-local.1，分支 feature/lut-optimization。
+- 已完成：批1–3 合并构建 lut_opt_attempt02：15072 LUT（−330）、8490 寄存器、13 DSP（−2），Setup +0.109ns、Hold +0.004ns；时序审计同基线；102 输入逐字节一致。旧新逐周期等价（含变异体）、21 项基础回归、42 项 FAT32、真实 SDRAM 预览/完整系统等 91 份日志通过，系统统计与 v0.15.0 逐项相同。记录见 diagnostics/lut_opt/LUT_RECORD.md。
+- 卡住的问题：无本地阻塞；尚未上板，不建 board 标签、不进入 S2、未推送。
+- 下一步计划：用户按 releases/v0.16.0/s1-local.1/BOARD_VALIDATION.md 1–19 项板测；通过后记录 s1-board.1 并推送分支与 S1 标签，再进入 S2（HDMI BCH/TMDS、簇→LBA、图片表去重）。
+- 踩过的坑：TD 对未改模块有 ±100～150 LUT 波动，单批小收益须累计判断（attempt01 批1 单独 +76）；全部乘法本已在 DSP，"乘法改 DSP"项取消；两个系统测试台层次引用 write_len_latch，已改为 write_len 端口；single_pll/run_refresh_fix.ps1 文件列表过时，装载失败与本次无关。
+
+## 历史交接
+
 # 当前交接：v0.16.0 LUT 极致优化 S0 计划已确认（2026-10-14）
 
 - 当前任务：在用户可见功能不变前提下尽量降低全设计物理 LUT；基线 v0.15.0（15402 LUT/8551 寄存器/54 BRAM9K/15 DSP，Slice 87.72%，Setup +0.139ns、Hold +0.004ns）。分支 feature/lut-optimization，计划 docs/LUT极致优化分阶段修改计划.md，标签 v0.16.0-plan.1。

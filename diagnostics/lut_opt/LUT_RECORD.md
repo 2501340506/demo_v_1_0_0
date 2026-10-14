@@ -34,3 +34,13 @@
 
 - lut_opt_s1_regression1：21 项基础回归全部通过。
 
+- lut_opt_s1_reader1：42 项 FAT32 读取（ByteGap=0）通过；lut_opt_s1_paths1 生产 SDRAM 帧路径、lut_opt_s1_loader1 双写入、lut_opt_s1_memory1 缩略图物理存储通过。
+- lut_opt_s1_scaler1 缩放 2 项、lut_opt_s1_top1 生产顶层（336271 像素/1148 样本，44 条 PLL 模型/未接端口警告同 v0.15.0）、lut_opt_s1_production1 生产 PCM、lut_opt_s1_preview_keys1 四宫格按键通过。
+- lut_opt_s1_preview2 真实 SDRAM 预览（165 帧/60 预览/10 提交/105578 刷新，26 条警告）与 lut_opt_s1_system2 完整系统（591 帧/22 提交/365203 刷新/17 淡变，32 条警告），统计与 v0.15.0 s2c_preview1/s2c_system1 逐项相同。首次运行（preview1/system1）因测试台层次引用已删除的 write_len_latch 装载失败，改为引用静态 write_len 端口后重跑，不计为 RTL 失败。
+- lut_opt_gate1：亮度对比度与音量独立综合门级 9216 组 RGB 向量、11 档音量通过；警告为厂商原语未接端口类。
+- single_pll/run_refresh_fix.ps1 历史脚本文件列表缺少后续新增模块，装载失败，与本次改动无关，未计入；SDRAM 刷新由 paths/预览/完整系统覆盖。
+- 时序审计（lut_opt_attempt02/timing_audit）：14 类检查与 v0.15.0 一致，dangling 节点 4→3（被优化掉的寄存器），无时钟/组合环/无效约束均为 0。
+
+## S1 候选
+
+- releases/v0.16.0/s1-local.1：attempt02 bit，102 个输入逐字节一致，11 个改动输入，91 份通过日志。待板测。
