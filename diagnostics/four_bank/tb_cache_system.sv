@@ -281,7 +281,7 @@ module tb_cache_system;
   cues=cues+1;#1;if(tone.blip_countdown!=4800)$fatal(1,"missing picture tone");
  end
  always @(posedge mem_clk) if(!rst) begin
-  if(MIXED_TEST && loader.stalled==65534)$fatal(1,"stall fifo=%0d srcfifo=%0d complete=%b written=%b corestate=%0d count=%0d len=%0d rdpriority=%b rdbusy=%b writerbusy=%b init=%b busy=%b",loader.fifo_words,loader.source_fifo_words,loader.complete_sync,loader.written,loader.writer.state,loader.writer.write_cnt,loader.writer.write_len_latch,refill_priority,rd_busy,wr_busy,init_done,busy);
+  if(MIXED_TEST && loader.stalled==65534)$fatal(1,"stall fifo=%0d srcfifo=%0d complete=%b written=%b corestate=%0d count=%0d len=%0d rdpriority=%b rdbusy=%b writerbusy=%b init=%b busy=%b",loader.fifo_words,loader.source_fifo_words,loader.complete_sync,loader.written,loader.writer.state,loader.writer.write_cnt,loader.writer.write_len,refill_priority,rd_busy,wr_busy,init_done,busy);
   if(wr_en) begin
    if(!wr_prev && refresh)$fatal(1,"new write burst during refresh protection");
    if(display_valid && wr_addr/307200==app.current_bank)$fatal(1,"overwriting actual display bank");
