@@ -4,6 +4,7 @@
 - S1 local.1：批1–3 功能不变 LUT 缩减，15402→15072 LUT、15→13 DSP，Setup +0.109ns、Hold +0.004ns；旧新等价与全量回归通过，固定 releases/v0.16.0/s1-local.1，待板测。
 - S1 board.1：用户确认 s1-local.1 功能均正常（整体反馈），复用原 bit。
 - S2 local.1：HDMI 音频包、FAT 簇地址、图片表、字幕提交、数码管等结构改写，15072→14190 LUT（累计 −1212），Setup +0.144ns、Hold +0.003ns；固定 releases/v0.16.0/s2-local.1，待板测。
+- S2 board.1：用户确认 s2-local.1 Flash 冷启动运行 40 分钟功能均正常（整体反馈），复用原 bit。
 
 # v0.15.0 正式发布（2026-10-13）
 

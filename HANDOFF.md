@@ -1,3 +1,13 @@
+# 当前交接：v0.16.0 S2 board.1 通过，进入 S3（2026-10-14）
+
+- 当前任务：LUT 极致优化 S3（放宽到可见行为，逐项取舍），分支 feature/lut-optimization。
+- 已完成：用户确认 s2-local.1 Flash 冷启动、运行 40 分钟功能均正常，记录 releases/v0.16.0/s2-local.1/BOARD_RESULT.md，标签 v0.16.0-s2-board.1，推送分支及 s2-local/s2-board 标签。累计 15402→14190 LUT（−1212）。
+- 卡住的问题：无。
+- 下一步计划：S3 批8 按键共用 1ms 节拍、批9 scanner 清零、批10 字库 BRAM、批11 评估项；构建从 lut_opt_attempt12 起。S3 候选仍按计划做 Flash 持续 20 分钟与完全断电冷启动。
+- 踩过的坑：用户反馈为整体“功能均正常”，未逐项列出 1–26 项，按整体记录。
+
+## 历史交接
+
 # 当前交接：v0.16.0 S2 local.1 已固定，等待板测（2026-10-14）
 
 - 当前任务：LUT 极致优化 S2；候选 releases/v0.16.0/s2-local.1，标签 v0.16.0-s2-local.1，分支 feature/lut-optimization。
