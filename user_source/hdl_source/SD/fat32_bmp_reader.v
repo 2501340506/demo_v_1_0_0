@@ -20,7 +20,7 @@ module fat32_bmp_reader #(
  output reg load_done,load_error, output reg [2:0] bmp_error,
  output reg [7:0] fat_error, output [3:0] state_code,
  output write_req,input write_req_ack,input write_ready,
- output bmp_data_wr_en,output [23:0] bmp_data,
+ output bmp_data_wr_en,output [31:0] bmp_data,
  output sd_sec_read,output [31:0] sd_sec_read_addr,
  input [7:0] sd_sec_read_data,input sd_sec_read_data_valid,sd_sec_read_end,sd_sec_read_failed
 );
@@ -126,7 +126,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .sector_byte(sector_byte),.sector_index(sector_index),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));
- bmp_header_check #(.ALLOW_32(0),.RANGE_DIMENSIONS(SCALE_ENABLE)) preflight(
+ bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(SCALE_ENABLE)) preflight(
  .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(state==HEADER_WAIT && sector_valid),
  .file_byte(sector_byte),.file_byte_offset({23'd0,sector_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
  .file_len(header_file_len),.pixel_offset(),.width(),.height(),.required_end(required_end),.header_match(header_match),
@@ -139,11 +139,11 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error));
  end else begin:g_fixed
  assign data_permit=1'b1;
- bmp24_decoder #(.RUNTIME_DIMENSIONS(1),.ALLOW_32(0)) decoder(
+ bmp24_decoder #(.RUNTIME_DIMENSIONS(1),.ALLOW_32(1)) decoder(
  .clk(clk),.rst(rst || state==WRITE_WAIT || load_cancel),.expected_width(bmp_width),.expected_height(bmp_height),
  .file_start(file_go),.file_size(task_size),.file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),
  .file_byte_offset(stream_offset),.file_end(stream_done),.upstream_error(stream_error),
- .header_accepted(),.pixel_valid(pixel_valid),.pixel_rgb(bmp_data),.pixel_x(),.pixel_y(),
+ .header_accepted(),.pixel_valid(pixel_valid),.pixel_rgb(),.pixel_rgba(bmp_data),.pixel_x(),.pixel_y(),
  .frame_commit(),.bmp_done(decode_done),.bmp_error(decode_error),
  .pixel_ready(1'b1),.file_ready(),.image_width(),.image_height());
  end endgenerate

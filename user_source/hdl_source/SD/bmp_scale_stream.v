@@ -2,18 +2,18 @@ module bmp_scale_stream (
  input clk,rst,file_start,input [31:0] file_size,
  input file_valid,input [7:0] file_byte,input [31:0] file_byte_offset,
  input file_end,input [7:0] upstream_error,
- output data_permit,output pixel_valid,input pixel_ready,output [23:0] pixel_rgb,
+ output data_permit,output pixel_valid,input pixel_ready,output [31:0] pixel_rgb,
  output reg done,output [2:0] error
 );
  wire bytes_valid,bytes_ready,bytes_done,header_valid,raw_valid,raw_ready;
  wire [7:0] bytes_data;wire [31:0] bytes_offset;
- wire [15:0] w,h,px,py;wire [23:0] raw_rgb;
+ wire [15:0] w,h,px,py;wire [31:0] raw_rgb;
  wire decoder_done,scaler_done;
  // Two output slots break the coordinator/FIFO-ready path into the scaler.
  // Occupancy alone drives scaler_ready; no combinational downstream ready.
  wire scaler_valid,scaler_ready;
- wire [23:0] scaler_rgb;
- reg [23:0] pixel_slot[0:1];
+ wire [31:0] scaler_rgb;
+ reg [31:0] pixel_slot[0:1];
  reg read_slot,write_slot;
  reg [1:0] pixel_count;
  wire push_pixel=scaler_valid && scaler_ready;
@@ -38,7 +38,7 @@ module bmp_scale_stream (
  // Registered ready/valid boundary keeps decoder counters and coordinates
  // out of the scaler's row-selection cone.
  reg raw_pipe_valid;
- reg [23:0] raw_pipe_rgb;
+ reg [31:0] raw_pipe_rgb;
  reg [15:0] raw_pipe_x,raw_pipe_y;
  wire scaler_in_ready;
  assign raw_ready=!raw_pipe_valid || scaler_in_ready;
@@ -57,13 +57,13 @@ module bmp_scale_stream (
   .out_offset(bytes_offset),.out_done(bytes_done));
  // FETCH registers data one clock before PRESENT. The decoder can capture
  // the header address on that same FETCH edge without delaying consumption.
- bmp24_decoder #(.ALLOW_32(0),.RANGE_DIMENSIONS(1),.FLOW_CONTROL(1),
+ bmp24_decoder #(.ALLOW_32(1),.RANGE_DIMENSIONS(1),.FLOW_CONTROL(1),
                  .HEADER_OFFSET_LOOKAHEAD(1)) decoder(
   .clk(clk),.rst(rst),.expected_width(16'd0),.expected_height(16'd0),
   .file_start(file_start),.file_size(file_size),.file_valid(bytes_valid),
   .file_byte(bytes_data),.file_byte_offset(bytes_offset),.file_end(bytes_done),
   .upstream_error(upstream_error),.header_accepted(header_valid),.pixel_valid(raw_valid),
-  .pixel_ready(raw_ready),.pixel_rgb(raw_rgb),.pixel_x(px),.pixel_y(py),
+  .pixel_ready(raw_ready),.pixel_rgb(),.pixel_rgba(raw_rgb),.pixel_x(px),.pixel_y(py),
   .frame_commit(),.bmp_done(decoder_done),.bmp_error(error),.file_ready(bytes_ready),
   .image_width(w),.image_height(h));
  image_scale_nearest scaler(.clk(clk),.rst(rst || file_start),.start(header_valid),

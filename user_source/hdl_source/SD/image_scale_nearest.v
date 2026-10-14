@@ -4,8 +4,8 @@
 module image_scale_nearest (
  input clk,rst,start, input [15:0] image_width,image_height,
  input in_valid, output in_ready,
- input [23:0] in_rgb, input [15:0] in_x,in_y,
- output out_valid, input out_ready, output [23:0] out_rgb,
+ input [31:0] in_rgb, input [15:0] in_x,in_y,
+ output out_valid, input out_ready, output [31:0] out_rgb,
  output reg done
 );
  localparam IDLE=0,ASPECT=1,ASPECT_DIV=2,X_DIV=3,Y_DIV=4,SETUP=5,
@@ -20,15 +20,16 @@ module image_scale_nearest (
  reg [10:0] xq,xr,yq,yr,sx,xrem,sy,yrem;
  reg [10:0] buffered_y;
  reg row_valid;
- reg [23:0] line [0:1919];
- reg [23:0] ram_pixel;
+ reg [31:0] line [0:1919];
+ reg [31:0] ram_pixel;
  // Preserve a combinational delay on the measured short BRAM data path.
  // INIT and EQN both describe identity; this does not add a clock of latency.
- wire [23:0] ram_input_rgb;
- assign ram_input_rgb[23:6]=in_rgb[23:6];
- assign ram_input_rgb[4:0]=in_rgb[4:0];
+ // Blue bit 5 moves from bit 5 to bit 13 in {R,G,B,T}.
+ wire [31:0] ram_input_rgb;
+ assign ram_input_rgb[31:14]=in_rgb[31:14];
+ assign ram_input_rgb[12:0]=in_rgb[12:0];
  (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
-  u_line_data_hold (.o(ram_input_rgb[5]),.a(in_rgb[5]));
+  u_line_data_hold (.o(ram_input_rgb[13]),.a(in_rgb[13]));
  reg pixel_black;
  wire row_inside = y>=top && y<bottom_edge;
  wire col_inside = x>=left && x<right_edge;
@@ -36,7 +37,7 @@ module image_scale_nearest (
  wire [11:0] yborrow={1'b0,yrem}+{1'b0,dh}-{1'b0,yr};
  assign in_ready=state==CAPTURE || state==DRAIN;
  assign out_valid=state==EMIT;
- assign out_rgb=pixel_black ? 24'd0 : ram_pixel;
+ assign out_rgb=pixel_black ? {24'd0,8'hFF} : ram_pixel;
  always @(posedge clk) begin
   if(in_valid && in_ready && state==CAPTURE) line[in_x[10:0]]<=ram_input_rgb;
   if(state==FETCH) ram_pixel<=line[sx];

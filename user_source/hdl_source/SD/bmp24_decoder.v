@@ -16,10 +16,11 @@ module bmp24_decoder #(
     input wire [31:0] file_byte_offset, input wire file_end,
     input wire [7:0] upstream_error,
     output reg header_accepted, output reg pixel_valid,
-    output reg [23:0] pixel_rgb, output reg [15:0] pixel_x, pixel_y,
+    output wire [23:0] pixel_rgb, output reg [15:0] pixel_x, pixel_y,
     output reg frame_commit, output reg bmp_done, output reg [2:0] bmp_error,
     input wire pixel_ready, output wire file_ready,
-    output wire [15:0] image_width, image_height
+    output wire [15:0] image_width, image_height,
+    output reg [31:0] pixel_rgba
 );
  wire [15:0] tw=RUNTIME_DIMENSIONS?expected_width:EXPECTED_WIDTH;
  wire [15:0] th=RUNTIME_DIMENSIONS?expected_height:EXPECTED_HEIGHT;
@@ -27,7 +28,6 @@ module bmp24_decoder #(
  wire [33:0] pixel_end;
  wire header_ok,header_complete,is_32;
  reg active,checked,end_pending;
- reg end_count_ok,end_row_ok;
  localparam ROW_BITS=RANGE_DIMENSIONS?11:32;
  localparam BYTE_BITS=RANGE_DIMENSIONS?13:32;
  localparam COUNT_BITS=RANGE_DIMENSIONS?22:32;
@@ -39,7 +39,9 @@ module bmp24_decoder #(
  reg header_good;
  reg pixels_started;
  reg [1:0] phase;
- reg [7:0] blue,green;
+ reg [7:0] blue,green,red;
+ // Keep the RGB-only port for legacy bmp_read and decoder test callers.
+ assign pixel_rgb = pixel_rgba[31:8];
  wire take_byte = file_valid && file_ready;
  // The header uses offsets 0..53 only. Capture its small address during the
  // upstream FETCH cycle; 63 is an inert address for all non-header bytes.
@@ -55,7 +57,10 @@ module bmp24_decoder #(
  wire in_pixel_region=RANGE_DIMENSIONS ?
     ((pixels_started || file_byte_offset==pixel_offset) && row<height[ROW_BITS-1:0]) :
     (file_byte_offset>=pixel_offset && {2'b0,file_byte_offset}<pixel_end);
- assign file_ready = !FLOW_CONTROL || !pixel_valid || pixel_ready;
+ // Let header_good settle before accepting the first payload byte, even
+ // when a generic flow-controlled caller supplies consecutive header bytes.
+ assign file_ready = !FLOW_CONTROL ||
+    ((!pixel_valid || pixel_ready) && (!header_complete || checked));
  assign image_width = width[15:0];
  assign image_height = height[15:0];
  wire [15:0] actual_width = RANGE_DIMENSIONS ? width[15:0] : tw;
@@ -73,15 +78,15 @@ module bmp24_decoder #(
  wire accepted_header=header_ok && {2'b0,size_reg}>=pixel_end;
  always @(posedge clk or posedge rst) begin
   if(rst) begin
-   active<=0;checked<=0;end_pending<=0;end_count_ok<=0;end_row_ok<=0;size_reg<=0;header_good<=0;pixels_started<=0;
+   active<=0;checked<=0;end_pending<=0;size_reg<=0;header_good<=0;pixels_started<=0;
    header_accepted<=0;pixel_valid<=0;frame_commit<=0;bmp_done<=0;bmp_error<=0;
-   pixel_rgb<=0;pixel_x<=0;pixel_y<=0;row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;
-   blue<=0;green<=0;
+   pixel_rgba<=0;pixel_x<=0;pixel_y<=0;row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;
+   blue<=0;green<=0;red<=0;
   end else begin
    header_accepted<=0;frame_commit<=0;bmp_done<=0;
    if(!FLOW_CONTROL || pixel_ready) pixel_valid<=0;
    if(file_start) begin
-    active<=1;checked<=0;end_pending<=0;end_count_ok<=0;end_row_ok<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;
+    active<=1;checked<=0;end_pending<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;
     row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;pixel_valid<=0;
    end else if(active) begin
     if(header_complete && !checked) begin
@@ -94,8 +99,10 @@ module bmp24_decoder #(
      if(row_byte < row_payload) begin
       if(phase==0)blue<=file_byte;
       if(phase==1)green<=file_byte;
-      if(phase==2)begin
-       pixel_rgb<={file_byte,green,blue};pixel_valid<=1;
+      if(phase==2)red<=file_byte;
+      // A 32bpp pixel is complete only after its fourth (alpha/T) byte.
+      if((!is_32 && phase==2)||(is_32 && phase==3))begin
+       pixel_rgba<=is_32 ? {red,green,blue,file_byte} : {file_byte,green,blue,8'hFF};pixel_valid<=1;
        pixel_x<=col;pixel_y<=height-1-row;pixel_count<=pixel_count+1;col<=col+1;
       end
       if((!is_32 && phase==2)||(is_32 && phase==3))phase<=0;else phase<=phase+1;
@@ -105,12 +112,12 @@ module bmp24_decoder #(
     end
     if(file_end)begin
      end_pending<=1;
-     end_count_ok<=checked && pixel_count==expected_pixels;
-     end_row_ok<=row==height && row_byte==0;
     end
     if(end_pending && (!FLOW_CONTROL || !pixel_valid || pixel_ready))begin
      active<=0;end_pending<=0;
-     if(end_count_ok && end_row_ok)begin
+     // Check after the final byte has updated both counters. file_end may
+     // coincide with that byte, including a 32bpp pixel's alpha byte.
+     if(checked && pixel_count==expected_pixels && row==height && row_byte==0)begin
       frame_commit<=1;bmp_done<=1;bmp_error<=0;
      end else bmp_error<=3;
     end

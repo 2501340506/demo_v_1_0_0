@@ -77,7 +77,7 @@ wire bmp_ready,scan_done,bmp_scan_error,scan_found_valid,bmp_load_done,parser_lo
 wire [31:0] scan_found_cluster,scan_found_size;
 wire [2:0] scan_found_total,parser_error;
 wire [3:0] bmp_state_code,normal_state_code;
-wire bmp_data_wr_en;wire [23:0] bmp_data;
+wire bmp_data_wr_en;wire [31:0] bmp_data;
 wire scan_request,scan_accept,scan_result_ready,scan_busy;
 reg scan_result_valid,scan_success,scan_error_seen;
 reg [2:0] img_found_count;
@@ -338,7 +338,7 @@ assign osd_error_code=(scan_state==SC_RESET)?8'd0:
 assign source_frame_done=bmp_load_done;
 assign source_frame_error=parser_load_error;
 assign write_en=bmp_data_wr_en && !parser_cancel && !parser_rst;
-assign write_data={bmp_data,8'h00};
+assign write_data=bmp_data;
 
 // Keep original UART event IDs. WAIT phase C/D carries CACHE_DONE/CACHE_HIT.
 // Defer cache/fault records so a concurrent display acknowledgement retains
