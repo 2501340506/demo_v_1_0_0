@@ -74,7 +74,8 @@ module fat32_pcm_stream #(
     REPLAY_REQ:if(!enable)state<=DRAIN;else state<=REPLAY_OUT;
     REPLAY_OUT:if(!enable)state<=DRAIN;
     else if(player_ready)begin
-     if({23'd0,replay_offset}+1'b1>=size_latched)begin replay_offset<=0;loop_count<=loop_count+1'b1;end
+     // Replay is entered only with size_latched<=512, so its upper bits are zero.
+     if({1'b0,replay_offset}+1'b1>=size_latched[9:0])begin replay_offset<=0;loop_count<=loop_count+1'b1;end
      else replay_offset<=replay_offset+1'b1;
      state<=REPLAY_REQ;
     end

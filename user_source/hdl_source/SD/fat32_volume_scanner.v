@@ -43,6 +43,7 @@ module fat32_volume_scanner #(
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
     wire [8:0] fat_offset={current_cluster[6:0],2'b00};
     reg [31:0] overhead,data_sectors,cluster_count,partition_reserved,cluster_offset;
+    reg data_borrow;   // total_sectors<overhead, from the LAYOUT_SUB subtraction
     reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
     wire bpb_fields_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
         reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
@@ -115,7 +116,7 @@ module fat32_volume_scanner #(
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
-            overhead<=0;data_sectors<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
+            overhead<=0;data_sectors<=0;data_borrow<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
             audio_match<=0;
         end else begin
@@ -212,14 +213,14 @@ module fat32_volume_scanner #(
                     state<=LAYOUT_SUB;
                 end
                 LAYOUT_SUB:begin
-                    data_sectors<=total_sectors-overhead;
+                    {data_borrow,data_sectors}<={1'b0,total_sectors}-{1'b0,overhead};
                     data_start_lba<=partition_lba+overhead;
                     state<=LAYOUT_SHIFT;
                 end
                 LAYOUT_SHIFT:begin cluster_count<=data_sectors>>cluster_shift;state<=LAYOUT_MAX;end
                 LAYOUT_MAX:begin max_cluster<=cluster_count+1;state<=LAYOUT_CHECK;end
                 LAYOUT_CHECK:begin
-                    layout_bad<=total_sectors<=overhead || cluster_count==0 ||
+                    layout_bad<=data_borrow || data_sectors==0 || cluster_count==0 ||
                        root_cluster>max_cluster || cluster_count>32'h0fffffee ||
                        (max_cluster>>7)>=fat_sectors;
                     state<=LAYOUT_ACCEPT;

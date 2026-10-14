@@ -52,7 +52,9 @@ parameter S_END          = 17;
 
 localparam integer RESPONSE_CYCLES = (CLK_FREQ_HZ / 1000) * RESPONSE_TIMEOUT_MS;
 localparam integer TOKEN_CYCLES = (CLK_FREQ_HZ / 1000) * TOKEN_TIMEOUT_MS;
-reg [31:0] wait_count;
+// wait_count restarts once it reaches the active timeout, so it never exceeds the larger one.
+localparam integer WAIT_MAX = (RESPONSE_CYCLES > TOKEN_CYCLES) ? RESPONSE_CYCLES : TOKEN_CYCLES;
+reg [$clog2(WAIT_MAX + 1) - 1:0] wait_count;
 reg [15:0] read_crc;
 reg [7:0] crc_high;
 reg [7:0] last_token;

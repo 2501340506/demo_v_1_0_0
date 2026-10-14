@@ -62,8 +62,11 @@ module pcm_stream_player #(
  reg [15:0] fifo[0:7];
  reg [2:0] wp,rp;reg [3:0] count;
  reg pending,pending_zero;
- reg [31:0] phase;
- wire tick=phase>=CLOCK_HZ-SAMPLE_HZ;
+ // phase stays a multiple of RATE_DIV, so it is kept divided by it; every tick is unchanged.
+ localparam integer RATE_DIV=(CLOCK_HZ%8000==0 && SAMPLE_HZ%8000==0) ? 8000 : 1;
+ localparam integer RATE_CLOCK=CLOCK_HZ/RATE_DIV, RATE_SAMPLE=SAMPLE_HZ/RATE_DIV;
+ reg [$clog2(RATE_CLOCK)-1:0] phase;
+ wire tick=phase>=RATE_CLOCK-RATE_SAMPLE;
  wire pop=sample_valid && sample_ready;
  wire room=(count+pending<8)||pop;
  wire launch=run2 && active && tick && room;
@@ -101,7 +104,7 @@ module pcm_stream_player #(
      phase<=0;
      if(level_rd>=PREFILL)active<=1;
     end else begin
-     if(tick)phase<=phase+SAMPLE_HZ-CLOCK_HZ;else phase<=phase+SAMPLE_HZ;
+     phase<=tick ? phase+RATE_SAMPLE-RATE_CLOCK : phase+RATE_SAMPLE;
      if(tick && !room)output_overrun<=1;
      if(launch)begin
       pending_zero<=level_rd==0;

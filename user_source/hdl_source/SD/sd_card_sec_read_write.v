@@ -43,11 +43,11 @@ module sd_card_sec_read_write
 	input            block_write_req_ack
 );
 reg[7:0] read_data;
-reg[31:0] timer;
 localparam RETRY_BITS = (INIT_RETRIES < 1) ? 1 : $clog2(INIT_RETRIES+1);
 reg[RETRY_BITS-1:0] init_retry;
-reg[15:0] recover_count;
+reg[9:0] recover_count;
 localparam integer INIT_CYCLES = (CLK_FREQ_HZ / 1000) * INIT_TIMEOUT_MS;
+reg[$clog2(INIT_CYCLES + 1) - 1:0] timer;   // stops at INIT_CYCLES (S_ERR is terminal)
 
 localparam S_IDLE               = 0;
 localparam S_CMD0               = 1;
@@ -107,7 +107,7 @@ begin
             S_RECOVER:
             begin
                 cmd_req <= 1'b0; block_read_req <= 1'b0; sd_init_done <= 1'b0;
-                if (recover_count >= 16'd1023) begin recover_count <= 0; timer <= 0; state <= S_IDLE; end
+                if (recover_count == 10'd1023) begin recover_count <= 0; timer <= 0; state <= S_IDLE; end
                 else recover_count <= recover_count + 1'b1;
             end
 			S_IDLE:
