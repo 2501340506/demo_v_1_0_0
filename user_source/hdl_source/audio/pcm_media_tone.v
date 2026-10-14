@@ -38,17 +38,28 @@ module pcm_media_tone #(
     reg [12:0] blip_countdown;
     reg [2:0] note_index;
     reg [14:0] note_sample_count;
-    reg signed [15:0] fifo [0:7];
+    // A fixed gain is applied by constant table after the FIFO, so the FIFO
+    // holds only {enable, phase index}; the port-volume mode stores samples.
+    localparam integer FIXED = FIXED_VOLUME >= 0;
+    localparam integer FIFO_BITS = FIXED ? 5 : 16;
+    localparam integer FV = FIXED ? FIXED_VOLUME : 0;
+    localparam integer S1P = (4592 * FV) >>> 8, S1N = (-4592 * FV) >>> 8;
+    localparam integer S2P = (8485 * FV) >>> 8, S2N = (-8485 * FV) >>> 8;
+    localparam integer S3P = (11087 * FV) >>> 8, S3N = (-11087 * FV) >>> 8;
+    localparam integer S4P = (12000 * FV) >>> 8, S4N = (-12000 * FV) >>> 8;
+    reg [FIFO_BITS-1:0] fifo [0:7];
     reg [2:0] write_pointer;
     reg [2:0] read_pointer;
+    wire [FIFO_BITS-1:0] fifo_out = fifo[read_pointer];
+    wire signed [15:0] fifo_sample;
     reg [3:0] fifo_count;
     wire sample_pop;
     wire sample_tick;
     wire sample_push;
 
     assign sample_valid = fifo_count != 0;
-    assign sample_left = fifo[read_pointer];
-    assign sample_right = fifo[read_pointer];
+    assign sample_left = fifo_sample;
+    assign sample_right = fifo_sample;
     assign sample_pop = sample_valid && sample_ready;
     assign sample_tick = rate_accumulator >= RATE_CLOCK - RATE_SAMPLE;
     assign sample_push = sample_tick && (fifo_count != 8 || sample_pop);
@@ -127,6 +138,35 @@ module pcm_media_tone #(
         (scaled > 24'sd8388352)  ? 16'sd32767 :
         (scaled < -24'sd8388608) ? -16'sd32768 : scaled >>> 8;
 
+    // sine_sample(index) * FIXED_VOLUME >>> 8; |result| < 12000, never clamps.
+    function signed [15:0] fixed_sample;
+        input [3:0] index;
+        begin
+            case (index)
+                4'd0, 4'd8: fixed_sample = 16'sd0;
+                4'd1, 4'd7: fixed_sample = S1P;
+                4'd2, 4'd6: fixed_sample = S2P;
+                4'd3, 4'd5: fixed_sample = S3P;
+                4'd4: fixed_sample = S4P;
+                4'd9, 4'd15: fixed_sample = S1N;
+                4'd10, 4'd14: fixed_sample = S2N;
+                4'd11, 4'd13: fixed_sample = S3N;
+                default: fixed_sample = S4N;
+            endcase
+        end
+    endfunction
+
+    wire [FIFO_BITS-1:0] fifo_in;
+    generate
+        if (FIXED) begin : g_fixed_gain
+            assign fifo_in = {enable, phase[19:16]};
+            assign fifo_sample = fifo_out[4] ? fixed_sample(fifo_out[3:0]) : 16'sd0;
+        end else begin : g_port_gain
+            assign fifo_in = enable ? scaled_clamped : 16'sd0;
+            assign fifo_sample = fifo_out;
+        end
+    endgenerate
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             rate_accumulator <= {RATE_BITS{1'b0}};
@@ -148,7 +188,7 @@ module pcm_media_tone #(
                 rate_accumulator <= rate_accumulator + RATE_SAMPLE;
 
             if (sample_push) begin
-                fifo[write_pointer] <= enable ? scaled_clamped : 16'sd0;
+                fifo[write_pointer] <= fifo_in;
                 write_pointer <= write_pointer + 1'b1;
             end
             if (sample_tick && enable) begin

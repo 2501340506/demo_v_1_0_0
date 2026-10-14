@@ -10,16 +10,21 @@ module brightness_contrast_adjust #(parameter SIDE_WIDTH=1)(
  reg [7:0] contrast_1,contrast_2;
  reg [SIDE_WIDTH-1:0] side[0:3];
  integer i;
+ // Bit forms of the original adders: value>=32640 is value[15] or
+ // value[14:7]==255; value[14:7]-128 inverts bit 14 and sign-extends it.
  function signed [8:0] centered;
   input [15:0] value;
-  begin centered=(value>=16'd32640)?9'sd127:$signed({1'b0,value[14:7]})-9'sd128;end
+  begin
+   centered=(value[15] || &value[14:7])?9'sd127:{~value[14],~value[14],value[13:7]};
+  end
  endfunction
+ // (product>>>7)+128 stays in 0..255 exactly when product[17:14] agree; the
+ // in-range sum inverts bit 14, otherwise the sign selects 0 or 255.
  function [7:0] saturated;
   input signed [17:0] product;
-  reg signed [17:0] value;
   begin
-   value=(product>>>7)+18'sd128;
-   saturated=value<0?8'd0:value>255?8'd255:value[7:0];
+   if(product[17:14]==4'b0000 || product[17:14]==4'b1111) saturated={~product[14],product[13:7]};
+   else saturated=product[17]?8'd0:8'd255;
   end
  endfunction
  assign side_out=side[3];
