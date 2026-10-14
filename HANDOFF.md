@@ -1,3 +1,13 @@
+# 当前交接：v0.16.0 S2 local.1 已固定，等待板测（2026-10-14）
+
+- 当前任务：LUT 极致优化 S2；候选 releases/v0.16.0/s2-local.1，标签 v0.16.0-s2-local.1，分支 feature/lut-optimization。
+- 已完成：批4（音频包 BCH 共享）、批5a（常数包直出）、批6（逐拍移位、按索引加载）、批7a/7b（字幕提交、数码管单译码器）及两处关键路径等价寄存；attempt11 14190 LUT、Setup +0.144ns、Hold +0.003ns；137 份通过日志，系统统计与 S1 逐项相同。
+- 卡住的问题：无本地阻塞；尚未上板，不建 board 标签、不推送 S2 标签、不进入 S3。
+- 下一步计划：用户按 BOARD_VALIDATION.md 1–26 项板测；通过后记录 s2-board.1 并推送，再进入 S3（按键共享节拍、scanner 清零、字库 BRAM、头检查复用、写引擎合并评估）。
+- 踩过的坑：LUT 下降后布局变化会暴露新关键路径（attempt05 cache_control、attempt10 PCM 启动），按路径做等价寄存后通过；attempt07/08 同输入 TD 布局后崩溃两次，网表变化后消失；批5b TMDS 查表收益不确定未做；读取测试台需补接新端口 load_index。
+
+## 历史交接
+
 # 当前交接：v0.16.0 S1 board.1 通过，进入 S2（2026-10-14）
 
 - 当前任务：LUT 极致优化 S2（结构改写，可见行为不变），分支 feature/lut-optimization。

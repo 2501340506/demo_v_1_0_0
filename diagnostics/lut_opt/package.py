@@ -9,6 +9,7 @@ p = argparse.ArgumentParser()
 p.add_argument('build')
 p.add_argument('--candidate', default='s1-local.1')
 p.add_argument('--baseline', default='v0.15.0')
+p.add_argument('--stage', default='s1', choices=('s1', 's2'))
 a = p.parse_args()
 root = Path(__file__).resolve().parents[2]
 output = root / 'diagnostics/output'
@@ -27,27 +28,54 @@ for name in inputs:
 
 # Final-source runs for this candidate: marker each log must contain.
 logs = {}
-for run in ('lut_opt_s1_regression1', 'lut_opt_b1_unit1', 'lut_opt_s1_scaler1', 'lut_opt_b1_hdmi_s9'):
-    for f in (output / run).glob('tb_*.log'):
-        if '.console.' not in f.name:
-            logs[f.relative_to(output).as_posix()] = 'PASS '
-for f in (output / 'lut_opt_s1_reader1').glob('reader*_gap0_mode0.log'):
-    logs[f.relative_to(output).as_posix()] = 'PASS FAT32 reader'
-for gap in (0, 1, 5):
-    logs[f'lut_opt_b3_scanner1/gap{gap}.log'] = 'PASS '
-logs['lut_opt_b1_equiv1/equiv/tb_batch1_equiv.log'] = 'PASS batch1 equivalence'
-logs['lut_opt_b2_equiv5/equiv/tb_batch2_equiv.log'] = 'PASS batch2 equivalence'
-logs['lut_opt_b3_equiv2/equiv/tb_batch3_equiv.log'] = 'PASS batch3 equivalence'
-logs['lut_opt_s1_paths1/paths.log'] = 'PASS frame paths'
-logs['lut_opt_s1_loader1/sim.log'] = 'PASS dual loader'
-logs['lut_opt_s1_memory1/sim.log'] = 'PASS thumbnail physical memory'
-logs['lut_opt_s1_production1/tb_pcm_production.log'] = 'PASS '
-logs['lut_opt_s1_preview_keys1/sim.log'] = 'PASS preview keys:'
-logs['lut_opt_s1_top1/top.log'] = 'PASS production top'
-logs['lut_opt_s1_preview2/system.log'] = 'PASS preview system:'
-logs['lut_opt_s1_system2/system.log'] = 'PASS transition system:'
-for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
-    logs[f'lut_opt_gate1/{module}/gate.log'] = 'PASS '
+if a.stage == 's2':
+    for run in ('s2f_regression1', 's2f_unit1', 's2f_scaler1', 's2f_hdmi_s9', 's2f_pcm_units1'):
+        for f in (output / run).glob('tb_*.log'):
+            if '.console.' not in f.name:
+                logs[f.relative_to(output).as_posix()] = 'PASS '
+    for run, gap in (('s2f_reader0', 0), ('s2f_reader2', 2)):
+        for f in (output / run).glob(f'reader*_gap{gap}_mode0.log'):
+            logs[f.relative_to(output).as_posix()] = 'PASS FAT32 reader'
+    for name, marker in (('lut_opt_b4_equiv1/equiv/tb_batch4_equiv.log', 'PASS batch4 equivalence'),
+                         ('lut_opt_b5_equiv1/equiv/tb_batch5_equiv.log', 'PASS batch5 equivalence'),
+                         ('lut_opt_b6_stream2/gate0/sim.log', 'PASS batch6 streamer'),
+                         ('lut_opt_b6_stream2/gate1/sim.log', 'PASS batch6 streamer'),
+                         ('lut_opt_b6_cache2/sim.log', 'PASS cache control cycle equivalence'),
+                         ('lut_opt_b7_commit1/sim.log', 'PASS batch7 subtitle commit'),
+                         ('lut_opt_b7_seg1/tb_seg_equiv.log', 'PASS seg equivalence'),
+                         ('s2f_paths1/paths.log', 'PASS frame paths'),
+                         ('s2f_loader1/sim.log', 'PASS dual loader'),
+                         ('s2f_memory1/sim.log', 'PASS thumbnail physical memory'),
+                         ('s2f_production1/tb_pcm_production.log', 'PASS '),
+                         ('s2f_preview_keys1/sim.log', 'PASS preview keys:'),
+                         ('s2f_top1/top.log', 'PASS production top'),
+                         ('s2f_preview1/system.log', 'PASS preview system:'),
+                         ('s2f_system1/system.log', 'PASS transition system:')):
+        logs[name] = marker
+    for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
+        logs[f's2f_gate1/{module}/gate.log'] = 'PASS '
+else:
+    for run in ('lut_opt_s1_regression1', 'lut_opt_b1_unit1', 'lut_opt_s1_scaler1', 'lut_opt_b1_hdmi_s9'):
+        for f in (output / run).glob('tb_*.log'):
+            if '.console.' not in f.name:
+                logs[f.relative_to(output).as_posix()] = 'PASS '
+    for f in (output / 'lut_opt_s1_reader1').glob('reader*_gap0_mode0.log'):
+        logs[f.relative_to(output).as_posix()] = 'PASS FAT32 reader'
+    for gap in (0, 1, 5):
+        logs[f'lut_opt_b3_scanner1/gap{gap}.log'] = 'PASS '
+    logs['lut_opt_b1_equiv1/equiv/tb_batch1_equiv.log'] = 'PASS batch1 equivalence'
+    logs['lut_opt_b2_equiv5/equiv/tb_batch2_equiv.log'] = 'PASS batch2 equivalence'
+    logs['lut_opt_b3_equiv2/equiv/tb_batch3_equiv.log'] = 'PASS batch3 equivalence'
+    logs['lut_opt_s1_paths1/paths.log'] = 'PASS frame paths'
+    logs['lut_opt_s1_loader1/sim.log'] = 'PASS dual loader'
+    logs['lut_opt_s1_memory1/sim.log'] = 'PASS thumbnail physical memory'
+    logs['lut_opt_s1_production1/tb_pcm_production.log'] = 'PASS '
+    logs['lut_opt_s1_preview_keys1/sim.log'] = 'PASS preview keys:'
+    logs['lut_opt_s1_top1/top.log'] = 'PASS production top'
+    logs['lut_opt_s1_preview2/system.log'] = 'PASS preview system:'
+    logs['lut_opt_s1_system2/system.log'] = 'PASS transition system:'
+    for module in ('brightness_contrast_adjust', 'pcm_master_volume'):
+        logs[f'lut_opt_gate1/{module}/gate.log'] = 'PASS '
 for name, marker in logs.items():
     text = (output / name).read_text(errors='replace')
     assert marker in text and 'Errors: 0,' in text and not re.search(r'\*\* (Fatal|Error)', text), name
@@ -79,9 +107,9 @@ for name in inputs:
     if name.as_posix() in changed:
         copy(root / name, Path('sources') / name)
         saved.append(name)
-copy(root / 'diagnostics/lut_opt/BOARD_VALIDATION_S1.md', Path('BOARD_VALIDATION.md'))
+copy(root / f'diagnostics/lut_opt/BOARD_VALIDATION_{a.stage.upper()}.md', Path('BOARD_VALIDATION.md'))
 copy(root / 'diagnostics/lut_opt/LUT_RECORD.md', Path('LUT_RECORD.md'))
-manifest = ['# S1 candidate inputs', '', f'Baseline {a.baseline}; build {a.build}.',
+manifest = [f'# {a.stage.upper()} candidate inputs', '', f'Baseline {a.baseline}; build {a.build}.',
             f'Bit {(phy / "demo.bit").stat().st_size} bytes; {len(inputs)} inputs compared byte-for-byte.',
             f'{len(saved)} changed production inputs saved under sources/; {len(logs)} passing simulation logs.', '']
 manifest += [f'- {n.as_posix()} ({(root / n).stat().st_size} bytes)' + (' [changed]' if n in saved else '') for n in inputs]

@@ -1,0 +1,884 @@
+# vsim -c -quiet -lib D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/s2f_gate1/brightness_contrast_adjust/work tb_adjust glbl -l D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.log -do "run -all; quit -f" 
+# Start time: 16:38:42 on Oct 14,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(258): (vopt-2675) [TFMPC] - Too few port connections for 'config_inst'.  Expected 23, found 0.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[0]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(100): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[1]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(109): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[2]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(118): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[3]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(127): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[4]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(136): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[5]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(145): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[6]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(154): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2685) [TFMPC] - Too few port connections for '\brightness[7]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(163): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2685) [TFMPC] - Too few port connections for 'clk_syn_2'.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(250): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[0]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(273): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[1]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(292): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[2]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(311): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[3]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(330): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[4]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(349): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[5]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(368): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[6]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(387): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2685) [TFMPC] - Too few port connections for '\contrast[7]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(406): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(418): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[0] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(418): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(430): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[1] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(430): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(442): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[2] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(442): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(454): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[3] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(454): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(466): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[4] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(466): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(478): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[5] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(478): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(490): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[6] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(490): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(503): (vopt-2685) [TFMPC] - Too few port connections for '\contrast_2_reg[7] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(503): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2685) [TFMPC] - Too few port connections for 'mult0_syn_2'.  Expected 18, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'sourceb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'sourcea'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'rstpdn'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'rstbn'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'rstan'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'cepd'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'ceb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'cea'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'bcin'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'acin'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'signedb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'signeda'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'bcout'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(518): (vopt-2718) [TFMPC] - Missing connection for port 'acout'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2685) [TFMPC] - Too few port connections for 'mult1_syn_1'.  Expected 18, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'sourceb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'sourcea'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'rstpdn'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'rstbn'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'rstan'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'cepd'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'ceb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'cea'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'bcin'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'acin'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'signedb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'signeda'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'bcout'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(533): (vopt-2718) [TFMPC] - Missing connection for port 'acout'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2685) [TFMPC] - Too few port connections for 'mult2_syn_2'.  Expected 18, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'sourceb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'sourcea'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'rstpdn'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'rstbn'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'rstan'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'cepd'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'ceb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'cea'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'bcin'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'acin'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'signedb'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'signeda'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'bcout'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(548): (vopt-2718) [TFMPC] - Missing connection for port 'acout'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(560): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_10'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(560): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(572): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_11'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(572): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(584): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_12'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(584): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(596): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_13'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(596): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(608): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_15'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(608): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(620): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_16'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(620): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(632): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_17'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(632): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(644): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_18'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(644): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(656): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_19'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(656): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(668): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_20'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(668): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(680): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_21'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(680): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(692): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_22'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(692): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(704): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_24'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(704): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(716): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_25'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(716): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(728): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_26'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(728): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(740): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_27'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(740): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(752): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_28'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(752): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(764): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_29'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(764): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(776): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_30'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(776): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(788): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_31'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(788): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(800): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_6'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(800): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(812): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_7'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(812): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(824): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_8'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(824): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(836): (vopt-2685) [TFMPC] - Too few port connections for 'ramread0_syn_9'.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(836): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[0]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(883): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[10]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(892): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[11]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(901): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[12]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(910): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[13]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(919): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[14]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(928): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[15]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(937): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[16]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(946): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[17]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(955): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[18]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(964): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[19]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(973): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[1]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(982): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[20]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(991): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[21]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1000): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[22]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1009): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[23]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1018): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[2]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1027): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[3]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1036): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[4]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1045): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[5]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1054): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[6]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1063): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[7]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1072): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[8]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1081): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_in[9]_syn_2 '.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1090): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[0]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1106): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[10]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1124): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[11]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1142): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[12]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1160): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[13]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1178): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[14]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1196): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[15]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1214): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[16]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1232): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[17]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1250): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[18]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1268): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[19]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1286): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[1]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1304): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[20]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1322): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[21]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1340): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[22]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1358): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[23]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1376): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[2]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1394): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[3]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1412): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[4]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1430): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[5]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1448): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[6]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1466): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[7]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1484): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[8]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1502): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2685) [TFMPC] - Too few port connections for '\rgb_out[9]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1520): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2685) [TFMPC] - Too few port connections for 'rst_syn_2'.  Expected 13, found 2.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'rst'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1720): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2685) [TFMPC] - Too few port connections for '\side_in[0]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'do'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'osclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1737): (vopt-2718) [TFMPC] - Missing connection for port 'opad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2685) [TFMPC] - Too few port connections for '\side_out[0]_syn_4 '.  Expected 13, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'diq'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'di'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'ts'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'opclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'ipclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'isclk'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'bpad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1755): (vopt-2718) [TFMPC] - Missing connection for port 'ipad'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1767): (vopt-2685) [TFMPC] - Too few port connections for '\side_reg[1] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1767): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1779): (vopt-2685) [TFMPC] - Too few port connections for '\side_reg[2] '.  Expected 5, found 4.
+# ** Warning: D:\My_Program\anlogic_program\demo_v_0_0\diagnostics\output\s2f_gate1\brightness_contrast_adjust/gate.v(1779): (vopt-2718) [TFMPC] - Missing connection for port 'ce'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS RGB 9216 vectors, dynamic parameters, four-cycle sidebands
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_0_0/diagnostics/output/s2f_gate1/brightness_contrast_adjust/bench.sv(22)
+#    Time: 92240 ns  Iteration: 1  Instance: /tb_adjust
+# End time: 16:38:44 on Oct 14,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 862
