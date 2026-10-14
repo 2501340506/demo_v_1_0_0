@@ -14,10 +14,13 @@ module fat32_pcm_stream #(
  input wire sector_busy,sector_valid,sector_done,
  input wire [7:0] sector_byte,sector_error,input wire [8:0] sector_index
 );
- localparam IDLE=0,START=1,READ=2,DRAIN=3,FAILED=4,REPLAY_REQ=5,REPLAY_OUT=6;
+ localparam IDLE=0,START=1,READ=2,DRAIN=3,FAILED=4,REPLAY_REQ=5,REPLAY_OUT=6,CHECK=7;
  reg [2:0] state;
  reg start;
  reg [31:0] cluster_latched,size_latched;
+ // The start checks are registered with the latched file and decided in CHECK,
+ // keeping the 32-bit range compare out of the latch enable (one extra cycle).
+ reg found_latched,start_bad;
  wire req,busy,done,valid;wire [7:0] byte_data,fs_error;
  wire running=(state==START || state==READ);
  wire replaying=(state==REPLAY_REQ || state==REPLAY_OUT);
@@ -49,17 +52,20 @@ module fat32_pcm_stream #(
  .sector_req(req),.sector_lba(sector_lba),.sector_busy(sector_busy),.sector_valid(sector_valid),
  .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(sector_done),.sector_error(sector_error));
  always @(posedge clk or negedge rst_n)begin
-  if(!rst_n)begin state<=IDLE;start<=0;error_code<=0;loop_count<=0;cluster_latched<=0;size_latched<=0;cache_write<=0;replay_offset<=0;end
+  if(!rst_n)begin state<=IDLE;start<=0;error_code<=0;loop_count<=0;cluster_latched<=0;size_latched<=0;found_latched<=0;start_bad<=0;cache_write<=0;replay_offset<=0;end
   else begin
    start<=0;
    if(state==READ && valid)cache_write<=cache_write+1'b1;
    case(state)
     IDLE:if(enable && player_stopped && !sector_busy)begin
      error_code<=0;loop_count<=0;cache_write<=0;replay_offset<=0;
-     if(!audio_found)begin state<=FAILED;end
-     else if(file_size==0 || file_size[0] || first_cluster<2 || first_cluster>max_cluster)begin error_code<=8'h30;state<=FAILED;end
-     else begin cluster_latched<=first_cluster;size_latched<=file_size;state<=START;end
+     cluster_latched<=first_cluster;size_latched<=file_size;found_latched<=audio_found;
+     start_bad<=file_size==0 || file_size[0] || first_cluster<2 || first_cluster>max_cluster;
+     state<=CHECK;
     end
+    CHECK:if(!found_latched)state<=FAILED;
+    else if(start_bad)begin error_code<=8'h30;state<=FAILED;end
+    else state<=START;
     START:if(!enable)state<=DRAIN;
     else if(!busy)begin start<=1;state<=READ;end
     READ:if(!enable)state<=DRAIN;

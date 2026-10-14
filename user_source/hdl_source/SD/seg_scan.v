@@ -12,7 +12,8 @@ module seg_scan #(
 	input[7:0]      seg_data_2,
 	input[7:0]      seg_data_3,
 	input[7:0]      seg_data_4,
-	input[7:0]      seg_data_5
+	input[7:0]      seg_data_5,
+	output[3:0]     scan_index    // position sampled on the next edge
 );
 parameter SCAN_COUNT = CLK_FREQ /(SCAN_FREQ * 6) - 1;
 
@@ -20,6 +21,7 @@ parameter SCAN_COUNT = CLK_FREQ /(SCAN_FREQ * 6) - 1;
 localparam integer TIMER_BITS = (SCAN_COUNT > 0) ? $clog2(SCAN_COUNT + 1) : 1;
 reg[TIMER_BITS - 1:0] scan_timer;  //scan time counter
 reg[3:0] scan_sel;     //Scan select counter
+assign scan_index = scan_sel;
 always@(posedge clk or negedge rst_n)
 begin
 	if(rst_n == 1'b0)
