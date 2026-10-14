@@ -88,7 +88,9 @@ copy(Path(a.logs), Path('validation/logs.json'))
 for path in (output / a.samples).glob('*'):
     if path.is_file():
         copy(path, Path('board_samples') / path.name)
-changed = set(subprocess.check_output(['git', '-c', 'core.quotepath=false', 'diff', 'v0.16.0', '--name-only', '--', 'user_source', 'TD_project'], cwd=root, text=True).splitlines())
+# User demo.al/best_result changes were already part of M0, not M1 inputs to back up.
+changed = set(subprocess.check_output(['git', '-c', 'core.quotepath=false', 'diff', 'v0.16.0', '--name-only', '--', 'user_source'], cwd=root, text=True).splitlines())
+changed.update(subprocess.check_output(['git', '-c', 'core.quotepath=false', 'diff', 'v0.17.0-plan.1', '--name-only', '--', 'TD_project'], cwd=root, text=True).splitlines())
 saved = []
 for name in inputs:
     if name.as_posix() in changed:
