@@ -1,3 +1,11 @@
+# 当前正式版：v0.16.0
+
+功能与 v0.15.0 相同，LUT 优化后 15402→14190 LUT、DSP 15→13，为后续功能留出余量。S1、S2 板测均获用户确认，S2 Flash 冷启动运行 40 分钟正常。复用 s2-local.1 原 bit。
+
+[下载与使用](releases/v0.16.0/README.md) · [最终验证](releases/v0.16.0/FINAL_VALIDATION.md) · [历史归档](docs/history/2026-10-14/lut-optimization/README.md)。回退 v0.15.0。
+
+## 历史记录
+
 # 当前正式版：v0.15.0
 
 亮度、对比度与总音量调节完成：SW2/SW1=01/10 调画面参数，KEY4 切换总音量，参数条显示 B/C/V。S2 功能及 S3 Flash 持续运行 20 分钟、完全断电冷启动均获用户确认。复用 s2-local.1 原 bit。

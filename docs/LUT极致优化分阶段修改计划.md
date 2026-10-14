@@ -1,6 +1,6 @@
 # v0.16.0 LUT 极致优化（功能不变）分阶段修改计划
 
-状态：S0 计划已确认（2026-10-14），基线 main fdae2c2 / v0.15.0，分支 feature/lut-optimization，标签 v0.16.0-plan.1。S1 board.1 通过（15072 LUT）；S2 board.1 通过（14190 LUT，Flash 冷启动运行 40 分钟）；“乘法改 DSP”经门级报告核实已在 DSP，取消。
+状态：S0 计划已确认（2026-10-14），基线 main fdae2c2 / v0.15.0，分支 feature/lut-optimization，标签 v0.16.0-plan.1。S1 board.1 通过（15072 LUT）；S2 board.1 通过（14190 LUT，Flash 冷启动运行 40 分钟）。2026-10-14 用户决定 S3 不做，按 S2 结项：正式版 v0.16.0 复用 s2-local.1 原 bit，归档 docs/history/2026-10-14/lut-optimization；“乘法改 DSP”经门级报告核实已在 DSP，取消。
 
 ## Context
 
