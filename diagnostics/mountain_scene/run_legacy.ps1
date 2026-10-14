@@ -1,7 +1,7 @@
 param(
  [ValidateSet('decoder','scaler','reader','reader32','preview','system','rgba_system','pcm','audit')][string]$Suite,
  [string]$RunName='mountain_m1',
- [string]$SimRoot='F:/quartus18.1/modelsim_ase/win32aloem',
+ [string]$SimRoot='F:/modelsim/win64',
  [string]$TdRoot='E:/TD',
  [int[]]$Cases=@(),[int]$ByteGap=2,[int]$TestMode=0,[int]$ScaleTest=0,
  [int]$Mixed=1,[switch]$Audio,[switch]$Failures

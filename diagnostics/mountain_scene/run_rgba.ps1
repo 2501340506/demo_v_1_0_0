@@ -1,4 +1,4 @@
-param([string]$RunName='mountain_m1_rgba01',[string]$SimRoot='F:/quartus18.1/modelsim_ase/win32aloem',[string]$TdRoot='E:/TD')
+param([string]$RunName='mountain_m1_rgba_verify',[string]$SimRoot='F:/modelsim/win64',[string]$TdRoot='E:/TD')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$RunName"

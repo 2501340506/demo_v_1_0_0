@@ -138,9 +138,9 @@
   "mountain_m1_mode5/reader0_gap0_mode5.log": "PASS FAT32 reader",
   "mountain_m1_reader_scaled/reader0_gap0_mode0.log": "PASS FAT32 reader",
   "mountain_m1_reader32_scaled/reader0_gap0_mode0.log": "PASS FAT32 reader",
-  "mountain_m1_rgba_memory02/system.log": "PASS RGBA physical system:",
-  "mountain_m1_pcm02/tb_pcm_production.log": "PASS production PCM:",
-  "mountain_m1_pcm02/tb_pcm_preview_rescan.log": "PASS production PCM:",
-  "mountain_m1_preview02/system.log": "PASS preview system:",
-  "mountain_m1_system01/system.log": "PASS cache system:"
+  "mountain_m1_rgba_memory03/system.log": "PASS RGBA physical system:",
+  "mountain_m1_pcm03/tb_pcm_production.log": "PASS production PCM:",
+  "mountain_m1_pcm03/tb_pcm_preview_rescan.log": "PASS production PCM:",
+  "mountain_m1_preview03/system.log": "PASS preview system:",
+  "mountain_m1_system02/system.log": "PASS cache system:"
 }

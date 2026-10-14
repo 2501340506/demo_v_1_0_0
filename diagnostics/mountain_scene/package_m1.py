@@ -52,7 +52,8 @@ for folder in sorted({Path(name).parent for name in logs}):
         assert 'Errors: 0,' in text and not re.search(r'\*\* (Fatal|Error)', text), path
         for line in text.splitlines():
             if '** Warning:' in line:
-                assert 'vlog-2121' in line, f'Unexpected compile warning: {path}: {line}'
+                known_macro_notice = line.strip() == '** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.'
+                assert 'vlog-2121' in line or known_macro_notice, f'Unexpected compile warning: {path}: {line}'
         compile_logs.append(path.relative_to(output))
 audit = build / 'timing_audit'
 assert (audit / 'check_timing.txt').exists() and (audit / 'audit.timing').exists()
@@ -102,7 +103,7 @@ manifest = ['# M1 build inputs', '', f'Baseline v0.16.0; isolated build {a.build
             f'{len(saved)} changed production inputs under sources/; {len(logs)} passing simulation transcripts.',
             f'{len(compile_logs)} compiler transcripts retained separately; audit categories/exception summaries equal v0.16.0.',
             'Unchanged user_source inputs reference v0.16.0; unchanged demo.al references v0.17.0-plan.1 (user project snapshot).',
-            'Tool roots: E:/TD; F:/quartus18.1/modelsim_ase/win32aloem. No source/configuration changes after build.', '']
+            'Tools: TD E:/TD; ModelSim SE-64 10.6e F:/modelsim/win64 (long regressions), Intel Starter 10.5b F:/quartus18.1/modelsim_ase/win32aloem (decoder/scaler/FAT32). No production source/configuration changes after build.', '']
 manifest += [f'- {n.as_posix()} ({(root / n).stat().st_size} bytes)' + (' [changed]' if n in saved else '') for n in inputs]
 (release / 'MANIFEST.md').write_text('\n'.join(manifest) + '\n', encoding='utf-8')
 print(f'PASS packaged {release}: {len(inputs)} byte-identical inputs, {len(saved)} changed inputs, {len(logs)} logs')

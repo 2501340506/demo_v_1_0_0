@@ -1,4 +1,4 @@
-param([string]$Prefix='mountain_m1_verify',[string]$SimRoot='F:/quartus18.1/modelsim_ase/win32aloem',[string]$TdRoot='E:/TD')
+param([string]$Prefix='mountain_m1_verify',[string]$SimRoot='F:/modelsim/win64',[string]$TdRoot='E:/TD')
 $ErrorActionPreference='Stop'
 $common=@{SimRoot=$SimRoot;TdRoot=$TdRoot}
 & "$PSScriptRoot/run_legacy.ps1" @common -Suite decoder -RunName "${Prefix}_decoder"
