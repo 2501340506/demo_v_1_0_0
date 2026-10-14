@@ -2,18 +2,18 @@
 module tb_scaler;
  reg clk=0,rst=1,start=0,iv=0,oready=0;
  always #5 clk=~clk;
- reg [15:0] w,h,ix,iy;reg [23:0] rgb;
- wire ir,ov,done;wire [23:0] out_rgb;
+ reg [15:0] w,h,ix,iy;reg [31:0] rgb;
+ wire ir,ov,done;wire [31:0] out_rgb;
  image_scale_nearest dut(clk,rst,start,w,h,iv,ir,rgb,ix,iy,ov,oready,out_rgb,done);
  integer count,dw,dh,l,t,xx,yy,srcx,srcy,cases=0,cycles=0;
- reg checking=0;reg [23:0] expected;
- function [23:0] pattern(input integer x,y);
-  pattern={8'(x*7+y),8'(y*3+x/7),8'(x^y)};
+ reg checking=0;reg [31:0] expected;
+ function [31:0] pattern(input integer x,y);
+  pattern={8'(x*7+y),8'(y*3+x/7),8'(x^y),8'(x*13+y*19)};
  endfunction
  always @(negedge clk) begin cycles=cycles+1;oready=(cycles%19<13);end
  always @(posedge clk) if(!rst && checking && ov && oready) begin
   xx=count%640; yy=479-count/640;
-  expected=0;
+  expected=32'h000000FF;
   if(xx>=l && xx<l+dw && yy>=t && yy<t+dh) begin
    srcx=(xx-l)*w/dw;srcy=(yy-t)*h/dh;expected=pattern(srcx,srcy);
   end

@@ -3,10 +3,10 @@ module tb_scale_stream;
  reg clk=0,rst=1,start=0,fv=0,fe=0,ready=0;
  always #5 clk=~clk;
  reg [31:0] size,offset;reg [7:0] byte_in;
- wire permit,pv,done;wire [23:0] rgb;wire [2:0] error;
+ wire permit,pv,done;wire [31:0] rgb;wire [2:0] error;
  bmp_scale_stream dut(clk,rst,start,size,fv,byte_in,offset,fe,8'd0,permit,pv,ready,rgb,done,error);
  integer w,h,stride,total,dw,dh,l,t,count,xx,yy,sx,sy,cycles=0,done_count;
- reg [7:0] header[0:53];reg [23:0] expected;reg checking=0;
+ reg [7:0] header[0:53];reg [31:0] expected;reg checking=0;
  function [23:0] pattern(input integer x,y);pattern={8'(x*7+y),8'(y*3+x/7),8'(x^y)};endfunction
  function [7:0] source(input integer n);
   integer x,y,c;reg [23:0] p;
@@ -21,8 +21,8 @@ module tb_scale_stream;
  always @(posedge clk) if(!rst)begin
   if(done)begin done_count=done_count+1;if(count!=307200)$fatal(1,"early done");end
   if(checking && pv && ready)begin
-   xx=count%640;yy=479-count/640;expected=0;
-   if(xx>=l && xx<l+dw && yy>=t && yy<t+dh)begin sx=(xx-l)*w/dw;sy=(yy-t)*h/dh;expected=pattern(sx,sy);end
+   xx=count%640;yy=479-count/640;expected=32'h000000FF;
+   if(xx>=l && xx<l+dw && yy>=t && yy<t+dh)begin sx=(xx-l)*w/dw;sy=(yy-t)*h/dh;expected={pattern(sx,sy),8'hFF};end
    if(rgb!==expected)$fatal(1,"stream %0dx%0d pixel %0d got %h expected %h",w,h,count,rgb,expected);
    count=count+1;
   end

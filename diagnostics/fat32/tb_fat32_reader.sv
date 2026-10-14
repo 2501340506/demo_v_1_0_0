@@ -2,6 +2,7 @@
 module tb_fat32_reader;
     parameter integer CASE_ID=0;
     parameter integer SCALE_TEST=0;
+    parameter integer RGBA_TEST=0;
     parameter FIXTURE_DIR="diagnostics/output/fat32_core/fixtures";
     parameter integer BYTE_GAP=2;
     parameter integer TEST_MODE=0; // 1..3: rejected headers; 4: ack timeout; 5: last byte/end together
@@ -18,7 +19,7 @@ module tb_fat32_reader;
     integer active_image=0,pixels=0;
     reg serving=0,raw_released=1;
     wire pixel_valid;
-    wire [23:0] pixel_rgb;
+    wire [31:0] pixel_rgb;
 
     wire ready,scan_fault,found,load_done,load_error,write_req;
     wire [31:0] found_cluster,found_size;
@@ -52,6 +53,7 @@ module tb_fat32_reader;
     end
     integer j,seed,row,col;
     reg [23:0] expected_rgb;
+    reg [7:0] expected_t;
     // Independent sparse block device. Request trace is generated from FAT
     // contents by Python, not from RTL states or internal cluster registers.
     always @(negedge clk) begin
@@ -76,14 +78,16 @@ module tb_fat32_reader;
     always @(posedge clk) if(!rst && pixel_valid)begin
        row=pixels/3;col=pixels%3;seed=active_image*29+1;
        expected_rgb={8'(row*3+seed),8'(col+17),8'(row+seed)};
+       expected_t=RGBA_TEST?8'(row*19+col*13+seed):8'hFF;
        if(SCALE_TEST)begin
-        col=pixels%640;row=479-pixels/640;expected_rgb=0;
+        col=pixels%640;row=479-pixels/640;expected_rgb=0;expected_t=8'hFF;
         if(col>=312 && col<327)begin
          col=(col-312)*3/15;row=90-row*91/480;
          expected_rgb={8'(row*3+seed),8'(col+17),8'(row+seed)};
+         expected_t=RGBA_TEST?8'(row*19+col*13+seed):8'hFF;
         end
        end
-       if(meta[27+active_image]==0 && pixel_rgb!==expected_rgb)$fatal(1,"pixel %0d %h expected %h",pixels,pixel_rgb,expected_rgb);
+       if(meta[27+active_image]==0 && pixel_rgb!=={expected_rgb,expected_t})$fatal(1,"pixel %0d %h expected %h",pixels,pixel_rgb,{expected_rgb,expected_t});
        pixels=pixels+1;
     end
     integer i,k,expected_count,first_slot;
@@ -96,7 +100,7 @@ module tb_fat32_reader;
       if(TEST_MODE>=1 && TEST_MODE<=3)begin
         if(first_slot<0)$fatal(1,"missing mutation target");
         if(TEST_MODE==1)media[first_slot*512+18]=2;
-        if(TEST_MODE==2)media[first_slot*512+28]=32;
+        if(TEST_MODE==2)media[first_slot*512+28]=16;
         if(TEST_MODE==3)media[first_slot*512+2]=1;
       end
       repeat(4)@(negedge clk);rst=0;@(negedge clk);

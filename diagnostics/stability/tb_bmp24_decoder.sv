@@ -12,7 +12,8 @@ module tb_bmp24_decoder;
   .clk(clk),.rst(rst),.expected_width(16'd0),.expected_height(16'd0),.file_start(start),.file_size(size),.file_valid(valid),.file_byte(data),
   .file_byte_offset(off),.file_end(ending),.upstream_error(upstream),.header_accepted(accepted),
   .pixel_valid(pvalid),.pixel_rgb(rgb),.pixel_x(px),.pixel_y(py),.frame_commit(commit),
-  .bmp_done(done),.bmp_error(err));
+  .bmp_done(done),.bmp_error(err),.pixel_ready(1'b1),.file_ready(),
+  .image_width(),.image_height(),.pixel_rgba());
  task put32(input integer p,input integer v); begin
   header[p]=v[7:0];header[p+1]=v[15:8];header[p+2]=v[23:16];header[p+3]=v[31:24];end endtask
  function [7:0] source(input integer n);
