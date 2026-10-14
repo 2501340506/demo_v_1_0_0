@@ -34,7 +34,7 @@ module tb_fat32_reader;
       .a_req(1'b0),.a_lba(32'd0),.a_cancel(1'b0),.a_urgent(1'b0),
       .a_busy(),.a_valid(),.a_done(),.a_error(),.a_byte(),.a_index(),
       .clk(clk),.rst(rst),.sd_init_done(1'b1),.scan_start(scan_start),.load_cancel(1'b0),.load_start(file_start),
-      .load_cluster(selected_cluster),.load_size(selected_size),.bmp_width(16'd3),.bmp_height(16'd91),
+      .load_cluster(selected_cluster),.load_size(selected_size),.load_index(2'd0),.bmp_width(16'd3),.bmp_height(16'd91),
       .ready(ready),.scan_done(scan_done),.scan_error(scan_fault),.scan_found_valid(found),
       .scan_found_cluster(found_cluster),.scan_found_size(found_size),.scan_found_total(found_count),
       .load_done(load_done),.load_error(load_error),.bmp_error(bmp_error),.fat_error(fat_error),.state_code(),

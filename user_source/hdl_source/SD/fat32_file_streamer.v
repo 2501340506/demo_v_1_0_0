@@ -47,6 +47,7 @@ module fat32_file_streamer #(
     localparam ST_OFFSET=4'd8,ST_SHIFT=4'd9,ST_ADDRESS=4'd10,ST_VALIDATE=4'd11,ST_FAT_EVAL=4'd12;
     reg start_bad,start_empty;
     reg [31:0] cluster_offset;
+    reg [2:0] shift_count;   // cluster_offset is shifted one bit per cycle
 
     localparam integer CHAIN_COUNT_WIDTH = $clog2(MAX_VISITED_CLUSTERS + 1);
 
@@ -103,7 +104,7 @@ module fat32_file_streamer #(
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            state <= ST_IDLE;cluster_offset<=0;start_bad<=0;start_empty<=0;
+            state <= ST_IDLE;cluster_offset<=0;shift_count<=0;start_bad<=0;start_empty<=0;
             file_done <= 1'b0;
             file_valid <= 1'b0;
             file_byte <= 8'd0;
@@ -169,8 +170,9 @@ module fat32_file_streamer #(
                         state <= ST_OFFSET;
                     end
                 end
-                ST_OFFSET:begin cluster_offset<=current_cluster-2;state<=ST_SHIFT;end
-                ST_SHIFT:begin cluster_offset<=cluster_offset<<cluster_shift;state<=ST_ADDRESS;end
+                ST_OFFSET:begin cluster_offset<=current_cluster-2;shift_count<=cluster_shift;state<=ST_SHIFT;end
+                ST_SHIFT:if(shift_count!=0)begin cluster_offset<={cluster_offset[30:0],1'b0};shift_count<=shift_count-1'b1;end
+                else state<=ST_ADDRESS;
                 ST_ADDRESS:begin sector_lba<=data_start_lba+cluster_offset;state<=ST_DATA_REQ;end
                 ST_DATA_REQ: if (!sector_busy && (!DATA_GATE_ENABLE || data_permit)) begin
                     sector_req <= 1'b1;

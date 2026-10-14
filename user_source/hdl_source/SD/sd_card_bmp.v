@@ -81,11 +81,7 @@ wire bmp_data_wr_en;wire [23:0] bmp_data;
 wire scan_request,scan_accept,scan_result_ready,scan_busy;
 reg scan_result_valid,scan_success,scan_error_seen;
 reg [2:0] img_found_count;
-reg [31:0] img_cluster0,img_cluster1,img_cluster2,img_cluster3;
-reg [31:0] img_size0,img_size1,img_size2,img_size3;
 wire [1:0] img_idx,load_idx,current_bank;
-wire [31:0] load_cluster=(load_idx==0)?img_cluster0:(load_idx==1)?img_cluster1:(load_idx==2)?img_cluster2:img_cluster3;
-wire [31:0] load_size=(load_idx==0)?img_size0:(load_idx==1)?img_size1:(load_idx==2)?img_size2:img_size3;
 
 localparam SC_IDLE=0,SC_RESET=1,SC_INIT=2,SC_SCAN=3,SC_RESULT=4;
 reg [2:0] scan_state;
@@ -147,8 +143,6 @@ always @(posedge clk or posedge rst) begin
  if(rst) begin
   scan_state<=SC_IDLE;reset_count<=0;scan_start_pulse<=0;scan_result_valid<=0;scan_success<=0;
   scan_error_seen<=0;img_found_count<=0;
-  img_cluster0<=0;img_cluster1<=0;img_cluster2<=0;img_cluster3<=0;
-  img_size0<=0;img_size1<=0;img_size2<=0;img_size3<=0;
  end else begin
   scan_start_pulse<=0;
   case(scan_state)
@@ -163,16 +157,8 @@ always @(posedge clk or posedge rst) begin
    end
    SC_SCAN: begin
     if(bmp_scan_error) scan_error_seen<=1;
-    if(scan_found_valid) begin
-     case(img_found_count)
-      0:begin img_cluster0<=scan_found_cluster;img_size0<=scan_found_size;end
-      1:begin img_cluster1<=scan_found_cluster;img_size1<=scan_found_size;end
-      2:begin img_cluster2<=scan_found_cluster;img_size2<=scan_found_size;end
-      3:begin img_cluster3<=scan_found_cluster;img_size3<=scan_found_size;end
-      default:;
-     endcase
-     img_found_count<=scan_found_total;
-    end
+    // The reader keeps the found-image table; loads select it by index.
+    if(scan_found_valid) img_found_count<=scan_found_total;
     if(scan_done) begin
      scan_success<=!scan_error_seen && !bmp_scan_error;
      scan_result_valid<=1;scan_state<=SC_RESULT;
@@ -417,7 +403,7 @@ always @(posedge clk or posedge rst) begin
  end
 end
 
-fat32_bmp_reader #(.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+fat32_bmp_reader #(.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
  .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
  .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
@@ -425,7 +411,7 @@ fat32_bmp_reader #(.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FR
  .a_busy(a_busy),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),.a_byte(a_byte),.a_index(a_index),
  .scan_start(scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
- .load_start(load_start_pulse),.load_cancel(parser_cancel),.load_cluster(load_cluster),.load_size(load_size),
+ .load_start(load_start_pulse),.load_cancel(parser_cancel),.load_cluster(32'd0),.load_size(32'd0),.load_index(load_idx),
  .load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
  .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),.write_req(write_req),.write_req_ack(write_req_ack_sync),.write_ready(write_ready),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),

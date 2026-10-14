@@ -22,7 +22,7 @@ module fat32_volume_scanner #(
         BOOT_REQ=4, BOOT_WAIT=5, BOOT_PARSE=6, LAYOUT=7, ROOT=8,
         DIR_REQ=9, DIR_WAIT=10, DIR_NEXT=11, FAT_REQ=12, FAT_WAIT=13,
         FAT_PARSE=14, FINISH=15, LAYOUT_SUB=16, LAYOUT_SHIFT=17, LAYOUT_MAX=18, LAYOUT_CHECK=19, ROOT_SHIFT=20, ROOT_ADD=21,
-        LAYOUT_ACCEPT=22,FAT_CHECK=23;
+        LAYOUT_ACCEPT=22,FAT_CHECK=23,LAYOUT_LOAD=24;
     localparam ERR_SECTOR=8'h10, ERR_SIGNATURE=8'h20, ERR_BPB=8'h21,
         ERR_LOOP=8'h23, ERR_RANGE=8'h24, ERR_LIMIT=8'h26;
     localparam COUNT_BITS=$clog2(MAX_VISITED_CLUSTERS+1);
@@ -44,6 +44,7 @@ module fat32_volume_scanner #(
     wire [8:0] fat_offset={current_cluster[6:0],2'b00};
     reg [31:0] overhead,data_sectors,cluster_count,partition_reserved,cluster_offset;
     reg data_borrow;   // total_sectors<overhead, from the LAYOUT_SUB subtraction
+    reg [2:0] shift_count;   // layout and root shifts move one bit per cycle
     reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
     wire bpb_fields_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
         reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
@@ -116,7 +117,7 @@ module fat32_volume_scanner #(
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
-            overhead<=0;data_sectors<=0;data_borrow<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
+            overhead<=0;data_sectors<=0;data_borrow<=0;shift_count<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
             audio_match<=0;
         end else begin
@@ -215,9 +216,11 @@ module fat32_volume_scanner #(
                 LAYOUT_SUB:begin
                     {data_borrow,data_sectors}<={1'b0,total_sectors}-{1'b0,overhead};
                     data_start_lba<=partition_lba+overhead;
-                    state<=LAYOUT_SHIFT;
+                    state<=LAYOUT_LOAD;
                 end
-                LAYOUT_SHIFT:begin cluster_count<=data_sectors>>cluster_shift;state<=LAYOUT_MAX;end
+                LAYOUT_LOAD:begin cluster_count<=data_sectors;shift_count<=cluster_shift;state<=LAYOUT_SHIFT;end
+                LAYOUT_SHIFT:if(shift_count!=0)begin cluster_count<={1'b0,cluster_count[31:1]};shift_count<=shift_count-1'b1;end
+                else state<=LAYOUT_MAX;
                 LAYOUT_MAX:begin max_cluster<=cluster_count+1;state<=LAYOUT_CHECK;end
                 LAYOUT_CHECK:begin
                     layout_bad<=data_borrow || data_sectors==0 || cluster_count==0 ||
@@ -229,8 +232,9 @@ module fat32_volume_scanner #(
                     if(layout_bad)fail(ERR_BPB);
                     else begin current_cluster<=root_cluster;visited<=1;dir_sector<=0;state<=ROOT;end
                 end
-                ROOT:begin cluster_offset<=current_cluster-2;state<=ROOT_SHIFT;end
-                ROOT_SHIFT:begin cluster_offset<=cluster_offset<<cluster_shift;state<=ROOT_ADD;end
+                ROOT:begin cluster_offset<=current_cluster-2;shift_count<=cluster_shift;state<=ROOT_SHIFT;end
+                ROOT_SHIFT:if(shift_count!=0)begin cluster_offset<={cluster_offset[30:0],1'b0};shift_count<=shift_count-1'b1;end
+                else state<=ROOT_ADD;
                 ROOT_ADD:begin sector_lba<=data_start_lba+cluster_offset;state<=DIR_REQ;end
                 DIR_REQ:if(!sector_busy)begin sector_req<=1;name_match<=0;state<=DIR_WAIT;end
                 DIR_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=DIR_NEXT;end

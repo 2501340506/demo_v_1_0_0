@@ -2,14 +2,17 @@
 module fat32_bmp_reader #(
  parameter integer CLK_FREQ_HZ=100000000, TIMEOUT_MS=500,
  parameter integer SCAN_AUDIO=0, SCALE_ENABLE=0,
- parameter integer MAX_VISITED_CLUSTERS=8192
+ parameter integer MAX_VISITED_CLUSTERS=8192,
+ // 1: loads select a found image by index from the scanner table instead of
+ // taking load_cluster/load_size; the table only changes during a scan.
+ parameter integer LOAD_BY_INDEX=0
 )(
  input clk,rst,sd_init_done,scan_start,load_start,load_cancel,
  output audio_found,output [31:0] audio_cluster,audio_size,
  output [7:0] audio_spc,output [31:0] audio_fat_lba,audio_data_lba,audio_max_cluster,
  input a_req,input [31:0] a_lba,input a_urgent,a_cancel,
  output a_busy,a_valid,a_done,output [7:0] a_error,a_byte,output [8:0] a_index,
- input [31:0] load_cluster,load_size,
+ input [31:0] load_cluster,load_size,input [1:0] load_index,
  input [15:0] bmp_width,bmp_height,
  output ready, output reg scan_done,scan_error,scan_found_valid,
  output reg [31:0] scan_found_cluster,scan_found_size,
@@ -47,14 +50,17 @@ module fat32_bmp_reader #(
  wire [31:0] header_file_len;
  reg header_go;
  reg selected_bad;
- wire [31:0] selected_cluster=clusters[candidate[1:0]];
- wire [31:0] selected_size=sizes[candidate[1:0]];
+ reg [1:0] found_slot[0:3];   // scanner slot of each accepted image
+ wire [1:0] select_slot=(LOAD_BY_INDEX && state==IDLE) ? found_slot[load_index] : candidate[1:0];
+ wire [31:0] selected_cluster=clusters[select_slot];
+ wire [31:0] selected_size=sizes[select_slot];
  function [2:0] spc_shift;
  input [7:0] v;
  begin case(v) 2:spc_shift=1;4:spc_shift=2;8:spc_shift=3;16:spc_shift=4;
  32:spc_shift=5;64:spc_shift=6;128:spc_shift=7;default:spc_shift=0;endcase end
  endfunction
  reg [2:0] header_cluster_shift;
+reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  always @(posedge clk or posedge rst)begin
   if(rst)header_cluster_shift<=0;
   else header_cluster_shift<=spc_shift(spc);
@@ -148,7 +154,7 @@ module fat32_bmp_reader #(
  state<=IDLE;scan_go<=0;file_go<=0;header_go<=0;scan_done<=0;scan_error<=0;
  scan_found_valid<=0;scan_found_cluster<=0;scan_found_size<=0;scan_found_total<=0;
  load_done<=0;load_error<=0;bmp_error<=0;fat_error<=0;candidate<=0;
- task_cluster<=0;task_size<=0;header_lba<=0;io_error<=0;stream_finished<=0;decode_finished<=0;ack_wait<=0;selected_bad<=0;
+ task_cluster<=0;task_size<=0;header_lba<=0;header_shift_count<=0;found_slot[0]<=0;found_slot[1]<=0;found_slot[2]<=0;found_slot[3]<=0;io_error<=0;stream_finished<=0;decode_finished<=0;ack_wait<=0;selected_bad<=0;
  end else begin
  scan_go<=0;file_go<=0;header_go<=0;scan_found_valid<=0;load_done<=0;load_error<=0;scan_error<=0;
  // Observe file errors with the same response bundle consumed by streamer.
@@ -165,7 +171,7 @@ module fat32_bmp_reader #(
  end else case(state)
  IDLE:if(sd_init_done)begin
  if(scan_start)begin scan_done<=0;scan_found_total<=0;candidate<=0;fat_error<=0;bmp_error<=0;io_error<=0;scan_go<=1;state<=SCAN;end
- else if(load_start)begin task_cluster<=load_cluster;task_size<=load_size;io_error<=0;fat_error<=0;bmp_error<=0;
+ else if(load_start)begin task_cluster<=LOAD_BY_INDEX ? selected_cluster : load_cluster;task_size<=LOAD_BY_INDEX ? selected_size : load_size;io_error<=0;fat_error<=0;bmp_error<=0;
  stream_finished<=0;decode_finished<=0;ack_wait<=0;state<=WRITE_WAIT;end
  end
  SCAN:if(volume_done)begin
@@ -181,9 +187,10 @@ module fat32_bmp_reader #(
  SELECT_CHECK:begin
  if(selected_bad)begin candidate<=candidate+1'b1;state<=SELECT;end
  else begin task_cluster<=selected_cluster;task_size<=selected_size;
- header_lba<=selected_cluster-2;state<=HEADER_SHIFT;end
+ header_lba<=selected_cluster-2;header_shift_count<=header_cluster_shift;state<=HEADER_SHIFT;end
  end
- HEADER_SHIFT:begin header_lba<=header_lba<<header_cluster_shift;state<=HEADER_ADD;end
+ HEADER_SHIFT:if(header_shift_count!=0)begin header_lba<={header_lba[30:0],1'b0};header_shift_count<=header_shift_count-1'b1;end
+ else state<=HEADER_ADD;
  HEADER_ADD:begin header_lba<=data_lba+header_lba;state<=HEADER_RESET;end
  HEADER_RESET:state<=HEADER_REQ;
  HEADER_REQ:if(!sector_busy)begin header_go<=1;state<=HEADER_WAIT;end
@@ -193,7 +200,8 @@ module fat32_bmp_reader #(
  end
  HEADER_CHECK:begin
  if(header_match && required_end<={2'b0,task_size})begin
- scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;end
+ scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;
+ if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];end
  candidate<=candidate+1'b1;state<=SELECT;
  end
  SCAN_FINISH:if(!sector_busy)begin scan_done<=1;state<=IDLE;end

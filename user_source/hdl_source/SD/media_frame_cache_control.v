@@ -59,6 +59,7 @@ module media_frame_cache_control (
     reg foreground_pending;
     reg foreground_manual;
     reg [1:0] foreground_image;
+    reg [2:0] image_last;   // always image_count-1, written on the same edges
     reg retry_used;
 
     assign cache_banks = {bank_map[3],bank_map[2],bank_map[1],bank_map[0]};
@@ -104,7 +105,7 @@ module media_frame_cache_control (
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             phase <= SCAN_ISSUE; load_state <= LOAD_IDLE;
-            image_count <= 0; cache_valid <= 0; cache_failed <= 0;
+            image_count <= 0; image_last <= 3'd7; cache_valid <= 0; cache_failed <= 0;
             for (i=0; i<4; i=i+1) bank_map[i] <= 0;
             foreground_pending <= 0; foreground_manual <= 0; foreground_image <= 0; retry_used <= 0;
             load_image <= 0; load_bank <= 0; storage_stopped <= 0;
@@ -161,6 +162,7 @@ module media_frame_cache_control (
                 SCAN_WAIT: if (scan_result_valid) begin
                     phase <= RUN;
                     image_count <= scan_success ? scan_image_count : 3'd0;
+                    image_last <= (scan_success ? scan_image_count : 3'd0) - 3'd1;
                     if (!scan_success) storage_stopped <= 1;
                     if (scan_success && scan_image_count != 0) begin
                         foreground_pending <= 1;
@@ -169,7 +171,7 @@ module media_frame_cache_control (
                     end
                 end
                 QUIESCE: if (load_state == LOAD_IDLE && !display_request && !committed_valid) begin
-                    cache_valid <= 0; cache_failed <= 0; image_count <= 0;
+                    cache_valid <= 0; cache_failed <= 0; image_count <= 0; image_last <= 3'd7;
                     foreground_pending <= 0; first_image_committed <= 0;
                     storage_stopped <= 0;
                     phase <= SCAN_ISSUE;
@@ -201,7 +203,7 @@ module media_frame_cache_control (
                                     // Walk one index per cycle rather than build
                                     // a combinational four-entry search. The
                                     // currently displayed valid entry bounds it.
-                                    foreground_image <= ({1'b0,foreground_image} == image_count-3'd1) ?
+                                    foreground_image <= ({1'b0,foreground_image} == image_last) ?
                                                         2'd0 : foreground_image+2'd1;
                                 end else begin
                                     foreground_pending <= 0;
