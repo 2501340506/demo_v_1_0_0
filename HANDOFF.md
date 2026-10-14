@@ -1,3 +1,13 @@
+# 当前交接：v0.16.0 S1 board.1 通过，进入 S2（2026-10-14）
+
+- 当前任务：LUT 极致优化 S2（结构改写，可见行为不变），分支 feature/lut-optimization。
+- 已完成：用户确认 s1-local.1 功能均正常，记录 releases/v0.16.0/s1-local.1/BOARD_RESULT.md，标签 v0.16.0-s1-board.1，推送分支及 plan/s1-local/s1-board 标签。S1：15402→15072 LUT、15→13 DSP。
+- 卡住的问题：无。
+- 下一步计划：S2 批4 HDMI 音频包 BCH 共享/串行化，新建 HDMI 符号流旧新逐拍比较台；构建从 lut_opt_attempt03 起。
+- 踩过的坑：用户反馈为整体“功能均正常”，未逐项列出，按整体记录。
+
+## 历史交接
+
 # 当前交接：v0.16.0 S1 local.1 已固定，等待板测（2026-10-14）
 
 - 当前任务：LUT 极致优化（功能不变）S1；候选 releases/v0.16.0/s1-local.1，标签 v0.16.0-s1-local.1，分支 feature/lut-optimization。
