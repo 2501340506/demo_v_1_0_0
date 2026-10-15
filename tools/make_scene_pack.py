@@ -12,6 +12,8 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw
 import yaml
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from scene_text import encode_text
 
 
 HAZARD = ((0, 0, 0), (96, 48, 16), (0, 96, 224), (0, 192, 64))
@@ -235,13 +237,13 @@ def build(scene_path, output=None):
     folder = scene_path.parent
     scene = yaml.safe_load(scene_path.read_text(encoding="utf-8"))
     require(isinstance(scene, dict) and scene.get("version") == 1, "scene.yaml version must be 1")
-    require("text" not in scene, "text output is planned for M5")
     audio = scene.get("audio", [])
     require(isinstance(audio, list) and len(audio) in (0, 4), "audio must list four stage source paths")
     for source in audio:
         require(isinstance(source, str) and (scene_path.parent / source).is_file(), f"missing audio source: {source}")
     stages = scene["stages"]
     require(len(stages) == 4 and [s["id"] for s in stages] == [1, 2, 3, 4], "need stages 1,2,3,4 in order")
+    text_pack = encode_text(scene["text"], stages) if "text" in scene else None
     # Validate every source before creating the output directory.
     frames = []
     for stage in stages:
@@ -279,6 +281,9 @@ def build(scene_path, output=None):
                         "width": rgb.shape[1], "height": rgb.shape[0],
                         "t_histogram": {str(int(v)): int(n) for v, n in zip(values, counts)}})
     contact_sheet(out)
+    if text_pack:
+        (out / "FONT.BIN").write_bytes(text_pack[0])
+        (out / "TEXT.BIN").write_bytes(text_pack[1])
     audio_records = []
     for index, source in enumerate(audio, 1):
         destination = out / f"SND{index}.PCM"
@@ -288,7 +293,7 @@ def build(scene_path, output=None):
         require(size > 0 and size % 2 == 0, f"invalid PCM output: {destination}")
         audio_records.append({"file": destination.name, "source": source, "bytes": size,
                               "samples": size // 2, "seconds": size / 96000})
-    manifest = {"format": "M4-images-audio-v1" if audio else "M2-images-v1", "scene": scene.get("name", scene_path.stem),
+    manifest = {"format": "M5-scene-v1" if text_pack else "M4-images-audio-v1" if audio else "M2-images-v1", "scene": scene.get("name", scene_path.stem),
                 "bmp_readback": "all RGB/T bytes equal", "expected_png_readback": "24/24 equal",
                 "stage_index": "PIC1..4 corresponds to RTL stage 0..3",
                 "reference": {"hazard_rgb": HAZARD, "front_rgb": FRONT, "front_width": 6,
@@ -297,6 +302,8 @@ def build(scene_path, output=None):
                 "files": records, "audio": audio_records,
                 "audio_format": "48000 Hz mono signed 16-bit little-endian",
                 "board_validation": "pending", "visual_confirmation": "pending"}
+    if text_pack:
+        manifest["text"] = text_pack[2]
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"PASS: {out}: 4 BI_RGB BMPs, all RGB/T bytes read back, 24 expected PNGs read back")
     return manifest

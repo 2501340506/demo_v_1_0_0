@@ -1,12 +1,14 @@
-module adjust_osd_overlay #(parameter ENABLE=1)(
+module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
  input clk,rst,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input [1:0] mode,selected,input [7:0] brightness,contrast,input [3:0] volume_level,
+ input scene_enable,input [1:0] scene_speed,
  output [23:0] rgb_out,output active
 );
  wire [8:0] y;wire frame_start;
  osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(frame_start),.first_active());
  wire [9:0] dx=pixel_x-10'd8;wire [8:0] dy=y-9'd32;
- wire visible=ENABLE && (mode==1 || mode==2);
+ wire speed_visible=SCENE_ENABLE && scene_enable;
+ wire visible=ENABLE && (mode==1 || mode==2 || speed_visible);
  wire region=visible && de && pixel_x>=8 && pixel_x<296 && y>=32 && y<48;
  wire band=visible && de && pixel_x>=4 && pixel_x<300 && y>=28 && y<52;
  // Shared eight-step binary-to-BCD converter runs in vertical blanking.
@@ -62,6 +64,14 @@ module adjust_osd_overlay #(parameter ENABLE=1)(
    16:begin character=v_digits[7:0];item=2;end
    17:begin character="%";item=2;end
   endcase
+  if(speed_visible)begin
+   item=selected;
+   case(dx[8:4])
+    0:character="S";1:character="P";2:character="E";3:character="E";4:character="D";
+    5:character=":";7:character=scene_speed==0?"1":scene_speed==1?"2":"4";
+    8:character="X";default:character=" ";
+   endcase
+  end
  end
  wire [4:0] glyph;
  osd_font_5x7 font(.character(character),.row(dy[3:1]),.pixels(glyph));

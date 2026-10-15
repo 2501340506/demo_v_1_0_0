@@ -2,7 +2,8 @@
 
 module fat32_file_streamer #(
     parameter integer MAX_VISITED_CLUSTERS = 8192,
-    parameter integer DATA_GATE_ENABLE = 0
+    parameter integer DATA_GATE_ENABLE = 0,
+    parameter integer FILE_SIZE_BITS = 32
 ) (
     input  wire        clk,
     input  wire        rst_n,
@@ -56,14 +57,15 @@ module fat32_file_streamer #(
     reg [31:0] next_cluster;
     (* keep = "true" *) reg next_eoc,next_range_bad,next_self;
     (* keep = "true" *) reg [31:0] fat_value_latched, fat_cluster_snapshot;
-    reg [31:0] remaining_bytes;
+    reg [FILE_SIZE_BITS-1:0] remaining_bytes;
     reg [7:0] sector_in_cluster;
     reg [8:0] fat_entry_offset;
     reg [7:0] fat_byte0, fat_byte1, fat_byte2, fat_byte3;
     reg [CHAIN_COUNT_WIDTH-1:0] chain_count;
     // Volume configuration is stable while a request is active; file size is
     // latched because offsets must not depend on the caller's next selection.
-    reg [31:0] size_latched;
+    reg [FILE_SIZE_BITS-1:0] size_latched;
+    wire [FILE_SIZE_BITS-1:0] emitted_offset = size_latched - remaining_bytes;
     reg [2:0] cluster_shift;
     function [2:0] spc_shift;
         input [7:0] value;
@@ -132,7 +134,7 @@ module fat32_file_streamer #(
             if (state == ST_DATA_WAIT && sector_valid && remaining_bytes != 0) begin
                 file_valid <= 1'b1;
                 file_byte <= sector_byte;
-                file_byte_offset <= size_latched - remaining_bytes;
+                file_byte_offset <= emitted_offset;
                 remaining_bytes <= remaining_bytes - 1'b1;
             end
 

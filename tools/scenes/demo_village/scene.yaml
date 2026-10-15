@@ -2,6 +2,14 @@ version: 1
 name: 示意村（虚构教学图）
 base: village.png
 output: generated
+text:
+  village: 示意村
+  subtitles:
+    - 持续降雨注意预警
+    - 发现裂缝远离坡体
+    - 滑坡山洪立即避险
+    - 沿路线向高地撤离
+  warning: 立即撤离前往高地!
 audio:
   - placeholder1.wav
   - placeholder2.wav

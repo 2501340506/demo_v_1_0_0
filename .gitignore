@@ -35,3 +35,4 @@ work/
 __pycache__/
 # M4 reproducible scene output; fixed card assets are retained in the candidate.
 /tools/scenes/demo_village/generated_m4/
+/tools/scenes/demo_village/generated_m5/

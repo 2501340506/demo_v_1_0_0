@@ -8,7 +8,8 @@ module scroll_text_overlay #(
     parameter integer TEXT_Y = 444,
     parameter integer PIXELS_PER_FRAME = 1,
     parameter integer CN_ENABLE = 0,
-    parameter integer RUNTIME_ENABLE = 0
+    parameter integer RUNTIME_ENABLE = 0,
+    parameter integer BRAM_ENABLE = 0
 )(
     input clk, rst, vs, de,
     input [9:0] pixel_x,
@@ -18,7 +19,8 @@ module scroll_text_overlay #(
     output wire active,
     input [119:0] runtime_text,
     input [3:0] runtime_length,
-    input runtime_enable, runtime_text_changed
+    input runtime_enable, runtime_text_changed,
+    input font_override,output [7:0] font_character,output [3:0] font_row,font_column,output font_region
 );
     localparam integer MIXED_LEN = 12;
     localparam integer MAX_WIDTH = (RUNTIME_ENABLE ? 15 : (CN_ENABLE ? MIXED_LEN : TEXT_LEN)) * 16;
@@ -93,7 +95,10 @@ module scroll_text_overlay #(
     wire in_region = ENABLE && subtitle_enabled && started && de && pixel_x >= WINDOW_LEFT && pixel_x < WINDOW_RIGHT &&
                      line_y >= TEXT_Y && line_y < TEXT_Y + 16 && text_x >= 0 && text_x < text_width;
     wire is_cn = character[7:4] == 4'h8;
-    wire hit = in_region && (is_cn ? cn_glyph[15-text_x[3:0]] :
+    assign font_character=character;assign font_row=dy[3:0];assign font_column=text_x[3:0];
+    assign font_region=in_region && is_cn;
+    wire [15:0] selected_cn_glyph=BRAM_ENABLE && font_override ? 16'd0 : cn_glyph;
+    wire hit = in_region && (is_cn ? selected_cn_glyph[15-text_x[3:0]] :
                (text_x[3:1] < 5 && dy[3:1] < 7 && glyph[3'd4-text_x[3:1]]));
     assign active = hit;
     assign rgb_out = hit ? 24'hffffff : rgb_in;

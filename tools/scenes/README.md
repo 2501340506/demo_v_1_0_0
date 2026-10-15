@@ -94,3 +94,16 @@ py -I diagnostics/mountain_scene/test_scene_audio.py
 ```
 
 4 项音频专项及 8 项原图像专项通过；除 manifest 外 37 个图像输出与 M2 逐字节相同，原生 WAV 与输出 PCM 数据逐字节一致。`generated_m4/` 为本地可再生输出；固定的四张 BMP、四段 PCM 和 manifest 见 [M4 候选](../../releases/v0.17.0/m4-local.1/README.md)，expected 继续引用 M2 的 `generated/expected/`。
+
+## M5 字库与文本输出
+
+在顶层增加 `text` 配置：`titles` 和 `subtitles` 各四项，`warning` 和 `village` 各一项。省略 titles 时采用四阶段的 name。每段最多 31 字，支持 CJK 汉字及 `0123456789 :.-/!`。可选 `font` 指定字体文件，默认 `C:/Windows/Fonts/simsun.ttc`；新增字使用 SimSun 16px、原点 (0,0) 的 16×16 单色点阵。前 13 个字逐位提取原 case 字库，新增字符按文案首次出现顺序排列，总槽数最多 128。
+
+工具在创建输出目录前完成文案与字体校验；输出 FONT.BIN（每字 32 字节、MSB 在左）和 TEXT.BIN（TX、版本 1、10 段、小端绝对偏移）。段 0..7 依次是四阶段标题/字幕，8 是预警语，9 是村名。字符 00..7F 为字库槽，F0..FF 对应上述数字和符号。完整格式见 [M5 实施说明](../../docs/M5_IMPLEMENTATION.md)。缺省 `text` 时仍支持只输出图像/音频。
+
+```powershell
+py -I -X utf8 tools/make_scene_pack.py tools/scenes/demo_village/scene.yaml --output tools/scenes/demo_village/generated_m5
+py -I -X utf8 diagnostics/mountain_scene/test_scene_text.py
+```
+
+输出目录须不存在。`generated_m5/` 是忽略入库的可再生输出；固定十个卡文件及 manifest 交付到 [M5 候选](../../releases/v0.17.0/m5-local.1/README.md)，卡根目录只需 PIC1–4、SND1–4、FONT.BIN、TEXT.BIN。44 个生成文件在两个新目录逐字节复现，PIC/SND 与 M4 固定素材一致，新增三项文本测试通过。字体渲染依赖指定字体的实际版本，跨机器请以固定候选文件为验收输入。

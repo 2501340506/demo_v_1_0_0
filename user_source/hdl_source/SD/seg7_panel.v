@@ -2,11 +2,12 @@
 // Segment and digit enables are active low, matching seg_scan/seg_decoder.
 module seg7_panel #(
     parameter integer CLK_FREQ  = 50_000_000,
-    parameter integer SCAN_FREQ = 200
+    parameter integer SCAN_FREQ = 200, SCENE_ENABLE=0
 )(
     input        clk,
     input        rst_n,
     input  [1:0] mode,
+    input scene_enable,scene_warn,input [1:0] scene_stage,
     input  [3:0] state_code,
     input [63:0] sd_debug,
     input  [7:0] combo_event_count,
@@ -41,13 +42,13 @@ module seg7_panel #(
             4'd2: digit_nibble = debug_word[7:4];
             4'd3: digit_nibble = debug_word[3:0];
             4'd4: digit_nibble = show_sd_failure ? {2'b00,debug_page} : {2'b00,mode};
-            default: digit_nibble = combo_debug_active ? combo_event_count[3:0] : state_code;
+            default: digit_nibble = SCENE_ENABLE && scene_enable && !show_sd_failure ? (scene_warn?4'ha:{2'd0,scene_stage}+4'd1) : combo_debug_active ? combo_event_count[3:0] : state_code;
         endcase
     end
     wire [6:0] digit_seg;
     seg_decoder u_digit_decoder(.bin_data(digit_nibble), .seg_data(digit_seg));
     wire digit_blank = scan_index < 4'd4 && !show_sd_failure;
-    wire digit_point = (scan_index == 4'd5 && !combo_debug_active) ? ~auto_play_indicator : 1'b1;
+    wire digit_point = (scan_index == 4'd5 && !combo_debug_active) ? (SCENE_ENABLE && scene_enable ? 1'b1 : ~auto_play_indicator) : 1'b1;
     wire [7:0] digit = digit_blank ? blank_digit : {digit_point, digit_seg};
     seg_scan #(.CLK_FREQ(CLK_FREQ), .SCAN_FREQ(SCAN_FREQ)) u_scan(
         .clk(clk), .rst_n(rst_n), .seg_sel(seg_sel), .seg_data(seg_data),

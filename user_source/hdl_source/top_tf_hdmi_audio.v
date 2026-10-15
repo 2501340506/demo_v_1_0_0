@@ -276,6 +276,26 @@ end
 wire bgm_valid,bgm_ready,bgm_active;
 wire scenario_muted,scenario_fade_src;
 wire [12:0] scenario_state_src;
+wire [4:0] scenario_meta_src;
+wire font_valid_src,text_valid_src,bin_wr_en,bin_wr_text;
+wire [7:0] font_count_src,bin_wr_data;wire [12:0] text_bytes_src;wire [11:0] bin_wr_addr;
+wire [23:0] scene_meta_pixel,resources_pixel;
+wire font_available,scene_text_active;
+wire legacy_font_region;wire [7:0] legacy_font_char;wire [3:0] legacy_font_row,legacy_font_col;
+wire final_hs,final_vs,final_de;wire [9:0] final_x;wire [23:0] final_rgb;
+wire [23:0] scene_panel;
+// Both clocks derive from the same PLL. Sample on the SD falling edge before
+// the board-clock rising edge, matching the existing mode/state panel path.
+reg [3:0] scene_panel_half,scene_panel_sync;
+always @(negedge sd_card_clk or posedge rst_sd)begin
+ if(rst_sd)scene_panel_half<=0;
+ else scene_panel_half<={scenario_meta_src[4:3],scenario_state_src[9:8]};
+end
+always @(posedge clk or posedge rst_panel)begin
+ if(rst_panel)scene_panel_sync<=0;else scene_panel_sync<=scene_panel_half;
+end
+assign scene_panel={20'd0,scene_panel_sync};
+
 wire frame_write_ready,frame_refill_priority;
 wire signed [15:0] bgm_left,bgm_right;
 sd_card_bmp #(
@@ -285,6 +305,9 @@ sd_card_bmp #(
     .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE)
 ) sd_card_bmp_m0(
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
+    .scenario_meta(scenario_meta_src),.font_valid(font_valid_src),.text_valid(text_valid_src),
+    .font_count(font_count_src),.text_bytes(text_bytes_src),.bin_wr_en(bin_wr_en),.bin_wr_text(bin_wr_text),
+    .bin_wr_addr(bin_wr_addr),.bin_wr_data(bin_wr_data),
     .scenario_muted(scenario_muted),.scenario_fade(scenario_fade_src),.scenario_state(scenario_state_src),
     .bgm_left(bgm_left),.bgm_right(bgm_right),
     .clk               (sd_card_clk),
@@ -334,7 +357,8 @@ sd_card_bmp #(
     .SD_MISO           (sd_miso)
 );
 
-seg7_panel seg7_panel_m0(
+seg7_panel #(.SCENE_ENABLE(SCENE_DEMO_ENABLE)) seg7_panel_m0(
+    .scene_enable(scene_panel[3]),.scene_warn(scene_panel[2]),.scene_stage(scene_panel[1:0]),
     .sd_debug(sd_debug_panel1),
     .clk               (clk),
     .rst_n             (~rst_panel),
@@ -392,13 +416,14 @@ wire [23:0] hazard_rgb;
 wire [47:0] hazard_side;
 generate if(SCENE_DEMO_ENABLE)begin:g_scenario
  wire [23:0] scenario_pixel_state;
- media_adjust_cdc state_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),.src_state({11'd0,scenario_state_src}),
+ media_adjust_cdc state_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),.src_state({6'd0,scenario_meta_src,scenario_state_src}),
   .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(scenario_pixel_state));
+ assign scene_meta_pixel=scenario_pixel_state;
  scenario_frame frame_state(.clk(video_clk),.rst(rst_video),.first_active(scene_first_active),
   .scene_state(scenario_pixel_state[12:0]),.stage(scene_stage),.t_now(scene_time),
   .blink_fast(scene_fast),.blink_slow(scene_slow),.enable(scene_enable));
 end else begin:g_scene_off
- assign scene_stage=0;assign scene_time=0;assign scene_fast=0;assign scene_slow=0;assign scene_enable=0;
+ assign scene_meta_pixel=0;assign scene_stage=0;assign scene_time=0;assign scene_fast=0;assign scene_slow=0;assign scene_enable=0;
 end endgenerate
 hazard_layer #(.SIDE_WIDTH(48)) u_hazard(
  .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.arrival(vout_rgba_raw[7:0]),
@@ -498,9 +523,10 @@ always @(posedge video_clk or posedge rst_video)
  if(rst_video)preview_after_ring<=0;else preview_after_ring<={preview_after_ring[0],adjust_preview};
 wire [23:0] parameter_rgb;
 wire parameter_glyph_active;
-adjust_osd_overlay #(.ENABLE(OSD_ENABLE)) u_parameter_osd(
+adjust_osd_overlay #(.ENABLE(OSD_ENABLE),.SCENE_ENABLE(SCENE_DEMO_ENABLE)) u_parameter_osd(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.rgb_in(osd_rgb),
  .mode(adjust_mode),.selected(adjust_selected),.brightness(brightness_frame),.contrast(contrast_frame),
+ .scene_enable(scene_enable),.scene_speed(scene_meta_pixel[15:14]),
  .volume_level(volume_frame),.rgb_out(parameter_rgb),.active(parameter_glyph_active));
 
 osd_status_cdc u_osd_status_cdc (
@@ -518,11 +544,13 @@ status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
     .active(status_glyph_active)
 );
-scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1)) u_scroll_osd (
+scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1),.BRAM_ENABLE(SCENE_DEMO_ENABLE)) u_scroll_osd (
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.image_valid(audio_enable),
  .rgb_in(parameter_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active),
+ .font_override(font_available),.font_character(legacy_font_char),.font_row(legacy_font_row),
+ .font_column(legacy_font_col),.font_region(legacy_font_region),
  .runtime_text(sub_text_pixel),.runtime_length(sub_length_pixel),
- .runtime_enable(sub_enable_pixel && !preview_after_ring[1]),.runtime_text_changed(sub_text_changed)
+ .runtime_enable(sub_enable_pixel && !preview_after_ring[1] && !scene_text_active),.runtime_text_changed(sub_text_changed)
 );
 timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
@@ -530,8 +558,29 @@ timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
 osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_band(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
- .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0)
+ .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
 );
+generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
+ wire [10:0] font_addr,text_addr;wire [15:0] font_data,text_data;
+ media_adjust_cdc resource_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
+  .src_state({1'b0,font_valid_src,text_valid_src,font_count_src,text_bytes_src}),
+  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(resources_pixel));
+ scene_bram32k font_ram(.wr_clk(sd_card_clk),.wr_en(bin_wr_en && !bin_wr_text),
+  .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(font_addr),.rd_data(font_data));
+ scene_bram32k text_ram(.wr_clk(sd_card_clk),.wr_en(bin_wr_en && bin_wr_text),
+  .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(text_addr),.rd_data(text_data));
+ scene_text_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
+  .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21]),
+  .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),
+  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1]),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),
+  .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
+  .font_available(font_available),.scene_text_active(scene_text_active),
+  .font_addr(font_addr),.font_data(font_data),.text_addr(text_addr),.text_data(text_data),
+  .hs_out(final_hs),.vs_out(final_vs),.de_out(final_de),.x_out(final_x),.rgb_out(final_rgb));
+end else begin:g_no_scene_text
+ assign resources_pixel=0;assign font_available=0;assign scene_text_active=0;
+ assign final_hs=ring_hs;assign final_vs=ring_vs;assign final_de=ring_de;assign final_x=ring_x;assign final_rgb=band_rgb;
+end endgenerate
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
 pcm_media_tone #(.FIXED_VOLUME(128)) u_pcm_clock (
@@ -558,8 +607,8 @@ pcm_master_volume u_master_volume(.clk(video_clk),.rst(rst_video),.volume_level(
  .out_valid(volume_valid),.out_ready(volume_ready),.out_left(volume_left),.out_right(volume_right));
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (
     .pixel_clk(video_clk), .pixel_rst_n(~rst_video),
-    .video_hsync(ring_hs), .video_vsync(ring_vs), .video_de(ring_de),
-    .video_x(ring_x), .video_rgb(band_rgb),
+    .video_hsync(final_hs), .video_vsync(final_vs), .video_de(final_de),
+    .video_x(final_x), .video_rgb(final_rgb),
     .select_media(1'b1), .test_valid(1'b0), .test_ready(),
     .test_left(16'sd0), .test_right(16'sd0),
     .media_valid(volume_valid), .media_ready(volume_ready),

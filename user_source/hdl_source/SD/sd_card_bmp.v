@@ -20,6 +20,9 @@ module sd_card_bmp #(
     input                       scenario_muted,
     output                      scenario_fade,
     output [12:0]               scenario_state,
+    output [4:0] scenario_meta,
+    output font_valid,text_valid,output [7:0] font_count,output [12:0] text_bytes,
+    output bin_wr_en,bin_wr_text,output [11:0] bin_wr_addr,output [7:0] bin_wr_data,
     input                       clk,
     input                       rst,
     input                       sdram_ready, // Synchronized into clk; gates first scan only.
@@ -87,7 +90,7 @@ reg scan_result_valid,scan_success,scan_error_seen;
 reg [2:0] img_found_count;
 wire [1:0] img_idx,load_idx,current_bank;
 
-localparam SC_IDLE=0,SC_RESET=1,SC_INIT=2,SC_SCAN=3,SC_RESULT=4;
+localparam SC_IDLE=0,SC_RESET=1,SC_INIT=2,SC_SCAN=3,SC_RESULT=4,SC_BIN_START=5,SC_BIN_WAIT=6;
 reg [2:0] scan_state;
 reg [3:0] reset_count;
 reg scan_start_pulse;
@@ -111,6 +114,24 @@ wire a_req,a_busy,a_valid,a_done,a_urgent;
 wire [31:0] a_lba;
 wire [7:0] a_error,a_byte;
 wire [8:0] a_index;
+wire font_found,text_found;
+wire [31:0] font_cluster,font_size,text_cluster,text_size;
+wire bin_done,bin_req;wire [31:0] bin_lba;
+wire bin_owner=SCENE_ENABLE && (scan_state==SC_BIN_START || scan_state==SC_BIN_WAIT);
+generate if(SCENE_ENABLE)begin:g_bins
+ bin_to_bram_loader loader(.clk(clk),.rst(parser_rst),.start(scan_state==SC_BIN_START),
+  .font_found(font_found),.text_found(text_found),.font_cluster(font_cluster),.font_size(font_size),
+  .text_cluster(text_cluster),.text_size(text_size),.spc(audio_spc),.fat_lba(audio_fat_lba),
+  .data_lba(audio_data_lba),.max_cluster(audio_max_cluster),.done(bin_done),
+  .font_valid(font_valid),.text_valid(text_valid),.font_count(font_count),.text_bytes(text_bytes),
+  .wr_en(bin_wr_en),.wr_text(bin_wr_text),.wr_addr(bin_wr_addr),.wr_data(bin_wr_data),
+  .sector_req(bin_req),.sector_lba(bin_lba),.sector_busy(a_busy),.sector_valid(a_valid && bin_owner),
+  .sector_done(a_done && bin_owner),.sector_byte(a_byte),.sector_error(a_error),.sector_index(a_index));
+end else begin:g_no_bins
+ assign bin_done=1;assign bin_req=0;assign bin_lba=0;
+ assign font_valid=0;assign text_valid=0;assign font_count=0;assign text_bytes=0;
+ assign bin_wr_en=0;assign bin_wr_text=0;assign bin_wr_addr=0;assign bin_wr_data=0;
+end endgenerate
 // Hold the scan request until the audio transaction and both ring pointers
 // have stopped. The physical SD reset must never cut an audio sector short.
 // Register the stop through audio_session: preview/rescan decisions must not
@@ -139,8 +160,8 @@ generate if(AUDIO_ENABLE)begin: g_audio
  .sector_permit(sector_permit),.player_stopped(player_stopped),.player_ready(file_ready),
  .player_enable(player_enable),.file_valid(file_valid),.file_byte(file_byte),
  .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),
- .sector_req(a_req),.sector_lba(a_lba),.sector_busy(a_busy),.sector_valid(a_valid),
- .sector_done(a_done),.sector_byte(a_byte),.sector_error(a_error),.sector_index(a_index));
+ .sector_req(a_req),.sector_lba(a_lba),.sector_busy(a_busy),.sector_valid(a_valid && !bin_owner),
+ .sector_done(a_done && !bin_owner),.sector_byte(a_byte),.sector_error(a_error),.sector_index(a_index));
  pcm_stream_player u_player(
  .wr_clk(clk),.wr_rst_n(!rst),.play_enable(player_enable),
  .file_valid(file_valid),.file_byte(file_byte),.file_ready(file_ready),
@@ -175,9 +196,12 @@ always @(posedge clk or posedge rst) begin
     if(scan_found_valid) img_found_count<=scan_found_total;
     if(scan_done) begin
      scan_success<=!scan_error_seen && !bmp_scan_error;
-     scan_result_valid<=1;scan_state<=SC_RESULT;
+     if(SCENE_ENABLE && !scan_error_seen && !bmp_scan_error)scan_state<=SC_BIN_START;
+     else begin scan_result_valid<=1;scan_state<=SC_RESULT;end
     end
    end
+   SC_BIN_START:scan_state<=SC_BIN_WAIT;
+   SC_BIN_WAIT:if(bin_done)begin scan_result_valid<=1;scan_state<=SC_RESULT;end
    SC_RESULT: if(scan_result_ready) begin scan_result_valid<=0;scan_state<=SC_IDLE;end
    default:scan_state<=SC_IDLE;
   endcase
@@ -324,6 +348,7 @@ generate if(SCENE_ENABLE)begin:g_scenario
  wire [1:0] stage,speed,alert_level,audio_stage,selected_stage;
  wire [7:0] t_now;
  wire warn_mode,selected_scene;
+ assign scenario_meta={scene_mode,warn_mode,speed,1'b0};
  (* ASYNC_REG="TRUE" *) reg [1:0] muted_sync,active_sync;
  always @(posedge clk or posedge rst)begin
   if(rst)begin muted_sync<=0;active_sync<=0;end
@@ -354,7 +379,7 @@ generate if(SCENE_ENABLE)begin:g_scenario
  assign selected_audio_size=use_snd?snd_sizes[selected_stage*32+:32]:audio_size;
  assign scenario_state={layer_enable,alert_level,stage,t_now};
 end else begin:g_no_scenario
- assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_fade=0;
+ assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_meta=0;assign scenario_fade=0;
  assign scene_muted_sd=0;assign scene_audio_running=0;assign scene_stream_run=1;
  assign selected_audio_found=audio_found;assign selected_audio_cluster=audio_cluster;assign selected_audio_size=audio_size;
 end endgenerate
@@ -461,12 +486,13 @@ always @(posedge clk or posedge rst) begin
  end
 end
 
-fat32_bmp_reader #(.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+fat32_bmp_reader #(.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.SCAN_TEXT(SCENE_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
  .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
+ .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
  .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
  .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
- .a_req(a_req),.a_lba(a_lba),.a_cancel(!audio_run),.a_urgent(a_urgent),
+ .a_req(bin_owner?bin_req:a_req),.a_lba(bin_owner?bin_lba:a_lba),.a_cancel(!bin_owner && !audio_run),.a_urgent(bin_owner?1'b1:a_urgent),
  .a_busy(a_busy),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),.a_byte(a_byte),.a_index(a_index),
  .scan_start(scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
