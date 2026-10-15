@@ -2,6 +2,8 @@
 
 开发输入 v0.17.0-m5-local.1（34d7a82），正式回退 v0.16.0。生产改动仅四个文件：mode_key_control、sd_card_bmp、scenario_fsm、scene_text_overlay。以下均是本机仿真/工具结果，不代表板测。
 
+最终候选 [v0.17.0-m6-local.1](../../releases/v0.17.0/m6-local.1/README.md)：118 份仿真、36 份编译日志及 19 项 PC 测试核验通过；111 个工程输入与合格构建逐字节一致。固定 bit 673856 字节，双卡随候选保存。
+
 ## 专项与回归
 
 | 范围 | 运行目录 | 结果 |
@@ -17,7 +19,8 @@
 | FAT32 reader | mountain_m6_reader01、mountain_m6_reader3202 | 分别 24/32bpp 全 42 例；最终日志见候选清单 |
 | 32bpp 缩放 reader | mountain_m6_reader3201 的 case0..3 | 四项通过，逐像素检查 RGB/T、黑边及背压；不把该目录后续失败用例计为通过 |
 | SD 超时等价及物理接口 | mountain_m6_sd01 | 五项通过；与 M4 五组参数逐拍比较，协议、初始化、引脚 CRC7/CMD59/CRC16、三次重试后停止 |
-| 完整系统与预览 | mountain_m6_system01、mountain_m6_preview01 | 长回归最终统计见候选验证；旧系统测试台不例化场景文字模块，须结合上述双卡顶层与文字专项 |
+| 完整系统 | mountain_m6_system01 | 591 帧、481827 精确 PCM 样本/五会话；17 次转场、17 黑帧、183705600 转场像素；598 帧快照、251159248 OSD 像素/消隐检查，UART 四阶段；缓存/AUTO/重扫/重试/坏图跳过/超时缓存切换均通过 |
+| 预览与故障恢复 | mountain_m6_preview01 | Mixed=1/Audio/Failures；293 帧、200 个预览帧、10 次提交/提示，238405 精确 PCM 样本/四会话；失败保留预览、重试、超时缓存选择通过。旧系统测试台不例化场景文字，须结合上述双卡顶层与文字专项 |
 | PC 工具 | mountain_m6_image_tool01、audio_tool01、text_tool01、cards_tool02 | 8+4+3+4 项通过；双卡各 44 文件逐字节复现，四张新图/四个 WAV 可复现，拒绝覆盖，警报频率/幅值/采样格式及 TEXT 叹号编码独立检查 |
 
 双卡文字测试强制帧计数到 0/16 验证两个缩放相位，未将它当作硬件时间测量。顶层经扇区服务注入数据，不验证真实卡 SPI；SPI 单独由 sd01 引脚测试覆盖。全部板级 SD/HDMI、声学效果和连续运行待用户确认。overview/expected PNG 只有灾害图层参考，不包含最终 OSD。

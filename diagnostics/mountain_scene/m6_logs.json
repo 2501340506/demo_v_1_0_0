@@ -114,5 +114,7 @@
   "mountain_m6_reader3201/reader0_gap2_mode0.log": "PASS FAT32 reader case=0 found=4 requests=26 mode=0",
   "mountain_m6_reader3201/reader1_gap2_mode0.log": "PASS FAT32 reader case=1 found=4 requests=27 mode=0",
   "mountain_m6_reader3201/reader2_gap2_mode0.log": "PASS FAT32 reader case=2 found=4 requests=27 mode=0",
-  "mountain_m6_reader3201/reader3_gap2_mode0.log": "PASS FAT32 reader case=3 found=4 requests=27 mode=0"
+  "mountain_m6_reader3201/reader3_gap2_mode0.log": "PASS FAT32 reader case=3 found=4 requests=27 mode=0",
+  "mountain_m6_system01/system.log": "PASS cache system: starts=14 completions=10 commits=22 cues=22 hits=15 frames=591 refreshes=365203",
+  "mountain_m6_preview01/system.log": "PASS preview system: frames=293 preview=200 commits=10 cues=10 refresh=180720"
 }

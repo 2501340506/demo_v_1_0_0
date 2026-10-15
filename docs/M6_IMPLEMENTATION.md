@@ -13,6 +13,8 @@
 
 本地合格候选标签 v0.17.0-m6-local.1；失败保留诊断记录，源码或 bit 修订递增候选。要求完整 bitgen、无 ERROR、Setup/Hold 正裕量，资源与审计如实记录。
 
+本地结果：实现 bc19864，118 份仿真、36 份编译日志和 19 项 PC 测试通过。TD attempt02 为 15083 LUT（76.95%），Setup +0.101ns/Hold +0.019ns，TNS 0，无 ERROR、完整 bitgen；111 个工程输入逐字节一致。固定 [M6 候选、bit 与双卡](../releases/v0.17.0/m6-local.1/README.md)，详细证据见 [VALIDATION](../releases/v0.17.0/m6-local.1/VALIDATION.md)。整机 591 帧/481827 PCM，预览含故障恢复 293 帧/238405 PCM；板测尚待反馈。
+
 板测至少连续 40 分钟；测量 Flash 完全断电到首个完整画面、换卡复位到新村首帧，逐项回归原有功能，并检查两卡、放大黑字、缩放红字警报、速度及 AUTO。未实测的秒数、次数、结果均留待测。
 
 用户确认具体候选及实测结果后，记录 board 标签并推送相关分支/标签；复用验收 bit 发布 v0.17.0，归档 docs/history/<完成日期>/mountain-escape-classroom，再合并 main 并核对远程。方案书只回填真实构建/板测数据。本地完成不等于正式发布或板测通过。

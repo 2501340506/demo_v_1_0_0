@@ -1,0 +1,11 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 01:01:10 on Oct 16,2026
+vlog -sv -work E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m6_decoder01/work -l E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m6_decoder01/compile.log user_source/hdl_source/SD/bmp_header_check.v user_source/hdl_source/SD/bmp24_decoder.v diagnostics/stability/tb_bmp24_decoder.sv 
+-- Compiling module bmp_header_check
+-- Compiling module bmp24_decoder
+-- Compiling module tb_bmp24_decoder
+
+Top level modules:
+	tb_bmp24_decoder
+End time: 01:01:10 on Oct 16,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

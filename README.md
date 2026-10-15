@@ -1,8 +1,8 @@
-# 当前开发阶段：v0.17.0 M6 实施中
+# 当前开发阶段：v0.17.0 M6 local.1 本地通过，待板测
 
 M6 制作示意村、山洪村双卡，落实黑色放大文字、居中红色缩放预警及警报音。拨码 `00` 下 KEY4 短按恢复 AUTO、长按一秒进入/退出场景；场景 KEY1 短按预警、长按一秒切换 1X/2X/4X；KEY2 下一阶段、长按两秒重扫。场景 AUTO 等动画终态显示后才切阶段，进入场景继承原 AUTO，退出后 AUTO 关闭。
 
-双卡专项与回归、TD 构建正在收尾，尚未固定 M6 候选。见 [M6 计划](docs/M6_IMPLEMENTATION.md)、[整机板测清单](diagnostics/mountain_scene/BOARD_VALIDATION_M6.md) 和 [交接](HANDOFF.md)。历史 [M5 候选](releases/v0.17.0/m5-local.1/README.md) 保留。
+已固定 [M6 候选与双卡](releases/v0.17.0/m6-local.1/README.md)，标签 `v0.17.0-m6-local.1`。118 份仿真、36 份编译日志、19 项 PC 测试通过；TD 15083 LUT（76.95%），Setup +0.101ns/Hold +0.019ns，无 ERROR、完整 bitgen。见 [M6 计划](docs/M6_IMPLEMENTATION.md)、[整机板测清单](releases/v0.17.0/m6-local.1/BOARD_VALIDATION.md) 和 [交接](HANDOFF.md)。历史 [M5 候选](releases/v0.17.0/m5-local.1/README.md) 保留。
 
 M4 已获用户总体反馈“暂无大问题”，board.1 及 M4 分支/local/board 标签已推送。M5/M6 板测、M1/M3 单独板测、M2 目视及旁白关键词同步仍待确认。正式版和整机回退仍为 v0.16.0；M6 须完成 ≥40 分钟连续运行及真实计时，经用户确认再发布、归档与合并 main。TD GUI 请重新加载磁盘工程后再保存。
 

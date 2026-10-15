@@ -126,6 +126,7 @@ def package(build_name, candidate):
     release.mkdir(parents=True)
     # Keep original evidence/source bytes, including tool-generated whitespace.
     (release / '.gitattributes').write_text(
+        '** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol\n'
         'reports/** -text -whitespace\n'
         'validation/** -text -whitespace\n'
         'sources/** -text -whitespace\n', encoding='utf-8')
@@ -169,7 +170,7 @@ def package(build_name, candidate):
                 'Hardware fallback remains board-confirmed v0.16.0. M4 overall board feedback accepted; M1/M3 separate board, M5/M6 board and M2 visual confirmation pending.',
                 'Timing audit exceptions equal M1. One added dummy-node model category: EG_PHY_BRAM32K, exactly FONT/TEXT ram.dob[9]; all other summary lines equal M1. Original known tool warnings preserved.',
                 'TD E:/TD v6.2; ModelSim SE-64 10.6e F:/modelsim/win64; no file hashes.', '',
-                'Local .gitattributes preserves original report, validation and source bytes (including tool-generated whitespace) without Git line-ending conversion.', '']
+                'Local .gitattributes preserves all candidate file bytes without Git line-ending conversion; original reports, validation and sources retain tool-generated whitespace.', '']
     manifest += [f'- {p.as_posix()} ({(ROOT / p).stat().st_size} bytes)' + (' [changed]' if p in saved else '')
                  for p in inputs]
     (release / 'MANIFEST.md').write_text('\n'.join(manifest)+'\n', encoding='utf-8')
