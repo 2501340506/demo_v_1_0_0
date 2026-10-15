@@ -40,7 +40,8 @@ module mode_key_control #(
     reg next_raw;
     assign next_event=next_raw && !scene_mode;
     assign scene_next=next_raw && scene_mode;
-    assign scene_warn=scene_mode && enable && press_mode==mode && press1;
+    reg warn_event;
+    assign scene_warn=SCENE_ENABLE && warn_event;
     localparam integer HOLD_CYCLES = (CLK_FREQ_HZ / 1000) * RESCAN_HOLD_MS;
     localparam integer HOLD_BITS = $clog2(HOLD_CYCLES + 1);
     reg [HOLD_BITS-1:0] held_cycles;
@@ -81,20 +82,32 @@ module mode_key_control #(
     // Register the media toggle to break mode -> preview -> cache request logic.
     generate if(SCENE_ENABLE==0)begin:g_legacy
     assign scene_mode=0;assign scene_speed=0;
+    always @(posedge clk or posedge rst)warn_event<=0;
     always @(posedge clk or posedge rst)
         if(rst)auto_toggle_event<=0;
         else auto_toggle_event<=enable && press4 && press_mode==mode && (mode==0 || mode==3);
     end else begin:g_scene
      reg active,armed,tracking,long4,s4q;
+     reg s1q,tracking1,long1;
+     reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold1;
      reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold4;
      reg speed_event;
      assign scene_mode=active;
      assign scene_speed=speed_event;
      always @(posedge clk or posedge rst)begin
       if(rst)begin active<=0;armed<=0;tracking<=0;long4<=0;s4q<=1;hold4<=0;
-       speed_event<=0;auto_toggle_event<=0;end
+       speed_event<=0;auto_toggle_event<=0;warn_event<=0;s1q<=1;tracking1<=0;long1<=0;hold1<=0;end
       else begin
-       s4q<=stable4;speed_event<=0;auto_toggle_event<=0;
+       s4q<=stable4;s1q<=stable1;speed_event<=0;auto_toggle_event<=0;warn_event<=0;
+       if(!active || !enable || mode!=0 || press_mode!=mode || rescan_event)begin tracking1<=0;hold1<=0;end
+       else if(s1q && !stable1)begin tracking1<=1;hold1<=1;long1<=0;end
+       else if(!stable1 && tracking1 && !long1)begin
+        if(hold1>=CLK_FREQ_HZ-1)begin speed_event<=1;long1<=1;end
+        else hold1<=hold1+1'b1;
+       end else if(stable1 && tracking1)begin
+        if(!long1)warn_event<=1;
+        tracking1<=0;hold1<=0;
+       end
        if(mode!=0 || !scene_allowed)active<=0;
        if(press_mode!=mode || rescan_event)begin armed<=0;tracking<=0;end
        else if(stable4 && !tracking)armed<=1;
@@ -105,7 +118,7 @@ module mode_key_control #(
           long4<=1;if(scene_allowed)active<=!active;
          end else hold4<=hold4+1'b1;
         end else if(stable4 && tracking)begin
-         if(!long4)begin if(active)speed_event<=1;else auto_toggle_event<=1;end
+         if(!long4)auto_toggle_event<=1;
          tracking<=0;hold4<=0;
         end
        end else begin

@@ -1,10 +1,10 @@
-# 当前开发阶段：v0.17.0 M5 local.1，等待板测
+# 当前开发阶段：v0.17.0 M6 实施中
 
-在 M4 四阶段场景基础上，新增 FONT.BIN/TEXT.BIN 扫描与 BRAM32k 加载、卡上中文和阶段标题/字幕、预警红框、SPEED 参数条及阶段/A 数码管；缺文件保留原 case 字库与文案。场景工具现可输出完整十文件场景包。拨码 `00` 下长按 KEY4 1 秒进入/退出；KEY2 下一阶段、KEY1 科普/预警、KEY4 短按 1×/2×/4×。
+M6 制作示意村、山洪村双卡，落实黑色放大文字、居中红色缩放预警及警报音。拨码 `00` 下 KEY4 短按恢复 AUTO、长按一秒进入/退出场景；场景 KEY1 短按预警、长按一秒切换 1X/2X/4X；KEY2 下一阶段、长按两秒重扫。场景 AUTO 等动画终态显示后才切阶段，进入场景继承原 AUTO，退出后 AUTO 关闭。
 
-112 份仿真、28 份编译日志与 15 项 PC 测试通过，TD attempt24：14897 LUT（76.01%）、9707 寄存器、56 BRAM9k、2 BRAM32k、13 DSP，Setup +0.008ns/Hold +0.014ns，TNS 0。固定 bit 为 673856 字节，111 个工程输入逐字节核对。下载 [bit 与素材](releases/v0.17.0/m5-local.1/README.md)，查看 [验证记录](releases/v0.17.0/m5-local.1/VALIDATION.md)、[板测步骤](releases/v0.17.0/m5-local.1/BOARD_VALIDATION.md)、[阶段计划](docs/山区避险课堂分阶段修改计划.md) 和 [交接](HANDOFF.md)。
+双卡专项与回归、TD 构建正在收尾，尚未固定 M6 候选。见 [M6 计划](docs/M6_IMPLEMENTATION.md)、[整机板测清单](diagnostics/mountain_scene/BOARD_VALIDATION_M6.md) 和 [交接](HANDOFF.md)。历史 [M5 候选](releases/v0.17.0/m5-local.1/README.md) 保留。
 
-M4 已获用户总体反馈“暂无大问题”，board.1 及 M4 分支/local/board 标签已推送。M5 待板测、未推送；M1/M3 单独板测、M2 目视及旁白关键词同步仍待确认。时序余量较小，审计新增 BRAM32k 两个 dob[9] dummy 节点的报告，详见验证记录。正式版和整机回退仍为 v0.16.0，M6 未实施。TD GUI 请重新加载磁盘工程后再保存，避免丢失新增源文件。
+M4 已获用户总体反馈“暂无大问题”，board.1 及 M4 分支/local/board 标签已推送。M5/M6 板测、M1/M3 单独板测、M2 目视及旁白关键词同步仍待确认。正式版和整机回退仍为 v0.16.0；M6 须完成 ≥40 分钟连续运行及真实计时，经用户确认再发布、归档与合并 main。TD GUI 请重新加载磁盘工程后再保存。
 
 # 当前正式版：v0.16.0
 

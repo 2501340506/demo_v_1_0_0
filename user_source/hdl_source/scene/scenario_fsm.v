@@ -1,7 +1,7 @@
 // SD-domain scene controller. PCM ticks are lossless playback events from CDC.
 module scenario_fsm(
  input clk,rst,enable,scene_ready,key_next,key_mode,key_speed,
- input sample_tick,audio_running,frame_start,muted,
+ input sample_tick,audio_running,frame_start,muted,auto_enable,
  input request_ready,picture_done,picture_failed,transition_idle,audio_ready,
  output reg [1:0] stage,speed,output reg warn_mode,
  output reg [7:0] t_now,output [1:0] alert_level,
@@ -14,7 +14,7 @@ module scenario_fsm(
  reg [1:0] target;
  reg target_warn,sent,committed,half_frame;
  reg [10:0] samples;
- reg running_q;
+ reg running_q,terminal_frame;
  wire [10:0] limit=speed==0?11'd1599:speed==1?11'd799:11'd399;
  assign stage_req=state==PICTURE && !sent;
  assign requested_stage=target;
@@ -27,10 +27,10 @@ module scenario_fsm(
  always @(posedge clk or posedge rst)begin
   if(rst)begin
    state<=OFF;stage<=0;speed<=0;warn_mode<=0;t_now<=0;target<=0;
-   target_warn<=0;sent<=0;committed<=0;half_frame<=0;samples<=0;running_q<=0;
+   target_warn<=0;sent<=0;committed<=0;half_frame<=0;samples<=0;running_q<=0;terminal_frame<=0;
   end else begin
    running_q<=audio_running;
-   if(state!=RUN)begin samples<=0;half_frame<=0;end
+   if(state!=RUN)begin samples<=0;half_frame<=0;terminal_frame<=0;end
    if(!scene_ready && state!=OFF && state!=EXIT_FADE && state!=EXIT_AUDIO)state<=EXIT_FADE;
    else case(state)
     OFF:begin
@@ -39,7 +39,7 @@ module scenario_fsm(
     end
     RUN:begin
      if(!enable || !scene_ready)state<=EXIT_FADE;
-     else if(key_mode || (key_next && !warn_mode))begin
+     else if(key_mode || (!warn_mode && (key_next || (auto_enable && terminal_frame && frame_start))))begin
       target<=key_mode?(warn_mode?2'd0:2'd3):stage+2'd1;
       target_warn<=key_mode?!warn_mode:warn_mode;sent<=0;state<=PICTURE;
      end else if(key_speed)begin speed<=speed==2?2'd0:speed+2'd1;samples<=0;half_frame<=0;end
@@ -57,6 +57,9 @@ module scenario_fsm(
        if(frame_start)begin half_frame<=!half_frame;if(half_frame)t_now<=t_now+1'b1;end
       end
      end
+     // Two frame boundaries after saturation guarantee one whole terminal
+     // frame can be shown even when t crosses the pixel-domain mailbox late.
+     else if(frame_start)terminal_frame<=1;
     end
     PICTURE:begin
      if(stage_req && request_ready)sent<=1;

@@ -14,6 +14,6 @@ if($LASTEXITCODE){throw "Compile failed: $out"}
 foreach($test in $benches){
  & "$sim/vsim.exe" -c -quiet -lib $lib $test -l "$out/$test.log" -do 'run -all; quit -f' *> "$out/${test}_console.log"
  $log=Get-Content "$out/$test.log" -Raw
- if($LASTEXITCODE -or $log -match '\*\* (Fatal|Error|Warning)' -or $log -notmatch 'PASS M4' -or $log -notmatch 'Errors: 0, Warnings: 0'){throw "Failed $test : $out"}
+ if($LASTEXITCODE -or $log -match '\*\* (Fatal|Error|Warning)' -or $log -notmatch 'PASS M[46]' -or $log -notmatch 'Errors: 0, Warnings: 0'){throw "Failed $test : $out"}
  Write-Output "PASS $test : $out/$test.log"
 }

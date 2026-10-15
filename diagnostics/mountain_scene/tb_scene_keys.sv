@@ -15,17 +15,18 @@ module tb_scene_keys;
  initial begin
   waitcl(4);rst=0;waitcl(30);key4short();if(na!=1 || sm)$fatal(1,"legacy auto");
   key4long();if(!sm || na!=1)$fatal(1,"entry long gesture");
-  key4short();if(nt!=1 || na!=1)$fatal(1,"speed routes");
+  key4short();if(nt!=0 || na!=2)$fatal(1,"speed routes");
   k1=0;waitcl(60);k1=1;waitcl(60);if(nw!=1 || np)$fatal(1,"warn routes");
+  k1=0;waitcl(1100);k1=1;waitcl(60);if(nt!=1 || nw!=1)$fatal(1,"long speed must not warn");
   k2=0;waitcl(60);k2=1;waitcl(60);if(ns!=1 || nn)$fatal(1,"next routes");
   k2=0;waitcl(2100);k2=1;waitcl(60);if(nr!=1 || ns!=1)$fatal(1,"rescan routes");
   key4long();if(sm)$fatal(1,"exit long");key4long();if(!sm)$fatal(1,"reentry");
   mode=1;waitcl(50);if(sm)$fatal(1,"switch exit");
   k4=0;waitcl(60);mode=0;waitcl(1100);k4=1;waitcl(60);
-  if(sm || na!=1)$fatal(1,"held across modes");
-  allowed=0;key4long();if(sm || na!=1)$fatal(1,"missing pictures entry");
-  mode=3;waitcl(30);key4short();if(na!=2)$fatal(1,"preview toggle");
-  $display("PASS M4 keys: long entry/exit, short auto/speed, next/warn, rescan, switch exit, held suppression, missing-picture gate, legacy preview");$finish;
+  if(sm || na!=2)$fatal(1,"held across modes");
+  allowed=0;key4long();if(sm || na!=2)$fatal(1,"missing pictures entry");
+  mode=3;waitcl(30);key4short();if(na!=3)$fatal(1,"preview toggle");
+  $display("PASS M4 keys: long entry/exit, short auto, separate KEY1 long speed, next/warn, rescan, switch exit, held suppression, missing-picture gate, legacy preview");$finish;
  end
  initial begin #1000000;$fatal(1,"watchdog");end
 endmodule

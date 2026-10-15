@@ -74,7 +74,7 @@ module scene_text_overlay(
  wire warning=first_active?warn_mode:warn_q;
  reg [10:0] scroll;
  wire changed=scene_enable!=enabled_q || warn_mode!=warn_q || stage!=stage_q;
- wire [10:0] scroll_end=11'd624+{2'd0,subtitle_length,4'd0};
+ wire [10:0] scroll_end=11'd624+{1'd0,subtitle_length,5'd0};
  always @(posedge clk or posedge rst)begin
   if(rst)begin enabled_q<=0;warn_q<=0;stage_q<=0;scroll<=0;frames<=0;end
   else begin
@@ -92,15 +92,27 @@ module scene_text_overlay(
  reg [11:0] segment_offset;reg [4:0] segment_length;
  reg [10:0] local_x;reg [3:0] row;reg region;
  wire signed [12:0] subtitle_x=$signed({2'b0,scroll})+$signed({3'b0,pixel_x})-13'sd632;
+ // Power-of-two nearest-neighbour scaling keeps the glyph address path small.
+ // Long card warnings reduce scale so the complete message remains visible.
+ wire [1:0] warning_shift=subtitle_length>19?2'd0:
+                         frames[4] && subtitle_length<=9?2'd2:2'd1;
+ wire [10:0] warning_width={2'd0,subtitle_length,4'd0}<<warning_shift;
+ wire [9:0] warning_left=10'd320-warning_width[10:1];
+ wire [8:0] warning_height=9'd16<<warning_shift;
+ wire [8:0] warning_top=9'd240-(warning_height>>1);
  always @*begin
-  segment_offset=title_offset;segment_length=title_length;local_x={1'b0,pixel_x}-11'd8;row=y[3:0];region=0;
+  segment_offset=title_offset;segment_length=title_length;local_x=({1'b0,pixel_x}-11'd8)>>1;row=0;region=0;
   if(scene_text_active && de)begin
-   if(y>=64 && y<80)begin row=y-64;region=1;end
-   else if(y>=88 && y<104)begin segment_offset=village_offset;segment_length=village_length;row=y-88;region=1;end
-   else if(y>=444 && y<460)begin
-    segment_offset=subtitle_offset;segment_length=subtitle_length;row=y-444;
-    if(!warning)local_x=subtitle_x[10:0];
-    region=warning || subtitle_x>=0;
+   if(warning)begin
+    segment_offset=subtitle_offset;segment_length=subtitle_length;
+    local_x=({1'b0,pixel_x}-{1'b0,warning_left})>>warning_shift;
+    row=(y-warning_top)>>warning_shift;
+    region=y>=warning_top && y<warning_top+warning_height && pixel_x>=warning_left;
+   end else if(y>=64 && y<96)begin row=(y-64)>>1;region=1;end
+   else if(y>=112 && y<144)begin segment_offset=village_offset;segment_length=village_length;row=(y-112)>>1;region=1;end
+   else if(y>=416 && y<448)begin
+    segment_offset=subtitle_offset;segment_length=subtitle_length;row=(y-416)>>1;
+    local_x=subtitle_x[11:1];region=subtitle_x>=0;
    end
    region=region && pixel_x>=8 && pixel_x<632 && local_x<{2'd0,segment_length,4'd0};
   end
@@ -112,6 +124,7 @@ module scene_text_overlay(
  reg [26:0] video1,video2;
  reg [9:0] x1,x2;
  reg text_lane1,region1,legacy1,border1,region2,cn2,ascii2,border2;
+ reg scene1,scene2,red1,red2;
  reg [3:0] row1,col1,col2;
  reg [7:0] legacy1_char;
  wire [7:0] code=text_lane1?text_data[15:8]:text_data[7:0];
@@ -145,9 +158,10 @@ module scene_text_overlay(
   if(rst)begin
    video1<=0;video2<=0;x1<=0;x2<=0;text_lane1<=0;region1<=0;legacy1<=0;
    row1<=0;col1<=0;legacy1_char<=0;border1<=0;region2<=0;cn2<=0;ascii2<=0;border2<=0;col2<=0;
-   hs_out<=0;vs_out<=0;de_out<=0;x_out<=0;rgb_out<=0;
+   hs_out<=0;vs_out<=0;de_out<=0;x_out<=0;rgb_out<=0;scene1<=0;scene2<=0;red1<=0;red2<=0;
   end else begin
    video1<={hs,vs,de,rgb_in};x1<=pixel_x;text_lane1<=render_addr[0];region1<=region;
+   scene1<=region;red1<=warning;scene2<=scene1;red2<=red1;
    legacy1<=!region && legacy_region && font_available;
    legacy1_char<=legacy_char-8'h80;
    row1<=region?row:legacy_row;col1<=region?local_x[3:0]:legacy_col;border1<=border;
@@ -155,7 +169,8 @@ module scene_text_overlay(
    region2<=region1 || legacy1;cn2<=legacy1 || code<128;
    ascii2<=region1 && code>=240 && col1[3:1]<5 && row1[3:1]<7 && ascii_pixels[ascii_column];
    {hs_out,vs_out,de_out}<=video2[26:24];x_out<=x2;
-   rgb_out<=border2?24'hff0000:region2 && ((cn2 && font_row[~col2]) || ascii2)?24'hffffff:video2[23:0];
+   rgb_out<=border2?24'hff0000:region2 && ((cn2 && font_row[~col2]) || ascii2)?
+     (scene2?(red2?24'hff0000:24'h000000):24'hffffff):video2[23:0];
   end
  end
 endmodule

@@ -1,0 +1,29 @@
+version: 1
+name: 山洪村（虚构教学图）
+base: village.png
+output: generated
+text:
+  village: 山洪村
+  subtitles: [强降雨注意沟谷水位, 发现裂缝远离山坡, 山洪暴涨远离河道, 沿桥向西侧高地撤离]
+  warning: 立即撤往高地!
+audio: [../classroom_audio/stage1.wav, ../classroom_audio/stage2.wav, ../classroom_audio/stage3.wav, ../classroom_audio/stage4.wav]
+safe_spots:
+  - center: [126, 246]
+    radius: 7
+stages:
+  - id: 1
+    name: 降雨预警
+    sources:
+      - {type: grayscale, path: rainfall.png, mask: rainfall_mask.png}
+  - id: 2
+    name: 裂缝出现
+    sources:
+      - {type: polyline, width: 5, points: [[512, 71], [492, 101], [525, 137], [498, 164], [470, 210]]}
+  - id: 3
+    name: 山洪发生
+    sources:
+      - {type: seeds, points: [[357, 15], [373, 174]], max_distance: 300, mask: flood_mask.png}
+  - id: 4
+    name: 避险撤离
+    sources:
+      - {type: polyline, width: 5, points: [[490, 350], [473, 295], [422, 265], [354, 251], [293, 247], [218, 245], [126, 246]]}

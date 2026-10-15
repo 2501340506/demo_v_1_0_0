@@ -1,3 +1,24 @@
+# M6 双卡与警报音（2026-10-16）
+
+本次使用 `m6_demo/scene.yaml`（示意村）和 `flood_village/scene.yaml`（山洪村），保留原 `demo_village` 的 M2–M5 素材作为历史基线。两村均为虚构教学图；山洪村的避险点在西侧高地，撤离路线过桥向西，与示意村不同。
+
+首次生成，在仓库根目录执行：
+
+```powershell
+py -I -X utf8 tools/scenes/make_classroom_audio.py
+py -I -X utf8 tools/make_scene_pack.py tools/scenes/m6_demo/scene.yaml
+py -I -X utf8 tools/make_scene_pack.py tools/scenes/flood_village/scene.yaml
+py -I -X utf8 diagnostics/mountain_scene/test_m6_cards.py
+```
+
+山洪村四张输入 PNG 已随源码提供，不必再次生成。需要复现输入图时运行 `py -I -X utf8 tools/scenes/flood_village/make_inputs.py --output diagnostics/output/flood_inputs_new`，选择不存在的新目录。音频及新图生成器支持 `--output <新目录>`，场景工具也支持 `--output`；所有生成器拒绝覆盖已有文件或输出目录。复现测试使用新目录并逐字节比较，不需要清理旧输出。音频为四段 8 秒、48kHz、单声道 16 位 PCM；SND1–3 是节拍，SND4 是 600–1000Hz 循环警报，起止样本为零，无旁白。普通第四阶段与预警共用 SND4，因此第四阶段也会响警报。
+
+每张卡分别拷入对应输出的四个 PIC、四个 SND、FONT.BIN、TEXT.BIN，共十个文件到 FAT32 根目录。不要混用两个村的同名文件；换卡后复位。预警文案为“立即撤往高地!”，叹号由 ASCII 转义表示。交付使用 releases 中固定的双卡文件，`overview.png` 和 `expected/` 是灾害图层参考，未包含最终 OSD 文字。
+
+M6 按键：拨码 00，KEY4 短按 AUTO、长按一秒进/退场景；场景 KEY1 短按预警、长按一秒调速，KEY2 下一阶段/长按两秒重扫。AUTO 等当前动画完成后切阶段。详见 [板测清单](../../diagnostics/mountain_scene/BOARD_VALIDATION_M6.md)。下方为历史工具说明。
+
+---
+
 # M2 场景包图像工具
 
 `make_scene_pack.py` 将村庄底图和 T 预案编译成四张 FPGA 可读的 BMP，并给出灾害图层的参考像素。M2 只处理图像；SND 音频留到 M4，FONT/TEXT 留到 M5。工具和场景在 `feature/mountain-escape-classroom` 开发，硬件基线为 v0.16.0，当前像素通路候选为 `v0.17.0-m1-local.1`。

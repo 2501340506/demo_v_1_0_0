@@ -147,6 +147,8 @@ module tb_scenario_pcm #(parameter PREVIEW_TEST=0);
  end endtask
  task toggle_scene;
  begin key4=0;repeat(1030)@(negedge clk);key4=1;repeat(35)@(negedge clk);end endtask
+ task speed_key;
+ begin key1=0;repeat(1030)@(negedge clk);key1=1;repeat(35)@(negedge clk);end endtask
  task stable_stage(input integer stage,input integer cluster);
  begin
   wait(app.g_scenario.control.state==1 && app.g_scenario.control.stage==stage && !scene_fade);
@@ -160,8 +162,10 @@ module tb_scenario_pcm #(parameter PREVIEW_TEST=0);
   setup(1,1,1202);add_sounds();repeat(5)@(negedge clk);rst=0;
   wait(display_valid && received>=500);if(app.snd_valid!=4'b1011)$fatal(1,"scanner slots");
   toggle_scene();stable_stage(0,12);
-  short_key(4);wait(app.g_scenario.control.speed==1);
-  short_key(4);wait(app.g_scenario.control.speed==2);
+  short_key(4);if(!app.scene_auto || app.g_scenario.control.speed!=0)$fatal(1,"KEY4 must restore AUTO");
+  short_key(4);if(app.scene_auto)$fatal(1,"AUTO off");
+  speed_key();wait(app.g_scenario.control.speed==1);
+  speed_key();wait(app.g_scenario.control.speed==2);
   short_key(2);stable_stage(1,8);
   short_key(2);stable_stage(2,10); // SND3 absent -> BGM
   short_key(2);stable_stage(3,9);
@@ -170,7 +174,15 @@ module tb_scenario_pcm #(parameter PREVIEW_TEST=0);
   if(!app.g_scenario.control.warn_mode || app.g_scenario.control.t_now!=239)$fatal(1,"warning state");
   toggle_scene();wait(app.g_scenario.control.state==0);wait(received>=500);
   if(app.selected_audio_cluster!=10)$fatal(1,"exit must restore BGM");
+  short_key(4);if(!app.ctrl_auto_play_en)$fatal(1,"ordinary AUTO enable");
   toggle_scene();stable_stage(0,12);
+  if(!app.scene_auto)$fatal(1,"scene must inherit ordinary AUTO");
+  speed_key();speed_key();
+  // Real PCM -> sample CDC -> saturating scene clock -> cache/transition ->
+  // fresh SND2. No manually forced t/state or next key in this progression.
+  wait(app.g_scenario.control.t_now==239);
+  stable_stage(1,8);
+  short_key(4);if(app.scene_auto)$fatal(1,"AUTO disable scene");
   // Abort while the scene owns the control path: rescan must not deadlock.
   rescan();wait(app.g_scenario.control.state==0);wait(display_valid && received>=500);
   if(app.scene_mode || scene_fade)$fatal(1,"scene rescan did not exit");
@@ -181,10 +193,10 @@ module tb_scenario_pcm #(parameter PREVIEW_TEST=0);
   if(app.scene_audio_running || app.selected_audio_found)$fatal(1,"missing audio fallback");
   short_key(2);wait(app.g_scenario.control.state==1 && app.g_scenario.control.stage==1);
   wait(app.g_scenario.control.t_now>=4);toggle_scene();wait(app.g_scenario.control.state==0);
-  $display("PASS M4 actual PCM: %0d exact samples, %0d sessions, four stages/wrap/warning/speed, SND3 fallback, muted selection, rescan and no-audio frame clock",total,sessions);
+  $display("PASS M6 actual PCM: %0d exact samples, %0d sessions, separate AUTO/speed keys, automatic complete stage, four stages/wrap/warning, SND3 fallback, muted selection, rescan and no-audio frame clock",total,sessions);
   $finish;
  end
- initial begin #3000000000.0;$fatal(1,"scenario watchdog fsm=%0d audio=%0d cluster=%0d received=%0d scan=%0d",app.g_scenario.control.state,app.g_audio.u_stream.state,app.selected_audio_cluster,received,app.scan_state);end
+ initial begin #15000000000.0;$fatal(1,"scenario watchdog fsm=%0d audio=%0d cluster=%0d received=%0d scan=%0d",app.g_scenario.control.state,app.g_audio.u_stream.state,app.selected_audio_cluster,received,app.scan_state);end
  task setup(input bit pictures,input bit audio,input integer bytes);
  reg [15:0] value;integer lba,off;
  begin

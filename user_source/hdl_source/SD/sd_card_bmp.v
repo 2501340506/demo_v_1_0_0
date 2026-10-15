@@ -280,6 +280,17 @@ always @(posedge clk or posedge rst) begin
  end
 end
 wire ctrl_auto_play_en,ctrl_next_pending,ctrl_prev_pending,ctrl_auto_tick,ctrl_load_request;
+reg scene_auto,scene_mode_q;
+wire effective_auto=scene_mode?scene_auto:ctrl_auto_play_en;
+always @(posedge clk or posedge rst)begin
+ if(rst)begin scene_auto<=0;scene_mode_q<=0;end
+ else begin
+  scene_mode_q<=scene_mode;
+  if(!scene_mode || rescan_event)scene_auto<=0;
+  else if(!scene_mode_q)scene_auto<=ctrl_auto_play_en;
+  else if(media_auto_toggle_request)scene_auto<=!scene_auto;
+ end
+end
 wire ctrl_request_ready,ctrl_request_accept,ctrl_auto_load_request;
 wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || rescan_wait;
@@ -359,7 +370,7 @@ generate if(SCENE_ENABLE)begin:g_scenario
  scene_event_cdc events(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
   .sample_accept(bgm_valid && bgm_ready),.frame_start(transition_frame_start),
   .clk(clk),.rst(rst),.sample_tick(sample_tick),.frame_tick(frame_tick));
- scenario_fsm control(.clk(clk),.rst(rst),.enable(scene_mode),
+ scenario_fsm control(.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto),
   .scene_ready(first_image_committed && image_count==4 && !scan_busy),
   .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed),
   .sample_tick(sample_tick),.audio_running(scene_audio_running),.frame_start(frame_tick),.muted(scene_muted_sd),
@@ -387,7 +398,7 @@ media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.DIAG_DISPLAY(DIAG_DISPLAY)) u
  .clk(clk),.rst(rst),.combo_request(1'b0),.sd_init_done(sd_init_done),.scan_done(!scan_busy),
  .display_valid(display_valid),.load_busy(foreground_busy),.write_started_seen(write_req),
  .source_done_now(source_done_now),.write_finish_now(write_finish_now),.img_idx(img_idx),
- .bmp_state_code(bmp_state_code),.state_code(normal_state_code),.auto_play_en(ctrl_auto_play_en),
+ .bmp_state_code(bmp_state_code),.state_code(normal_state_code),.auto_play_en(effective_auto),
  .auto_play_indicator(auto_play_indicator),.combo_event_count(combo_event_count),.combo_debug_active(combo_debug_active)
 );
 reg [2:0] sticky_error;
@@ -457,7 +468,7 @@ always @* begin
  else if(pending_skip) begin diag_events[6]=1;diag_image=skip_idx;diag_phase=3;end
  else if(pending_complete) begin diag_events[11]=1;diag_image=complete_idx;diag_phase=4'hc;end
  else if(pending_hit) begin diag_events[11]=1;diag_image=hit_idx;diag_phase=4'hd;end
- else if(ctrl_auto_play_en!=auto_seen) diag_events[10]=1;
+ else if(effective_auto!=auto_seen) diag_events[10]=1;
 end
 always @(posedge clk or posedge rst) begin
  if(rst) begin
@@ -467,8 +478,8 @@ always @(posedge clk or posedge rst) begin
   init_seen<=0;init_fail_seen<=0;auto_seen<=0;timeout_seen<=0;
  end else begin
   underflow_sync<={underflow_sync[0],reader_underflow};reader_code0<=reader_error;reader_code1<=reader_code0;read_fault_seen<=read_fault;
-  init_seen<=sd_init_done;init_fail_seen<=sd_init_failed;auto_seen<=ctrl_auto_play_en;timeout_seen<=timeout_stopped;
-  diagnostics<={diag_events,diag_image,sd_sec_read_addr,diag_error,diag_phase,ctrl_auto_play_en};
+  init_seen<=sd_init_done;init_fail_seen<=sd_init_failed;auto_seen<=effective_auto;timeout_seen<=timeout_stopped;
+  diagnostics<={diag_events,diag_image,sd_sec_read_addr,diag_error,diag_phase,effective_auto};
   if(diag_events[8]) pending_fault<=0;
   if(diag_events[5]) pending_retry<=0;
   if(diag_events[6]) pending_skip<=0;
