@@ -1,0 +1,46 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m3_unit05/work tb_hazard_layer -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m3_unit05/tb_hazard_layer.log -do "run -all; quit -f" -gVECTOR_DIR=E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m3_unit05/vectors 
+# Start time: 16:10:21 on Oct 15,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS saved M2 expected stage=0 t=0 phase=0
+# PASS saved M2 expected stage=0 t=0 phase=1
+# PASS saved M2 expected stage=0 t=120 phase=0
+# PASS saved M2 expected stage=0 t=120 phase=1
+# PASS saved M2 expected stage=0 t=239 phase=0
+# PASS saved M2 expected stage=0 t=239 phase=1
+# PASS saved M2 expected stage=1 t=0 phase=0
+# PASS saved M2 expected stage=1 t=0 phase=1
+# PASS saved M2 expected stage=1 t=120 phase=0
+# PASS saved M2 expected stage=1 t=120 phase=1
+# PASS saved M2 expected stage=1 t=239 phase=0
+# PASS saved M2 expected stage=1 t=239 phase=1
+# PASS saved M2 expected stage=2 t=0 phase=0
+# PASS saved M2 expected stage=2 t=0 phase=1
+# PASS saved M2 expected stage=2 t=120 phase=0
+# PASS saved M2 expected stage=2 t=120 phase=1
+# PASS saved M2 expected stage=2 t=239 phase=0
+# PASS saved M2 expected stage=2 t=239 phase=1
+# PASS saved M2 expected stage=3 t=0 phase=0
+# PASS saved M2 expected stage=3 t=0 phase=1
+# PASS saved M2 expected stage=3 t=120 phase=0
+# PASS saved M2 expected stage=3 t=120 phase=1
+# PASS saved M2 expected stage=3 t=239 phase=0
+# PASS saved M2 expected stage=3 t=239 phase=1
+# PASS hazard layer: saved_frames=24 pixel_side_checks=7393796 all_T boundaries phases bypass reset
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/mountain_scene/tb_hazard_layer.sv(74)
+#    Time: 73938026 ns  Iteration: 0  Instance: /tb_hazard_layer
+# End time: 16:10:28 on Oct 15,2026, Elapsed time: 0:00:07
+# Errors: 0, Warnings: 0

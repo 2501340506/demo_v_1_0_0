@@ -4,7 +4,9 @@
 
 - M1 local.1：BMP 加载/缩放链路扩为 `{R,G,B,T}`，32bpp A 写入 SDRAM 低 8 位，24bpp 和黑边为 FF；保留旧 decoder RGB 端口，修复末字节/file_end 同拍及连续表头校验问题。144 份专项/受影响回归日志和完整 TD 通过，最终 14358 LUT（+168）、56 BRAM9k（+2），Setup +0.111ns/Hold +0.003ns。固定 [M1 候选](releases/v0.17.0/m1-local.1/README.md)，bit 664544 字节，标签 `v0.17.0-m1-local.1`；待板测，未推送。显示暂不使用 T，正式版仍为 v0.16.0。
 
-- M2：新增 [PC图像工具](tools/scenes/README.md)，scene.yaml支持灰度、累计折线和种子距离T生成，输出标准BI_RGB/BGRA BMP。制作虚构示意村4张640×480 BMP和24张灾害参考PNG，冻结M3配色、混合取整与相位。8项专项通过，20480个参考像素与独立模型一致，全部BMP RGB/T反读通过，38个输出和4张输入PNG逐字节复现；见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md)。用户目视/板上显示待确认；不改RTL、无新bit/硬件标签、未推送。M3–M6未实施。
+- M2：新增 [PC图像工具](tools/scenes/README.md)，scene.yaml支持灰度、累计折线和种子距离T生成，输出标准BI_RGB/BGRA BMP。制作虚构示意村4张640×480 BMP和24张灾害参考PNG，冻结M3配色、混合取整与相位。8项专项通过，20480个参考像素与独立模型一致，全部BMP RGB/T反读通过，38个输出和4张输入PNG逐字节复现；见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md)。用户目视/板上显示待确认；本阶段不改RTL、无新bit/硬件标签、未推送。
+
+- M3 local.1：新增两拍hazard_layer与临时帧驱动时间源，32位RGB/T同步进入图层，随后亮度/对比度与转场；缩略图/普通24bpp旁路，切图重启推演。9份仿真、19份编译日志审核通过：24张M2参考图逐像素一致，新/旧top、真实SDRAM、PCM、预览293帧和完整系统591帧通过。最终TD为14520 LUT、8439寄存器、56 BRAM9k、13 DSP，Setup +0.104ns/Hold +0.011ns；固定 [M3候选](releases/v0.17.0/m3-local.1/README.md)，bit664544字节，标签 `v0.17.0-m3-local.1`。按用户指令先做M3本地工作，M1/M3板测与M2用户目视仍待确认，未推送；M4–M6未实施。
 
 ## 历史记录
 

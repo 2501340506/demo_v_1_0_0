@@ -1,6 +1,8 @@
-# 当前开发阶段：v0.17.0 M2 图像工具本地完成，M1 等待板测
+# 当前开发阶段：v0.17.0 M3 local.1，等待板测
 
-M2 [场景工具](tools/scenes/README.md) 已完成灰度/折线/种子T生成、标准32bpp BMP写出与反读、灾害图层精确参考模型；虚构示意村4张BMP及24张expected PNG已固定。8项专项和逐字节复现通过，见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md) 与 [参考拼图](tools/scenes/demo_village/generated/overview.png)。用户目视/板上显示尚待确认；M2没有新bit或硬件标签，M3–M6尚未实施。
+M3灾害图层已接入显示链路，按M2示意村卡呈现裂缝、沟谷覆盖、撤离路线和避险点闪烁；临时时间源每两帧推进、循环0–239，缩略图旁路。9份仿真与完整TD通过，14520 LUT、56 BRAM9k、13 DSP，Setup +0.104ns/Hold +0.011ns。下载 [固定候选](releases/v0.17.0/m3-local.1/README.md)，查看 [验证记录](releases/v0.17.0/m3-local.1/VALIDATION.md) 与 [板测步骤](releases/v0.17.0/m3-local.1/BOARD_VALIDATION.md)。用户要求先推进M3本地实现，M1/M3均无板测确认，M2目视待确认；未推送，M4–M6未实施。
+
+M2 [场景工具](tools/scenes/README.md) 已完成灰度/折线/种子T生成、标准32bpp BMP写出与反读、灾害图层精确参考模型；虚构示意村4张BMP及24张expected PNG已固定。8项专项和逐字节复现通过，见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md) 与 [参考拼图](tools/scenes/demo_village/generated/overview.png)。M2没有独立bit或硬件标签。
 
 M1 BMP 加载链路已支持32bpp：A作为T保存到SDRAM，24bpp和黑边的T为FF，显示仍使用RGB。144份仿真日志和完整TD通过；14358 LUT、56 BRAM9k，Setup +0.111ns/Hold +0.003ns。固定候选 `v0.17.0-m1-local.1` 尚待用户上板确认。
 

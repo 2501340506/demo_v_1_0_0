@@ -1,5 +1,7 @@
 # 山区避险课堂专项验证
 
+M3 local.1本地通过，固定 [候选与验证](../../releases/v0.17.0/m3-local.1/README.md)。运行方式与测试边界见 [M3_IMPLEMENTATION.md](M3_IMPLEMENTATION.md)，9份仿真清单为m3_logs.json；生产top/真实SDRAM新增灾害像素检查，旧top适配总计六拍。M1/M3板测仍待确认，未推送。
+
 M2 图像工具本地通过：使用说明见 [场景工具](../../tools/scenes/README.md)，实际8项专项和素材复现结果见 [M2_VALIDATION.md](M2_VALIDATION.md)。运行 `py -I diagnostics/mountain_scene/test_scene_pack.py`；测试证据留在 diagnostics/output，不清理历史结果。M2 不改 RTL，没有独立 bit；M1 板测仍待确认。
 
 ## M1：32bpp 像素加载验证

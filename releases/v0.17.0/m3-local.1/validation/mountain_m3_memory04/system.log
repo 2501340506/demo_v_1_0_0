@@ -1,0 +1,60 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m3_memory04/work tb_hazard_sdram -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m3_memory04/system.log -do "run -all; quit -f" -gMIXED_TEST=1 -gSCALE_TEST=1 
+# Start time: 16:39:28 on Oct 15,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(25): (vopt-2685) [TFMPC] - Too few port connections for 'loader'.  Expected 32, found 31.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(25): (vopt-2718) [TFMPC] - Missing connection for port 'burst_permit'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(47): (vopt-2685) [TFMPC] - Too few port connections for 'reader'.  Expected 34, found 30.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'pixel_descriptor'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'preview_ack'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'preview_descriptor'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'preview_request'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2685) [TFMPC] - Too few port connections for 'app'.  Expected 61, found 53.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'preview_descriptor'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'preview_request'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'preview_ack'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'osd_error_code'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_select'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_restore'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_increase'.
+# ** Warning: ../diagnostics/mountain_scene/tb_hazard_sdram.sv(124): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_decrease'.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_wrrd.enc.v(77): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# MIXED cached image=0 time=23429805000
+# MIXED cached image=1 time=233415735000
+# MIXED cached image=2 time=362983805000
+# MIXED cached image=3 time=430070155000
+# PASS RGBA physical system: four dimensions through FAT32/scaler/SDRAM/display frames=31
+# PASS M3 SDRAM hazard: pixel_checks=10137598 frames=31
+# PASS cache system: mixed
+# ** Note: $finish    : ../diagnostics/mountain_scene/tb_hazard_sdram.sv(393)
+#    Time: 554369120 ns  Iteration: 2  Instance: /tb_hazard_sdram
+# End time: 16:41:06 on Oct 15,2026, Elapsed time: 0:01:38
+# Errors: 0, Warnings: 32

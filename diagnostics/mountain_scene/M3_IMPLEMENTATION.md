@@ -47,4 +47,6 @@ attempt02保持相同功能源码，使用HighFanoutOptimization、placement str
 
 16:30原项目demo.al被外部重新保存，两个scene条目消失，其他内容未变。先保存原文件到diagnostics/output/mountain_m3_project_resaved_1630.al，再仅补回两个必要条目；合并后与attempt02工程文件逐字节一致。没有覆盖其他用户工程变化或关闭用户TD应用。
 
+16:45再次发生相同旧工程列表回写，逐字节确认与前次外部版本相同，另备份到mountain_m3_project_resaved_1645.al后补回条目。请在TD中重新加载磁盘工程后再保存；不关闭用户应用，也不把工程设为只读。交付包源码与固定bit不受外部工程回写影响。
+
 最终采用memory04，增加首有效像素的stage与当前显示bank图片相等断言，31帧/10137598像素通过。memory03仅因新增断言位于bank_id数组声明前而编译失败，原日志保留。完整系统与预览最终均通过：591帧/481827 PCM、293帧/238405 PCM；旧top适配后336269像素/1148 PCM通过。最终9份仿真、19份编译日志全部审核完成，交付引用m3-local.1。
