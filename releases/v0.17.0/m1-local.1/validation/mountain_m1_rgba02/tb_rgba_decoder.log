@@ -1,0 +1,21 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_rgba02/work tb_rgba_decoder -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m1_rgba02/tb_rgba_decoder.log -do "run -all; quit -f" 
+# Start time: 02:40:23 on Oct 15,2026
+# run -all
+# PASS RGBA decoder width=1 depth=24 cut=0 compression=0
+# PASS RGBA decoder width=1 depth=32 cut=0 compression=0
+# PASS RGBA decoder width=2 depth=24 cut=0 compression=0
+# PASS RGBA decoder width=2 depth=32 cut=0 compression=0
+# PASS RGBA decoder width=3 depth=24 cut=0 compression=0
+# PASS RGBA decoder width=3 depth=32 cut=0 compression=0
+# PASS RGBA decoder width=4 depth=24 cut=0 compression=0
+# PASS RGBA decoder width=4 depth=32 cut=0 compression=0
+# PASS RGBA decoder width=5 depth=24 cut=0 compression=0
+# PASS RGBA decoder width=5 depth=32 cut=0 compression=0
+# PASS RGBA decoder width=5 depth=32 cut=1 compression=0
+# PASS RGBA decoder width=5 depth=32 cut=0 compression=3
+# PASS RGBA decoder width=5 depth=32 cut=0 compression=0
+# PASS RGBA decoder suite: padding, alpha, stalls, final drain, rejection/recovery
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/mountain_scene/tb_rgba_decoder.sv(76)
+#    Time: 22920 ns  Iteration: 1  Instance: /tb_rgba_decoder
+# End time: 02:40:23 on Oct 15,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

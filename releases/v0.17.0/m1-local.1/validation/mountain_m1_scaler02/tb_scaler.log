@@ -1,0 +1,18 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_scaler02/work tb_scaler -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m1_scaler02/tb_scaler.log -do "run -all; quit -f" 
+# Start time: 02:46:31 on Oct 15,2026
+# run -all
+# PASS scaler 160x120 307200 exact pixels
+# PASS scaler 320x240 307200 exact pixels
+# PASS scaler 640x480 307200 exact pixels
+# PASS scaler 800x600 307200 exact pixels
+# PASS scaler 1024x768 307200 exact pixels
+# PASS scaler 1920x1080 307200 exact pixels
+# PASS scaler 1080x1920 307200 exact pixels
+# PASS scaler 317x239 307200 exact pixels
+# PASS scaler 801x601 307200 exact pixels
+# PASS scaler 321x241 307200 exact pixels
+# PASS scaler suite: 10 images plus cancellation
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/image_scaling/tb_scaler.sv(52)
+#    Time: 148046150 ns  Iteration: 1  Instance: /tb_scaler
+# End time: 02:47:53 on Oct 15,2026, Elapsed time: 0:01:22
+# Errors: 0, Warnings: 0

@@ -1,3 +1,13 @@
+# 当前交接：v0.17.0 M1 local.1 已固定，等待板测（2026-10-15）
+
+- 当前任务：M1 32bpp 像素通路本地完成；分支 `feature/mountain-escape-classroom`，标签 `v0.17.0-m1-local.1`，功能基线/回退 `v0.16.0`（1818adc）。候选见 [M1 说明](releases/v0.17.0/m1-local.1/README.md) 和 [阶段计划](docs/山区避险课堂分阶段修改计划.md)；正式版仍为 v0.16.0。
+- 已完成：五个 SD 加载/缩放文件保存 `{R,G,B,T}`，32bpp A 为 T、24bpp 和黑边为 FF，decoder 保留 RGB 兼容端口。144 份专项/受影响回归日志全部通过，23 份编译日志另存；真实 SDRAM RGBA 31 帧、混合尺寸预览 293 帧/238405 PCM 样本、完整系统 591 帧/481827 PCM 样本。完整 TD attempt01：14358 LUT、8274 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.111ns/Hold +0.003ns，TNS 0；102 个实际工程输入逐字节一致，时序审计类别/异常汇总同基线。固定 [demo.bit](releases/v0.17.0/m1-local.1/demo.bit) 为 664544 字节，仅备份 5 个变化的生产文件；四张 32bpp 诊断图和板测步骤已固定。
+- 卡住的问题：无本地阻塞；M1 尚未上板，不建立 board 标签，未推送本阶段提交/标签。Hold 仅 3ps，不能以本地通过替代板测。
+- 下一步计划：用户按 [板测步骤](releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) 验证原 24bpp 卡和 32bpp 诊断卡；确认通过后记录 `v0.17.0-m1-board.1` 并推送分支及本阶段 local/board 标签。异常时按实际现象修复，出 local.2，不覆盖本候选。M2 可独立授权推进，M3 仍需 M1 板测和 M2 素材；M2–M6 尚未实施，显示侧不使用 T。
+- 踩过的坑：decoder 修复末字节/file_end 同拍旧计数和连续表头校验寄存延迟；早期失败或主动停止的运行保留在 diagnostics/output，不作为通过证据。TD 中间面积 14346，最终布线后为 14358 LUT。实际工具为 E:/TD；单项使用 Intel Starter 10.5b，长回归使用 F:/modelsim/win64 的 SE-64 10.6e，Starter 旧运行因限速主动停止。PCM 两测试台须同批编译；编译/TD 重定向日志为 UTF-16，按 BOM 读取。完整系统的 `vlog-13288` 多宏参数提示及已知 IP 告警保留，未知告警拒绝，见 [验证记录](releases/v0.17.0/m1-local.1/VALIDATION.md)。用户 TD_project、best_result、旧标签及素材未覆盖。
+
+## 历史交接
+
 # 当前交接：v0.17.0 M0 计划已建立（2026-10-15）
 
 - 当前任务：山区防灾避险课堂 v0.17.0；分支 `feature/mountain-escape-classroom`，功能基线/回退 `v0.16.0`（1818adc），本次仅执行 M0。

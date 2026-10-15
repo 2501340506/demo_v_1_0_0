@@ -1,0 +1,23 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_decoder03/work tb_bmp24_decoder -l E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_decoder03/matrix3.log -do "run -all; quit -f" -gH=2 -gW=3 
+# Start time: 02:46:03 on Oct 15,2026
+# run -all
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=32 bad=0 cut=0 gap=1 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=1 tail=11
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=2 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=1 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=2 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=3 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=4 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=5 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=6 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=7 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=8 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=9 cut=0 gap=0 tail=0
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=0 tail=0
+# PASS decoder upstream abort
+# PASS decoder W=3 H=2 depth=24 bad=0 cut=0 gap=0 tail=0
+# ** Note: $finish    : diagnostics/stability/tb_bmp24_decoder.sv(94)
+#    Time: 14040 ns  Iteration: 1  Instance: /tb_bmp24_decoder
+# End time: 02:46:03 on Oct 15,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

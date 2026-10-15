@@ -1,0 +1,14 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_rgba02/work tb_rgba_stream -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m1_rgba02/tb_rgba_stream.log -do "run -all; quit -f" 
+# Start time: 02:40:23 on Oct 15,2026
+# run -all
+# PASS byte stream 317x239 padded bytes=227582 exact pixels=307200
+# PASS byte stream 640x480 padded bytes=1228854 exact pixels=307200
+# PASS byte stream 160x120 padded bytes=76854 exact pixels=307200
+# PASS byte stream 801x601 padded bytes=1925658 exact pixels=307200
+# PASS byte stream 1080x1920 padded bytes=8294454 exact pixels=307200
+# PASS byte stream 1920x1080 padded bytes=8294454 exact pixels=307200
+# PASS byte stream suite
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/mountain_scene/tb_rgba_stream.sv(51)
+#    Time: 652993240 ns  Iteration: 1  Instance: /tb_rgba_stream
+# End time: 02:50:38 on Oct 15,2026, Elapsed time: 0:10:15
+# Errors: 0, Warnings: 0

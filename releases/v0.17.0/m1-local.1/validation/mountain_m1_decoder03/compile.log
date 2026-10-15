@@ -1,0 +1,11 @@
+Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+Start time: 02:43:18 on Oct 15,2026
+vlog -sv -work E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_decoder03/work -l E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_decoder03/compile.log user_source/hdl_source/SD/bmp_header_check.v user_source/hdl_source/SD/bmp24_decoder.v diagnostics/stability/tb_bmp24_decoder.sv 
+-- Compiling module bmp_header_check
+-- Compiling module bmp24_decoder
+-- Compiling module tb_bmp24_decoder
+
+Top level modules:
+	tb_bmp24_decoder
+End time: 02:43:18 on Oct 15,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

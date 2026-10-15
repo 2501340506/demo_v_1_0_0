@@ -1,0 +1,8 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_reader32/work tb_fat32_reader -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m1_reader32/reader41_gap0_mode0.log -do "run -all; quit -f" -gTEST_MODE=0 -gCASE_ID=41 -gFIXTURE_DIR=E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_reader32/fixtures -gBYTE_GAP=0 -gRGBA_TEST=1 -gSCALE_TEST=0 
+# Start time: 02:45:46 on Oct 15,2026
+# run -all
+# PASS FAT32 reader case=41 found=4 requests=26 mode=0
+# ** Note: $finish    : diagnostics/fat32/tb_fat32_reader.sv(134)
+#    Time: 139080 ns  Iteration: 1  Instance: /tb_fat32_reader
+# End time: 02:45:47 on Oct 15,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

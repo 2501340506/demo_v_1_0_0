@@ -1,0 +1,13 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m1_scaler02/work tb_scale_stream -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m1_scaler02/tb_scale_stream.log -do "run -all; quit -f" 
+# Start time: 02:47:54 on Oct 15,2026
+# run -all
+# PASS byte stream 160x120 padded bytes=57654 exact pixels=307200
+# PASS byte stream 640x480 padded bytes=921654 exact pixels=307200
+# PASS byte stream 801x601 padded bytes=1444858 exact pixels=307200
+# PASS byte stream 1920x1080 padded bytes=6220854 exact pixels=307200
+# PASS byte stream 1080x1920 padded bytes=6220854 exact pixels=307200
+# PASS byte stream suite
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/image_scaling/tb_scale_stream.sv(50)
+#    Time: 488971450 ns  Iteration: 1  Instance: /tb_scale_stream
+# End time: 02:53:52 on Oct 15,2026, Elapsed time: 0:05:58
+# Errors: 0, Warnings: 0

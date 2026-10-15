@@ -1,3 +1,9 @@
+# 当前开发阶段：v0.17.0 M1 local.1，等待板测
+
+BMP 加载链路已支持 32bpp：A 作为 T 保存到 SDRAM，24bpp 和黑边的 T 为 FF，显示仍使用 RGB。144 份仿真日志和完整 TD 通过；14358 LUT、56 BRAM9k，Setup +0.111ns/Hold +0.003ns。固定候选 `v0.17.0-m1-local.1` 尚待用户上板确认，M2–M6 尚未实施。
+
+[候选下载与说明](releases/v0.17.0/m1-local.1/README.md) · [本地验证](releases/v0.17.0/m1-local.1/VALIDATION.md) · [板测步骤](releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) · [阶段计划](docs/山区避险课堂分阶段修改计划.md) · [交接](HANDOFF.md)。按项目流程，板测确认后推送本阶段；当前正式版如下。
+
 # 当前正式版：v0.16.0
 
 功能与 v0.15.0 相同，LUT 优化后 15402→14190 LUT、DSP 15→13，为后续功能留出余量。S1、S2 板测均获用户确认，S2 Flash 冷启动运行 40 分钟正常。复用 s2-local.1 原 bit。
