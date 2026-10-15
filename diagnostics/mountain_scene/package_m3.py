@@ -62,7 +62,7 @@ def package(build_name, candidate):
         assert (ROOT / name).read_bytes() == (build / name).read_bytes(), f'Build input mismatch: {name}'
     log_config = ROOT / 'diagnostics/mountain_scene/m3_logs.json'
     logs = json.loads(log_config.read_text(encoding='utf-8'))
-    assert len(logs) == 8
+    assert len(logs) == 9
     for name, marker in logs.items():
         check_log(output / name, marker)
     compile_logs = []
@@ -74,6 +74,18 @@ def package(build_name, candidate):
     audit = build / 'timing_audit'
     baseline = ROOT / 'releases/v0.17.0/m1-local.1/reports/check_timing.txt'
     assert audit_summary(audit / 'check_timing.txt') == audit_summary(baseline), 'Changed audit categories/exceptions'
+    def warning_set(path):
+        # Compare diagnostic contents, not build-folder names or source line shifts.
+        result = set()
+        for line in read_log(path).splitlines():
+            if re.search(r'WARNING|Warning|WARN-', line):
+                line = re.sub(r'mountain_scene_m[13]_attempt\d+', 'BUILD', line)
+                result.add(re.sub(r'\(\d+\)', '(line)', line))
+        return result
+    for run in ('syn_1', 'phy_1'):
+        current = build / f'TD_project/demo_Runs/{run}/build_{build_name}.log'
+        prior = ROOT / f'releases/v0.17.0/m1-local.1/reports/{run}_build.log'
+        assert not warning_set(current) - warning_set(prior), f'New TD diagnostic: {run}'
     changed = set(subprocess.check_output(['git', 'diff', 'v0.17.0-m1-local.1', '--name-only', '--',
                                           'user_source', 'TD_project'], cwd=ROOT).decode('utf-8').splitlines())
     saved = [p for p in inputs if p.as_posix() in changed]

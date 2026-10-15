@@ -16,6 +16,7 @@
 ```powershell
 & diagnostics/mountain_scene/run_m3_unit.ps1 -RunName mountain_m3_unit_new
 & diagnostics/mountain_scene/run_m3_top.ps1 -RunName mountain_m3_top_new
+& diagnostics/mountain_scene/run_m3_top.ps1 -RunName mountain_m3_legacy_top_new -Legacy
 & diagnostics/mountain_scene/run_legacy.ps1 -Suite hazard_system -RunName mountain_m3_memory_new
 & diagnostics/mountain_scene/run_legacy.ps1 -Suite pcm -RunName mountain_m3_pcm_new
 & diagnostics/mountain_scene/run_legacy.ps1 -Suite preview -RunName mountain_m3_preview_new -Mixed 1 -Audio -Failures
@@ -31,6 +32,8 @@
 单位测试直接读取已固定的M2 BMP和24张expected PNG，导出原始像素后输入RTL，**不在导出时重算expected**。另用独立标量运算覆盖所有256个T、0/5/6/120/239、四种快慢相位、旁路和复位；每拍核对随行信号两拍延迟。
 
 生产顶层测试复用旧调节/音频注入边界，增加T、四阶段与保留编码；核对新增两拍后的RGB、hs/vs/de/x，覆盖调节、预览焦点/空格、黑屏、转场和静音。真实SDRAM测试经过FAT32、缩放、FIFO、受保护控制器、command/DQ存储模型和32位video_delay后再比较灾害层。两者互补，顶层注入测试不能单独替代存储链路验证。
+
+既有 `diagnostics/media_adjust/tb_adjust_top.sv` 同步适配生产路径：注入32位像素且T固定FF，期望队列由4拍改为6拍；原测试步骤和RGB/音频判据不变，另行运行Legacy模式，避免M3接线改变后留下失效的旧顶层测试。
 
 完整系统和预览测试沿用既有装配台，验证旧缓存/转场/OSD/UART/PCM行为；它们本身不实例化生产top的新灾害层，灾害层接线由上述顶层和SDRAM专项覆盖。未修改BMP加载和缩放RTL，因此复用M1的格式故障矩阵，M3重新运行受影响整合路径与PCM预览重扫；未将旧日志伪装为M3重测。
 

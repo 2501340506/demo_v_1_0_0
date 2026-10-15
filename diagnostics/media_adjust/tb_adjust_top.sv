@@ -1,6 +1,7 @@
 `timescale 1ns/1ps
 // Production top wiring test. Inject decoded pixels/audio at the existing
 // reader/source boundaries; storage and physical IO are covered separately.
+// M3: T=FF keeps legacy RGB; two hazard clocks plus four adjust clocks.
 module tb_adjust_top;
  reg clk=0,pix=0,rst=1;always #5 clk=~clk;always #20 pix=~pix;
  reg hs=1,vs=1,de=0;reg [9:0] x=0;reg [23:0] input_rgb=24'h4080c0;
@@ -10,19 +11,19 @@ module tb_adjust_top;
  wire [5:0] seg_sel;wire [7:0] seg_data;
  top dut(.clk(clk),.rst_n(!rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),.sw1(1'b0),.sw2(1'b0),
  .sd_miso(1'b1),.uart_rx(1'b1),.seg_sel(seg_sel),.seg_data(seg_data));
- reg [23:0] expected[0:3];reg [9:0] xs[0:3];reg [2:0] syncs[0:3];
+ reg [23:0] expected[0:5];reg [9:0] xs[0:5];reg [2:0] syncs[0:5];
  integer count=0,checks=0,audio_checks=0;integer t,v;
  function [7:0] channel(input integer p,input integer bv,input integer cv);
   integer a,z;begin a=(p*bv)>>7;if(a>255)a=255;z=(((a-128)*cv)>>>7)+128;channel=z<0?0:z>255?255:z;end
  endfunction
  always @(posedge pix)if(!rst)begin
-  for(integer i=3;i>0;i--)begin expected[i]=expected[i-1];xs[i]=xs[i-1];syncs[i]=syncs[i-1];end
+  for(integer i=5;i>0;i--)begin expected[i]=expected[i-1];xs[i]=xs[i-1];syncs[i]=syncs[i-1];end
   expected[0]=valid_picture && de?{channel(input_rgb[23:16],dut.brightness_frame,dut.contrast_frame),
    channel(input_rgb[15:8],dut.brightness_frame,dut.contrast_frame),channel(input_rgb[7:0],dut.brightness_frame,dut.contrast_frame)}:0;
   xs[0]=x;syncs[0]={hs,vs,de};count++;
   #1;
-  if(count>=4)begin
-   if(dut.adjusted_rgb!==expected[3] || dut.adjust_x!==xs[3] || {dut.adjust_hs,dut.adjust_vs,dut.adjust_de}!==syncs[3])$fatal(1,"top pixel/timing alignment");
+  if(count>=6)begin
+   if(dut.adjusted_rgb!==expected[5] || dut.adjust_x!==xs[5] || {dut.adjust_hs,dut.adjust_vs,dut.adjust_de}!==syncs[5])$fatal(1,"top pixel/timing alignment");
    if(dut.adjust_preview && dut.adjust_de)begin
     if(dut.thumb_border && dut.preview_rgb!==24'hffff00)$fatal(1,"adjusted focus border");
     if(!dut.thumb_border && !dut.thumb_valid && dut.preview_rgb!==0)$fatal(1,"empty preview");
@@ -52,7 +53,7 @@ module tb_adjust_top;
  endtask
  initial begin
   force dut.video_clk=pix;force dut.sd_card_clk=clk;force dut.rst_video=rst;force dut.rst_sd=rst;
-  force dut.hs=hs;force dut.vs=vs;force dut.de=de;force dut.video_x=x;force dut.vout_data_raw=input_rgb;
+  force dut.hs=hs;force dut.vs=vs;force dut.de=de;force dut.video_x=x;force dut.vout_rgba_raw={input_rgb,8'hff};
   force dut.display_valid=valid_picture;force dut.pixel_descriptor=descriptor;force dut.transition_level=fade;force dut.transition_wipe=wipe;
   force dut.audio_enable=1'b1;force dut.audio_image=2'd0;
   force dut.brightness_src=b;force dut.contrast_src=c;force dut.volume_src=volume;force dut.selected_src=selection;force dut.switch_mode=mode;

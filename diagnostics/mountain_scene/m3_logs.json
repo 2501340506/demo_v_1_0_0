@@ -2,6 +2,7 @@
   "mountain_m3_unit05/tb_hazard_layer.log": "PASS hazard layer: saved_frames=24 pixel_side_checks=7393796",
   "mountain_m3_unit05/tb_scene_timing.log": "PASS scene timing: frames=1930",
   "mountain_m3_top01/top.log": "PASS M3 production top injected pixels=414125 audio=1392",
+  "mountain_m3_legacy_top01/top.log": "PASS production top injected",
   "mountain_m3_memory02/system.log": "PASS M3 SDRAM hazard:",
   "mountain_m3_pcm01/tb_pcm_production.log": "PASS production PCM: 9279 exact comparisons",
   "mountain_m3_pcm01/tb_pcm_preview_rescan.log": "PASS production PCM: 9280 exact comparisons",
