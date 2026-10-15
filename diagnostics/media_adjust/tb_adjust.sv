@@ -45,7 +45,7 @@ endmodule
 module tb_volume;
  reg clk=0,rst=1;always #5 clk=~clk;
  reg [3:0] level=10;reg iv=0,ready=0;wire ir,ov;reg signed [15:0] l,r;wire signed [15:0] ol,orr;
- pcm_master_volume dut(.clk(clk),.rst(rst),.volume_level(level),.in_valid(iv),.in_ready(ir),.in_left(l),.in_right(r),.out_valid(ov),.out_ready(ready),.out_left(ol),.out_right(orr));
+ pcm_master_volume dut(.clk(clk),.rst(rst),.volume_level(level),.fade_mute(1'b0),.muted(),.in_valid(iv),.in_ready(ir),.in_left(l),.in_right(r),.out_valid(ov),.out_ready(ready),.out_left(ol),.out_right(orr));
  integer gain=65536,target,next_gain,accepted=0,consumed=0;reg signed [15:0] ql[$],qr[$];reg signed [15:0] el,er;
  reg stalled=0;reg signed [15:0] sl,sr;
  function integer coefficient(input integer v);
