@@ -1,3 +1,13 @@
+# 当前交接：v0.17.0 M3 本地实现完成，长回归收尾（2026-10-15）
+
+- 当前任务：用户后续明确要求执行M3，先完成本地实现；M1板测与M2用户目视仍待确认，不倒填通过。分支 `feature/mountain-escape-classroom`，功能基线/已板测回退v0.16.0，输入为M1 local.1与M2素材3535c0b。
+- 已完成：生产提交964c14d实现hazard_layer两拍流水、32位video_delay接线和临时帧时间源；首有效像素锁定阶段/时间，每两帧递增、239循环、切图/退出预览重置。24张M2图全部通过RTL比对，共7393796像素/随行检查；时间源1930帧；生产顶层414125像素/1392音频样本；真实SDRAM31帧/10137598灾害像素；PCM两项9279/9280样本通过。TD attempt02通过：14520 LUT、8439寄存器、56 BRAM9k、13 DSP，Setup +0.104ns/Hold +0.011ns，TNS0，104输入逐字节一致，审计汇总同M1。
+- 卡住的问题：无已知本地功能阻塞；预览和完整系统长回归仍在运行，未打包或建立M3 local标签。M1/M3均未板测，未推送。
+- 下一步计划：等待 `mountain_m3_preview01` / `mountain_m3_system01` 完成；按 `diagnostics/mountain_scene/m3_logs.json` 审核8份仿真及编译日志，用package_m3.py固定attempt02、完成候选说明/验证/交接，提交并打 `v0.17.0-m3-local.1`。板测清单草稿见 diagnostics/mountain_scene/BOARD_VALIDATION_M3.md。
+- 踩过的坑：attempt01为SD缓存路径Setup −0.212ns，保留失败报告；attempt02仅将timing optimization提高到high，功能源码未变。早期单位测试失败来自测试台采样/字符串/复位残留，memory01来自信号声明顺序；有效运行unit05/top01/memory02/pcm01。顶层43条告警与v0.16.0相同，细节见 [M3实现记录](diagnostics/mountain_scene/M3_IMPLEMENTATION.md)。demo.al仅增加两个scene文件条目，用户工程其余内容/best_result/旧候选未覆盖。
+
+## 历史交接
+
 # 当前交接：v0.17.0 M2 图像工具本地完成（2026-10-15）
 
 - 当前任务：按用户“先执行M2”完成独立PC图像工具，分支 `feature/mountain-escape-classroom`；硬件基线/回退仍为 `v0.16.0`（1818adc），M1候选仍为 `v0.17.0-m1-local.1`（901f29e），尚待板测。正式版仍为v0.16.0。
