@@ -274,15 +274,18 @@ end
 
 // ===================== TF 多图扫描与缓存（双缓冲） =====================
 wire bgm_valid,bgm_ready,bgm_active;
+wire scenario_muted,scenario_fade_src;
+wire [12:0] scenario_state_src;
 wire frame_write_ready,frame_refill_priority;
 wire signed [15:0] bgm_left,bgm_right;
 sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE)
+    .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE)
 ) sd_card_bmp_m0(
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
+    .scenario_muted(scenario_muted),.scenario_fade(scenario_fade_src),.scenario_state(scenario_state_src),
     .bgm_left(bgm_left),.bgm_right(bgm_right),
     .clk               (sd_card_clk),
     .rst               (rst_sd),
@@ -387,10 +390,13 @@ wire [7:0] scene_time;
 wire scene_fast,scene_slow,scene_enable;
 wire [23:0] hazard_rgb;
 wire [47:0] hazard_side;
-generate if(SCENE_DEMO_ENABLE)begin:g_scene_demo
- scene_demo_timing u_timing(.clk(video_clk),.rst(rst_video),.first_active(scene_first_active),
-  .ready(display_valid && audio_enable),.thumbnail(preview_pixel),.image(audio_image),
-  .stage(scene_stage),.t_now(scene_time),.blink_fast(scene_fast),.blink_slow(scene_slow),.layer_enable(scene_enable));
+generate if(SCENE_DEMO_ENABLE)begin:g_scenario
+ wire [23:0] scenario_pixel_state;
+ media_adjust_cdc state_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),.src_state({11'd0,scenario_state_src}),
+  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(scenario_pixel_state));
+ scenario_frame frame_state(.clk(video_clk),.rst(rst_video),.first_active(scene_first_active),
+  .scene_state(scenario_pixel_state[12:0]),.stage(scene_stage),.t_now(scene_time),
+  .blink_fast(scene_fast),.blink_slow(scene_slow),.enable(scene_enable));
 end else begin:g_scene_off
  assign scene_stage=0;assign scene_time=0;assign scene_fast=0;assign scene_slow=0;assign scene_enable=0;
 end endgenerate
@@ -543,7 +549,11 @@ audio_source_mux u_audio_source_mux(
  .out_ready(mixed_ready),.out_valid(mixed_valid),.out_left(mixed_left),.out_right(mixed_right));
 wire volume_valid,volume_ready;
 wire signed [15:0] volume_left,volume_right;
+(* ASYNC_REG="TRUE" *) reg [1:0] scenario_fade_sync;
+always @(posedge video_clk or posedge rst_video)
+ if(rst_video)scenario_fade_sync<=0;else scenario_fade_sync<={scenario_fade_sync[0],scenario_fade_src};
 pcm_master_volume u_master_volume(.clk(video_clk),.rst(rst_video),.volume_level(volume_frame),
+ .fade_mute(scenario_fade_sync[1]),.muted(scenario_muted),
  .in_valid(mixed_valid),.in_ready(mixed_ready),.in_left(mixed_left),.in_right(mixed_right),
  .out_valid(volume_valid),.out_ready(volume_ready),.out_left(volume_left),.out_right(volume_right));
 media_hdmi_audio_bridge u_media_hdmi_audio_bridge (

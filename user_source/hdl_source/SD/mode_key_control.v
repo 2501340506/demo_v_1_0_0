@@ -2,16 +2,18 @@
 module mode_key_control #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer RESCAN_HOLD_MS = 2000,
-    parameter integer PREVIEW_ENABLE = 0
+    parameter integer PREVIEW_ENABLE = 0,
+    parameter integer SCENE_ENABLE = 0
 )(
     input wire clk, rst, enable,
     input wire key1, key2, key4,
     input wire [1:0] mode,
-    output reg next_event, rescan_event,
+    output wire next_event,output reg rescan_event,
     output wire previous_event,
     output reg auto_toggle_event,
     output wire adjust_decrease,adjust_increase,adjust_restore,adjust_select,
-    output wire manual_activity
+    output wire manual_activity,
+    input scene_allowed,output wire scene_mode,scene_next,scene_warn,scene_speed
 );
     wire press1, press2, press4;
     wire stable1, stable2, stable4;
@@ -34,7 +36,11 @@ module mode_key_control #(
         if (rst) press_mode <= 0;
         else press_mode <= mode;
     end
-    assign previous_event = enable && (press_mode == 0 || (PREVIEW_ENABLE && press_mode == 3)) && press_mode==mode && press1;
+    assign previous_event = !scene_mode && enable && (press_mode == 0 || (PREVIEW_ENABLE && press_mode == 3)) && press_mode==mode && press1;
+    reg next_raw;
+    assign next_event=next_raw && !scene_mode;
+    assign scene_next=next_raw && scene_mode;
+    assign scene_warn=scene_mode && enable && press_mode==mode && press1;
     localparam integer HOLD_CYCLES = (CLK_FREQ_HZ / 1000) * RESCAN_HOLD_MS;
     localparam integer HOLD_BITS = $clog2(HOLD_CYCLES + 1);
     reg [HOLD_BITS-1:0] held_cycles;
@@ -44,10 +50,10 @@ module mode_key_control #(
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             short_mode<=0; stable2_d <= 1; held_cycles <= 0; long_fired <= 0;
-            rescan_allowed <= 0; short_allowed <= 0; next_event <= 0; rescan_event <= 0;
+            rescan_allowed <= 0; short_allowed <= 0; next_raw <= 0; rescan_event <= 0;
         end else begin
             stable2_d <= stable2;
-            next_event <= 0; rescan_event <= 0;
+            next_raw <= 0; rescan_event <= 0;
             if (stable2_d && !stable2) begin
                 short_allowed <= enable && (mode == 0 || (PREVIEW_ENABLE && mode == 3));
                 short_mode<=mode; rescan_allowed <= (mode==0 || mode==3);
@@ -64,7 +70,7 @@ module mode_key_control #(
                 end
             end else begin
                 if (!stable2_d && !long_fired && short_allowed && enable && mode == short_mode)
-                    next_event <= 1;
+                    next_raw <= 1;
                 held_cycles <= 0; long_fired <= 0; short_allowed <= 0;
             end
         end
@@ -73,9 +79,42 @@ module mode_key_control #(
         .clk(clk),.rst(rst),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
         .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select));
     // Register the media toggle to break mode -> preview -> cache request logic.
+    generate if(SCENE_ENABLE==0)begin:g_legacy
+    assign scene_mode=0;assign scene_speed=0;
     always @(posedge clk or posedge rst)
         if(rst)auto_toggle_event<=0;
         else auto_toggle_event<=enable && press4 && press_mode==mode && (mode==0 || mode==3);
+    end else begin:g_scene
+     reg active,armed,tracking,long4,s4q;
+     reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold4;
+     reg speed_event;
+     assign scene_mode=active;
+     assign scene_speed=speed_event;
+     always @(posedge clk or posedge rst)begin
+      if(rst)begin active<=0;armed<=0;tracking<=0;long4<=0;s4q<=1;hold4<=0;
+       speed_event<=0;auto_toggle_event<=0;end
+      else begin
+       s4q<=stable4;speed_event<=0;auto_toggle_event<=0;
+       if(mode!=0 || !scene_allowed)active<=0;
+       if(press_mode!=mode || rescan_event)begin armed<=0;tracking<=0;end
+       else if(stable4 && !tracking)armed<=1;
+       if(mode==0 && armed && enable)begin
+        if(s4q && !stable4)begin tracking<=1;hold4<=1;long4<=0;end
+        else if(!stable4 && tracking && !long4)begin
+         if(hold4>=CLK_FREQ_HZ-1)begin
+          long4<=1;if(scene_allowed)active<=!active;
+         end else hold4<=hold4+1'b1;
+        end else if(stable4 && tracking)begin
+         if(!long4)begin if(active)speed_event<=1;else auto_toggle_event<=1;end
+         tracking<=0;hold4<=0;
+        end
+       end else begin
+        tracking<=0;hold4<=0;
+        if(mode==3 && enable && press4 && press_mode==mode)auto_toggle_event<=1;
+       end
+      end
+     end
+    end endgenerate
     assign manual_activity = enable &&
         (!stable1 || !stable2 || !stable4 || press1 || press2 || press4);
 endmodule

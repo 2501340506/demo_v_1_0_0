@@ -33,3 +33,5 @@ work/
 /diagnostics/output/
 /diagnostics/local_tools/
 __pycache__/
+# M4 reproducible scene output; fixed card assets are retained in the candidate.
+/tools/scenes/demo_village/generated_m4/

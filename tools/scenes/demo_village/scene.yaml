@@ -2,6 +2,11 @@ version: 1
 name: 示意村（虚构教学图）
 base: village.png
 output: generated
+audio:
+  - placeholder1.wav
+  - placeholder2.wav
+  - placeholder3.wav
+  - placeholder4.wav
 safe_spots:
   - center: [544, 132]
     radius: 7

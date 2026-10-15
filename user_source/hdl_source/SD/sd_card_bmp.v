@@ -11,11 +11,15 @@ module sd_card_bmp #(
     parameter integer AUDIO_ENABLE = 0,
     parameter integer SCALE_ENABLE = 0,
     parameter integer PREVIEW_ENABLE = 0,
-    parameter integer TRANSITION_ENABLE = 0
+    parameter integer TRANSITION_ENABLE = 0,
+    parameter integer SCENE_ENABLE = 0
 )(
     output                      bgm_valid,bgm_active,
     output signed [15:0]        bgm_left,bgm_right,
     input                       bgm_ready,
+    input                       scenario_muted,
+    output                      scenario_fade,
+    output [12:0]               scenario_state,
     input                       clk,
     input                       rst,
     input                       sdram_ready, // Synchronized into clk; gates first scan only.
@@ -92,6 +96,15 @@ wire sd_local_rst=parser_rst;
 wire audio_stopped;
 reg audio_session;
 wire audio_found;
+wire [3:0] snd_valid;
+wire [127:0] snd_clusters,snd_sizes;
+wire selected_audio_found,scene_stream_run;
+wire [31:0] selected_audio_cluster,selected_audio_size;
+wire [7:0] audio_stream_error;
+wire scene_mode,scene_next,scene_warn,scene_speed;
+wire scene_request,scene_request_accept;
+wire [1:0] scene_target;
+wire scene_owns=scene_mode || scenario_fade;
 wire [31:0] audio_cluster,audio_size,audio_fat_lba,audio_data_lba,audio_max_cluster;
 wire [7:0] audio_spc;
 wire a_req,a_busy,a_valid,a_done,a_urgent;
@@ -103,7 +116,7 @@ wire [8:0] a_index;
 // Register the stop through audio_session: preview/rescan decisions must not
 // feed the file streamer's same-cycle enable path. A start can coincide with
 // that final enabled edge, so wait for both enable low and the stopped ack.
-wire audio_run=audio_session;
+wire audio_run=audio_session && scene_stream_run;
 assign scan_accept=scan_request && scan_state==SC_IDLE && !audio_run && audio_stopped;
 always @(posedge clk or posedge rst) begin
  if(rst)audio_session<=0;
@@ -120,12 +133,12 @@ generate if(AUDIO_ENABLE)begin: g_audio
  end
  assign a_urgent=urgent_latched;
  fat32_pcm_stream u_stream(
- .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(audio_found),
- .first_cluster(audio_cluster),.file_size(audio_size),.sectors_per_cluster(audio_spc),
+ .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(selected_audio_found),
+ .first_cluster(selected_audio_cluster),.file_size(selected_audio_size),.sectors_per_cluster(audio_spc),
  .fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
  .sector_permit(sector_permit),.player_stopped(player_stopped),.player_ready(file_ready),
  .player_enable(player_enable),.file_valid(file_valid),.file_byte(file_byte),
- .stopped(audio_stopped),.error_code(),.loop_count(),
+ .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),
  .sector_req(a_req),.sector_lba(a_lba),.sector_busy(a_busy),.sector_valid(a_valid),
  .sector_done(a_done),.sector_byte(a_byte),.sector_error(a_error),.sector_index(a_index));
  pcm_stream_player u_player(
@@ -138,6 +151,7 @@ generate if(AUDIO_ENABLE)begin: g_audio
 end else begin: g_no_audio
  assign audio_stopped=1'b1;assign a_req=1'b0;assign a_lba=0;assign a_urgent=0;
  assign bgm_valid=0;assign bgm_active=0;assign bgm_left=0;assign bgm_right=0;
+ assign audio_stream_error=0;
 end endgenerate
 always @(posedge clk or posedge rst) begin
  if(rst) begin
@@ -206,6 +220,7 @@ wire preview_intent,preview_selecting,preview_fullscreen_ready,preview_offer,pre
 assign preview_key_toggle=PREVIEW_ENABLE && mode==3 && media_auto_toggle_request;
 wire cache_display_request,cache_display_ack;
 wire transition_permit, transition_busy;
+wire scene_muted_sd,scene_audio_running;
 reg transition_auto;
 wire [1:0] cache_display_image,cache_display_bank;
 wire transition_needed=TRANSITION_ENABLE && !preview_selecting && first_image_committed &&
@@ -232,7 +247,8 @@ always @(posedge clk or posedge rst) begin
  if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;end
  else begin
   if(!cache_display_request) commit_pending<=0;
-  else if(!commit_pending && preview_fullscreen_ready && (!transition_needed || transition_permit)) begin
+  else if(!commit_pending && preview_fullscreen_ready && (!transition_needed || transition_permit) &&
+          (!scene_owns || !scene_audio_running || scene_muted_sd)) begin
    disp_buf_idx<=cache_display_bank;
    display_commit_request<=~display_commit_request;
    commit_pending<=1;
@@ -243,10 +259,11 @@ wire ctrl_auto_play_en,ctrl_next_pending,ctrl_prev_pending,ctrl_auto_tick,ctrl_l
 wire ctrl_request_ready,ctrl_request_accept,ctrl_auto_load_request;
 wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || rescan_wait;
-wire ctrl_offer=ctrl_load_request && !transition_block && !preview_intent && !preview_selecting;
+wire ctrl_offer=ctrl_load_request && !scene_owns && !transition_block && !preview_intent && !preview_selecting;
 wire [1:0] preview_target;
-wire cache_offer=ctrl_offer || preview_offer;
-wire [1:0] cache_target=preview_offer?preview_target:ctrl_target_image;
+wire cache_offer=ctrl_offer || preview_offer || (scene_request && !transition_block);
+wire [1:0] cache_target=scene_request?scene_target:preview_offer?preview_target:ctrl_target_image;
+assign scene_request_accept=scene_request && ctrl_request_ready && !transition_block;
 generate if(PREVIEW_ENABLE)begin:g_preview
  media_preview_control control(.clk(clk),.rst(rst),.mode(mode),.scan_busy(scan_busy),
  .first_image_committed(first_image_committed),.transition_busy(transition_busy),.foreground_busy(foreground_busy),
@@ -271,7 +288,7 @@ media_frame_cache_control u_cache_control(
  .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),
  .scan_success(scan_success),.scan_image_count(img_found_count),.scan_result_ready(scan_result_ready),.scan_busy(scan_busy),
  .request_valid(cache_offer),.request_image(cache_target),
- .request_manual(preview_offer || ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
+ .request_manual(scene_request || preview_offer || ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
  .load_request(load_request),.load_accept(load_accept),.load_image(load_idx),.load_bank(write_buf_idx),
  .load_result_valid(load_result_valid),.load_success(load_success),.load_timeout(load_timeout),.load_result_ready(load_result_ready),
  .cancel_request(cancel_request),.cancel_ack(cancel_ack),.communication_fault(1'b0),
@@ -284,14 +301,16 @@ media_frame_cache_control u_cache_control(
  .retry_event(retry_event),
  .cache_complete_image(cache_complete_image),.cache_hit_image(cache_hit_image),.failed_image(failed_image)
 );
-mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
+mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.SCENE_ENABLE(SCENE_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
  .clk(clk),.rst(rst),.enable(!scan_busy),.key1(key1),.key2(key2),.key4(key4),.mode(mode),
  .rescan_event(rescan_raw),.next_event(media_next_request),.previous_event(media_previous_request),
  .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity),
+ .scene_allowed(first_image_committed && image_count==4 && !scan_busy),
+ .scene_mode(scene_mode),.scene_next(scene_next),.scene_warn(scene_warn),.scene_speed(scene_speed),
  .adjust_decrease(adjust_decrease),.adjust_increase(adjust_increase),.adjust_restore(adjust_restore),.adjust_select(adjust_select)
 );
 media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS)) u_media_player_control(
- .clk(clk),.rst(rst),.enable(!scan_busy && !preview_intent && !preview_selecting),.scan_done(!scan_busy),
+ .clk(clk),.rst(rst),.enable(!scan_busy && !scene_owns && !preview_intent && !preview_selecting),.scan_done(!scan_busy),
  .display_valid(display_valid),.load_busy(foreground_busy || transition_block),.first_image_committed(first_image_committed),
  .image_count(image_count),.current_image(img_idx),.mode(mode),.next_event(media_next_request),
  .previous_event(media_previous_request),.auto_toggle_event(media_auto_toggle_request),
@@ -300,6 +319,45 @@ media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS)) u_med
  .auto_play_en(ctrl_auto_play_en),.next_pending(ctrl_next_pending),.previous_pending(ctrl_prev_pending),
  .auto_tick(ctrl_auto_tick),.load_request(ctrl_load_request),.target_image(ctrl_target_image)
 );
+generate if(SCENE_ENABLE)begin:g_scenario
+ wire sample_tick,frame_tick,audio_request,audio_scene,audio_ready,layer_enable;
+ wire [1:0] stage,speed,alert_level,audio_stage,selected_stage;
+ wire [7:0] t_now;
+ wire warn_mode,selected_scene;
+ (* ASYNC_REG="TRUE" *) reg [1:0] muted_sync,active_sync;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin muted_sync<=0;active_sync<=0;end
+  else begin muted_sync<={muted_sync[0],scenario_muted};active_sync<={active_sync[0],bgm_active};end
+ end
+ assign scene_muted_sd=muted_sync[1];
+ assign scene_audio_running=active_sync[1] && selected_audio_found && audio_stream_error==0;
+ scene_event_cdc events(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
+  .sample_accept(bgm_valid && bgm_ready),.frame_start(transition_frame_start),
+  .clk(clk),.rst(rst),.sample_tick(sample_tick),.frame_tick(frame_tick));
+ scenario_fsm control(.clk(clk),.rst(rst),.enable(scene_mode),
+  .scene_ready(first_image_committed && image_count==4 && !scan_busy),
+  .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed),
+  .sample_tick(sample_tick),.audio_running(scene_audio_running),.frame_start(frame_tick),.muted(scene_muted_sd),
+  .request_ready(scene_request_accept),.picture_done(cache_display_ack),.picture_failed(request_failed),
+  .transition_idle(!transition_busy),.audio_ready(audio_ready),.stage(stage),.speed(speed),.warn_mode(warn_mode),
+  .t_now(t_now),.alert_level(alert_level),.stage_req(scene_request),.requested_stage(scene_target),
+  .fade_mute(scenario_fade),.layer_enable(layer_enable),
+  .audio_request(audio_request),.audio_scene(audio_scene),.audio_stage(audio_stage));
+ scenario_audio_control audio_control(.clk(clk),.rst(rst),.request(audio_request),
+  .request_scene(audio_scene),.request_stage(audio_stage),.stopped(audio_stopped),
+  .sample_tick(sample_tick),.session_enable(audio_session),.stream_error(audio_stream_error),
+  .selected_found(selected_audio_found),.run_enable(scene_stream_run),
+  .selected_scene(selected_scene),.selected_stage(selected_stage),.ready(audio_ready));
+ wire use_snd=selected_scene && snd_valid[selected_stage];
+ assign selected_audio_found=use_snd || audio_found;
+ assign selected_audio_cluster=use_snd?snd_clusters[selected_stage*32+:32]:audio_cluster;
+ assign selected_audio_size=use_snd?snd_sizes[selected_stage*32+:32]:audio_size;
+ assign scenario_state={layer_enable,alert_level,stage,t_now};
+end else begin:g_no_scenario
+ assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_fade=0;
+ assign scene_muted_sd=0;assign scene_audio_running=0;assign scene_stream_run=1;
+ assign selected_audio_found=audio_found;assign selected_audio_cluster=audio_cluster;assign selected_audio_size=audio_size;
+end endgenerate
 media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.DIAG_DISPLAY(DIAG_DISPLAY)) u_media_display_control(
  .clk(clk),.rst(rst),.combo_request(1'b0),.sd_init_done(sd_init_done),.scan_done(!scan_busy),
  .display_valid(display_valid),.load_busy(foreground_busy),.write_started_seen(write_req),
@@ -406,6 +464,7 @@ end
 fat32_bmp_reader #(.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
  .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
+ .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
  .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
  .a_req(a_req),.a_lba(a_lba),.a_cancel(!audio_run),.a_urgent(a_urgent),
  .a_busy(a_busy),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),.a_byte(a_byte),.a_index(a_index),
