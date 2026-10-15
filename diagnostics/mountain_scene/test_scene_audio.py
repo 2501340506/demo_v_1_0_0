@@ -60,7 +60,7 @@ class SceneAudioTests(unittest.TestCase):
             if path.is_file() and path.name != 'manifest.json':
                 self.assertEqual(path.read_bytes(), (destination / path.relative_to(DEMO / 'generated')).read_bytes())
         manifest = json.loads((destination / 'manifest.json').read_text(encoding='utf-8'))
-        self.assertEqual(manifest['format'], 'M4-images-audio-v1')
+        self.assertEqual(manifest['format'], 'M5-scene-v1')
         self.assertEqual(len(manifest['audio']), 4)
         for index, record in enumerate(manifest['audio'], 1):
             with wave.open(str(DEMO / f'placeholder{index}.wav'), 'rb') as wav:

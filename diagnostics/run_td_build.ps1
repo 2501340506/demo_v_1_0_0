@@ -6,6 +6,8 @@ param(
     [switch]$PostRouteOptimization,
     [switch]$HighPlaceEffort,
     [switch]$HighRouteEffort,
+    [switch]$HighAreaOptimization,
+    [switch]$HighPackingOptimization,
     [ValidateRange(1,11)][int]$PlacementStrategy=1,
     [ValidateSet('medium','high','ultra')][string]$TimingOptimization = 'medium',
     [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization = 'auto'
@@ -62,6 +64,11 @@ foreach ($run in @('syn_1', 'phy_1')) {
         if ($physicalOptions.Count -gt 0) {
             $runSettings += "set phyWildParams {$($physicalOptions -join ' ')}`n"
         }
+    }
+    if ($run -eq 'syn_1' -and $HighAreaOptimization) {
+        $runSettings += "set synWildParams {gate opt_area high gate pack_effort high}`n"
+    } elseif ($run -eq 'syn_1' -and $HighPackingOptimization) {
+        $runSettings += "set synWildParams {gate pack_effort high}`n"
     }
     [IO.File]::WriteAllText((Join-Path $runDir 'settings.cfg'), "$commonSettings`n$runSettings", $utf8)
 }

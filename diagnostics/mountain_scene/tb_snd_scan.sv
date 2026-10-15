@@ -7,6 +7,7 @@ module tb_snd_scan #(parameter integer GAP=0);
  reg [7:0] disk[0:2047];integer base=0,pos=0,reads=0,scenario=0,gap_count=0;
  fat32_volume_scanner #(.SCAN_AUDIO(1)) dut(
  .clk(clk),.rst_n(!rst),.scan_start(start),.scan_busy(busy),.scan_done(done),.fs_error(err),
+ .font_found(),.text_found(),.font_cluster(),.font_size(),.text_cluster(),.text_size(),
  .partition_lba(),.sectors_per_cluster(),.fat_start_lba(),.data_start_lba(),.max_cluster(),
  .resource_valid(pics),.resource0_cluster(),.resource1_cluster(),.resource2_cluster(),.resource3_cluster(),
  .resource0_size(),.resource1_size(),.resource2_size(),.resource3_size(),
