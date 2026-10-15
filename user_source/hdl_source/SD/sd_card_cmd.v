@@ -55,6 +55,7 @@ localparam integer TOKEN_CYCLES = (CLK_FREQ_HZ / 1000) * TOKEN_TIMEOUT_MS;
 // wait_count restarts once it reaches the active timeout, so it never exceeds the larger one.
 localparam integer WAIT_MAX = (RESPONSE_CYCLES > TOKEN_CYCLES) ? RESPONSE_CYCLES : TOKEN_CYCLES;
 reg [$clog2(WAIT_MAX + 1) - 1:0] wait_count;
+reg response_due, token_due;
 reg [15:0] read_crc;
 reg [7:0] crc_high;
 reg [7:0] last_token;
@@ -100,6 +101,16 @@ assign nCS_ctrl = CS_reg;
 // initialization between ACMD41 polls. All R1 error bits must remain clear.
 wire response_matches = (data_recv == cmd_r1) ||
                         (cmd[45:40] == 6'd55 && cmd_r1 == 8'h01 && data_recv == 8'h00);
+wire waiting = (state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA || state == S_READ_WAIT;
+// Predict the comparison for the next count. The timeout edge stays unchanged,
+// while the wide counter comparator no longer feeds the chip-select mux.
+always @(posedge sys_clk or posedge rst) begin
+    if (rst) begin response_due <= 0; token_due <= 0; end
+    else begin
+        response_due <= waiting && wait_count >= RESPONSE_CYCLES - 2;
+        token_due <= waiting && wait_count >= TOKEN_CYCLES - 2;
+    end
+end
 always@(posedge sys_clk or posedge rst)
 begin
 	if(rst == 1'b1)
@@ -118,12 +129,13 @@ begin
         command_crc <= 0;
 	end
 	else begin
-        if ((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA || state == S_READ_WAIT)
+        if (waiting)
             wait_count <= wait_count + 1'b1;
         else wait_count <= 0;
-        if (((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA) && wait_count >= RESPONSE_CYCLES - 1) begin
+        if (((state == S_CMD && byte_cnt >= 6) || state == S_CMD_DATA) &&
+            ((RESPONSE_CYCLES <= 1) ? 1'b1 : response_due)) begin
             state <= S_ERR; spi_wr_req <= 0; CS_reg <= 1;
-        end else if (state == S_READ_WAIT && wait_count >= TOKEN_CYCLES - 1) begin
+        end else if (state == S_READ_WAIT && ((TOKEN_CYCLES <= 1) ? 1'b1 : token_due)) begin
             state <= S_READ_ACK; block_read_error <= 1; spi_wr_req <= 0; CS_reg <= 1;
             read_debug <= {{8'h10,last_token},32'd0};
         end else case(state)
