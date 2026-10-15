@@ -1,3 +1,13 @@
+# 当前交接：v0.17.0 M4 local.1 本地通过，等待板测（2026-10-15）
+
+- 当前任务：按用户明确指令先执行 M4 本地实现，分支 `feature/mountain-escape-classroom`，开发输入 M3 local.1（4aab2ba）；正式版/已板测回退 v0.16.0。M1/M3 板测与 M2 目视仍待确认，不倒填通过。
+- 已完成：0540d43 实现场景 FSM 替换临时 t、四个 SND 槽及逐槽 BGM 回退、实际 accepted PCM 的 Gray CDC、淡变与画面/音频握手；工具输出四段 8 秒占位 PCM。00 下 KEY4 长按 1 秒进入/退出，KEY2 下一阶段/长按 2 秒重扫，KEY1 科普/预警，KEY4 短按 1/2/4 倍速。68 份仿真/22 份编译日志及 12 项 PC 测试通过；TD attempt04：15181 LUT（77.45%）、8882 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.133ns/Hold +0.004ns，TNS 0。108 个输入逐字节一致、31 条审计汇总同 M1。固定 [M4 候选](releases/v0.17.0/m4-local.1/README.md)，bit 664544 字节，标签 `v0.17.0-m4-local.1`。
+- 卡住的问题：无本地阻塞；M4 板测及实际旁白关键词同步未验证，未建立 board 标签、未推送；M5/M6 未实施。
+- 下一步计划：按 [M4 板测步骤](releases/v0.17.0/m4-local.1/BOARD_VALIDATION.md) 验证四阶段、速度/预警、无爆音、缺 SND/BGM 和原 24bpp 卡回归。明确确认具体候选后记录该候选 board 并推送分支及对应 local/board 标签；失败保留 local.1、修复生成 local.2。M5 待验收及后续授权。
+- 踩过的坑：TD attempt01 内部崩溃、02 外部 GUI 丢源条目、03 bitgen 前有 ERROR，均不作为候选；仅 attempt04 strategy 7 完整通过。外部工程已先备份到 diagnostics/output/mountain_m4_project_resaved_1907.al，再仅补回四个源条目；请 TD GUI 重新加载后再保存。见 [M4 验证](releases/v0.17.0/m4-local.1/VALIDATION.md)。ffmpeg 不在 PATH，仅原生 WAV 路径实测；FONT/TEXT、红框/速度 OSD/阶段数码管属于 M5。best_result、旧候选和用户素材保留。
+
+## 历史交接
+
 # 当前交接：v0.17.0 M3 local.1 本地通过，等待板测（2026-10-15）
 
 - 当前任务：用户后续明确要求执行M3，先完成本地实现；M1板测与M2用户目视仍待确认，不倒填通过。分支 `feature/mountain-escape-classroom`，功能基线/已板测回退v0.16.0，输入为M1 local.1与M2素材3535c0b。

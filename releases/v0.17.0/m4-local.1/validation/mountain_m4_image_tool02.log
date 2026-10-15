@@ -1,0 +1,13 @@
+test_chamfer_matches_closed_form_multiple_seeds (__main__.ScenePackTests.test_chamfer_matches_closed_form_multiple_seeds) ... ok
+test_demo_cli_and_saved_assets (__main__.ScenePackTests.test_demo_cli_and_saved_assets) ... ok
+test_grayscale_quantization_masks_and_alpha (__main__.ScenePackTests.test_grayscale_quantization_masks_and_alpha) ... ok
+test_merge_earliest_and_safe_spot_priority (__main__.ScenePackTests.test_merge_earliest_and_safe_spot_priority) ... ok
+test_polyline_accumulates_length_across_bend (__main__.ScenePackTests.test_polyline_accumulates_length_across_bend) ... ok
+test_raw_bmp_layout_and_roundtrip (__main__.ScenePackTests.test_raw_bmp_layout_and_roundtrip) ... ok
+test_reference_against_scalar_oracle_all_T_and_phases (__main__.ScenePackTests.test_reference_against_scalar_oracle_all_T_and_phases) ... ok
+test_seed_radius_and_seed_mask (__main__.ScenePackTests.test_seed_radius_and_seed_mask) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 3.449s
+
+OK

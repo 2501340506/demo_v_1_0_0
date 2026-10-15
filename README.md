@@ -1,12 +1,10 @@
-# 当前开发阶段：v0.17.0 M3 local.1，等待板测
+# 当前开发阶段：v0.17.0 M4 local.1，等待板测
 
-M3灾害图层已接入显示链路，按M2示意村卡呈现裂缝、沟谷覆盖、撤离路线和避险点闪烁；临时时间源每两帧推进、循环0–239，缩略图旁路。9份仿真与完整TD通过，14520 LUT、56 BRAM9k、13 DSP，Setup +0.104ns/Hold +0.011ns。下载 [固定候选](releases/v0.17.0/m3-local.1/README.md)，查看 [验证记录](releases/v0.17.0/m3-local.1/VALIDATION.md) 与 [板测步骤](releases/v0.17.0/m3-local.1/BOARD_VALIDATION.md)。用户要求先推进M3本地实现，M1/M3均无板测确认，M2目视待确认；未推送，M4–M6未实施。
+四阶段场景 FSM、SND1–4 分段播放/逐槽 BGM 回退、样本驱动推演及音画转场淡变已完成。拨码 `00` 下长按 KEY4 1 秒进入/退出；场景中 KEY2 下一阶段、KEY1 科普/预警、KEY4 短按 1×/2×/4×。M2 工具新增四段 8 秒占位音效输出。
 
-M2 [场景工具](tools/scenes/README.md) 已完成灰度/折线/种子T生成、标准32bpp BMP写出与反读、灾害图层精确参考模型；虚构示意村4张BMP及24张expected PNG已固定。8项专项和逐字节复现通过，见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md) 与 [参考拼图](tools/scenes/demo_village/generated/overview.png)。M2没有独立bit或硬件标签。
+68 份仿真、22 份编译日志与 12 项 PC 测试通过，完整 TD：15181 LUT（77.45%）、8882 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.133ns/Hold +0.004ns，TNS 0。下载 [固定 bit 与素材](releases/v0.17.0/m4-local.1/README.md)，查看 [验证记录](releases/v0.17.0/m4-local.1/VALIDATION.md)、[板测步骤](releases/v0.17.0/m4-local.1/BOARD_VALIDATION.md)、[阶段计划](docs/山区避险课堂分阶段修改计划.md) 和 [交接](HANDOFF.md)。
 
-M1 BMP 加载链路已支持32bpp：A作为T保存到SDRAM，24bpp和黑边的T为FF，显示仍使用RGB。144份仿真日志和完整TD通过；14358 LUT、56 BRAM9k，Setup +0.111ns/Hold +0.003ns。固定候选 `v0.17.0-m1-local.1` 尚待用户上板确认。
-
-[候选下载与说明](releases/v0.17.0/m1-local.1/README.md) · [本地验证](releases/v0.17.0/m1-local.1/VALIDATION.md) · [板测步骤](releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) · [阶段计划](docs/山区避险课堂分阶段修改计划.md) · [交接](HANDOFF.md)。按项目流程，板测确认后推送本阶段；当前正式版如下。
+M1/M3/M4 板测、M2 目视及旁白关键词同步均待确认；本阶段未推送。正式版和已板测回退仍为 v0.16.0。M5 字库/文案/红框/速度 OSD/阶段数码管及 M6 整机验收尚未实施。
 
 # 当前正式版：v0.16.0
 

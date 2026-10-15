@@ -1,0 +1,5 @@
+PASS byte-equal WAV placeholder1.wav: 768044 bytes
+PASS byte-equal WAV placeholder2.wav: 768044 bytes
+PASS byte-equal WAV placeholder3.wav: 768044 bytes
+PASS byte-equal WAV placeholder4.wav: 768044 bytes
+PASS existing WAV inputs refused before write; all four bytes unchanged

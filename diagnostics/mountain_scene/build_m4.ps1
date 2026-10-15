@@ -13,4 +13,3 @@ Copy-Item -LiteralPath "$root/user_source" -Destination $out -Recurse
 Copy-Item -LiteralPath "$root/TD_project/demo.al" -Destination "$out/TD_project/demo.al"
 Copy-Item -LiteralPath "$root/diagnostics/run_td_build.ps1" -Destination "$out/diagnostics/run_td_build.ps1"
 & "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -TdRoot $TdRoot -HighFanoutOptimization -PlacementStrategy $PlacementStrategy -TimingOptimization $TimingOptimization
-

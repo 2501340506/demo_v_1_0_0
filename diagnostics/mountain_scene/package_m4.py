@@ -99,7 +99,15 @@ def package(build_name, candidate):
         source = output/name
         assert re.search(r'Ran \d+ tests',read_log(source)) and re.search(r'^OK\s*$',read_log(source),re.M), source
         assert 'FAILED' not in read_log(source), source
+    input_log = output / 'mountain_m4_audio_inputs02.log'
+    assert read_log(input_log).count('PASS byte-equal WAV ') == 4
+    assert 'PASS existing WAV inputs refused before write; all four bytes unchanged' in read_log(input_log)
     release.mkdir(parents=True)
+    # Keep original evidence/source bytes, including tool-generated whitespace.
+    (release / '.gitattributes').write_text(
+        'reports/** -text -whitespace\n'
+        'validation/** -text -whitespace\n'
+        'sources/** -text -whitespace\n', encoding='utf-8')
 
     def copy(src, name):
         dst = release / name
@@ -130,13 +138,15 @@ def package(build_name, candidate):
     for name in tool_logs:
         source = output/name
         copy(source,Path('validation')/name)
+    copy(input_log, Path('validation') / input_log.name)
     manifest = ['# M4 build inputs', '', f'Build: {build_name}; {len(inputs)} inputs compared byte-for-byte.',
                 f'Bit: {(phy / "demo.bit").stat().st_size} bytes; {len(saved)} changed inputs saved.',
                 f'{len(logs)} simulation and {len(compile_logs)} compiler logs checked and retained.',
                 'Unchanged inputs reference v0.17.0-m3-local.1; images reference M2 commit 3535c0b.',
                 'Hardware fallback remains board-confirmed v0.16.0. M1/M3/M4 board and M2 visual confirmation pending.',
                 'Timing audit categories/exception summaries equal M1; original known tool warnings preserved.',
-                'TD E:/TD v6.2; ModelSim SE-64 10.6e F:/modelsim/win64; no file hashes.', '']
+                'TD E:/TD v6.2; ModelSim SE-64 10.6e F:/modelsim/win64; no file hashes.', '',
+                'Local .gitattributes preserves original report, validation and source bytes (including tool-generated whitespace) without Git line-ending conversion.', '']
     manifest += [f'- {p.as_posix()} ({(ROOT / p).stat().st_size} bytes)' + (' [changed]' if p in saved else '')
                  for p in inputs]
     (release / 'MANIFEST.md').write_text('\n'.join(manifest)+'\n', encoding='utf-8')
