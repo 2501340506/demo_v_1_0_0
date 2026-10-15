@@ -44,3 +44,7 @@
 TD attempt01功能源码与首轮仿真一致，bitgen结束但Setup −0.212ns、Hold +0.030ns，14574 LUT/56 BRAM9k/13 DSP；违例为SD缓存image_count到bank_map路径。该次不作为候选；保留报告，后续调整布局时序优化设置，以最终通过报告为准。完整候选的实际资源、运行统计和板测状态另记录于release的VALIDATION。
 
 attempt02保持相同功能源码，使用HighFanoutOptimization、placement strategy5、timing optimization high、drHoldFix on。最终14520 LUT、8439寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.104ns、Hold +0.011ns，TNS均0；104个工程输入与当前源码逐字节一致，bit为664544字节；时序审计类别和异常汇总与M1相同。只有全套日志完成审核后才打包。
+
+16:30原项目demo.al被外部重新保存，两个scene条目消失，其他内容未变。先保存原文件到diagnostics/output/mountain_m3_project_resaved_1630.al，再仅补回两个必要条目；合并后与attempt02工程文件逐字节一致。没有覆盖其他用户工程变化或关闭用户TD应用。
+
+最终采用memory04，增加首有效像素的stage与当前显示bank图片相等断言，31帧/10137598像素通过。memory03仅因新增断言位于bank_id数组声明前而编译失败，原日志保留。完整系统与预览最终均通过：591帧/481827 PCM、293帧/238405 PCM；旧top适配后336269像素/1148 PCM通过。最终9份仿真、19份编译日志全部审核完成，交付引用m3-local.1。

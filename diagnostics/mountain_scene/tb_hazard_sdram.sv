@@ -312,6 +312,10 @@ module tb_hazard_sdram;
  integer starts=0,commits=0,frames=0,pixel=0,cues=0,sent=0,completed=0,hits=0;
  integer epoch_writes=0,write_burst=0,read_burst=0,refreshes=0,last_refresh=0,mem_cycles=0;
  integer bank_id[0:3],bank_generation[0:3],start_image[0:127];
+ always @(posedge pix_clk)if(!rst && first_active && display_valid)begin
+  if(!scene_enable || file_id(scene_stage)!=bank_id[app.current_bank])
+   $fatal(1,"first pixel scene/display bank mismatch stage=%0d bank_image=%0d",scene_stage,bank_id[app.current_bank]);
+ end
  reg [1:0] expected_cue[0:255];
  reg wr_prev=0,rd_prev=0;
  always @(posedge src_clk) if(!rst) begin
