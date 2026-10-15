@@ -1,0 +1,49 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 23:49:59 on Oct 15,2026
+vlog -sv -work E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/mountain_m5_sd02/work -l E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m5_sd02/compile.log E:/TD/sim_release/common/al_map_lut.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/sd_card_cmd.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/sd_card_sec_read_write.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/sd_card_top.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/spi_master.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/mode_key_control.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/key_press_debounce.v E:\form\demo_v_0_0\demo_v_0_0\diagnostics\output\mountain_m5_sd02/sd_card_cmd_m4.v E:\form\demo_v_0_0\demo_v_0_0\diagnostics\mountain_scene/tb_m5_sd_timeout.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/sd_recovery/tb_sd_protocol.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/sd_recovery/tb_sd_initialization.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/sd_recovery/tb_sd_spi_pins.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/sd_recovery/tb_sd_init_retry.sv 
+-- Compiling module AL_MAP_LUT1
+-- Compiling module AL_MAP_LUT2
+-- Compiling module AL_MAP_LUT3
+-- Compiling module AL_MAP_LUT4
+-- Compiling module AL_MAP_LUT5
+-- Compiling module AL_MAP_LUT6
+-- Compiling module AL_MAP_LUT6P
+-- Compiling module AL_MAP_LUT6X
+-- Compiling module AL_MAP_LLMUX
+-- Compiling module AL_MAP_F7MUX
+-- Compiling module AL_MAP_F8MUX
+-- Compiling module AL_MAP_CARRY4
+-- Compiling module sd_card_cmd
+-- Compiling module sd_card_sec_read_write
+-- Compiling module sd_card_top
+-- Compiling module spi_master
+-- Compiling module mode_key_control
+-- Compiling module adjust_key_gestures
+-- Compiling module key_press_debounce
+-- Compiling module sd_card_cmd_m4
+-- Compiling module m5_timeout_case
+-- Compiling module tb_m5_sd_timeout
+-- Compiling module tb_sd_protocol
+-- Compiling module tb_sd_initialization
+-- Compiling module sd_spi_card
+-- Compiling module tb_sd_spi_pins
+-- Compiling module tb_sd_init_retry
+
+Top level modules:
+	AL_MAP_LUT2
+	AL_MAP_LUT3
+	AL_MAP_LUT6
+	AL_MAP_LUT6P
+	AL_MAP_LUT6X
+	AL_MAP_LLMUX
+	AL_MAP_F7MUX
+	AL_MAP_F8MUX
+	AL_MAP_CARRY4
+	mode_key_control
+	tb_m5_sd_timeout
+	tb_sd_protocol
+	tb_sd_initialization
+	tb_sd_spi_pins
+	tb_sd_init_retry
+End time: 23:49:59 on Oct 15,2026, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0

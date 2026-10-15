@@ -1,0 +1,9 @@
+test_demo_reproduction_audio_and_image_compatibility (__main__.SceneAudioTests.test_demo_reproduction_audio_and_image_compatibility) ... ok
+test_exact_signed_pcm_and_preservation (__main__.SceneAudioTests.test_exact_signed_pcm_and_preservation) ... ok
+test_image_only_and_bad_audio_inputs (__main__.SceneAudioTests.test_image_only_and_bad_audio_inputs) ... ok
+test_truncated_even_length_wav_rejected (__main__.SceneAudioTests.test_truncated_even_length_wav_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 7.000s
+
+OK

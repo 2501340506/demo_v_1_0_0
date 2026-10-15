@@ -1,0 +1,9 @@
+test_bounds_and_escapes (__main__.SceneTextTests.test_bounds_and_escapes) ... ok
+test_format_and_case_prefix (__main__.SceneTextTests.test_format_and_case_prefix) ... ok
+test_reproducible_and_existing_assets (__main__.SceneTextTests.test_reproducible_and_existing_assets) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 9.525s
+
+OK
+PASS M5 fresh generation: 44 files byte-equal; four PIC and four SND equal M4; existing output refused

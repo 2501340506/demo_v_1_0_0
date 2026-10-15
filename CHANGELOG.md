@@ -1,4 +1,4 @@
-# v0.17.0 开发中（2026-10-15，未发布）
+# v0.17.0 开发中（2026-10-16，未发布）
 
 - M0：建立 [山区避险课堂分阶段修改计划](docs/山区避险课堂分阶段修改计划.md)，以 v0.16.0 为功能基线和回退入口，在 `feature/mountain-escape-classroom` 固定 M1–M6 依赖、验收方式及里程碑标签命名，计划标签 `v0.17.0-plan.1`。选题方案纳入 `docs/选题方案/`；M0 仅文档变更，未修改 RTL、未构建新 bit。
 
@@ -8,7 +8,11 @@
 
 - M3 local.1：新增两拍hazard_layer与临时帧驱动时间源，32位RGB/T同步进入图层，随后亮度/对比度与转场；缩略图/普通24bpp旁路，切图重启推演。9份仿真、19份编译日志审核通过：24张M2参考图逐像素一致，新/旧top、真实SDRAM、PCM、预览293帧和完整系统591帧通过。最终TD为14520 LUT、8439寄存器、56 BRAM9k、13 DSP，Setup +0.104ns/Hold +0.011ns；固定 [M3候选](releases/v0.17.0/m3-local.1/README.md)，bit664544字节，标签 `v0.17.0-m3-local.1`。按用户指令先做M3本地工作，M1/M3板测与M2用户目视仍待确认，未推送；此为 M3 历史状态，M4 最新结果见下。
 
-- M4 local.1：scenario_fsm 替换 M3 临时 t；四个 SND 槽、分阶段播放/逐槽 BGM 回退、accepted PCM 计数 CDC、画面/音频握手及 fade_mute。核实全部拨码 mode 占用，入口为 00 下 KEY4 长按 1 秒；KEY2 下一阶段、KEY1 预警、KEY4 短按速度。工具新增四段 8 秒占位音效。68 份仿真/22 份编译日志、12 项 PC 测试和 TD attempt04 通过：15181 LUT（77.45%）、8882 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.133ns/Hold +0.004ns，TNS 0；108 个输入逐字节一致。固定 [M4 候选](releases/v0.17.0/m4-local.1/README.md)，标签 `v0.17.0-m4-local.1`；M1/M3/M4 板测及 M2 目视待确认，未推送，M5/M6 未实施。
+- M4 local.1：scenario_fsm 替换 M3 临时 t；四个 SND 槽、分阶段播放/逐槽 BGM 回退、accepted PCM 计数 CDC、画面/音频握手及 fade_mute。核实全部拨码 mode 占用，入口为 00 下 KEY4 长按 1 秒；KEY2 下一阶段、KEY1 预警、KEY4 短按速度。工具新增四段 8 秒占位音效。68 份仿真/22 份编译日志、12 项 PC 测试和 TD attempt04 通过：15181 LUT（77.45%）、8882 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.133ns/Hold +0.004ns，TNS 0；108 个输入逐字节一致。固定 [M4 候选](releases/v0.17.0/m4-local.1/README.md)，标签 `v0.17.0-m4-local.1`；此为 M4 本地完成时的历史记录，验收与推送状态见下一条。
+
+- M4 board.1：用户反馈“M4暂无大问题”，按总体反馈记录 [板测结果](releases/v0.17.0/m4-local.1/BOARD_RESULT.md)，建立 `v0.17.0-m4-board.1`；不补造单项或运行时长。前三次推送因网络失败，恢复后已成功上传截至 M4 board 的分支及 M4 local/board 标签，未包含 M5；M1/M3 单独板测及 M2 目视状态仍保留。
+
+- M5 local.1：FONT/TEXT 扫描、两块 BRAM32k 加载、卡上中文与阶段文案、预警红框、SPEED 参数条及阶段/A 数码管已实现；缺文件保留 case 字库与原文案。工具补 FONT.BIN/TEXT.BIN；SD 超时比较等周期切分，与 M4 至少 1011617 次逐拍比较及物理 SPI 回归通过。112 份仿真、28 份编译日志及 15 项 PC 测试通过。TD attempt24 无 ERROR、完整 bitgen：14897 LUT（76.01%）、9707 寄存器、56 BRAM9k、2 BRAM32k、13 DSP，Setup +0.008ns/Hold +0.014ns、TNS 0；111 个输入逐字节一致、仅备份 13 个变化输入，bit 673856 字节。审计仅新增两块 BRAM32k 的 dob[9] dummy 模型类别，时序例外汇总无变化。固定 [M5 候选](releases/v0.17.0/m5-local.1/README.md)，标签 `v0.17.0-m5-local.1`；板测待确认、未推送。详见 [实现约定](docs/M5_IMPLEMENTATION.md)、[验证](releases/v0.17.0/m5-local.1/VALIDATION.md)。M6 未实施。
 
 ## 历史记录
 

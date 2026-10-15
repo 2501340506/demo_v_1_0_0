@@ -1,3 +1,13 @@
+# 当前交接：v0.17.0 M5 local.1 本地通过，等待板测（2026-10-16）
+
+- 当前任务：M5 本地实现完成；原目录 feature/mountain-escape-classroom，开发输入 v0.17.0-m4-local.1，候选 v0.17.0-m5-local.1，正式版回退 v0.16.0。
+- 已完成：ba79e51 实现 FONT/TEXT 扫描加载、两块 BRAM32k、中文及阶段文案、预警红框、速度参数、阶段/A 数码管和工具输出；74a79d3 等周期切分 SD 超时比较，保留 case 字库回退。112 份仿真、28 份编译日志及 15 项 PC 测试通过。TD attempt24：14897 LUT（76.01%）、9707 寄存器、56 BRAM9k、2 BRAM32k、13 DSP，Setup +0.008ns/Hold +0.014ns，TNS 0，无 ERROR、完整 bitgen。111 个工程输入逐字节一致，仅备份 13 个变化输入，固定 bit 673856 字节；见 [候选](releases/v0.17.0/m5-local.1/README.md)、[验证](releases/v0.17.0/m5-local.1/VALIDATION.md) 和 [实现约定](docs/M5_IMPLEMENTATION.md)。
+- 卡住的问题：无本地阻塞；M5 板测待确认，未建立 board 标签、未推送 M5。时序余量较小；审计新增两块 BRAM32k 的 ram.dob[9] dummy-node 报告，其他汇总及例外同 M1，原因未在本阶段进一步定位，不写成全审计无差异。用户“M4暂无大问题”已按总体反馈记录 [M4 验收](releases/v0.17.0/m4-local.1/BOARD_RESULT.md)，m4-board.1 及截至 d4da43a 的分支、M4 local/board 标签已推送；M1/M3 单独板测与 M2 目视不倒填。
+- 下一步计划：按 [M5 板测步骤](releases/v0.17.0/m5-local.1/BOARD_VALIDATION.md) 验证新卡文案、预警/速度/数码管和旧卡回退；用户确认后记录 board 并推送本分支及 M5 local/board 标签。失败保留 local.1、修复生成 local.2。M6 第二张卡、40 分钟稳定性、Flash 与冷启动计时未实施。
+- 踩过的坑：TD attempt01–23 均因源条目、时序或工具内部错误被拒绝，失败证据留 diagnostics/output，仅交付 attempt24。封装最初误用 M4 bit 长度及审计完全相同假设，已改为实际 M5 长度并严格核对两个新增 BRAM dummy 节点。起始工程及个人记录有用户改动；工程备份 diagnostics/output/m5_initial_project.al 和 m5_project_resaved_2155.al，个人记录不改不提交。TD GUI 保存可能丢新源，请重新加载磁盘工程后再保存；工程仅新增三项。占位音效不证明旁白同步，ffmpeg 路径未实测。
+
+## 历史交接
+
 # 当前交接：v0.17.0 M4 local.1 本地通过，等待板测（2026-10-15）
 
 - 当前任务：按用户明确指令先执行 M4 本地实现，分支 `feature/mountain-escape-classroom`，开发输入 M3 local.1（4aab2ba）；正式版/已板测回退 v0.16.0。M1/M3 板测与 M2 目视仍待确认，不倒填通过。
