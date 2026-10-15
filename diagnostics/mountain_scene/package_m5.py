@@ -54,7 +54,8 @@ def package(build_name, candidate):
     lut = re.search(r'(?m)^#lut\s+(\d+)', area)
     assert lut and int(lut[1]) <= 16660, 'LUT above 85% target'
     assert re.search(r'(?m)^#bram32k\s+2\b', area), 'Expected two BRAM32k'
-    assert (phy / 'demo.bit').stat().st_size == 664544
+    # M5 uses two BRAM32k blocks; its uncompressed bit length differs from M4.
+    assert (phy / 'demo.bit').stat().st_size == 673856
     for run in ('syn_1', 'phy_1'):
         text = read_log(build / f'TD_project/demo_Runs/{run}/build_{build_name}.log')
         assert not re.search(r'\bERROR:', text, re.I)
@@ -80,7 +81,19 @@ def package(build_name, candidate):
                 compile_logs.append(path.relative_to(output))
     audit = build / 'timing_audit'
     baseline = ROOT / 'releases/v0.17.0/m1-local.1/reports/check_timing.txt'
-    assert audit_summary(audit / 'check_timing.txt') == audit_summary(baseline), 'Changed audit categories/exceptions'
+    # New RAM primitives add one dummy-node model category to this TD audit.
+    # Check its exact instances; do not suppress any other audit difference.
+    audit_text = read_log(audit / 'check_timing.txt')
+    bram_dummy = re.search(r'DummyNode in Model: EG_PHY_BRAM32K\s+(.*?)\s+DummyNode in Model:',
+                           audit_text, re.S)
+    assert bram_dummy and set(bram_dummy[1].split()) == {
+        'g_scene_text$font_ram/ram.dob[9]', 'g_scene_text$text_ram/ram.dob[9]'
+    }, 'Unexpected BRAM dummy pins'
+    expected_audit = audit_summary(baseline)
+    pos = expected_audit.index('There are 3 nodes are dangling. (HIGH)')
+    expected_audit[pos:pos + 1] = ['There are 4 nodes are dangling. (HIGH)',
+                                  'DummyNode in Model: EG_PHY_BRAM32K']
+    assert audit_summary(audit / 'check_timing.txt') == expected_audit, 'Unexpected audit difference'
     def warning_set(path):
         # Compare diagnostic contents, not build-folder names or source line shifts.
         result = set()
@@ -153,7 +166,7 @@ def package(build_name, candidate):
                 f'{len(logs)} simulation and {len(compile_logs)} compiler logs checked and retained.',
                 'Unchanged inputs reference v0.17.0-m4-local.1; images reference M2 commit 3535c0b.',
                 'Hardware fallback remains board-confirmed v0.16.0. M4 overall board feedback accepted; M1/M3 separate board, M5 board and M2 visual confirmation pending.',
-                'Timing audit categories/exception summaries equal M1; original known tool warnings preserved.',
+                'Timing audit exceptions equal M1. One added dummy-node model category: EG_PHY_BRAM32K, exactly FONT/TEXT ram.dob[9]; all other summary lines equal M1. Original known tool warnings preserved.',
                 'TD E:/TD v6.2; ModelSim SE-64 10.6e F:/modelsim/win64; no file hashes.', '',
                 'Local .gitattributes preserves original report, validation and source bytes (including tool-generated whitespace) without Git line-ending conversion.', '']
     manifest += [f'- {p.as_posix()} ({(ROOT / p).stat().st_size} bytes)' + (' [changed]' if p in saved else '')
