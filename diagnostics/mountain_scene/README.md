@@ -1,4 +1,8 @@
-# M1：32bpp 像素加载验证
+# 山区避险课堂专项验证
+
+M2 图像工具本地通过：使用说明见 [场景工具](../../tools/scenes/README.md)，实际8项专项和素材复现结果见 [M2_VALIDATION.md](M2_VALIDATION.md)。运行 `py -I diagnostics/mountain_scene/test_scene_pack.py`；测试证据留在 diagnostics/output，不清理历史结果。M2 不改 RTL，没有独立 bit；M1 板测仍待确认。
+
+## M1：32bpp 像素加载验证
 
 基线 `v0.16.0`，生产改动仅限五个 SD 加载/缩放文件。SDRAM 格式为 `{R,G,B,T}`；32bpp 的第四字节直接作为 T，24bpp 和黑边为 FF。保留 decoder 的 24 位 `pixel_rgb` 兼容端口，新增 `pixel_rgba`；缩放链路沿用 `pixel_rgb` 名称但宽度为 32。
 

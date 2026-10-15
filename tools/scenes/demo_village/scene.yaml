@@ -1,0 +1,33 @@
+version: 1
+name: 示意村（虚构教学图）
+base: village.png
+output: generated
+safe_spots:
+  - center: [544, 132]
+    radius: 7
+stages:
+  - id: 1
+    name: 降雨预警
+    sources:
+      - type: grayscale
+        path: rainfall.png
+        mask: rainfall_mask.png
+  - id: 2
+    name: 裂缝出现
+    sources:
+      - type: polyline
+        width: 5
+        points: [[88, 94], [140, 135], [164, 183], [214, 211], [238, 254], [298, 282]]
+  - id: 3
+    name: 滑坡山洪
+    sources:
+      - type: seeds
+        points: [[113, 180], [175, 239]]
+        max_distance: 285
+        mask: flood_mask.png
+  - id: 4
+    name: 避险撤离
+    sources:
+      - type: polyline
+        width: 5
+        points: [[354, 337], [405, 312], [440, 271], [470, 226], [513, 192], [544, 132]]

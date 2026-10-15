@@ -1,6 +1,8 @@
-# 当前开发阶段：v0.17.0 M1 local.1，等待板测
+# 当前开发阶段：v0.17.0 M2 图像工具本地完成，M1 等待板测
 
-BMP 加载链路已支持 32bpp：A 作为 T 保存到 SDRAM，24bpp 和黑边的 T 为 FF，显示仍使用 RGB。144 份仿真日志和完整 TD 通过；14358 LUT、56 BRAM9k，Setup +0.111ns/Hold +0.003ns。固定候选 `v0.17.0-m1-local.1` 尚待用户上板确认，M2–M6 尚未实施。
+M2 [场景工具](tools/scenes/README.md) 已完成灰度/折线/种子T生成、标准32bpp BMP写出与反读、灾害图层精确参考模型；虚构示意村4张BMP及24张expected PNG已固定。8项专项和逐字节复现通过，见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md) 与 [参考拼图](tools/scenes/demo_village/generated/overview.png)。用户目视/板上显示尚待确认；M2没有新bit或硬件标签，M3–M6尚未实施。
+
+M1 BMP 加载链路已支持32bpp：A作为T保存到SDRAM，24bpp和黑边的T为FF，显示仍使用RGB。144份仿真日志和完整TD通过；14358 LUT、56 BRAM9k，Setup +0.111ns/Hold +0.003ns。固定候选 `v0.17.0-m1-local.1` 尚待用户上板确认。
 
 [候选下载与说明](releases/v0.17.0/m1-local.1/README.md) · [本地验证](releases/v0.17.0/m1-local.1/VALIDATION.md) · [板测步骤](releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) · [阶段计划](docs/山区避险课堂分阶段修改计划.md) · [交接](HANDOFF.md)。按项目流程，板测确认后推送本阶段；当前正式版如下。
 

@@ -1,3 +1,13 @@
+# 当前交接：v0.17.0 M2 图像工具本地完成（2026-10-15）
+
+- 当前任务：按用户“先执行M2”完成独立PC图像工具，分支 `feature/mountain-escape-classroom`；硬件基线/回退仍为 `v0.16.0`（1818adc），M1候选仍为 `v0.17.0-m1-local.1`（901f29e），尚待板测。正式版仍为v0.16.0。
+- 已完成：[场景工具与精确参考模型](tools/scenes/README.md)、[虚构示意村配置](tools/scenes/demo_village/scene.yaml)、4张32bpp BMP及24张expected PNG。灰度/折线/种子三种T来源、避险点250和未覆盖255已实现；参考模型固定配色、混合取整与闪烁相位。8项专项通过，20480个像素与独立标量模型一致；全部BMP的RGB/T反读一致，38个输出和4张输入图均逐字节复现。见 [M2验证](diagnostics/mountain_scene/M2_VALIDATION.md) 和 [参考拼图](tools/scenes/demo_village/generated/overview.png)。
+- 卡住的问题：无M2本地阻塞；用户目视、板上素材显示与M1板测尚未确认。M2没有独立bit，不建立local/board标签，本阶段未推送，M3–M6未实施。
+- 下一步计划：用户目视M2拼图/原尺寸参考图；按原 [M1板测步骤](releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) 验证原卡与32bpp诊断卡，M2场景卡可补充检查底图显示。M1明确通过后记录board并推送分支及M1 local/board标签；M3需M1板测和M2素材确认后再授权推进。
+- 踩过的坑：本机默认Python为3.14，原缺numpy/PyYAML，现已安装，使用 `py -I` 和 `tools/scene_requirements.txt`。BI_RGB的A字节可能被通用图像库忽略，反读必须看原始字节；白色灰度是T=239，未覆盖须用mask/透明区。混合必须先完整加法再移位，stage2前沿暗相仍用3/4。所有生成器拒绝覆盖已有输出；复现用新diagnostics/output目录，历史测试输出不清理。M1 bit不使用T，因此M2四图RGB相同；灾害动画到M3才显示。未改RTL、工程、best_result及用户既有素材。
+
+## 历史交接
+
 # 当前交接：v0.17.0 M1 local.1 已固定，等待板测（2026-10-15）
 
 - 当前任务：M1 32bpp 像素通路本地完成；分支 `feature/mountain-escape-classroom`，标签 `v0.17.0-m1-local.1`，功能基线/回退 `v0.16.0`（1818adc）。候选见 [M1 说明](releases/v0.17.0/m1-local.1/README.md) 和 [阶段计划](docs/山区避险课堂分阶段修改计划.md)；正式版仍为 v0.16.0。

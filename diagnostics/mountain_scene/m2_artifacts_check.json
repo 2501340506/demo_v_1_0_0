@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-15",
+  "python": "3.14.4",
+  "Pillow": "12.3.0",
+  "numpy": "2.5.4",
+  "PyYAML": "6.0.3",
+  "generated_files_compared": 38,
+  "input_pngs_compared": 4,
+  "comparison": "file sizes and all bytes equal between two fresh generations",
+  "bmp_count": 4,
+  "bmp_bytes_each": 1228854,
+  "expected_pngs": 24,
+  "source_dimensions": [
+    640,
+    480
+  ],
+  "rtl_modified": false,
+  "user_visual_confirmation": "pending",
+  "board_display_confirmation": "pending"
+}
