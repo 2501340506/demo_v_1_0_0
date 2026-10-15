@@ -36,6 +36,8 @@ parameter integer BAND_ENABLE = 1;
 parameter integer TIMESTAMP_ENABLE = 1;
 parameter integer TRANSITION_ENABLE = 1;
 parameter integer AUDIO_VIS_ENABLE = 1;
+// M3-only frame driven demo source; M4 replaces this with scenario_fsm.
+parameter integer SCENE_DEMO_ENABLE = 1;
 parameter MEM_DATA_BITS = 32;
 parameter integer UART_CLK_FREQ_HZ = 100_000_000;
 parameter integer UART_BAUD_RATE = 115200;
@@ -63,6 +65,8 @@ wire de;
 wire [9:0] video_x; // Aligned with hs/vs/de/vout_data for the HDMI core.
 
 wire [23:0] vout_data_raw;
+wire [31:0] vout_rgba_raw;
+assign vout_data_raw=vout_rgba_raw[31:8];
 wire [23:0] vout_data;
 // S1 transition precedes OSD; all RGB channels retain the original latency.
 wire [23:0] transition_rgb;
@@ -160,7 +164,7 @@ wire [7:0] sub_rx_data, sub_reply_data;
 wire sub_rx_valid, sub_rx_error, sub_reply_valid, sub_reply_last, sub_reply_ready;
 wire [119:0] sub_text_src, sub_text_pixel;
 wire [3:0] sub_length_src, sub_length_pixel;
-wire sub_enable_src, sub_enable_pixel, sub_text_changed, sub_frame_start;
+wire sub_enable_src, sub_enable_pixel, sub_text_changed, sub_frame_start,scene_first_active;
 uart_rx_byte #(.CLKS_PER_BIT((UART_CLK_FREQ_HZ+UART_BAUD_RATE/2)/UART_BAUD_RATE)) u_uart_rx (
  .clk(sd_card_clk),.rst_n(~rst_sd),.rx(uart_rx),.data(sub_rx_data),
  .valid(sub_rx_valid),.framing_error(sub_rx_error));
@@ -170,7 +174,7 @@ subtitle_uart_controller u_subtitle_control(
  .cfg_enable(sub_enable_src),.cfg_update_valid(),.reply_valid(sub_reply_valid),
  .reply_data(sub_reply_data),.reply_last(sub_reply_last),.reply_ready(sub_reply_ready));
 osd_pixel_position u_subtitle_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
- .line_y(),.frame_start(sub_frame_start),.first_active());
+ .line_y(),.frame_start(sub_frame_start),.first_active(scene_first_active));
 subtitle_frame_commit u_subtitle_commit(
  .src_clk(sd_card_clk),.src_rst(rst_sd),.src_text(sub_text_src),
  .src_length(sub_length_src),.src_enable(sub_enable_src),
@@ -352,11 +356,11 @@ video_timing_data video_timing_data_m0(
     .video_x           (video_x_0)
 );
 
-video_delay video_delay_m0(
+video_delay #(.DATA_WIDTH(32)) video_delay_m0(
     .video_clk         (video_clk),
     .rst               (rst_video),
     .read_en           (video_read_en),
-    .read_data         (video_read_data[31:8]),
+    .read_data         (video_read_data),
     .hs                (hs_0),
     .vs                (vs_0),
     .de                (de_0),
@@ -364,7 +368,7 @@ video_delay video_delay_m0(
     .hs_r              (hs),
     .vs_r              (vs),
     .de_r              (de),
-    .vout_data         (vout_data_raw),
+    .vout_data         (vout_rgba_raw),
     .video_x_r         (video_x)
 );
 
@@ -378,9 +382,27 @@ wire [47:0] adjust_side;
 assign {adjust_hs,adjust_vs,adjust_de,adjust_x,adjust_y,adjust_descriptor,adjust_level,adjust_wipe,adjust_valid,adjust_audio}=adjust_side;
 wire adjust_preview=adjust_descriptor[17];
 wire [23:0] adjusted_rgb=(adjust_valid && adjust_de)?adjusted_rgb_raw:24'd0;
-brightness_contrast_adjust #(.SIDE_WIDTH(48)) u_picture_adjust(
- .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.brightness(brightness_frame),.contrast(contrast_frame),
+wire [1:0] scene_stage;
+wire [7:0] scene_time;
+wire scene_fast,scene_slow,scene_enable;
+wire [23:0] hazard_rgb;
+wire [47:0] hazard_side;
+generate if(SCENE_DEMO_ENABLE)begin:g_scene_demo
+ scene_demo_timing u_timing(.clk(video_clk),.rst(rst_video),.first_active(scene_first_active),
+  .ready(display_valid && audio_enable),.thumbnail(preview_pixel),.image(audio_image),
+  .stage(scene_stage),.t_now(scene_time),.blink_fast(scene_fast),.blink_slow(scene_slow),.layer_enable(scene_enable));
+end else begin:g_scene_off
+ assign scene_stage=0;assign scene_time=0;assign scene_fast=0;assign scene_slow=0;assign scene_enable=0;
+end endgenerate
+hazard_layer #(.SIDE_WIDTH(48)) u_hazard(
+ .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.arrival(vout_rgba_raw[7:0]),
+ .stage(scene_stage),.t_now(scene_time),.enable(scene_enable && de),.thumbnail(preview_pixel),
+ .blink_fast(scene_fast),.blink_slow(scene_slow),
  .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor,transition_level,transition_wipe,display_valid,audio_enable}),
+ .rgb_out(hazard_rgb),.side_out(hazard_side));
+brightness_contrast_adjust #(.SIDE_WIDTH(48)) u_picture_adjust(
+ .clk(video_clk),.rst(rst_video),.rgb_in(hazard_rgb),.brightness(brightness_frame),.contrast(contrast_frame),
+ .side_in(hazard_side),
  .rgb_out(adjusted_rgb_raw),.side_out(adjust_side));
 video_transition_pixels u_video_transition_pixels(
     .level(adjust_level), .wipe_active(adjust_wipe), .de(adjust_de), .pixel_x(adjust_x), .rgb_in(adjusted_rgb), .rgb_out(transition_rgb)
