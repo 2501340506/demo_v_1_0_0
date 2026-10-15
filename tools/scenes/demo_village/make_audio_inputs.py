@@ -1,14 +1,21 @@
 """Deterministic placeholder effects, NOT narration or hazard predictions."""
 from pathlib import Path
+import argparse
 import math
 import struct
 import wave
 
-folder = Path(__file__).resolve().parent
-for stage, frequency in enumerate((330, 440, 550, 660), 1):
-    destination = folder / f"placeholder{stage}.wav"
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output', type=Path, default=Path(__file__).resolve().parent,
+                    help='directory for four WAV inputs; existing files are never overwritten')
+folder = parser.parse_args().output.resolve()
+for stage in range(1, 5):
+    destination = folder / f'placeholder{stage}.wav'
     if destination.exists():
         raise FileExistsError(destination)
+folder.mkdir(parents=True, exist_ok=True)
+for stage, frequency in enumerate((330, 440, 550, 660), 1):
+    destination = folder / f"placeholder{stage}.wav"
     samples = []
     for index in range(8 * 48000):
         # Eight seconds; short tones mark t~=0/120 at 1x. Silent endpoints
