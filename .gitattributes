@@ -1,0 +1,4 @@
+# Frozen publicity assets include JSON with deliberate LF bytes. Preserve them
+# exactly across checkout so pack reproduction is not changed by core.autocrlf.
+tools/publicity/geohazard_basics/inputs/** -text
+tools/publicity/geohazard_basics/generated/** -text

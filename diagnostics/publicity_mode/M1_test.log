@@ -1,0 +1,21 @@
+test_01_independent_bmp_and_pcm_readback (__main__.PublicityTests.test_01_independent_bmp_and_pcm_readback) ... ok
+test_02_reproduce_all_output_bytes (__main__.PublicityTests.test_02_reproduce_all_output_bytes) ... ok
+test_03_reproduce_input_bytes_and_layout (__main__.PublicityTests.test_03_reproduce_input_bytes_and_layout) ... ok
+test_04_order_count_and_duplicate_ids (__main__.PublicityTests.test_04_order_count_and_duplicate_ids) ... ok
+test_05_dimensions_alpha_and_palette_rejected (__main__.PublicityTests.test_05_dimensions_alpha_and_palette_rejected) ... ok
+test_06_missing_resources (__main__.PublicityTests.test_06_missing_resources) ... ok
+test_07_wav_format_rejection (__main__.PublicityTests.test_07_wav_format_rejection) ... ok
+test_08_truncated_and_odd_wav_rejected (__main__.PublicityTests.test_08_truncated_and_odd_wav_rejected) ... ok
+test_09_explicit_missing_audio (__main__.PublicityTests.test_09_explicit_missing_audio) ... ok
+test_10_short_file_under_sector (__main__.PublicityTests.test_10_short_file_under_sector) ... ok
+test_11_refuse_overwrite_empty_dir_file_and_populated (__main__.PublicityTests.test_11_refuse_overwrite_empty_dir_file_and_populated) ... ok
+test_12_status_and_required_fields (__main__.PublicityTests.test_12_status_and_required_fields) ... ok
+test_13_bad_bmp_readback (__main__.PublicityTests.test_13_bad_bmp_readback) ... ok
+test_14_empty_script_and_source_rejected (__main__.PublicityTests.test_14_empty_script_and_source_rejected) ... ok
+test_15_manifest_and_overview (__main__.PublicityTests.test_15_manifest_and_overview) ... ok
+test_16_existing_audio_tool_matches_and_cli (__main__.PublicityTests.test_16_existing_audio_tool_matches_and_cli) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 4.810s
+
+OK
