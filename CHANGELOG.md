@@ -1,6 +1,8 @@
-# v0.18.0 开发中（2026-10-16，未发布）
+# v0.18.0 开发中（2026-10-17，未发布）
 
-- 2026-10-17：用户确认“M3无误”，记录v0.18.0-m3-local.1总体板测通过，建立v0.18.0-m3-board.1；复用原bit，不补逐项数据/次数/时长及前序验收。M4获授权，待实施。
+- 宣传模式M4 local.1：VOI逐页单次、消费尾样本完成及身份隔离、完整淡入后300帧最短停留且有效讲解完成才AUTO翻页；缺/错静音与状态、参数/预览完成锁存、同页重播；修复换资源后旧音源提前启动。169份仿真及53份编译/模型日志核验通过，TD publicity_m4_td_attempt14为15966 LUT（81.46%）、10683寄存器、56 BRAM9k、2 BRAM32k、13 DSP；Setup +0.072ns/Hold +0.003ns，TNS0，无ERROR且完整bitgen。固定[候选](releases/v0.18.0/m4-local.1/README.md)、[验证](diagnostics/publicity_mode/M4_VALIDATION.md)及v0.18.0-m4-local.1，待板测。M1仍是测试音，M5/M6待实施。
+
+- 2026-10-17：用户确认“M3无误”，记录v0.18.0-m3-local.1总体板测通过，建立v0.18.0-m3-board.1；复用原bit，不补逐项数据/次数/时长及前序验收。M4获授权；本阶段实现与最终验证进行中，状态以顶部交接为准。
 
 - 宣传模式M3已接入生产：00 KEY4长短互斥、应用/拨码页解耦、双表预检和四bank安全重载，身份/资源版本帧边界提交；宣传静态四页、静音且AUTO禁用，旧卡COMPAT/缺目标拒绝/覆盖后ERROR恢复。155份专项和相关回归及33份编译/模型日志核验通过；TD14为15785 LUT（80.54%）、Setup +0.097ns/Hold +0.024ns、TNS0，无ERROR且完整bitgen。固定[候选](releases/v0.18.0/m3-local.1/README.md)及v0.18.0-m3-local.1标签，等待板测；详见[M3实施](docs/宣传模式M3实施.md)与[验证](diagnostics/publicity_mode/M3_VALIDATION.md)。M4–M6未实施，旧M6验收状态不补写。
 

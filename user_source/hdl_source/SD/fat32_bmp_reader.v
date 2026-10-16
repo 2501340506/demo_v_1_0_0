@@ -12,7 +12,7 @@ module fat32_bmp_reader #(
  // the caller must invalidate/quiesce its frame caches before requesting it.
  input map_start,resource_publicity,
  output reg active_publicity,
- output [3:0] pic_valid,edu_valid,voi_valid,
+ output [3:0] pic_valid,edu_valid,voi_valid,voi_invalid,
  output [127:0] pic_clusters,pic_sizes,edu_clusters,edu_sizes,voi_clusters,voi_sizes,
  output reg [3:0] mapped_valid,
  output reg [1:0] scan_found_slot,
@@ -135,7 +135,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY && load_cancel && state==SCAN)),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
  .resource_valid(pic_valid),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
- .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),.voi_valid(voi_valid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
+ .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),.voi_valid(voi_valid),.voi_invalid(voi_invalid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
  .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
  .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),

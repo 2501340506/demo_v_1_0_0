@@ -1,0 +1,46 @@
+{
+  "audit_summary": [
+    "2.1 There are 0 leaf clock pins driven by multiple clocks. (HIGH)",
+    "2.2 There are 0 clocks created on internal clock network. (HIGH)",
+    "2.3 There are 0 unexpandable clock sets. (HIGH)",
+    "2.4 There are 0 local clocks. (HIGH)",
+    "2.5 There are 0 generated clocks that are not connected to their master clocks. (HIGH)",
+    "There are 4 nodes are dangling. (HIGH)",
+    "DummyNode in Model: EG_PHY_BRAM32K",
+    "DummyNode in Model: EG_PHY_LSLICE",
+    "DummyNode in Model: EG_PHY_MSLICE",
+    "DummyNode in Model: EG_PHY_PAD",
+    "There are 0 invalid constraints. (HIGH)",
+    "There are 0 clock pins that have no clock constraints. (HIGH)",
+    "There are 0 clocks whose clock frequency do not match the PLL setting. (HIGH)",
+    "There are 0 combinational loops. (HIGH)",
+    "7. checking soft fifo set_max_delay constraints. (HIGH)",
+    "There are 0 max-delay datapath-only paths that are part of the provided async clock paths, whereas the timing between other registers is not relaxed or ignored. (HIGH)",
+    "There are 0 constraints that have no timing paths. (MEDIUM)",
+    "1            1            0            0   set_multicycle_path 3 -setup -end -from [get_ports sd_miso] -to [get_clocks sd_card_clk]",
+    "2            2            0            0   set_multicycle_path 3 -setup -end -from [get_clocks sd_card_clk] -to [get_ports {sd_mosi sd_ncs}]",
+    "1            1            0            0   set_max_delay -from [get_clocks sd_card_clk] -to [get_ports sd_dclk] 5.000 -datapath_only",
+    "8            8            0            0   set_max_delay -from [get_clocks hdmi_5x_clk] -to [get_ports {HDMI_CLK_P HDMI_D0_P HDMI_D1_P HDMI_D2_P}] 3.500 -datapath_only",
+    "1            1            0            0   set_max_delay -from [get_clocks sd_card_clk] -to [get_ports uart_tx] 10.000 -datapath_only",
+    "1            1            0            0   set_multicycle_path 2 -hold -end -from [get_ports sd_miso] -to [get_clocks sd_card_clk]",
+    "2            2            0            0   set_multicycle_path 3 -hold -end -from [get_clocks sd_card_clk] -to [get_ports {sd_mosi sd_ncs}]",
+    "There are 9 input ports that with no input delay specified. (MEDIUM)",
+    "There are 16 output ports that with no output delay specified. (MEDIUM)",
+    "There are 0 input ports with partial input delay specified. (MEDIUM)",
+    "There are 0 output ports with partial output delay specified. (MEDIUM)",
+    "14. checking abnormal set_input_delay constraints. (MEDIUM)",
+    "There is 1 abnormal set_input_delay constraint. (MEDIUM)",
+    "set_input_delay -clock sd_card_clk -max 21.000 [get_ports sd_miso]",
+    "set_input_delay -clock sd_card_clk -min 0.000 [get_ports sd_miso]"
+  ],
+  "warning_delta": {
+    "syn_1": {
+      "new": [],
+      "gone": []
+    },
+    "phy_1": {
+      "new": [],
+      "gone": []
+    }
+  }
+}

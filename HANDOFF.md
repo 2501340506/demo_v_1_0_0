@@ -1,3 +1,14 @@
+# 当前交接：宣传模式 M4 local.1 本地通过，待板测（2026-10-17）
+
+- 当前任务：用户确认M3无误后执行M4；原目录feature/science-publicity-mode，输入M3 local.1 fdb8065/board.1 adfdd66，开发回退M3固定bit，正式回退v0.16.0。
+- 已完成：VOI逐页单次、实际源样本消费完成/会话身份、四相停止排空、五秒AUTO、缺/错静音及状态、参数/预览完成锁存和回00重计；修复新资源未选定前启动旧VOI的29样本额外会话。见[M4实施](docs/宣传模式M4实施.md)。
+- 验证：169份仿真及53份编译/模型日志核验通过；800例/19428周期元数据等价、四种卡、111扫描/reader、17重载及整机长回归；生产top最终通过。publicity_m4_td_attempt14：15966 LUT（81.46%）、10683寄存器、56 BRAM9k、2 BRAM32k、13 DSP；Setup +0.072ns/Hold +0.003ns，TNS0，无ERROR、完整bitgen，审计差异见固定报告；111输入及根脚本、bit/8变化源逐字节核对。固定[候选](releases/v0.18.0/m4-local.1/README.md)，标签v0.18.0-m4-local.1。
+- 卡住的问题：无本地构建阻塞；M4板测待反馈，M1仍为测试音，正式配音/专业审阅及M5/M6待完成；前序M6未验收不补结论。
+- 下一步：按[固定板测步骤](releases/v0.18.0/m4-local.1/BOARD_VALIDATION.md)验证并填[真实结果](releases/v0.18.0/m4-local.1/BOARD_RESULT.md)。确认具体候选后才建board；失败保留local.1并递增修复。按默认流程只推new-origin当前分支及本阶段local标签，不操作main或无关标签。
+- 踩过的坑：源EOF不等于尾样本已消费；静音仍须采样节拍供fade；跨域单拍AUTO不能在pix计数；换表READY早于目标选源时须保持旧流停止。失败TD和旧top保留诊断，不纳入候选。个人问题记录909字节原样保留，不提交；旧TD工程/best_result/旧worktree不操作。
+
+## 历史交接
+
 # 当前交接：宣传模式 M3 board.1 已获用户确认，准备 M4（2026-10-17）
 
 - 当前任务：用户反馈“M3无误”，并授权M4逐页VOI单次播放、消费完成身份握手与五秒AUTO。

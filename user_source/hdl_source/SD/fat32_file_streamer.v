@@ -114,6 +114,7 @@ module fat32_file_streamer #(
             file_byte_offset <= 32'd0;
             fs_error <= ERR_NONE;
             sector_req <= 1'b0;
+
             sector_lba <= 32'd0;
             current_cluster <= 32'd0;
             next_cluster <= 32'd0;
@@ -131,6 +132,13 @@ module fat32_file_streamer #(
             file_done <= 1'b0;
             file_valid <= 1'b0;
             sector_req <= 1'b0;
+
+            // FAT bytes and current_cluster are stable before ST_FAT_EVAL.
+            // Sampling continuously removes the shared state decode from
+            // these wide internal snapshot registers without changing any
+            // public handshake or the evaluation cycle.
+            fat_value_latched <= {4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0};
+            fat_cluster_snapshot <= current_cluster;
 
             if (state == ST_DATA_WAIT && sector_valid && remaining_bytes != 0) begin
                 file_valid <= 1'b1;
@@ -216,8 +224,6 @@ module fat32_file_streamer #(
                         state <= ST_FAT_PARSE;
                 end
                 ST_FAT_PARSE: begin
-                    fat_value_latched <= {4'd0, fat_byte3[3:0], fat_byte2, fat_byte1, fat_byte0};
-                    fat_cluster_snapshot <= current_cluster;
                     state<=ST_FAT_EVAL;
                 end
                 ST_FAT_EVAL: begin

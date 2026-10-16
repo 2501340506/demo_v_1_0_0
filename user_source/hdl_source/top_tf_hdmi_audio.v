@@ -80,6 +80,7 @@ wire timestamp_glyph_active;
 wire [7:0] osd_error_src, osd_error_pixel;
 wire osd_auto_pixel;
 wire        display_valid;
+wire [3:0] publicity_audio_status;
 wire [1:0] committed_image, audio_image;
 wire committed_valid, committed_ready, audio_update, audio_enable;
 
@@ -346,6 +347,7 @@ sd_card_bmp #(
     .bmp_width         (16'd640),
     .bmp_height        (16'd480),
     .display_valid     (display_valid),
+    .publicity_audio_status(publicity_audio_status),
     .committed_image(committed_image), .committed_valid(committed_valid),
     .committed_ready(committed_ready),
 
@@ -601,11 +603,12 @@ end else begin:g_no_scene_text
 end endgenerate
 wire [23:0] app_status_pixel;
 media_adjust_cdc app_status_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
- .src_state({12'd0,application_busy,application_error,osd_error_src,application_mode}),
+ .src_state({8'd0,publicity_audio_status,application_busy,application_error,osd_error_src,application_mode}),
  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(app_status_pixel));
 publicity_status_overlay #(.ENABLE(PUBLICITY_ENABLE && OSD_ENABLE)) app_status(
  .clk(video_clk),.rst(rst_video),.vs(final_vs),.de(final_de),.x(final_x),.rgb_in(final_content_rgb),
  .app(pixel_identity[1:0]),.page(audio_image),.busy(app_status_pixel[11]),
+ .auto_enable(app_status_pixel[15]),.voice_status(app_status_pixel[14:12]),
  .error(app_status_pixel[10] || app_status_pixel[9:2]==4),.rgb_out(final_rgb));
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
@@ -620,7 +623,8 @@ wire signed [15:0] mixed_left,mixed_right;
 audio_source_mux u_audio_source_mux(
  .clk(video_clk),.rst_n(!rst_video),
  .wav_valid(bgm_valid),.wav_ready(bgm_ready),.wav_left(bgm_left),.wav_right(bgm_right),.wav_active(bgm_active),
- .arp_valid(pcm_valid),.arp_ready(pcm_ready),.arp_left(pcm_left),.arp_right(pcm_right),
+ .arp_valid(pcm_valid),.arp_ready(pcm_ready),.arp_left((PUBLICITY_ENABLE && pixel_identity[1:0]==1)?16'sd0:pcm_left),
+ .arp_right((PUBLICITY_ENABLE && pixel_identity[1:0]==1)?16'sd0:pcm_right),
  .out_ready(mixed_ready),.out_valid(mixed_valid),.out_left(mixed_left),.out_right(mixed_right));
 wire volume_valid,volume_ready;
 wire signed [15:0] volume_left,volume_right;
@@ -669,7 +673,7 @@ endmodule
 // Compact M3 state label in the content template's reserved top-right area.
 module publicity_status_overlay #(parameter ENABLE=1)(
  input clk,rst,vs,de,input [9:0] x,input [23:0] rgb_in,
- input [1:0] app,page,input busy,error,output [23:0] rgb_out
+ input [1:0] app,page,input busy,error,auto_enable,input [2:0] voice_status,output [23:0] rgb_out
 );
  wire [8:0] y;
  osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(),.first_active());
@@ -682,12 +686,12 @@ module publicity_status_overlay #(parameter ENABLE=1)(
   else if(dx[7:4]==7)ch="1"+page;
   else if(dx[7:4]==8)ch="/";
   else if(dx[7:4]==9)ch="4";
-  else if(dx[7:4]==11 && app==1)ch="M";
-  else if(dx[7:4]==12 && app==1)ch="3";
+  else if(dx[7:4]==10 && app==1)ch=auto_enable?"A":"M";
+  else if(dx[7:4]==11 && app==1)ch=voice_status==0?"N":voice_status==3?"D":voice_status==4?"E":voice_status==2?"V":"W";
  end
  wire [4:0] glyph;
  osd_font_5x7 font(.character(ch),.row(dy[3:1]),.pixels(glyph));
  wire region=ENABLE && de && x>=400 && x<608 && y>=8 && y<24;
  wire hit=region && dx[3:1]<5 && dy[3:1]<7 && glyph[4-dx[3:1]];
- assign rgb_out=hit?(error?24'hff4040:24'hffffff):region?24'h102030:rgb_in;
+ assign rgb_out=hit?((error || (app==1 && voice_status==4))?24'hff4040:24'hffffff):region?24'h102030:rgb_in;
 endmodule

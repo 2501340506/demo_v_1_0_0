@@ -18,6 +18,7 @@ module fat32_volume_scanner #(
     output reg font_found,text_found,
     output reg [31:0] font_cluster,font_size,text_cluster,text_size,
     output reg [3:0] edu_valid,voi_valid,
+    output reg [3:0] voi_invalid,
     output reg [127:0] edu_clusters,edu_sizes,voi_clusters,voi_sizes,
     output reg sector_req, output reg [31:0] sector_lba,
     input wire sector_busy, sector_valid, input wire [7:0] sector_byte,
@@ -116,12 +117,20 @@ module fat32_volume_scanner #(
     // This removes the sector-index decode from the wide output register CE.
     (* keep = "true" *) reg [18:0] entry_commit;
     reg [7:0] entry_size_high;
+    reg publicity_bmp_size_ok,publicity_pcm_size_ok;
     always @(posedge clk or negedge rst_n) begin
-        if(!rst_n) begin entry_commit<=0;entry_size_high<=0;end
+        if(!rst_n) begin
+            entry_commit<=0;entry_size_high<=0;
+            publicity_bmp_size_ok<=0;publicity_pcm_size_ok<=0;
+        end
         else begin
             entry_commit<=0;
             if(state==DIR_WAIT && sector_valid && sector_byte_index[4:0]==31)begin
                 entry_commit<=entry_accept;entry_size_high<=sector_byte;
+                // Size low bytes are already stable. Qualify the final byte
+                // alongside commit, so the wide metadata CEs use one bit.
+                publicity_bmp_size_ok<=sector_byte!=0 || entry_size[23:0]>=54;
+                publicity_pcm_size_ok<=(sector_byte!=0 || entry_size[23:0]!=0) && !entry_size[0];
             end
         end
     end
@@ -147,20 +156,22 @@ module fat32_volume_scanner #(
     integer publicity_slot;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
-            edu_valid<=0;voi_valid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
+            edu_valid<=0;voi_valid<=0;voi_invalid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
         end else if(state==IDLE && scan_start) begin
-            edu_valid<=0;voi_valid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
+            edu_valid<=0;voi_valid<=0;voi_invalid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
         end else if(SCAN_PUBLICITY) begin
             // Only new resources get these basic metadata checks. BMP format
             // is checked by reader preflight; PCM content is checked downstream.
             for(publicity_slot=0;publicity_slot<4;publicity_slot=publicity_slot+1) begin
-                if(entry_commit[11+publicity_slot] && publicity_cluster_ok && committed_size>=54) begin
+                if(entry_commit[11+publicity_slot] && publicity_cluster_ok && publicity_bmp_size_ok) begin
                     edu_valid[publicity_slot]<=1;
                     edu_clusters[32*publicity_slot+:32]<=entry_cluster;
                     edu_sizes[32*publicity_slot+:32]<=committed_size;
                 end
-                if(entry_commit[15+publicity_slot] && publicity_cluster_ok && committed_size!=0 && !committed_size[0]) begin
-                    voi_valid[publicity_slot]<=1;
+                if(entry_commit[15+publicity_slot] && (!publicity_cluster_ok || !publicity_pcm_size_ok))
+                    voi_invalid[publicity_slot]<=1;
+                if(entry_commit[15+publicity_slot] && publicity_cluster_ok && publicity_pcm_size_ok) begin
+                    voi_valid[publicity_slot]<=1;voi_invalid[publicity_slot]<=0;
                     voi_clusters[32*publicity_slot+:32]<=entry_cluster;
                     voi_sizes[32*publicity_slot+:32]<=committed_size;
                 end

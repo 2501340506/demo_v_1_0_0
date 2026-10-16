@@ -24,6 +24,7 @@ module sd_card_bmp #(
     output [4:0] scenario_meta,
     output [1:0] application_mode,output application_busy,application_error,
     output reg [5:0] display_identity,
+    output [3:0] publicity_audio_status,
     output font_valid,text_valid,output [7:0] font_count,output [12:0] text_bytes,
     output bin_wr_en,bin_wr_text,output [11:0] bin_wr_addr,output [7:0] bin_wr_data,
     input                       clk,
@@ -105,7 +106,7 @@ reg [3:0] pic_checked,edu_checked;
 reg [1:0] scan_application;
 wire [3:0] mapped_valid;
 wire reader_publicity;
-wire [3:0] pic_valid,edu_valid,voi_valid;
+wire [3:0] pic_valid,edu_valid,voi_valid,voi_invalid;
 wire [127:0] pic_clusters,pic_sizes,edu_clusters,edu_sizes,voi_clusters,voi_sizes;
 wire parser_rst=rst || scan_state==SC_RESET;
 wire sd_local_rst=parser_rst;
@@ -117,6 +118,16 @@ wire [127:0] snd_clusters,snd_sizes;
 wire selected_audio_found,scene_stream_run;
 wire [31:0] selected_audio_cluster,selected_audio_size;
 wire [7:0] audio_stream_error;
+wire public_audio_request,public_fade,public_auto,public_offer,public_accept;
+wire [1:0] public_page;
+wire [2:0] public_voice_status;
+wire selected_publicity,voice_done;
+wire [15:0] voice_done_id,audio_identity;
+wire [7:0] audio_version;
+wire [1:0] selected_audio_stage;
+wire common_audio_ready;
+wire selected_audio_scene;
+wire public_commit;
 wire scene_mode,scene_next,scene_warn,scene_speed;
 wire scene_request,scene_request_accept;
 wire [1:0] scene_target;
@@ -127,9 +138,12 @@ wire app_rejected,app_black_permit,app_fade_busy,app_pixel_active,app_wipe_unuse
 wire [4:0] app_level;
 wire [1:0] app_target;
 reg [3:0] resource_version;
+assign audio_identity={resource_version,selected_publicity?2'd1:selected_audio_scene?2'd2:2'd0,selected_audio_stage,audio_version};
+
 wire cache_rescan_event=PUBLICITY_ENABLE?app_reload:rescan_event;
 wire controls_blocked=PUBLICITY_ENABLE && application_busy;
-assign scenario_fade=scene_fade || (PUBLICITY_ENABLE && (application_busy || application_mode==1));
+assign scenario_fade=scene_fade || (PUBLICITY_ENABLE && application_busy) || public_fade;
+assign publicity_audio_status={public_auto,public_voice_status};
 wire [31:0] audio_cluster,audio_size,audio_fat_lba,audio_data_lba,audio_max_cluster;
 wire [7:0] audio_spc;
 wire a_req,a_busy,a_valid,a_done,a_urgent;
@@ -164,8 +178,12 @@ assign scan_accept=scan_request && scan_state==SC_IDLE && !audio_run && audio_st
 always @(posedge clk or posedge rst) begin
  if(rst)audio_session<=0;
  else if(scan_request || (!PUBLICITY_ENABLE && rescan_event) || (PUBLICITY_ENABLE && app_stop_audio))audio_session<=0;
- else if(scan_result_valid && scan_result_ready)audio_session<=scan_success && (!PUBLICITY_ENABLE || scan_application!=1);
- else if(PUBLICITY_ENABLE && !app_stop_audio && !scan_busy && first_image_committed)audio_session<=application_mode!=1;
+ // After remapping, READY may precede the target audio request. Keep the old
+ // selection stopped until the common controller selects the new resource set.
+ // Register this gate here: do not add resource decode to audio_run's fanout.
+ else if(PUBLICITY_ENABLE && selected_publicity!=(scan_application==1))audio_session<=0;
+ else if(scan_result_valid && scan_result_ready)audio_session<=scan_success;
+ else if(PUBLICITY_ENABLE && !app_stop_audio && !scan_busy && first_image_committed)audio_session<=1;
 end
 generate if(AUDIO_ENABLE)begin: g_audio
  wire player_enable,file_valid,file_ready,sector_permit,player_stopped;
@@ -176,8 +194,8 @@ generate if(AUDIO_ENABLE)begin: g_audio
   if(rst)urgent_latched<=1;else urgent_latched<=player_low;
  end
  assign a_urgent=urgent_latched;
- fat32_pcm_stream u_stream(
- .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(selected_audio_found),
+ fat32_pcm_stream #(.SINGLE_SUPPORT(PUBLICITY_ENABLE)) u_stream(
+ .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(selected_audio_found),.single_play(selected_publicity),
  .first_cluster(selected_audio_cluster),.file_size(selected_audio_size),.sectors_per_cluster(audio_spc),
  .fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
  .sector_permit(sector_permit),.player_stopped(player_stopped),.player_ready(file_ready),
@@ -185,8 +203,10 @@ generate if(AUDIO_ENABLE)begin: g_audio
  .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),
  .sector_req(a_req),.sector_lba(a_lba),.sector_busy(a_busy),.sector_valid(a_valid && !bin_owner),
  .sector_done(a_done && !bin_owner),.sector_byte(a_byte),.sector_error(a_error),.sector_index(a_index));
- pcm_stream_player u_player(
+ pcm_stream_player #(.SINGLE_SUPPORT(PUBLICITY_ENABLE)) u_player(
  .wr_clk(clk),.wr_rst_n(!rst),.play_enable(player_enable),
+ .single_play(selected_publicity),.sample_total(selected_audio_size[31:1]),.session_id(audio_identity),
+ .playback_done(voice_done),.done_session(voice_done_id),
  .file_valid(file_valid),.file_byte(file_byte),.file_ready(file_ready),
  .sector_permit(sector_permit),.buffer_low(player_low),.stopped(player_stopped),.write_level(),
  .rd_clk(transition_pix_clk),.rd_rst_n(!transition_pix_rst),.sample_ready(bgm_ready),
@@ -195,7 +215,7 @@ generate if(AUDIO_ENABLE)begin: g_audio
 end else begin: g_no_audio
  assign audio_stopped=1'b1;assign a_req=1'b0;assign a_lba=0;assign a_urgent=0;
  assign bgm_valid=0;assign bgm_active=0;assign bgm_left=0;assign bgm_right=0;
- assign audio_stream_error=0;
+ assign audio_stream_error=0;assign voice_done=0;assign voice_done_id=0;
 end endgenerate
 always @(posedge clk or posedge rst) begin
  if(rst) begin
@@ -300,6 +320,7 @@ media_frame_load_control #(.USE_FRAME_RESULT(USE_FRAME_RESULT)) u_load_control(
 wire preview_intent,preview_selecting,preview_fullscreen_ready,preview_offer,preview_key_toggle;
 assign preview_key_toggle=PREVIEW_ENABLE && mode==3 && media_auto_toggle_request;
 wire cache_display_request,cache_display_ack;
+assign public_commit=PUBLICITY_ENABLE && scan_application==1 && cache_display_request && cache_display_ack;
 wire transition_permit, transition_busy;
 wire scene_muted_sd,scene_audio_running;
 reg transition_auto;
@@ -371,7 +392,8 @@ always @(posedge clk or posedge rst) begin
  else begin
   if(!cache_display_request) commit_pending<=0;
   else if(!commit_pending && preview_fullscreen_ready && (!controls_blocked || app_black_permit) && (!transition_needed || transition_permit) &&
-          (!scene_owns || !scene_audio_running || scene_muted_sd)) begin
+          (!scene_owns || !scene_audio_running || scene_muted_sd) &&
+          (!PUBLICITY_ENABLE || application_mode!=1 || scene_muted_sd || !AUDIO_ENABLE)) begin
    disp_buf_idx<=cache_display_bank;
    display_identity<={resource_version,scan_application};
    display_commit_request<=~display_commit_request;
@@ -381,7 +403,7 @@ always @(posedge clk or posedge rst) begin
 end
 wire ctrl_auto_play_en,ctrl_next_pending,ctrl_prev_pending,ctrl_auto_tick,ctrl_load_request;
 reg scene_auto,scene_mode_q;
-wire effective_auto=scene_mode?scene_auto:ctrl_auto_play_en;
+wire effective_auto=scene_mode?scene_auto:(PUBLICITY_ENABLE && application_mode==1)?public_auto:ctrl_auto_play_en;
 always @(posedge clk or posedge rst)begin
  if(rst)begin scene_auto<=0;scene_mode_q<=0;end
  else begin
@@ -396,8 +418,8 @@ wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || (PUBLICITY_ENABLE ? (rescan_pending || rescan_raw) : rescan_wait);
 wire ctrl_offer=ctrl_load_request && !controls_blocked && !scene_owns && !transition_block && !preview_intent && !preview_selecting;
 wire [1:0] preview_target;
-wire cache_offer=ctrl_offer || preview_offer || (scene_request && !transition_block);
-wire [1:0] cache_target=scene_request?scene_target:preview_offer?preview_target:ctrl_target_image;
+wire cache_offer=ctrl_offer || preview_offer || (scene_request && !transition_block) || public_offer;
+wire [1:0] cache_target=scene_request?scene_target:preview_offer?preview_target:public_offer?(img_idx+2'd1):ctrl_target_image;
 assign scene_request_accept=scene_request && ctrl_request_ready && !transition_block;
 generate if(PREVIEW_ENABLE)begin:g_preview
  media_preview_control control(.clk(clk),.rst(rst),.mode(mode),.scan_busy(scan_busy),
@@ -417,6 +439,7 @@ always @(posedge clk or posedge rst) begin
  if(rst) transition_auto<=0;
  else if(rescan_event) transition_auto<=0;
  else if(ctrl_request_accept) transition_auto<=ctrl_auto_load_request;
+ else if(public_accept)transition_auto<=1;
 end
 media_frame_cache_control u_cache_control(
  .clk(clk),.rst(rst),.rescan_event(cache_rescan_event),
@@ -457,9 +480,11 @@ media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS),.UI_GA
 );
 generate if(SCENE_ENABLE)begin:g_scenario
  wire sample_tick,frame_tick,audio_request,audio_scene,audio_ready,layer_enable;
- wire [1:0] stage,speed,alert_level,audio_stage,selected_stage;
+ wire [1:0] stage,speed,alert_level,audio_stage;
+ wire [1:0] selected_stage=selected_audio_stage;
  wire [7:0] t_now;
- wire warn_mode,selected_scene;
+ wire warn_mode;
+ wire selected_scene=selected_audio_scene;
  assign scenario_meta={scene_mode,warn_mode,speed,1'b0};
  (* ASYNC_REG="TRUE" *) reg [1:0] muted_sync,active_sync;
  always @(posedge clk or posedge rst)begin
@@ -481,20 +506,41 @@ generate if(SCENE_ENABLE)begin:g_scenario
   .t_now(t_now),.alert_level(alert_level),.stage_req(scene_request),.requested_stage(scene_target),
   .fade_mute(scene_fade),.layer_enable(layer_enable),
   .audio_request(audio_request),.audio_scene(audio_scene),.audio_stage(audio_stage));
- scenario_audio_control audio_control(.clk(clk),.rst(rst),.request(audio_request),
-  .request_scene(audio_scene),.request_stage(audio_stage),.stopped(audio_stopped),
+ scenario_audio_control #(.PUBLICITY_ENABLE(PUBLICITY_ENABLE)) audio_control(.clk(clk),.rst(rst),.request(audio_request || public_audio_request),
+  .request_publicity(public_audio_request),.selected_publicity(selected_publicity),.session_version(audio_version),
+  .request_scene(!public_audio_request && audio_scene),.request_stage(public_audio_request?public_page:audio_stage),.stopped(audio_stopped),
   .sample_tick(sample_tick),.session_enable(audio_session),.stream_error(audio_stream_error),
   .selected_found(selected_audio_found),.run_enable(scene_stream_run),
-  .selected_scene(selected_scene),.selected_stage(selected_stage),.ready(audio_ready));
+  .selected_scene(selected_audio_scene),.selected_stage(selected_audio_stage),.ready(common_audio_ready));
+ assign audio_ready=common_audio_ready && !public_audio_request;
  wire use_snd=selected_scene && snd_valid[selected_stage];
- assign selected_audio_found=use_snd || audio_found;
- assign selected_audio_cluster=use_snd?snd_clusters[selected_stage*32+:32]:audio_cluster;
- assign selected_audio_size=use_snd?snd_sizes[selected_stage*32+:32]:audio_size;
+ assign selected_audio_found=selected_publicity?voi_valid[selected_stage]:(use_snd || audio_found);
+ assign selected_audio_cluster=selected_publicity?voi_clusters[selected_stage*32+:32]:use_snd?snd_clusters[selected_stage*32+:32]:audio_cluster;
+ assign selected_audio_size=selected_publicity?voi_sizes[selected_stage*32+:32]:use_snd?snd_sizes[selected_stage*32+:32]:audio_size;
  assign scenario_state={layer_enable,alert_level,stage,t_now};
 end else begin:g_no_scenario
  assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_meta=0;assign scene_fade=0;
  assign scene_muted_sd=0;assign scene_audio_running=0;assign scene_stream_run=1;
+ assign selected_publicity=0;assign selected_audio_scene=0;assign selected_audio_stage=0;assign audio_version=0;assign common_audio_ready=1;
  assign selected_audio_found=audio_found;assign selected_audio_cluster=audio_cluster;assign selected_audio_size=audio_size;
+end endgenerate
+generate if(PUBLICITY_ENABLE)begin:g_publicity
+ wire frame_tick;
+ scene_event_cdc frames(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
+  .sample_accept(1'b0),.frame_start(transition_frame_start),.clk(clk),.rst(rst),.sample_tick(),.frame_tick(frame_tick));
+ publicity_voice_control voice(.clk(clk),.rst(rst),
+  .enable((application_mode==1 && !app_stop_audio && !scan_busy) || public_commit),
+  .commit(public_commit),.commit_page(cache_display_image),.page_pending(cache_display_request && scan_application==1),
+  .busy(controls_blocked || transition_block || foreground_busy),.ui_play(mode==0),.frame_tick(frame_tick),
+  .toggle_auto(media_auto_toggle_request && mode==0),.manual(manual_activity || ctrl_load_request || preview_offer || scene_request),
+  .offer_ready(ctrl_request_ready && !ctrl_offer && !preview_offer && !scene_request && !transition_block && !foreground_busy),
+  .audio_ready(common_audio_ready),.selected_publicity(selected_publicity),.selected_found(selected_audio_found && AUDIO_ENABLE),
+  .stream_error(selected_publicity && voi_invalid[selected_audio_stage]?8'h30:audio_stream_error),.session_id(audio_identity),.done(voice_done),.done_id(voice_done_id),
+  .voice_request(public_audio_request),.page(public_page),.fade(public_fade),.auto_enable(public_auto),
+  .auto_offer(public_offer),.auto_accept(public_accept),.status(public_voice_status));
+end else begin:g_no_publicity_voice
+ assign public_audio_request=0;assign public_page=0;assign public_fade=0;assign public_auto=0;
+ assign public_offer=0;assign public_accept=0;assign public_voice_status=0;
 end endgenerate
 media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.DIAG_DISPLAY(DIAG_DISPLAY)) u_media_display_control(
  .clk(clk),.rst(rst),.combo_request(1'b0),.sd_init_done(sd_init_done),.scan_done(!scan_busy),
@@ -607,7 +653,7 @@ fat32_bmp_reader #(.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUD
  .map_start(map_start_pulse),.resource_publicity(map_publicity),.active_publicity(reader_publicity),.mapped_valid(mapped_valid),.scan_found_slot(),
  .pic_valid(pic_valid),.pic_clusters(pic_clusters),.pic_sizes(pic_sizes),
  .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),
- .voi_valid(voi_valid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
+ .voi_valid(voi_valid),.voi_invalid(voi_invalid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
  .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
  .a_req(bin_owner?bin_req:a_req),.a_lba(bin_owner?bin_lba:a_lba),.a_cancel(!bin_owner && !audio_run),.a_urgent(bin_owner?1'b1:a_urgent),
  .a_busy(a_busy),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),.a_byte(a_byte),.a_index(a_index),
@@ -703,3 +749,52 @@ module publicity_app_control(
  end
 endmodule
 
+
+// One request per actual display commit, including preview commits of the same
+// page. Completion identity is accepted only after the common stop/start ack.
+module publicity_voice_control #(parameter MIN_FRAMES=300)(
+ input clk,rst,enable,commit,input [1:0] commit_page,
+ input page_pending,busy,ui_play,frame_tick,toggle_auto,manual,offer_ready,
+ input audio_ready,selected_publicity,selected_found,input [7:0] stream_error,
+ input [15:0] session_id,done_id,input done,
+ output voice_request,output reg [1:0] page,output fade,
+ output reg auto_enable,output auto_offer,auto_accept,output reg [2:0] status
+);
+ localparam OFF=0,WAIT=1,REQUEST=2,RUN=3;
+ reg [1:0] state;
+ reg [15:0] identity;
+ reg [8:0] dwell;reg [1:0] tail_frames;
+ reg advanced;
+ wire terminal=status==0 || status==3 || status==4;
+ assign voice_request=state==REQUEST;
+ assign fade=enable && (page_pending || state==WAIT || state==REQUEST);
+ // request_ready depends on the selected request_image in the shared cache.
+ // Keep valid independent of ready; only acceptance can use that feedback.
+ assign auto_offer=enable && state==RUN && auto_enable && ui_play && !busy && !page_pending &&
+                   !manual && !toggle_auto && !advanced && dwell>=MIN_FRAMES && terminal && tail_frames==2;
+ assign auto_accept=auto_offer && offer_ready;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin state<=OFF;page<=0;identity<=0;dwell<=0;tail_frames<=0;advanced<=0;auto_enable<=0;status<=1;end
+  else if(!enable)begin state<=OFF;dwell<=0;tail_frames<=0;advanced<=0;auto_enable<=0;status<=1;end
+  else begin
+   if(toggle_auto && !busy)auto_enable<=!auto_enable;
+   if(!ui_play || busy || page_pending || state!=RUN)dwell<=0;
+   else if(frame_tick && dwell<MIN_FRAMES)dwell<=dwell+1'b1;
+   if(state==RUN && terminal && frame_tick && tail_frames<2)tail_frames<=tail_frames+1'b1;
+   if(auto_accept)advanced<=1;
+   if(commit)begin page<=commit_page;state<=WAIT;status<=1;dwell<=0;tail_frames<=0;advanced<=0;end
+   else case(state)
+    WAIT:if(!busy && !audio_ready)state<=REQUEST;
+    REQUEST:if(audio_ready)begin
+     identity<=session_id;state<=RUN;
+     status<=stream_error!=0?3'd4:!selected_found?3'd0:3'd2;
+    end
+    RUN:if(selected_publicity && session_id==identity)begin
+     if(stream_error!=0)status<=4;
+     else if(done && done_id==identity && status==2)status<=3;
+    end
+    default:;
+   endcase
+  end
+ end
+endmodule
