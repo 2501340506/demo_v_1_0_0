@@ -36,8 +36,8 @@ module fat32_bmp_reader #(
 );
  localparam IDLE=0,SCAN=1,SELECT=2,HEADER_RESET=3,HEADER_REQ=4,
  HEADER_WAIT=5,HEADER_CHECK=6,SCAN_FINISH=7,WRITE_WAIT=8,
- START_FILE=9,READ_FILE=10,DRAIN=11,RESULT=12,HEADER_SHIFT=13,HEADER_ADD=14,SELECT_CHECK=15;
- reg [3:0] state;
+ START_FILE=9,READ_FILE=10,DRAIN=11,RESULT=12,HEADER_SHIFT=13,HEADER_ADD=14,SELECT_CHECK=15,SELECT_RANGE=16;
+ reg [4:0] state;
  reg scan_go,file_go;
  reg [2:0] candidate;
  reg [31:0] task_cluster,task_size,header_lba;
@@ -58,6 +58,23 @@ module fat32_bmp_reader #(
  wire request_allowed=(state==READ_FILE && decode_error==0 && !load_cancel);
  wire header_match;wire [33:0] required_end;
  wire [31:0] header_file_len;
+ // Header fields settle before byte 54; completion is after byte 511.
+ // Keep the 34-bit bound comparator off the mapped-slot write enables.
+ reg header_end_hi_lt,header_end_hi_eq,header_end_lo_le,header_end_top_ok;
+ reg header_size_ok;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin
+   header_end_hi_lt<=0;header_end_hi_eq<=0;header_end_lo_le<=0;
+   header_end_top_ok<=0;header_size_ok<=0;
+  end else begin
+   header_end_hi_lt<=required_end[31:16]<task_size[31:16];
+   header_end_hi_eq<=required_end[31:16]==task_size[31:16];
+   header_end_lo_le<=required_end[15:0]<=task_size[15:0];
+   header_end_top_ok<=required_end[33:32]==0;
+   header_size_ok<=header_end_top_ok && (header_end_hi_lt ||
+                       (header_end_hi_eq && header_end_lo_le));
+  end
+ end
  reg header_go;
  // Check the registered candidate, keeping the table mux off the range path.
  // A small constant limit needs only six low bits and a high-bit reduction;
@@ -65,6 +82,13 @@ module fat32_bmp_reader #(
  wire selected_bad=!mask[candidate[1:0]] ||
    ((task_size[31:6]==0) && task_size[5:0]<6'd54) ||
    (task_cluster[31:1]==0) || task_cluster>max_cluster;
+ // The enabled two-table design fans metadata out much further than the
+ // legacy reader. Separate the range carry chain from the FSM decision.
+ reg selected_bad_q;
+ always @(posedge clk or posedge rst)begin
+  if(rst)selected_bad_q<=0;
+  else selected_bad_q<=selected_bad;
+ end
  reg [1:0] found_slot[0:3];   // scanner slot of each accepted image
  wire [1:0] select_slot=(LOAD_BY_INDEX && state==IDLE) ?
    ((SCAN_PUBLICITY && active_publicity) ? load_index : found_slot[load_index]) : candidate[1:0];
@@ -86,7 +110,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
   else header_cluster_shift<=spc_shift(spc);
  end
  assign ready=(state==IDLE && sd_init_done);
- assign state_code=(state==IDLE)?4'd1:((state<=SCAN_FINISH || state==SELECT_CHECK)?4'd2:4'd3);
+ assign state_code=(state==IDLE)?4'd1:((state<=SCAN_FINISH || state==SELECT_CHECK || state==SELECT_RANGE)?4'd2:4'd3);
  assign write_req=(state==WRITE_WAIT && !load_cancel);
  wire pixel_valid;
  wire pixel_ready=state==READ_FILE && decode_error==0 && stream_error==0 && !load_cancel && (!SCALE_ENABLE || write_ready);
@@ -120,19 +144,25 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  // Keep the file response in one pipeline bundle: the last byte may arrive
  // with done. Cancellation discards the queued response while the service
  // continues draining the physical read under its existing ownership.
- reg file_sector_valid,file_sector_done;
+ reg file_sector_valid,file_sector_done,control_sector_done_q;
  reg [7:0] file_sector_byte,file_sector_error;
  reg [8:0] file_sector_index;
  always @(posedge clk or posedge rst)begin
   if(rst)begin
-   file_sector_valid<=0;file_sector_done<=0;
+   file_sector_valid<=0;file_sector_done<=0;control_sector_done_q<=0;
    file_sector_byte<=0;file_sector_error<=0;file_sector_index<=0;
   end else begin
+   control_sector_done_q<=sector_done;
    file_sector_valid<=file_owner && !abort_file && sector_valid;
    file_sector_done<=file_owner && !abort_file && sector_done;
    file_sector_byte<=sector_byte;file_sector_error<=sector_error;file_sector_index<=sector_index;
   end
  end
+ // In the enabled design, keep the cancel/error decode out of the reader
+ // status mux. Header bytes remain direct; only completion waits one cycle.
+ // Drain stays active until this queued response has also been consumed.
+ wire control_sector_done=SCAN_PUBLICITY ? control_sector_done_q : sector_done;
+ wire [7:0] control_sector_error=SCAN_PUBLICITY ? file_sector_error : sector_error;
  fat32_file_streamer #(.MAX_VISITED_CLUSTERS(SCALE_ENABLE?16384:MAX_VISITED_CLUSTERS),.DATA_GATE_ENABLE(SCALE_ENABLE)) streamer(
  .clk(clk),.rst_n(!rst && !abort_file),.file_start(file_go),.data_permit(data_permit),.first_cluster(task_cluster),.file_size(task_size),
  .sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
@@ -184,9 +214,9 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  // Observe file errors with the same response bundle consumed by streamer.
  // This preserves the existing distinction between a retryable stream error
  // and a previously latched physical timeout.
- if((file_owner ? file_sector_done : sector_done) &&
-    (file_owner ? file_sector_error : sector_error)!=0)
-  io_error<=file_owner ? file_sector_error : sector_error;
+ if((file_owner ? file_sector_done : control_sector_done) &&
+    (file_owner ? file_sector_error : control_sector_error)!=0)
+  io_error<=file_owner ? file_sector_error : control_sector_error;
  // Cancel and drain the current sector. Opt-in scan/preflight cancellation
  // invalidates the partial mapping; a file cancellation retains it for retry.
  if(load_cancel) begin
@@ -218,10 +248,11 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  if(candidate==4)state<=SCAN_FINISH;
  else begin
  task_cluster<=selected_cluster;task_size<=selected_size;
- state<=SELECT_CHECK;end
+ state<=SCAN_PUBLICITY?SELECT_RANGE:SELECT_CHECK;end
  end
+ SELECT_RANGE:state<=SELECT_CHECK;
  SELECT_CHECK:begin
- if(selected_bad)begin candidate<=candidate+1'b1;state<=SELECT;end
+ if(SCAN_PUBLICITY?selected_bad_q:selected_bad)begin candidate<=candidate+1'b1;state<=SELECT;end
  else begin
  header_lba<=task_cluster-2;header_shift_count<=header_cluster_shift;state<=HEADER_SHIFT;end
  end
@@ -230,12 +261,12 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  HEADER_ADD:begin header_lba<=data_lba+header_lba;state<=HEADER_RESET;end
  HEADER_RESET:state<=HEADER_REQ;
  HEADER_REQ:if(!sector_busy)begin header_go<=1;state<=HEADER_WAIT;end
- HEADER_WAIT:if(sector_done)begin
- if(sector_error!=0)begin fat_error<=sector_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
+ HEADER_WAIT:if(control_sector_done)begin
+ if(control_sector_error!=0)begin fat_error<=control_sector_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
  else state<=HEADER_CHECK;
  end
  HEADER_CHECK:begin
- if(header_match && required_end<={2'b0,task_size})begin
+ if(header_match && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
  mapped_valid[candidate[1:0]]<=1;scan_found_slot<=candidate[1:0];
  scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;
  if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];end
@@ -255,8 +286,8 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  else if((stream_finished || stream_done) && (decode_finished || decode_done))state<=DRAIN;
  end
  DRAIN:begin
- if(sector_done && (sector_error==8'h10 || sector_error==8'h11))begin bmp_error<=2;fat_error<=sector_error;end
- if(!sector_busy)state<=(SCAN_PUBLICITY && cancelled)?IDLE:RESULT;
+ if(control_sector_done && (control_sector_error==8'h10 || control_sector_error==8'h11))begin bmp_error<=2;fat_error<=control_sector_error;end
+ if(!sector_busy && !(SCAN_PUBLICITY && sector_done))state<=(SCAN_PUBLICITY && cancelled)?IDLE:RESULT;
  end
  RESULT:begin if(bmp_error==0)load_done<=1;else load_error<=1;state<=IDLE;end
  default:state<=IDLE;

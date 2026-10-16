@@ -1,3 +1,14 @@
+# 当前交接：v0.18.0 宣传模式 M3 实施，local.1 本地通过，待板测（2026-10-16）
+
+- 当前任务：执行宣传模式M3，原目录feature/science-publicity-mode，输入8e6bf69；硬件开发回退为未获整机验收的v0.17.0-m6-local.1，正式回退v0.16.0。个人问题记录不改不提交，不建worktree，不补前序验收。
+- 已完成：生产启用双应用；00 KEY4长按一秒切应用、短按保留AUTO；应用与拨码页独立。同卡四bank取消/排空/失效/逻辑重映射，资源版本/应用身份跨域提交；宣传静态四页双向翻页、静音且AUTO禁用，旧卡COMPAT、缺目标拒绝和覆盖后ERROR重试/切回/重扫。详见[M3实施](docs/宣传模式M3实施.md)。
+- 验证进展：最终17项专项、192次身份CDC、307200真实缩放像素、25个稀疏卡边界、20个启动及20个真实扇区链边界通过；108项scanner/reader含默认关闭逐周期比较通过。155份完成日志与33份编译/模型日志核验通过，最终生产top07通过；真SDRAM系统591帧/481827精确PCM、预览293帧/238405 PCM。详细边界见[M3验证](diagnostics/publicity_mode/M3_VALIDATION.md)。
+- 卡住的问题：无TD阻塞。attempt01–13未达时序/资源或布线门槛，全部拒绝交付；按真实路径分拍scanner/reader及FONT/TEXT元数据，audio_run沿用寄存停止，最终TD14达标：15785 LUT（80.54%）、Setup +0.097ns/Hold +0.024ns、TNS0，无ERROR且完整bitgen。审计汇总及告警集合与M6相同；17专项、20项unit及bin_loader GAP2/5通过，最终生产top07通过，候选已固定[releases/v0.18.0/m3-local.1](releases/v0.18.0/m3-local.1/README.md)，标签v0.18.0-m3-local.1。
+- 下一步计划：按[固定M3板测清单](releases/v0.18.0/m3-local.1/BOARD_VALIDATION.md)验证并回传真实结果，记录[BOARD_RESULT](releases/v0.18.0/m3-local.1/BOARD_RESULT.md)。明确确认后才建立board并同步；失败保留local.1，修复递增候选。当前分支和本阶段local标签按默认流程推new-origin，远程结果以核对为准。M4讲解/EOF/五秒AUTO未实施，M1 VOI仍是测试音。
+- 踩过的坑：启动首图可能快于主音量4682 accepted样本淡变，宣传READY须另等实际静音；取消后旧finish不能交给新bank。最终TD须无ERROR、Setup/Hold>0、TNS0、LUT≤16660。保留厂商模型告警及top测试台watchdog常量诊断，不称零告警。失败证据留diagnostics/output，不纳入候选；中文管道先设UTF-8，Python用py -I -X utf8。
+
+## 历史交接
+
 # 当前交接：v0.18.0 宣传模式 M2 模块验证完成，生产未启用（2026-10-16）
 
 - 当前任务：用户授权M2；原目录 `E:/form/demo_v_0_0/demo_v_0_0`，`feature/science-publicity-mode`，输入8a90155；硬件输入/开发回退仍是未获整机验收的v0.17.0-m6-local.1，正式回退v0.16.0。无新增worktree，个人问题记录不改不提交。

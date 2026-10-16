@@ -83,15 +83,13 @@ module fat32_volume_scanner #(
         input [7:0] code;
         begin fs_error<=code;state<=FINISH;end
     endtask
-    // Names, attributes and duplicate status are settled before byte 30.
-    // Register per-destination enables there; commit at byte 31 as before.
-    // Hold the enables across byte gaps and clear them after the commit.
+    // Names/attributes settle at byte 11, long before byte-31 commit.
+    // Evaluate destination enables continuously: the commit strobe alone
+    // qualifies them. Avoid a shared byte-index decode on nineteen CEs.
     (* keep = "true" *) reg [18:0] entry_accept;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) entry_accept<=0;
-        else if(state!=DIR_WAIT) entry_accept<=0;
-        else if(sector_valid) begin
-            if(sector_byte_index[4:0]==30) begin
+        else begin
                 entry_accept[0]<=!dir_end && name_match && resource_index==0 && !resource_valid[0];
                 entry_accept[1]<=!dir_end && name_match && resource_index==1 && !resource_valid[1];
                 entry_accept[2]<=!dir_end && name_match && resource_index==2 && !resource_valid[2];
@@ -111,7 +109,6 @@ module fat32_volume_scanner #(
                 entry_accept[16]<=!dir_end && voi_match && resource_index==1 && !voi_valid[1];
                 entry_accept[17]<=!dir_end && voi_match && resource_index==2 && !voi_valid[2];
                 entry_accept[18]<=!dir_end && voi_match && resource_index==3 && !voi_valid[3];
-            end else if(sector_byte_index[4:0]==31) entry_accept<=0;
         end
     end
     // Delay the byte-31 commit enable and final size byte together. Entry
@@ -129,6 +126,24 @@ module fat32_volume_scanner #(
         end
     end
     wire [31:0] committed_size={entry_size_high,entry_size[23:0]};
+    // Cluster bytes finish at offset 27, four byte times before commit.
+    // Two stages fit between the final cluster byte (27) and commit (31),
+    // even with contiguous bytes. Split the wide range comparator first.
+    reg publicity_cluster_ok,publicity_hi_lt,publicity_hi_eq;
+    reg publicity_lo_le,publicity_cluster_min;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            publicity_cluster_ok<=0;publicity_hi_lt<=0;publicity_hi_eq<=0;
+            publicity_lo_le<=0;publicity_cluster_min<=0;
+        end else begin
+            publicity_hi_lt<=entry_cluster[31:16]<max_cluster[31:16];
+            publicity_hi_eq<=entry_cluster[31:16]==max_cluster[31:16];
+            publicity_lo_le<=entry_cluster[15:0]<=max_cluster[15:0];
+            publicity_cluster_min<=|entry_cluster[31:1];
+            publicity_cluster_ok<=publicity_cluster_min &&
+                (publicity_hi_lt || (publicity_hi_eq && publicity_lo_le));
+        end
+    end
     integer publicity_slot;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
@@ -139,12 +154,12 @@ module fat32_volume_scanner #(
             // Only new resources get these basic metadata checks. BMP format
             // is checked by reader preflight; PCM content is checked downstream.
             for(publicity_slot=0;publicity_slot<4;publicity_slot=publicity_slot+1) begin
-                if(entry_commit[11+publicity_slot] && entry_cluster>=2 && entry_cluster<=max_cluster && committed_size>=54) begin
+                if(entry_commit[11+publicity_slot] && publicity_cluster_ok && committed_size>=54) begin
                     edu_valid[publicity_slot]<=1;
                     edu_clusters[32*publicity_slot+:32]<=entry_cluster;
                     edu_sizes[32*publicity_slot+:32]<=committed_size;
                 end
-                if(entry_commit[15+publicity_slot] && entry_cluster>=2 && entry_cluster<=max_cluster && committed_size!=0 && !committed_size[0]) begin
+                if(entry_commit[15+publicity_slot] && publicity_cluster_ok && committed_size!=0 && !committed_size[0]) begin
                     voi_valid[publicity_slot]<=1;
                     voi_clusters[32*publicity_slot+:32]<=entry_cluster;
                     voi_sizes[32*publicity_slot+:32]<=committed_size;

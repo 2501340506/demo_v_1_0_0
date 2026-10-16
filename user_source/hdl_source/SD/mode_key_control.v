@@ -3,7 +3,8 @@ module mode_key_control #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer RESCAN_HOLD_MS = 2000,
     parameter integer PREVIEW_ENABLE = 0,
-    parameter integer SCENE_ENABLE = 0
+    parameter integer SCENE_ENABLE = 0,
+    parameter integer PUBLICITY_ENABLE = 0
 )(
     input wire clk, rst, enable,
     input wire key1, key2, key4,
@@ -13,7 +14,9 @@ module mode_key_control #(
     output reg auto_toggle_event,
     output wire adjust_decrease,adjust_increase,adjust_restore,adjust_select,
     output wire manual_activity,
-    input scene_allowed,output wire scene_mode,scene_next,scene_warn,scene_speed
+    input scene_allowed,output wire scene_mode,scene_next,scene_warn,scene_speed,
+    input scene_active,application_busy,
+    output wire application_toggle
 );
     wire press1, press2, press4;
     wire stable1, stable2, stable4;
@@ -36,7 +39,13 @@ module mode_key_control #(
         if (rst) press_mode <= 0;
         else press_mode <= mode;
     end
-    assign previous_event = !scene_mode && enable && (press_mode == 0 || (PREVIEW_ENABLE && press_mode == 3)) && press_mode==mode && press1;
+    reg playback_armed;
+    always @(posedge clk or posedge rst)begin
+     if(rst)playback_armed<=0;
+     else if(press_mode!=mode || application_busy)playback_armed<=0;
+     else if(stable1 && stable2 && stable4)playback_armed<=1;
+    end
+    assign previous_event = !scene_mode && enable && (!PUBLICITY_ENABLE || playback_armed) && (press_mode == 0 || (PREVIEW_ENABLE && press_mode == 3)) && press_mode==mode && press1;
     reg next_raw;
     assign next_event=next_raw && !scene_mode;
     assign scene_next=next_raw && scene_mode;
@@ -56,12 +65,12 @@ module mode_key_control #(
             stable2_d <= stable2;
             next_raw <= 0; rescan_event <= 0;
             if (stable2_d && !stable2) begin
-                short_allowed <= enable && (mode == 0 || (PREVIEW_ENABLE && mode == 3));
-                short_mode<=mode; rescan_allowed <= (mode==0 || mode==3);
+                short_allowed <= enable && (!PUBLICITY_ENABLE || playback_armed) && (mode == 0 || (PREVIEW_ENABLE && mode == 3));
+                short_mode<=mode; rescan_allowed <= (mode==0 || mode==3) && (!PUBLICITY_ENABLE || (!application_busy && playback_armed));
                 held_cycles <= 1;
             end else if (!stable2) begin
                 if (!enable || mode != short_mode) short_allowed <= 0;
-                if(mode!=short_mode)rescan_allowed<=0;
+                if(mode!=short_mode || (PUBLICITY_ENABLE && application_busy))rescan_allowed<=0;
                 if (!long_fired && rescan_allowed && mode==short_mode) begin
                     if (held_cycles >= HOLD_CYCLES - 1) begin
                         rescan_event <= 1;
@@ -77,16 +86,61 @@ module mode_key_control #(
         end
     end
     adjust_key_gestures #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) adjust_keys(
-        .clk(clk),.rst(rst),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
+        .clk(clk),.rst(rst || (PUBLICITY_ENABLE && application_busy)),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
         .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select));
     // Register the media toggle to break mode -> preview -> cache request logic.
-    generate if(SCENE_ENABLE==0)begin:g_legacy
+    generate if(PUBLICITY_ENABLE)begin:g_publicity
+     reg application_event;
+     assign application_toggle=application_event;
+     reg tracking4,long4,s4q,tracking1,long1,s1q;
+     reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold4,hold1;
+     reg speed_event;
+     assign scene_mode=scene_active;
+     assign scene_speed=speed_event;
+     always @(posedge clk or posedge rst)begin
+      if(rst)begin
+       tracking4<=0;long4<=0;s4q<=1;tracking1<=0;long1<=0;s1q<=1;
+       hold4<=0;hold1<=0;application_event<=0;auto_toggle_event<=0;warn_event<=0;speed_event<=0;
+      end else begin
+       s4q<=stable4;s1q<=stable1;application_event<=0;auto_toggle_event<=0;warn_event<=0;speed_event<=0;
+       if(!enable || !playback_armed || press_mode!=mode || rescan_event)begin
+        tracking4<=0;tracking1<=0;hold4<=0;hold1<=0;
+       end else begin
+        if(mode==0)begin
+         if(s4q && !stable4)begin tracking4<=1;hold4<=1;long4<=0;end
+         else if(!stable4 && tracking4 && !long4)begin
+          if(hold4>=CLK_FREQ_HZ-1)begin long4<=1;application_event<=1;end
+          else hold4<=hold4+1'b1;
+         end else if(stable4 && tracking4)begin
+          if(!long4)auto_toggle_event<=1;
+          tracking4<=0;
+         end
+         if(scene_active)begin
+          if(s1q && !stable1)begin tracking1<=1;hold1<=1;long1<=0;end
+          else if(!stable1 && tracking1 && !long1)begin
+           if(hold1>=CLK_FREQ_HZ-1)begin long1<=1;speed_event<=1;end
+           else hold1<=hold1+1'b1;
+          end else if(stable1 && tracking1)begin
+           if(!long1)warn_event<=1;
+           tracking1<=0;
+          end
+         end
+        end else begin
+         tracking4<=0;tracking1<=0;
+         if(mode==3 && press4)auto_toggle_event<=1;
+        end
+       end
+      end
+     end
+    end else if(SCENE_ENABLE==0)begin:g_legacy
+    assign application_toggle=0;
     assign scene_mode=0;assign scene_speed=0;
     always @(posedge clk or posedge rst)warn_event<=0;
     always @(posedge clk or posedge rst)
         if(rst)auto_toggle_event<=0;
         else auto_toggle_event<=enable && press4 && press_mode==mode && (mode==0 || mode==3);
     end else begin:g_scene
+     assign application_toggle=0;
      reg active,armed,tracking,long4,s4q;
      reg s1q,tracking1,long1;
      reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold1;

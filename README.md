@@ -1,10 +1,12 @@
-# 当前开发阶段：v0.18.0 宣传模式 M2 模块验证完成
+# 当前开发阶段：v0.18.0 宣传模式 M3 local.1，待板测
 
-当前分支 `feature/science-publicity-mode`，计划标签 `v0.18.0-plan.1`。M2已扩展scanner→reader识别EDU/VOI，传递两套表，支持EDU固定原槽/PIC压缩映射及不重扫目录的换表；默认SCAN_PUBLICITY=0，生产sd_card_bmp尚未启用。108份专项/相关回归、默认关闭逐周期对照及两top启用参数独立综合完成，见[M2验证与边界](diagnostics/publicity_mode/M2_VALIDATION.md)。无新bit/local/board标签，M3–M6待实施。
+当前分支 `feature/science-publicity-mode`，输入 M2 `8e6bf69`。生产已接双应用：00 KEY4 长按一秒切宣传/情景、短按保留 AUTO；应用身份独立于拨码页，同卡复用四 bank 安全重载。宣传静态上一/下一张，保持静音且 AUTO 禁用；情景原有预警、速度及终态 AUTO 保留。旧卡 COMPAT、缺目标拒绝与覆盖后失败恢复已实现，见 [M3实施](docs/宣传模式M3实施.md)。
 
-M1 [四页内容与打包工具](tools/publicity/README.md)、[总览预览](tools/publicity/geohazard_basics/generated/previews/overview.png)保留；16项PC测试、反读及新目录逐字节复现通过，见[M1验证](diagnostics/publicity_mode/M1_VALIDATION.md)。VOI均为测试音，专业审阅/正式配音/电视可读性待确认。实施入口：[阶段计划与按键矩阵](docs/专业科普宣传模式分阶段修改计划.md)、[接口清单](docs/宣传模式接口清单.md)。
+155份专项/回归完成日志及33份编译/模型日志核验通过；完整TD14达标：15785 LUT（80.54%），Setup +0.097ns/Hold +0.024ns，TNS0、无ERROR、完整bitgen。固定[候选与bit](releases/v0.18.0/m3-local.1/README.md)，标签v0.18.0-m3-local.1；[验证](diagnostics/publicity_mode/M3_VALIDATION.md)列出模型边界。按[板测清单](releases/v0.18.0/m3-local.1/BOARD_VALIDATION.md)等待用户确认。
 
-现有硬件bit仍为下方 M6 local.1，未获整机验收且尚不识别EDU/VOI；正式版/整机回退仍为 v0.16.0，不替前序补发布或板测结论。下一步M3需后续指令，见[最新交接](HANDOFF.md)。
+M1 [四页内容与工具](tools/publicity/README.md)保留，VOI均为测试音，专业审阅/正式配音/电视可读性待确认。M4单次讲解/EOF/五秒宣传AUTO尚未实施。计划入口：[阶段计划与按键矩阵](docs/专业科普宣传模式分阶段修改计划.md)、[接口清单](docs/宣传模式接口清单.md)、[最新交接](HANDOFF.md)。
+
+硬件开发回退仍为下方未获整机验收的 M6 local.1，正式版/整机回退仍为 v0.16.0，不补前序发布或板测结论。
 
 ## 前序候选：v0.17.0 M6 local.1 本地通过，待板测
 

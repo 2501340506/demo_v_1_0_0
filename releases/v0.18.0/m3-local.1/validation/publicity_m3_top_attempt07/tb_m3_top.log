@@ -1,0 +1,122 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/work tb_m3_top glbl "+F_BYTES=1504" "+T_BYTES=102" -l E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.log -do "run -all; quit -f" 
+# Start time: 23:17:44 on Oct 16,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../user_source/ip_source/s3_single_pll/sys_pll_s3.v(89): (vopt-2241) Connection width does not match width of port 'load_reg'. The port definition is at: E:\TD\sim_release\eg4\eg_phy_pll.v(25).
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2685) [TFMPC] - Too few port connections for 'U3'.  Expected 23, found 14.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_DQ'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_DM'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_ADDR'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_BA'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_WE'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_CAS'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_RAS'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_CKE'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(489): (vopt-2718) [TFMPC] - Missing connection for port 'SDRAM_CLK'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2685) [TFMPC] - Too few port connections for 'top_dut'.  Expected 21, found 9.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'uart_tx'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'sd_mosi'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'sd_dclk'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'sd_ncs'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_DDC_SDA'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_DDC_SCL'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_D0_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_D1_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_D2_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_CLK_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'seg_data'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(24): (vopt-2718) [TFMPC] - Missing connection for port 'seg_sel'.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_wrrd.enc.v(77): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# ** Warning: (vsim-3015) E:/form/demo_v_0_0/demo_v_0_0/TD_project/../user_source/ip_source/s3_single_pll/sys_pll_s3.v(89): [PCDPC] - Port size (5) does not match connection size (1) for port 'load_reg'. The port definition is at: E:/TD/sim_release/eg4/eg_phy_pll.v(25).
+#    Time: 0 fs  Iteration: 0  Instance: /tb_m3_top/top_dut/sys_pll_m0/pll_inst File: E:/TD/sim_release/eg4/eg_phy_pll.v
+# run -all
+# ******************** : The Attribute            REFCLK_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to           1.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             FBCLK_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to           2.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC0_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          10.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC1_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          25.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC2_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          25.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC3_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          40.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC4_DIV on pll instance tb_m3_top.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to           8.  Legal values for this attribute are           1 to         128.
+# M3 top progress t=1100000 state=0 app=0 reads=0 commits=0
+# M3 top progress t=634600000 state=6 app=0 reads=12 commits=0
+# M3 top full source t=62236300000 pixels=307200
+# M3 top progress t=63841300000 state=7 app=1 reads=13 commits=1
+# M3 top full source t=125443000000 pixels=307200
+# M3 top full source t=187046300000 pixels=307200
+# M3 top full source t=248649600000 pixels=307200
+# M3 top progress t=342721500000 state=8 app=1 reads=16 commits=1
+# M3 top progress t=360641700000 state=1 app=1 reads=16 commits=1
+# M3 top progress t=434771800000 state=2 app=1 reads=16 commits=3
+# M3 top progress t=434771900000 state=3 app=1 reads=16 commits=3
+# M3 top progress t=452481700000 state=4 app=1 reads=16 commits=3
+# M3 top progress t=452481800000 state=5 app=1 reads=16 commits=3
+# M3 top progress t=452693100000 state=6 app=1 reads=20 commits=3
+# M3 top full source t=514294800000 pixels=307200
+# M3 top progress t=516321300000 state=7 app=2 reads=21 commits=4
+# M3 top progress t=520801500000 state=8 app=2 reads=23 commits=5
+# M3 top progress t=538721700000 state=1 app=2 reads=23 commits=5
+# M3 top full source t=577923000000 pixels=307200
+# M3 top full source t=639526300000 pixels=307200
+# M3 top progress t=677428800000 state=2 app=2 reads=26 commits=6
+# M3 top progress t=677428900000 state=3 app=2 reads=26 commits=6
+# M3 top progress t=694401700000 state=4 app=2 reads=26 commits=6
+# M3 top progress t=694401800000 state=5 app=2 reads=26 commits=6
+# M3 top progress t=694615500000 state=6 app=2 reads=30 commits=6
+# M3 top full source t=756217200000 pixels=307200
+# M3 top progress t=758241300000 state=7 app=1 reads=31 commits=7
+# M3 top progress t=759361500000 state=8 app=1 reads=32 commits=7
+# M3 top progress t=777281700000 state=1 app=1 reads=32 commits=7
+# M3 top progress t=777398900000 state=2 app=1 reads=32 commits=7
+# M3 top progress t=777399000000 state=3 app=1 reads=32 commits=7
+# M3 top progress t=795201700000 state=4 app=1 reads=32 commits=7
+# M3 top progress t=795201800000 state=5 app=1 reads=32 commits=7
+# M3 top progress t=795415500000 state=6 app=1 reads=36 commits=7
+# M3 top full source t=857017200000 pixels=307200
+# M3 top progress t=859041300000 state=7 app=2 reads=37 commits=8
+# M3 top progress t=863521500000 state=8 app=2 reads=39 commits=9
+# M3 top progress t=881441700000 state=1 app=2 reads=39 commits=9
+# M3 top progress t=881558900000 state=2 app=2 reads=39 commits=9
+# M3 top progress t=881559000000 state=3 app=2 reads=39 commits=9
+# M3 top progress t=899361700000 state=4 app=2 reads=39 commits=9
+# M3 top progress t=899361800000 state=5 app=2 reads=39 commits=9
+# M3 top progress t=899575500000 state=6 app=2 reads=43 commits=9
+# M3 top full source t=961177200000 pixels=307200
+# M3 top progress t=963201300000 state=7 app=1 reads=44 commits=10
+# M3 top progress t=964321500000 state=8 app=1 reads=45 commits=10
+# M3 top progress t=982241700000 state=1 app=1 reads=45 commits=10
+# PASS M3 production top: 7016112 HDMI timing checks 338602 publicity pixels 634652 scene pixels 546 silent PCM samples, actual scaler/identity CDC/keys/parameters
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/publicity_m3_top_attempt07/tb_m3_top.sv(211)
+#    Time: 98225660 ns  Iteration: 1  Instance: /tb_m3_top
+# End time: 23:35:02 on Oct 16,2026, Elapsed time: 0:17:18
+# Errors: 0, Warnings: 45

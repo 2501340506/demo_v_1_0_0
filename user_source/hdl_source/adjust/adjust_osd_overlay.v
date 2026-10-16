@@ -7,7 +7,7 @@ module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
  wire [8:0] y;wire frame_start;
  osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(frame_start),.first_active());
  wire [9:0] dx=pixel_x-10'd8;wire [8:0] dy=y-9'd32;
- wire speed_visible=SCENE_ENABLE && scene_enable;
+ wire speed_visible=SCENE_ENABLE && scene_enable && mode==0;
  wire visible=ENABLE && (mode==1 || mode==2 || speed_visible);
  wire region=visible && de && pixel_x>=8 && pixel_x<296 && y>=32 && y<48;
  wire band=visible && de && pixel_x>=4 && pixel_x<300 && y>=28 && y<52;

@@ -36,8 +36,9 @@ parameter integer BAND_ENABLE = 1;
 parameter integer TIMESTAMP_ENABLE = 1;
 parameter integer TRANSITION_ENABLE = 1;
 parameter integer AUDIO_VIS_ENABLE = 1;
-// M3-only frame driven demo source; M4 replaces this with scenario_fsm.
+// Application control is independent of the parameter/preview switch page.
 parameter integer SCENE_DEMO_ENABLE = 1;
+parameter integer PUBLICITY_ENABLE = 1;
 parameter MEM_DATA_BITS = 32;
 parameter integer UART_CLK_FREQ_HZ = 100_000_000;
 parameter integer UART_BAUD_RATE = 115200;
@@ -118,6 +119,14 @@ wire preview_request,preview_ack;
 wire [17:0] preview_descriptor,pixel_descriptor;
 wire preview_pixel=pixel_descriptor[17];
 wire [4:0] transition_level;
+wire [1:0] application_mode;
+wire application_busy,application_error;
+wire [5:0] display_identity;
+wire [7:0] committed_bundle;
+assign audio_image=committed_bundle[1:0];
+reg [5:0] pixel_identity;
+reg [5:0] pending_identity;
+reg identity_pending;
 
 wire App_rd_en;
 wire [ADDR_BITS-1:0] App_rd_addr;
@@ -165,6 +174,14 @@ wire sub_rx_valid, sub_rx_error, sub_reply_valid, sub_reply_last, sub_reply_read
 wire [119:0] sub_text_src, sub_text_pixel;
 wire [3:0] sub_length_src, sub_length_pixel;
 wire sub_enable_src, sub_enable_pixel, sub_text_changed, sub_frame_start,scene_first_active;
+// Publish the identity bundled with the acknowledged bank at frame blanking.
+always @(posedge video_clk or posedge rst_video)begin
+ if(rst_video)begin pixel_identity<=0;pending_identity<=0;identity_pending<=0;end
+ else begin
+  if(audio_update)begin pending_identity<=committed_bundle[7:2];identity_pending<=1;end
+  if(sub_frame_start && identity_pending)begin pixel_identity<=pending_identity;identity_pending<=0;end
+ end
+end
 uart_rx_byte #(.CLKS_PER_BIT((UART_CLK_FREQ_HZ+UART_BAUD_RATE/2)/UART_BAUD_RATE)) u_uart_rx (
  .clk(sd_card_clk),.rst_n(~rst_sd),.rx(uart_rx),.data(sub_rx_data),
  .valid(sub_rx_valid),.framing_error(sub_rx_error));
@@ -282,7 +299,7 @@ wire [7:0] font_count_src,bin_wr_data;wire [12:0] text_bytes_src;wire [11:0] bin
 wire [23:0] scene_meta_pixel,resources_pixel;
 wire font_available,scene_text_active;
 wire legacy_font_region;wire [7:0] legacy_font_char;wire [3:0] legacy_font_row,legacy_font_col;
-wire final_hs,final_vs,final_de;wire [9:0] final_x;wire [23:0] final_rgb;
+wire final_hs,final_vs,final_de;wire [9:0] final_x;wire [23:0] final_rgb,final_content_rgb;
 wire [23:0] scene_panel;
 // Both clocks derive from the same PLL. Sample on the SD falling edge before
 // the board-clock rising edge, matching the existing mode/state panel path.
@@ -302,8 +319,9 @@ sd_card_bmp #(
     .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
-    .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE)
+    .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE),.PUBLICITY_ENABLE(PUBLICITY_ENABLE)
 ) sd_card_bmp_m0(
+    .application_mode(application_mode),.application_busy(application_busy),.application_error(application_error),.display_identity(display_identity),
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
     .scenario_meta(scenario_meta_src),.font_valid(font_valid_src),.text_valid(text_valid_src),
     .font_count(font_count_src),.text_bytes(text_bytes_src),.bin_wr_en(bin_wr_en),.bin_wr_text(bin_wr_text),
@@ -427,7 +445,7 @@ end else begin:g_scene_off
 end endgenerate
 hazard_layer #(.SIDE_WIDTH(48)) u_hazard(
  .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.arrival(vout_rgba_raw[7:0]),
- .stage(scene_stage),.t_now(scene_time),.enable(scene_enable && de),.thumbnail(preview_pixel),
+ .stage(scene_stage),.t_now(scene_time),.enable(scene_enable && de && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.thumbnail(preview_pixel),
  .blink_fast(scene_fast),.blink_slow(scene_slow),
  .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor,transition_level,transition_wipe,display_valid,audio_enable}),
  .rgb_out(hazard_rgb),.side_out(hazard_side));
@@ -486,10 +504,10 @@ sdram U3(
 );
 
 // S8: melody changes only after the display handoff has completed.
-media_commit_cdc u_media_commit_cdc (
+media_commit_cdc #(.WIDTH(8)) u_media_commit_cdc (
  .src_clk(sd_card_clk), .dst_clk(video_clk), .src_rst(rst_sd), .dst_rst(rst_video),
- .src_image(committed_image), .src_valid(committed_valid), .src_ready(committed_ready),
- .media_id(audio_image), .media_update(audio_update), .media_enable(audio_enable)
+ .src_image({display_identity,committed_image}), .src_valid(committed_valid), .src_ready(committed_ready),
+ .media_id(committed_bundle), .media_update(audio_update), .media_enable(audio_enable)
 );
 
 wire ring_frame_start, ring_tap_valid;
@@ -572,15 +590,23 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  scene_text_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
   .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21]),
   .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),
-  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1]),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),
+  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),
   .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
   .font_available(font_available),.scene_text_active(scene_text_active),
   .font_addr(font_addr),.font_data(font_data),.text_addr(text_addr),.text_data(text_data),
-  .hs_out(final_hs),.vs_out(final_vs),.de_out(final_de),.x_out(final_x),.rgb_out(final_rgb));
+  .hs_out(final_hs),.vs_out(final_vs),.de_out(final_de),.x_out(final_x),.rgb_out(final_content_rgb));
 end else begin:g_no_scene_text
  assign resources_pixel=0;assign font_available=0;assign scene_text_active=0;
- assign final_hs=ring_hs;assign final_vs=ring_vs;assign final_de=ring_de;assign final_x=ring_x;assign final_rgb=band_rgb;
+ assign final_hs=ring_hs;assign final_vs=ring_vs;assign final_de=ring_de;assign final_x=ring_x;assign final_content_rgb=band_rgb;
 end endgenerate
+wire [23:0] app_status_pixel;
+media_adjust_cdc app_status_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
+ .src_state({12'd0,application_busy,application_error,osd_error_src,application_mode}),
+ .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(app_status_pixel));
+publicity_status_overlay #(.ENABLE(PUBLICITY_ENABLE && OSD_ENABLE)) app_status(
+ .clk(video_clk),.rst(rst_video),.vs(final_vs),.de(final_de),.x(final_x),.rgb_in(final_content_rgb),
+ .app(pixel_identity[1:0]),.page(audio_image),.busy(app_status_pixel[11]),
+ .error(app_status_pixel[10] || app_status_pixel[9:2]==4),.rgb_out(final_rgb));
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
 pcm_media_tone #(.FIXED_VOLUME(128)) u_pcm_clock (
@@ -638,4 +664,30 @@ hdmi_phy_wrapper #(
     .O_tmds_clk_p       (HDMI_CLK_P)
 );
 
+endmodule
+
+// Compact M3 state label in the content template's reserved top-right area.
+module publicity_status_overlay #(parameter ENABLE=1)(
+ input clk,rst,vs,de,input [9:0] x,input [23:0] rgb_in,
+ input [1:0] app,page,input busy,error,output [23:0] rgb_out
+);
+ wire [8:0] y;
+ osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(),.first_active());
+ wire [9:0] dx=x-10'd400;wire [8:0] dy=y-9'd8;
+ reg [7:0] ch;reg [47:0] label_text;
+ always @*begin
+  label_text=busy?(error?"ERROR ":"BUSY  "):error?"NO SET":app==1?"EDU   ":app==2?"SCENE ":"COMPAT";
+  ch=" ";
+  if(dx[7:4]<6)ch=label_text[47-dx[7:4]*8-:8];
+  else if(dx[7:4]==7)ch="1"+page;
+  else if(dx[7:4]==8)ch="/";
+  else if(dx[7:4]==9)ch="4";
+  else if(dx[7:4]==11 && app==1)ch="M";
+  else if(dx[7:4]==12 && app==1)ch="3";
+ end
+ wire [4:0] glyph;
+ osd_font_5x7 font(.character(ch),.row(dy[3:1]),.pixels(glyph));
+ wire region=ENABLE && de && x>=400 && x<608 && y>=8 && y<24;
+ wire hit=region && dx[3:1]<5 && dy[3:1]<7 && glyph[4-dx[3:1]];
+ assign rgb_out=hit?(error?24'hff4040:24'hffffff):region?24'h102030:rgb_in;
 endmodule

@@ -1,8 +1,9 @@
 // SD-domain scene controller. PCM ticks are lossless playback events from CDC.
-module scenario_fsm(
+module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0)(
  input clk,rst,enable,scene_ready,key_next,key_mode,key_speed,
  input sample_tick,audio_running,frame_start,muted,auto_enable,
  input request_ready,picture_done,picture_failed,transition_idle,audio_ready,
+ input ui_play,
  output reg [1:0] stage,speed,output reg warn_mode,
  output reg [7:0] t_now,output [1:0] alert_level,
  output stage_req,output [1:0] requested_stage,
@@ -31,15 +32,16 @@ module scenario_fsm(
   end else begin
    running_q<=audio_running;
    if(state!=RUN)begin samples<=0;half_frame<=0;terminal_frame<=0;end
+   if(UI_GATE && !ui_play)terminal_frame<=0;
    if(!scene_ready && state!=OFF && state!=EXIT_FADE && state!=EXIT_AUDIO)state<=EXIT_FADE;
    else case(state)
     OFF:begin
-     stage<=0;speed<=0;warn_mode<=0;t_now<=0;committed<=0;
+     stage<=0;if(!PRESERVE_SPEED)speed<=0;warn_mode<=0;t_now<=0;committed<=0;
      if(enable && scene_ready)begin target<=0;target_warn<=0;sent<=0;state<=PICTURE;end
     end
     RUN:begin
      if(!enable || !scene_ready)state<=EXIT_FADE;
-     else if(key_mode || (!warn_mode && (key_next || (auto_enable && terminal_frame && frame_start))))begin
+     else if(key_mode || (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start))))begin
       target<=key_mode?(warn_mode?2'd0:2'd3):stage+2'd1;
       target_warn<=key_mode?!warn_mode:warn_mode;sent<=0;state<=PICTURE;
      end else if(key_speed)begin speed<=speed==2?2'd0:speed+2'd1;samples<=0;half_frame<=0;end
@@ -59,7 +61,7 @@ module scenario_fsm(
      end
      // Two frame boundaries after saturation guarantee one whole terminal
      // frame can be shown even when t crosses the pixel-domain mailbox late.
-     else if(frame_start)terminal_frame<=1;
+     else if(frame_start && (!UI_GATE || ui_play))terminal_frame<=1;
     end
     PICTURE:begin
      if(stage_req && request_ready)sent<=1;

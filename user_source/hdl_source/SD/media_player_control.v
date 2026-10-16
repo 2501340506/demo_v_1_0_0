@@ -1,4 +1,4 @@
-module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000)(
+module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000, parameter UI_GATE=0)(
  input clk, rst, enable, scan_done, display_valid, load_busy,
  input first_image_committed, manual_activity, request_accept,
  input [2:0] image_count,
@@ -21,7 +21,7 @@ module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000)(
  assign next_load_request = available && next_pending;
  assign previous_load_request = available && !next_pending && previous_pending;
  // A mode change restarts the interval; suppress an expiry before acceptance.
- assign auto_load_request = available && auto_allowed && auto_tick && (mode == mode_seen);
+ assign auto_load_request = available && auto_allowed && auto_tick && (mode == mode_seen) && (!UI_GATE || mode==0);
  assign load_request = next_load_request || previous_load_request || auto_load_request;
  // The consumer samples this index on the same edge as request_accept.
  // Busy-time requests store direction only, never an index from an older frame.
@@ -66,11 +66,11 @@ endfunction
    end else begin
      if (scan_done && image_count > 1 && auto_toggle_event)
        auto_play_en <= ~auto_play_en;
-     if(mode==3 || mode_seen==3) auto_play_en<=0;
+     if(!UI_GATE && (mode==3 || mode_seen==3)) auto_play_en<=0;
      if (mode != mode_seen) begin
        mode_seen <= mode;
        auto_count <= 0;
-     end else if (available && auto_allowed) begin
+     end else if (available && auto_allowed && (!UI_GATE || mode==0)) begin
        if (auto_tick) auto_count <= 0;
        else auto_count <= auto_count + 1'b1;
      end else auto_count <= 0;
@@ -84,6 +84,7 @@ endfunction
        if (next_event) next_pending <= 1;
        if (previous_event) previous_pending <= 1;
      end
+     if(UI_GATE && mode!=mode_seen)begin next_pending<=0;previous_pending<=0;end
    end
  end
 endmodule

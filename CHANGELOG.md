@@ -1,5 +1,7 @@
 # v0.18.0 开发中（2026-10-16，未发布）
 
+- 宣传模式M3已接入生产：00 KEY4长短互斥、应用/拨码页解耦、双表预检和四bank安全重载，身份/资源版本帧边界提交；宣传静态四页、静音且AUTO禁用，旧卡COMPAT/缺目标拒绝/覆盖后ERROR恢复。155份专项和相关回归及33份编译/模型日志核验通过；TD14为15785 LUT（80.54%）、Setup +0.097ns/Hold +0.024ns、TNS0，无ERROR且完整bitgen。固定[候选](releases/v0.18.0/m3-local.1/README.md)及v0.18.0-m3-local.1标签，等待板测；详见[M3实施](docs/宣传模式M3实施.md)与[验证](diagnostics/publicity_mode/M3_VALIDATION.md)。M4–M6未实施，旧M6验收状态不补写。
+
 - 宣传模式M2模块完成：scanner→reader新增默认关闭的SCAN_PUBLICITY、EDU/VOI原表和独立mask，扫描至目录结束；reader锁存目标、复用两表预检，EDU固定页槽/PIC保持压缩索引，补取消排空与错误重试。108份专项/相关回归、全部旧输出逐周期比较及两top启用参数独立综合完成；见[M2验证](diagnostics/publicity_mode/M2_VALIDATION.md)。reader独立综合有1条既有buffer初值告警，无ERROR；独立面积不作生产资源/时序结论。sd_card_bmp未启用，无生产bit，不建local/board标签；M3–M6待实施。M1分支补推已成功，旧M6仍待整机验收，正式回退v0.16.0。
 
 - 宣传模式M1：新增 [make_publicity_pack.py及内容包](tools/publicity/README.md)，四页脚本/来源/模板与原创图片，输出四EDU、四VOI、五预览及manifest。四段均为明确标记的测试音，正式配音、专业审阅和电视可读性待确认。16项PC测试通过，1228800像素反读、PCM与原标准WAV工具提取一致，14个产物及9个输入重生成逐字节复现；见 [验证](diagnostics/publicity_mode/M1_VALIDATION.md)。本阶段无RTL/bit/local/board标签，旧M6及正式版状态不变；M2–M6待实施。

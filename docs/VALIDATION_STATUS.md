@@ -1,3 +1,11 @@
+# 当前验证：v0.18.0 宣传模式 M3（2026-10-16）
+
+生产双应用与静态宣传本地通过，155份专项/回归及33份编译/模型日志核验通过，最终生产top07通过；真实系统591帧/481827精确PCM、预览293帧/238405 PCM，模型边界见[M3验证](../diagnostics/publicity_mode/M3_VALIDATION.md)。TD14：15785 LUT（80.54%），Setup +0.097ns/Hold +0.024ns、TNS0，无ERROR、完整bitgen，审计及输入逐字节核验通过。固定[候选](../releases/v0.18.0/m3-local.1/README.md)，标签v0.18.0-m3-local.1；[板测清单](../releases/v0.18.0/m3-local.1/BOARD_VALIDATION.md)待用户执行。
+
+宣传静音且AUTO禁用，M4讲解/单次EOF/五秒AUTO未实施。M1配音为测试音，人工内容审阅仍待办；M6 local.1是未获整机验收的硬件开发回退，正式回退v0.16.0，不替前序补验收。
+
+## 历史记录
+
 # 当前验证：v0.16.0 LUT 优化（2026-10-14）
 
 最新结论：S1、S2 板测通过（S2 Flash 冷启动运行 40 分钟功能正常），S3 由用户决定不做；v0.16.0 正式发布，复用 s2-local.1 原 bit。见[最终验证](../releases/v0.16.0/FINAL_VALIDATION.md)及[结项归档](history/2026-10-14/lut-optimization/README.md)。

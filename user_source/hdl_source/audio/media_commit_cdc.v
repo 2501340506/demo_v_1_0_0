@@ -1,10 +1,10 @@
 // Held-data request/ack transfer: source bus stays fixed until returned ack.
-module media_commit_cdc (
+module media_commit_cdc #(parameter WIDTH=2)(
  input src_clk, input dst_clk, input src_rst, input dst_rst,
- input [1:0] src_image, input src_valid, output src_ready,
- output reg [1:0] media_id, output reg media_update, output reg media_enable
+ input [WIDTH-1:0] src_image, input src_valid, output src_ready,
+ output reg [WIDTH-1:0] media_id, output reg media_update, output reg media_enable
 );
- reg [1:0] held_image;
+ reg [WIDTH-1:0] held_image;
  reg request, acknowledge;
  (* ASYNC_REG = "TRUE" *) reg [1:0] ack_sync, req_sync;
  assign src_ready = request == ack_sync[1];
