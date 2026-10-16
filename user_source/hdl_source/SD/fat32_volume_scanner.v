@@ -2,7 +2,7 @@
 // contract; fields are captured as bytes arrive, without a 512-byte mux array.
 module fat32_volume_scanner #(
     parameter integer MAX_VISITED_CLUSTERS = 8192,
-    parameter integer SCAN_AUDIO = 0, SCAN_TEXT = 0
+    parameter integer SCAN_AUDIO = 0, SCAN_TEXT = 0, SCAN_PUBLICITY = 0
 )(
     input wire clk, input wire rst_n, input wire scan_start,
     output wire scan_busy, output reg scan_done, output reg [7:0] fs_error,
@@ -17,6 +17,8 @@ module fat32_volume_scanner #(
     output reg [127:0] snd_clusters,snd_sizes,
     output reg font_found,text_found,
     output reg [31:0] font_cluster,font_size,text_cluster,text_size,
+    output reg [3:0] edu_valid,voi_valid,
+    output reg [127:0] edu_clusters,edu_sizes,voi_clusters,voi_sizes,
     output reg sector_req, output reg [31:0] sector_lba,
     input wire sector_busy, sector_valid, input wire [7:0] sector_byte,
     input wire [8:0] sector_byte_index,
@@ -44,6 +46,7 @@ module fat32_volume_scanner #(
     reg audio_match;
     reg snd_match;
     reg font_match,text_match;
+    reg edu_match,voi_match;
     reg [1:0] resource_index;
     reg [31:0] entry_cluster, entry_size, fat_entry;
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
@@ -83,7 +86,7 @@ module fat32_volume_scanner #(
     // Names, attributes and duplicate status are settled before byte 30.
     // Register per-destination enables there; commit at byte 31 as before.
     // Hold the enables across byte gaps and clear them after the commit.
-    (* keep = "true" *) reg [10:0] entry_accept;
+    (* keep = "true" *) reg [18:0] entry_accept;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) entry_accept<=0;
         else if(state!=DIR_WAIT) entry_accept<=0;
@@ -100,13 +103,21 @@ module fat32_volume_scanner #(
                 entry_accept[9]<=!dir_end && font_match && !font_found;
                 entry_accept[10]<=!dir_end && text_match && !text_found;
                 entry_accept[8]<=!dir_end && snd_match && resource_index==3 && !snd_valid[3];
+                entry_accept[11]<=!dir_end && edu_match && resource_index==0 && !edu_valid[0];
+                entry_accept[12]<=!dir_end && edu_match && resource_index==1 && !edu_valid[1];
+                entry_accept[13]<=!dir_end && edu_match && resource_index==2 && !edu_valid[2];
+                entry_accept[14]<=!dir_end && edu_match && resource_index==3 && !edu_valid[3];
+                entry_accept[15]<=!dir_end && voi_match && resource_index==0 && !voi_valid[0];
+                entry_accept[16]<=!dir_end && voi_match && resource_index==1 && !voi_valid[1];
+                entry_accept[17]<=!dir_end && voi_match && resource_index==2 && !voi_valid[2];
+                entry_accept[18]<=!dir_end && voi_match && resource_index==3 && !voi_valid[3];
             end else if(sector_byte_index[4:0]==31) entry_accept<=0;
         end
     end
     // Delay the byte-31 commit enable and final size byte together. Entry
     // cluster/low size remain stable until byte 20 of the next directory entry.
     // This removes the sector-index decode from the wide output register CE.
-    (* keep = "true" *) reg [10:0] entry_commit;
+    (* keep = "true" *) reg [18:0] entry_commit;
     reg [7:0] entry_size_high;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin entry_commit<=0;entry_size_high<=0;end
@@ -114,6 +125,30 @@ module fat32_volume_scanner #(
             entry_commit<=0;
             if(state==DIR_WAIT && sector_valid && sector_byte_index[4:0]==31)begin
                 entry_commit<=entry_accept;entry_size_high<=sector_byte;
+            end
+        end
+    end
+    wire [31:0] committed_size={entry_size_high,entry_size[23:0]};
+    integer publicity_slot;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            edu_valid<=0;voi_valid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
+        end else if(state==IDLE && scan_start) begin
+            edu_valid<=0;voi_valid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
+        end else if(SCAN_PUBLICITY) begin
+            // Only new resources get these basic metadata checks. BMP format
+            // is checked by reader preflight; PCM content is checked downstream.
+            for(publicity_slot=0;publicity_slot<4;publicity_slot=publicity_slot+1) begin
+                if(entry_commit[11+publicity_slot] && entry_cluster>=2 && entry_cluster<=max_cluster && committed_size>=54) begin
+                    edu_valid[publicity_slot]<=1;
+                    edu_clusters[32*publicity_slot+:32]<=entry_cluster;
+                    edu_sizes[32*publicity_slot+:32]<=committed_size;
+                end
+                if(entry_commit[15+publicity_slot] && entry_cluster>=2 && entry_cluster<=max_cluster && committed_size!=0 && !committed_size[0]) begin
+                    voi_valid[publicity_slot]<=1;
+                    voi_clusters[32*publicity_slot+:32]<=entry_cluster;
+                    voi_sizes[32*publicity_slot+:32]<=committed_size;
+                end
             end
         end
     end
@@ -155,7 +190,7 @@ module fat32_volume_scanner #(
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
             overhead<=0;data_sectors<=0;data_borrow<=0;shift_count<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
-            audio_match<=0;snd_match<=0;font_match<=0;text_match<=0;
+            audio_match<=0;snd_match<=0;font_match<=0;text_match<=0;edu_match<=0;voi_match<=0;
         end else begin
             scan_done<=0;sector_req<=0;
             if(sector_valid && (state==ZERO_WAIT || state==BOOT_WAIT)) begin
@@ -187,6 +222,18 @@ module fat32_volume_scanner #(
                 end
             end
             if(state==DIR_WAIT && sector_valid && !dir_end) begin
+                case(sector_byte_index[4:0])
+                    0:begin edu_match<=SCAN_PUBLICITY && sector_byte=="E";voi_match<=SCAN_PUBLICITY && sector_byte=="V";end
+                    1:begin edu_match<=edu_match && sector_byte=="D";voi_match<=voi_match && sector_byte=="O";end
+                    2:begin edu_match<=edu_match && sector_byte=="U";voi_match<=voi_match && sector_byte=="I";end
+                    3:begin edu_match<=edu_match && sector_byte>="1" && sector_byte<="4";voi_match<=voi_match && sector_byte>="1" && sector_byte<="4";end
+                    4,5,6,7:begin edu_match<=edu_match && sector_byte==" ";voi_match<=voi_match && sector_byte==" ";end
+                    8:begin edu_match<=edu_match && sector_byte=="B";voi_match<=voi_match && sector_byte=="P";end
+                    9:begin edu_match<=edu_match && sector_byte=="M";voi_match<=voi_match && sector_byte=="C";end
+                    10:begin edu_match<=edu_match && sector_byte=="P";voi_match<=voi_match && sector_byte=="M";end
+                    11:begin edu_match<=edu_match && (sector_byte & 8'h18)==0;voi_match<=voi_match && (sector_byte & 8'h18)==0;end
+                    default:;
+                endcase
                 case(sector_byte_index[4:0])
                     0:begin font_match<=SCAN_TEXT && sector_byte=="F";text_match<=SCAN_TEXT && sector_byte=="T";name_match<=(sector_byte=="P");audio_match<=SCAN_AUDIO && (sector_byte=="B");snd_match<=SCAN_AUDIO && sector_byte=="S";if(sector_byte==0)dir_end<=1;end
                     1:begin font_match<=font_match && sector_byte=="O";text_match<=text_match && sector_byte=="E";name_match<=name_match && sector_byte=="I";audio_match<=audio_match && sector_byte=="G";snd_match<=snd_match && sector_byte=="N";end
@@ -275,7 +322,9 @@ module fat32_volume_scanner #(
                 DIR_REQ:if(!sector_busy)begin sector_req<=1;name_match<=0;state<=DIR_WAIT;end
                 DIR_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=DIR_NEXT;end
                 DIR_NEXT:begin
-                    if(dir_end || (resource_valid==4'hf && (!SCAN_AUDIO || (audio_found && snd_valid==4'hf)) && (!SCAN_TEXT || (font_found && text_found))))state<=FINISH;
+                    // Publicity resources may follow a complete legacy set.
+                    // Scan to directory/EOC end even when optional VOI is absent.
+                    if(dir_end || (!SCAN_PUBLICITY && resource_valid==4'hf && (!SCAN_AUDIO || (audio_found && snd_valid==4'hf)) && (!SCAN_TEXT || (font_found && text_found))))state<=FINISH;
                     else if(dir_sector+1'b1<sectors_per_cluster)begin
                         dir_sector<=dir_sector+1'b1;sector_lba<=sector_lba+1'b1;state<=DIR_REQ;
                     end else begin sector_lba<=fat_start_lba+(current_cluster>>7);state<=FAT_REQ;end

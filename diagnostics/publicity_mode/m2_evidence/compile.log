@@ -1,0 +1,54 @@
+Model Technology ModelSim SE-64 vlog 10.6e Compiler 2018.06 Jun 23 2018
+Start time: 18:28:09 on Oct 16,2026
+vlog -sv -work E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/publicity_m2_attempt07/work E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/fat32_bmp_reader.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/sd_sector_adapter.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/sd_sector_service.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/fat32_volume_scanner.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/fat32_file_streamer.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/bmp_header_check.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/bmp24_decoder.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/bmp_scale_stream.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/bmp_sector_buffer.v E:\form\demo_v_0_0\demo_v_0_0/user_source/hdl_source/SD/image_scale_nearest.v E:\form\demo_v_0_0\demo_v_0_0\diagnostics\publicity_mode/tb_publicity_scan.sv E:\form\demo_v_0_0\demo_v_0_0\diagnostics\publicity_mode/tb_publicity_reader.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/tb_snd_scan.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/tb_audio_scan.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/tb_fat32_core.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/tb_m5_scan_equivalence.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/tb_fat32_reader_equivalence.sv E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/fat32_volume_scanner_reference.v E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/publicity_m2_attempt07/fat32_bmp_reader_reference.v E:/TD/sim_release/common/al_map_lut.v
+-- Compiling module fat32_bmp_reader
+-- Compiling module sd_sector_adapter
+-- Compiling module sd_sector_service
+-- Compiling module fat32_volume_scanner
+-- Compiling module fat32_file_streamer
+-- Compiling module bmp_header_check
+-- Compiling module bmp24_decoder
+-- Compiling module bmp_scale_stream
+-- Compiling module bmp_sector_buffer
+-- Compiling module image_scale_nearest
+-- Compiling module tb_publicity_scan
+-- Compiling module tb_publicity_reader
+-- Compiling module tb_snd_scan
+-- Compiling module tb_audio_scan
+-- Compiling module tb_fat32_core
+-- Compiling module tb_m5_scan_equivalence
+-- Compiling module tb_fat32_reader_equivalence
+-- Compiling module fat32_volume_scanner_reference
+-- Compiling module fat32_bmp_reader_reference
+-- Compiling module AL_MAP_LUT1
+-- Compiling module AL_MAP_LUT2
+-- Compiling module AL_MAP_LUT3
+-- Compiling module AL_MAP_LUT4
+-- Compiling module AL_MAP_LUT5
+-- Compiling module AL_MAP_LUT6
+-- Compiling module AL_MAP_LUT6P
+-- Compiling module AL_MAP_LUT6X
+-- Compiling module AL_MAP_LLMUX
+-- Compiling module AL_MAP_F7MUX
+-- Compiling module AL_MAP_F8MUX
+-- Compiling module AL_MAP_CARRY4
+
+Top level modules:
+	tb_publicity_scan
+	tb_publicity_reader
+	tb_snd_scan
+	tb_audio_scan
+	tb_fat32_core
+	tb_m5_scan_equivalence
+	tb_fat32_reader_equivalence
+	AL_MAP_LUT2
+	AL_MAP_LUT3
+	AL_MAP_LUT6
+	AL_MAP_LUT6P
+	AL_MAP_LUT6X
+	AL_MAP_LLMUX
+	AL_MAP_F7MUX
+	AL_MAP_F8MUX
+	AL_MAP_CARRY4
+End time: 18:28:10 on Oct 16,2026, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0

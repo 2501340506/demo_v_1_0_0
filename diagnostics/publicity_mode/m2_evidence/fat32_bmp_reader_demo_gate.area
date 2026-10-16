@@ -1,0 +1,49 @@
+standard
+***Report Model: fat32_bmp_reader_enabled Device: EG4S20BG256***
+
+IO Statistics
+#IO                      1587   out of    188  844.15%
+  #input                   58
+  #output                1529
+  #inout                    0
+
+LUT Statistics
+#Total_luts              2967
+  #lut4                  2667
+  #lut5                   300
+  #lut6                     0
+  #lut5_mx41                0
+  #lut4_alu1b               0
+
+Utilization Statistics
+#lut                     4989   out of  19600   25.45%
+#reg                     3162   out of  19600   16.13%
+#bram                       9   out of     64   14.06%
+  #bram9k                   9
+  #fifo9k                   0
+#bram32k                    0   out of     16    0.00%
+#dsp                        7   out of     29   24.14%
+#pad                     1587   out of    188  844.15%
+  #ireg                    42
+  #oreg                  1390
+  #treg                     0
+#pll                        0   out of      4    0.00%
+#gclk                       0   out of     16    0.00%
+
+Report Hierarchy Area:
++------------------------------------------------------------------------------------------+
+|Instance           |Module                   |lut     |ripple  |seq     |bram    |dsp     |
++------------------------------------------------------------------------------------------+
+|top                |fat32_bmp_reader_enabled |4002    |987     |4594    |9       |7       |
+|  dut              |fat32_bmp_reader         |3993    |987     |3162    |9       |7       |
+|    adapter        |sd_sector_service        |164     |16      |94      |0       |0       |
+|      adapter      |sd_sector_adapter        |114     |16      |54      |0       |0       |
+|    g_scale$scaled |bmp_scale_stream         |1210    |351     |885     |9       |5       |
+|      buffer       |bmp_sector_buffer        |90      |18      |57      |1       |0       |
+|      decoder      |bmp24_decoder            |573     |221     |484     |0       |3       |
+|        u_header   |bmp_header_check         |259     |160     |258     |0       |2       |
+|      scaler       |image_scale_nearest      |451     |112     |276     |8       |2       |
+|    preflight      |bmp_header_check         |266     |160     |241     |0       |2       |
+|    scanner        |fat32_volume_scanner     |1160    |280     |1415    |0       |0       |
+|    streamer       |fat32_file_streamer      |535     |107     |340     |0       |0       |
++------------------------------------------------------------------------------------------+

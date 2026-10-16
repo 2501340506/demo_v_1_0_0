@@ -1,5 +1,7 @@
 # v0.18.0 开发中（2026-10-16，未发布）
 
+- 宣传模式M2模块完成：scanner→reader新增默认关闭的SCAN_PUBLICITY、EDU/VOI原表和独立mask，扫描至目录结束；reader锁存目标、复用两表预检，EDU固定页槽/PIC保持压缩索引，补取消排空与错误重试。108份专项/相关回归、全部旧输出逐周期比较及两top启用参数独立综合完成；见[M2验证](diagnostics/publicity_mode/M2_VALIDATION.md)。reader独立综合有1条既有buffer初值告警，无ERROR；独立面积不作生产资源/时序结论。sd_card_bmp未启用，无生产bit，不建local/board标签；M3–M6待实施。M1分支补推已成功，旧M6仍待整机验收，正式回退v0.16.0。
+
 - 宣传模式M1：新增 [make_publicity_pack.py及内容包](tools/publicity/README.md)，四页脚本/来源/模板与原创图片，输出四EDU、四VOI、五预览及manifest。四段均为明确标记的测试音，正式配音、专业审阅和电视可读性待确认。16项PC测试通过，1228800像素反读、PCM与原标准WAV工具提取一致，14个产物及9个输入重生成逐字节复现；见 [验证](diagnostics/publicity_mode/M1_VALIDATION.md)。本阶段无RTL/bit/local/board标签，旧M6及正式版状态不变；M2–M6待实施。
 
 - 宣传模式 M0：在原项目目录从文档备份 e71f86a 建立 `feature/science-publicity-mode`；硬件输入固定为 `v0.17.0-m6-local.1`（2c78c3a），开发回退为该候选、正式回退为 v0.16.0。新建 [阶段计划及按键矩阵](docs/专业科普宣传模式分阶段修改计划.md)、[实际接口清单](docs/宣传模式接口清单.md)，同步 [三份方案与索引](docs/选题方案——宣传模式/README.md)、HANDOFF/项目入口；计划标签 `v0.18.0-plan.1`。

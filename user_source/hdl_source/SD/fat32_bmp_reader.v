@@ -1,13 +1,21 @@
 // FAT32 scan/preflight/load coordinator. Sector ownership changes only at idle.
 module fat32_bmp_reader #(
  parameter integer CLK_FREQ_HZ=100000000, TIMEOUT_MS=500,
- parameter integer SCAN_AUDIO=0, SCAN_TEXT=0, SCALE_ENABLE=0,
+ parameter integer SCAN_AUDIO=0, SCAN_TEXT=0, SCALE_ENABLE=0, SCAN_PUBLICITY=0,
  parameter integer MAX_VISITED_CLUSTERS=8192,
  // 1: loads select a found image by index from the scanner table instead of
  // taking load_cluster/load_size; the table only changes during a scan.
  parameter integer LOAD_BY_INDEX=0
 )(
  input clk,rst,sd_init_done,scan_start,load_start,load_cancel,
+ // Opt-in module interface. Remap only when ready and both sector clients idle;
+ // the caller must invalidate/quiesce its frame caches before requesting it.
+ input map_start,resource_publicity,
+ output reg active_publicity,
+ output [3:0] pic_valid,edu_valid,voi_valid,
+ output [127:0] pic_clusters,pic_sizes,edu_clusters,edu_sizes,voi_clusters,voi_sizes,
+ output reg [3:0] mapped_valid,
+ output reg [1:0] scan_found_slot,
  output audio_found,output [31:0] audio_cluster,audio_size,
  output [3:0] snd_valid,output [127:0] snd_clusters,snd_sizes,
  output font_found,text_found,output [31:0] font_cluster,font_size,text_cluster,text_size,
@@ -38,7 +46,7 @@ module fat32_bmp_reader #(
  wire volume_done,volume_busy,stream_busy,stream_done,stream_valid;
  wire [7:0] volume_error,stream_error,stream_byte,spc;
  wire [31:0] fat_lba,data_lba,max_cluster,stream_offset;
- wire [3:0] mask;
+ wire [3:0] mask=active_publicity ? edu_valid : pic_valid;
  wire [31:0] clusters[0:3],sizes[0:3];
  wire scan_req,file_req;wire [31:0] scan_lba,file_lba;
  wire sector_busy,sector_valid,sector_done;
@@ -58,9 +66,14 @@ module fat32_bmp_reader #(
    ((task_size[31:6]==0) && task_size[5:0]<6'd54) ||
    (task_cluster[31:1]==0) || task_cluster>max_cluster;
  reg [1:0] found_slot[0:3];   // scanner slot of each accepted image
- wire [1:0] select_slot=(LOAD_BY_INDEX && state==IDLE) ? found_slot[load_index] : candidate[1:0];
- wire [31:0] selected_cluster=clusters[select_slot];
- wire [31:0] selected_size=sizes[select_slot];
+ wire [1:0] select_slot=(LOAD_BY_INDEX && state==IDLE) ?
+   ((SCAN_PUBLICITY && active_publicity) ? load_index : found_slot[load_index]) : candidate[1:0];
+ wire [31:0] selected_cluster=active_publicity ? edu_clusters[32*select_slot+:32] : clusters[select_slot];
+ wire [31:0] selected_size=active_publicity ? edu_sizes[32*select_slot+:32] : sizes[select_slot];
+ reg metadata_ready,mapping_ready,cancelled;
+ wire indexed_load_valid=mapping_ready && (active_publicity ? mapped_valid[load_index] : {1'b0,load_index}<scan_found_total);
+ assign pic_clusters={clusters[3],clusters[2],clusters[1],clusters[0]};
+ assign pic_sizes={sizes[3],sizes[2],sizes[1],sizes[0]};
  function [2:0] spc_shift;
  input [7:0] v;
  begin case(v) 2:spc_shift=1;4:spc_shift=2;8:spc_shift=3;16:spc_shift=4;
@@ -94,10 +107,11 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
    scan_sector_byte<=sector_byte;scan_sector_error<=sector_error;scan_sector_index<=sector_index;
   end
  end
- fat32_volume_scanner #(.SCAN_AUDIO(SCAN_AUDIO),.SCAN_TEXT(SCAN_TEXT),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
- .clk(clk),.rst_n(!rst),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
+ fat32_volume_scanner #(.SCAN_AUDIO(SCAN_AUDIO),.SCAN_TEXT(SCAN_TEXT),.SCAN_PUBLICITY(SCAN_PUBLICITY),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
+ .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY && load_cancel && state==SCAN)),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
- .resource_valid(mask),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
+ .resource_valid(pic_valid),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
+ .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),.voi_valid(voi_valid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
  .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
  .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
@@ -130,7 +144,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .clk(clk),.rst(rst),.p_req(scan_owner?scan_req:(file_owner?(file_req && request_allowed):header_go)),
  .p_lba(scan_owner?scan_lba:(file_owner?file_lba:header_lba)),.p_cancel(load_cancel),
  .p_busy(sector_busy),.p_accepted(),.p_valid(sector_valid),.p_done(sector_done),.p_error(sector_error),
- .a_req((SCAN_AUDIO || SCAN_TEXT) ? a_req : 1'b0),.a_lba(a_lba),.a_cancel((SCAN_AUDIO || SCAN_TEXT) ? a_cancel : 1'b0),.a_urgent(a_urgent),.a_enable(SCAN_AUDIO!=0 || SCAN_TEXT!=0),
+ .a_req((SCAN_AUDIO || SCAN_TEXT || SCAN_PUBLICITY) ? a_req : 1'b0),.a_lba(a_lba),.a_cancel((SCAN_AUDIO || SCAN_TEXT || SCAN_PUBLICITY) ? a_cancel : 1'b0),.a_urgent(a_urgent),.a_enable(SCAN_AUDIO!=0 || SCAN_TEXT!=0 || SCAN_PUBLICITY!=0),
  .a_busy(a_busy),.a_accepted(),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),
  .sector_byte(sector_byte),.sector_index(sector_index),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
@@ -161,6 +175,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  always @(posedge clk or posedge rst)begin
  if(rst)begin
  state<=IDLE;scan_go<=0;file_go<=0;header_go<=0;scan_done<=0;scan_error<=0;
+ active_publicity<=0;metadata_ready<=0;mapping_ready<=0;mapped_valid<=0;scan_found_slot<=0;cancelled<=0;
  scan_found_valid<=0;scan_found_cluster<=0;scan_found_size<=0;scan_found_total<=0;
  load_done<=0;load_error<=0;bmp_error<=0;fat_error<=0;candidate<=0;
  task_cluster<=0;task_size<=0;header_lba<=0;header_shift_count<=0;found_slot[0]<=0;found_slot[1]<=0;found_slot[2]<=0;found_slot[3]<=0;io_error<=0;stream_finished<=0;decode_finished<=0;ack_wait<=0;
@@ -172,20 +187,32 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  if((file_owner ? file_sector_done : sector_done) &&
     (file_owner ? file_sector_error : sector_error)!=0)
   io_error<=file_owner ? file_sector_error : sector_error;
- // Cancel only the current file and drain an already issued sector. Scanner
- // geometry stays intact for a retry or the next cached image.
+ // Cancel and drain the current sector. Opt-in scan/preflight cancellation
+ // invalidates the partial mapping; a file cancellation retains it for retry.
  if(load_cancel) begin
+  if(SCAN_PUBLICITY)cancelled<=1;
+  if(SCAN_PUBLICITY && state!=IDLE && state!=WRITE_WAIT && state!=START_FILE && state!=READ_FILE && state!=DRAIN && state!=RESULT)begin
+   mapping_ready<=0;mapped_valid<=0;scan_done<=0;scan_found_total<=0;
+   if(state==SCAN)metadata_ready<=0;
+  end
   if(!sector_busy) state<=IDLE;
   else state<=DRAIN;
  end else case(state)
  IDLE:if(sd_init_done)begin
- if(scan_start)begin scan_done<=0;scan_found_total<=0;candidate<=0;fat_error<=0;bmp_error<=0;io_error<=0;scan_go<=1;state<=SCAN;end
- else if(load_start)begin task_cluster<=LOAD_BY_INDEX ? selected_cluster : load_cluster;task_size<=LOAD_BY_INDEX ? selected_size : load_size;io_error<=0;fat_error<=0;bmp_error<=0;
- stream_finished<=0;decode_finished<=0;ack_wait<=0;state<=WRITE_WAIT;end
+ if(scan_start)begin scan_done<=0;scan_found_total<=0;candidate<=0;fat_error<=0;bmp_error<=0;io_error<=0;scan_go<=1;state<=SCAN;cancelled<=0;
+ active_publicity<=SCAN_PUBLICITY ? resource_publicity : 1'b0;metadata_ready<=0;mapping_ready<=0;mapped_valid<=0;end
+ else if(SCAN_PUBLICITY && map_start && !sector_busy && !a_busy)begin
+  if(metadata_ready)begin active_publicity<=resource_publicity;scan_done<=0;scan_found_total<=0;candidate<=0;mapped_valid<=0;mapping_ready<=0;fat_error<=0;bmp_error<=0;io_error<=0;state<=SELECT;cancelled<=0;end
+  else begin scan_error<=1;fat_error<=8'h24;end
+ end
+ else if(load_start)begin task_cluster<=LOAD_BY_INDEX ? selected_cluster : load_cluster;task_size<=LOAD_BY_INDEX ? selected_size : load_size;io_error<=0;fat_error<=0;bmp_error<=0;cancelled<=0;
+ stream_finished<=0;decode_finished<=0;ack_wait<=0;
+ if(SCAN_PUBLICITY && LOAD_BY_INDEX && !indexed_load_valid)begin bmp_error<=3;state<=RESULT;end
+ else state<=WRITE_WAIT;end
  end
  SCAN:if(volume_done)begin
  if(volume_error!=0)begin fat_error<=(volume_error==8'h10 && io_error!=0)?io_error:volume_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
- else state<=SELECT;
+ else begin metadata_ready<=1;state<=SELECT;end
  end
  SELECT:if(!sector_busy)begin
  if(candidate==4)state<=SCAN_FINISH;
@@ -209,11 +236,12 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  end
  HEADER_CHECK:begin
  if(header_match && required_end<={2'b0,task_size})begin
+ mapped_valid[candidate[1:0]]<=1;scan_found_slot<=candidate[1:0];
  scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;
  if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];end
  candidate<=candidate+1'b1;state<=SELECT;
  end
- SCAN_FINISH:if(!sector_busy)begin scan_done<=1;state<=IDLE;end
+ SCAN_FINISH:if(!sector_busy)begin scan_done<=1;mapping_ready<=(bmp_error==0 && fat_error==0);state<=IDLE;end
  WRITE_WAIT:if(write_req_ack)state<=START_FILE;
  else if(ack_wait>=WAIT_CYCLES-1)begin bmp_error<=2;fat_error<=8'h11;state<=RESULT;end
  else ack_wait<=ack_wait+1'b1;
@@ -228,7 +256,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  end
  DRAIN:begin
  if(sector_done && (sector_error==8'h10 || sector_error==8'h11))begin bmp_error<=2;fat_error<=sector_error;end
- if(!sector_busy)state<=RESULT;
+ if(!sector_busy)state<=(SCAN_PUBLICITY && cancelled)?IDLE:RESULT;
  end
  RESULT:begin if(bmp_error==0)load_done<=1;else load_error<=1;state<=IDLE;end
  default:state<=IDLE;

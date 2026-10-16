@@ -1,8 +1,10 @@
-# 当前开发阶段：v0.18.0 宣传模式 M1 PC 内容与工具完成
+# 当前开发阶段：v0.18.0 宣传模式 M2 模块验证完成
 
-当前分支 `feature/science-publicity-mode`，计划标签 `v0.18.0-plan.1`。已建立 [阶段计划与按键矩阵](docs/专业科普宣传模式分阶段修改计划.md)、[接口清单](docs/宣传模式接口清单.md)；M1新增 [四页内容与打包工具](tools/publicity/README.md)、[总览预览](tools/publicity/geohazard_basics/generated/previews/overview.png)。16项PC测试、BMP反读及新目录逐字节复现通过，见 [验证](diagnostics/publicity_mode/M1_VALIDATION.md)。VOI均为测试音，专业审阅/正式配音/电视可读性待确认。未改RTL、无新bit/local/board标签，M2–M6待实施。
+当前分支 `feature/science-publicity-mode`，计划标签 `v0.18.0-plan.1`。M2已扩展scanner→reader识别EDU/VOI，传递两套表，支持EDU固定原槽/PIC压缩映射及不重扫目录的换表；默认SCAN_PUBLICITY=0，生产sd_card_bmp尚未启用。108份专项/相关回归、默认关闭逐周期对照及两top启用参数独立综合完成，见[M2验证与边界](diagnostics/publicity_mode/M2_VALIDATION.md)。无新bit/local/board标签，M3–M6待实施。
 
-硬件输入仍为下方 M6 local.1，未获整机验收且尚不识别EDU/VOI；正式版/整机回退仍为 v0.16.0，不替前序补发布或板测结论。下一步 M2 扫描与映射需后续指令，见 [最新交接](HANDOFF.md)。
+M1 [四页内容与打包工具](tools/publicity/README.md)、[总览预览](tools/publicity/geohazard_basics/generated/previews/overview.png)保留；16项PC测试、反读及新目录逐字节复现通过，见[M1验证](diagnostics/publicity_mode/M1_VALIDATION.md)。VOI均为测试音，专业审阅/正式配音/电视可读性待确认。实施入口：[阶段计划与按键矩阵](docs/专业科普宣传模式分阶段修改计划.md)、[接口清单](docs/宣传模式接口清单.md)。
+
+现有硬件bit仍为下方 M6 local.1，未获整机验收且尚不识别EDU/VOI；正式版/整机回退仍为 v0.16.0，不替前序补发布或板测结论。下一步M3需后续指令，见[最新交接](HANDOFF.md)。
 
 ## 前序候选：v0.17.0 M6 local.1 本地通过，待板测
 

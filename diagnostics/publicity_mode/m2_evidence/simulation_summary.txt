@@ -1,0 +1,113 @@
+Input baseline: 8a90155; simulation: publicity_m2_attempt07; synthesis: publicity_m2_syn02
+PASS compile: Errors: 0, Warnings: 0
+tb_publicity_scan_gap0: PASS publicity scanner 96 scenarios GAP=0; Errors: 0, Warnings: 0
+tb_publicity_reader_gap0: PASS publicity reader 53 operations GAP=0 reads=111: actual pixels, holes, remap without rescan, legacy/pure/empty, cancel/drain, audio-busy, IO recovery; Errors: 0, Warnings: 0
+tb_m5_scan_equivalence_gap0: PASS M5 scan: six scenarios GAP=0; FAT directory chain, resources after PIC/BGM/SND, duplicate, attributes/extensions, missing and rescan; Errors: 0, Warnings: 0
+tb_snd_scan_gap0: PASS M4 SND scan: 10 scenarios gap=0; directory FAT chain, SND slots/duplicates/reset, only audio, attributes, extension, all picture size bytes; Errors: 0, Warnings: 0
+tb_audio_scan_gap0: PASS audio scan: 7 scenarios gap=0; directory FAT chain, only audio, rescan, attributes, extension, duplicates, all picture size bytes; Errors: 0, Warnings: 0
+tb_publicity_scan_gap2: PASS publicity scanner 96 scenarios GAP=2; Errors: 0, Warnings: 0
+tb_publicity_reader_gap2: PASS publicity reader 53 operations GAP=2 reads=111: actual pixels, holes, remap without rescan, legacy/pure/empty, cancel/drain, audio-busy, IO recovery; Errors: 0, Warnings: 0
+tb_m5_scan_equivalence_gap2: PASS M5 scan: six scenarios GAP=2; FAT directory chain, resources after PIC/BGM/SND, duplicate, attributes/extensions, missing and rescan; Errors: 0, Warnings: 0
+tb_snd_scan_gap2: PASS M4 SND scan: 10 scenarios gap=2; directory FAT chain, SND slots/duplicates/reset, only audio, attributes, extension, all picture size bytes; Errors: 0, Warnings: 0
+tb_audio_scan_gap2: PASS audio scan: 7 scenarios gap=2; directory FAT chain, only audio, rescan, attributes, extension, duplicates, all picture size bytes; Errors: 0, Warnings: 0
+tb_publicity_scan_gap5: PASS publicity scanner 96 scenarios GAP=5; Errors: 0, Warnings: 0
+tb_publicity_reader_gap5: PASS publicity reader 53 operations GAP=5 reads=111: actual pixels, holes, remap without rescan, legacy/pure/empty, cancel/drain, audio-busy, IO recovery; Errors: 0, Warnings: 0
+tb_m5_scan_equivalence_gap5: PASS M5 scan: six scenarios GAP=5; FAT directory chain, resources after PIC/BGM/SND, duplicate, attributes/extensions, missing and rescan; Errors: 0, Warnings: 0
+tb_snd_scan_gap5: PASS M4 SND scan: 10 scenarios gap=5; directory FAT chain, SND slots/duplicates/reset, only audio, attributes, extension, all picture size bytes; Errors: 0, Warnings: 0
+tb_audio_scan_gap5: PASS audio scan: 7 scenarios gap=5; directory FAT chain, only audio, rescan, attributes, extension, duplicates, all picture size bytes; Errors: 0, Warnings: 0
+core_0: PASS FAT32 core case=0 requests=22 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_0: PASS FAT32 reader case=0 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+core_1: PASS FAT32 core case=1 requests=23 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_1: PASS FAT32 reader case=1 found=4 requests=27 mode=0; Errors: 0, Warnings: 0
+core_2: PASS FAT32 core case=2 requests=23 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_2: PASS FAT32 reader case=2 found=4 requests=27 mode=0; Errors: 0, Warnings: 0
+core_3: PASS FAT32 core case=3 requests=23 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_3: PASS FAT32 reader case=3 found=4 requests=27 mode=0; Errors: 0, Warnings: 0
+core_4: PASS FAT32 core case=4 requests=23 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_4: PASS FAT32 reader case=4 found=4 requests=27 mode=0; Errors: 0, Warnings: 0
+core_5: PASS FAT32 core case=5 requests=21 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_5: PASS FAT32 reader case=5 found=4 requests=25 mode=0; Errors: 0, Warnings: 0
+core_6: PASS FAT32 core case=6 requests=12 bytes=2292 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_6: PASS FAT32 reader case=6 found=2 requests=14 mode=0; Errors: 0, Warnings: 0
+core_7: PASS FAT32 core case=7 requests=2 bytes=0 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_7: PASS FAT32 reader case=7 found=0 requests=2 mode=0; Errors: 0, Warnings: 0
+core_8: PASS FAT32 core case=8 requests=3 bytes=0 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_8: PASS FAT32 reader case=8 found=0 requests=3 mode=0; Errors: 0, Warnings: 0
+core_9: PASS FAT32 core case=9 requests=18 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_9: PASS FAT32 reader case=9 found=4 requests=22 mode=0; Errors: 0, Warnings: 0
+core_10: PASS FAT32 core case=10 requests=14 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_10: PASS FAT32 reader case=10 found=4 requests=18 mode=0; Errors: 0, Warnings: 0
+core_11: PASS FAT32 core case=11 requests=14 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_11: PASS FAT32 reader case=11 found=4 requests=18 mode=0; Errors: 0, Warnings: 0
+core_12: PASS FAT32 core case=12 requests=14 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_12: PASS FAT32 reader case=12 found=4 requests=18 mode=0; Errors: 0, Warnings: 0
+core_13: PASS FAT32 core case=13 requests=14 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_13: PASS FAT32 reader case=13 found=4 requests=18 mode=0; Errors: 0, Warnings: 0
+core_14: PASS FAT32 core case=14 requests=14 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_14: PASS FAT32 reader case=14 found=4 requests=18 mode=0; Errors: 0, Warnings: 0
+core_15: PASS FAT32 core case=15 requests=14 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_15: PASS FAT32 reader case=15 found=4 requests=18 mode=0; Errors: 0, Warnings: 0
+core_16: PASS FAT32 core case=16 requests=1 bytes=0 scan_error=20; Errors: 0, Warnings: 0
+reader_eq_16: PASS FAT32 reader case=16 found=0 requests=1 mode=0; Errors: 0, Warnings: 0
+core_17: PASS FAT32 core case=17 requests=1 bytes=0 scan_error=21; Errors: 0, Warnings: 0
+reader_eq_17: PASS FAT32 reader case=17 found=0 requests=1 mode=0; Errors: 0, Warnings: 0
+core_18: PASS FAT32 core case=18 requests=1 bytes=0 scan_error=21; Errors: 0, Warnings: 0
+reader_eq_18: PASS FAT32 reader case=18 found=0 requests=1 mode=0; Errors: 0, Warnings: 0
+core_19: PASS FAT32 core case=19 requests=1 bytes=0 scan_error=10; Errors: 0, Warnings: 0
+reader_eq_19: PASS FAT32 reader case=19 found=0 requests=1 mode=0; Errors: 0, Warnings: 0
+core_20: PASS FAT32 core case=20 requests=2 bytes=0 scan_error=10; Errors: 0, Warnings: 0
+reader_eq_20: PASS FAT32 reader case=20 found=0 requests=2 mode=0; Errors: 0, Warnings: 0
+core_21: PASS FAT32 core case=21 requests=19 bytes=3950 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_21: PASS FAT32 reader case=21 found=4 requests=23 mode=0; Errors: 0, Warnings: 0
+core_22: PASS FAT32 core case=22 requests=19 bytes=3950 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_22: PASS FAT32 reader case=22 found=4 requests=23 mode=0; Errors: 0, Warnings: 0
+core_23: PASS FAT32 core case=23 requests=19 bytes=3950 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_23: PASS FAT32 reader case=23 found=4 requests=23 mode=0; Errors: 0, Warnings: 0
+core_24: PASS FAT32 core case=24 requests=25 bytes=5486 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_24: PASS FAT32 reader case=24 found=4 requests=29 mode=0; Errors: 0, Warnings: 0
+core_25: PASS FAT32 core case=25 requests=20 bytes=3950 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_25: PASS FAT32 reader case=25 found=4 requests=24 mode=0; Errors: 0, Warnings: 0
+core_26: PASS FAT32 core case=26 requests=10 bytes=2048 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_26: PASS FAT32 reader case=26 found=4 requests=14 mode=0; Errors: 0, Warnings: 0
+core_27: PASS FAT32 core case=27 requests=20 bytes=4038 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_27: PASS FAT32 reader case=27 found=3 requests=21 mode=0; Errors: 0, Warnings: 0
+core_28: PASS FAT32 core case=28 requests=17 bytes=3438 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_28: PASS FAT32 reader case=28 found=3 requests=20 mode=0; Errors: 0, Warnings: 0
+core_29: PASS FAT32 core case=29 requests=17 bytes=3438 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_29: PASS FAT32 reader case=29 found=3 requests=20 mode=0; Errors: 0, Warnings: 0
+core_30: PASS FAT32 core case=30 requests=3 bytes=0 scan_error=23; Errors: 0, Warnings: 0
+reader_eq_30: PASS FAT32 reader case=30 found=0 requests=3 mode=0; Errors: 0, Warnings: 0
+core_31: PASS FAT32 core case=31 requests=9 bytes=0 scan_error=26; Errors: 0, Warnings: 0
+reader_eq_31: PASS FAT32 reader case=31 found=0 requests=9 mode=0; Errors: 0, Warnings: 0
+core_32: PASS FAT32 core case=32 requests=3 bytes=0 scan_error=24; Errors: 0, Warnings: 0
+reader_eq_32: PASS FAT32 reader case=32 found=0 requests=3 mode=0; Errors: 0, Warnings: 0
+core_33: PASS FAT32 core case=33 requests=3 bytes=0 scan_error=10; Errors: 0, Warnings: 0
+reader_eq_33: PASS FAT32 reader case=33 found=0 requests=3 mode=0; Errors: 0, Warnings: 0
+core_34: PASS FAT32 core case=34 requests=22 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_34: PASS FAT32 reader case=34 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+core_35: PASS FAT32 core case=35 requests=22 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_35: PASS FAT32 reader case=35 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+core_36: PASS FAT32 core case=36 requests=23 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_36: PASS FAT32 reader case=36 found=4 requests=27 mode=0; Errors: 0, Warnings: 0
+core_37: PASS FAT32 core case=37 requests=22 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_37: PASS FAT32 reader case=37 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+core_38: PASS FAT32 core case=38 requests=2 bytes=0 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_38: PASS FAT32 reader case=38 found=0 requests=2 mode=0; Errors: 0, Warnings: 0
+core_39: PASS FAT32 core case=39 requests=22 bytes=4584 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_39: PASS FAT32 reader case=39 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+core_40: PASS FAT32 core case=40 requests=22 bytes=6144 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_40: PASS FAT32 reader case=40 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+core_41: PASS FAT32 core case=41 requests=22 bytes=8192 scan_error=00; Errors: 0, Warnings: 0
+reader_eq_41: PASS FAT32 reader case=41 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+reader_eq_mode1: PASS FAT32 reader case=0 found=3 requests=21 mode=1; Errors: 0, Warnings: 0
+reader_eq_mode2: PASS FAT32 reader case=0 found=3 requests=21 mode=2; Errors: 0, Warnings: 0
+reader_eq_mode3: PASS FAT32 reader case=0 found=3 requests=21 mode=3; Errors: 0, Warnings: 0
+reader_eq_mode4: PASS FAT32 reader case=0 found=4 requests=6 mode=4; Errors: 0, Warnings: 0
+reader_eq_mode5: PASS FAT32 reader case=0 found=4 requests=26 mode=5; Errors: 0, Warnings: 0
+reader_eq_scale0: PASS FAT32 reader case=0 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+reader_eq_scale5: PASS FAT32 reader case=5 found=4 requests=25 mode=0; Errors: 0, Warnings: 0
+reader_eq_scale6: PASS FAT32 reader case=6 found=2 requests=14 mode=0; Errors: 0, Warnings: 0
+reader_eq_scale37: PASS FAT32 reader case=37 found=4 requests=26 mode=0; Errors: 0, Warnings: 0
+PASS 108 simulation/regression transcripts
+PASS enabled standalone synthesis fat32_volume_scanner; 1 RTL files byte-identical; 0 warnings; no production bit/PnR
+PASS enabled standalone synthesis fat32_bmp_reader; 10 RTL files byte-identical; 1 warnings; no production bit/PnR

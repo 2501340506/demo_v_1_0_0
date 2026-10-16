@@ -1,0 +1,39 @@
+standard
+***Report Model: fat32_volume_scanner_enabled Device: EG4S20BG256***
+
+IO Statistics
+#IO                      1445   out of    188  768.62%
+  #input                   31
+  #output                1414
+  #inout                    0
+
+LUT Statistics
+#Total_luts               917
+  #lut4                   826
+  #lut5                    91
+  #lut6                     0
+  #lut5_mx41                0
+  #lut4_alu1b               0
+
+Utilization Statistics
+#lut                     1477   out of  19600    7.54%
+#reg                      920   out of  19600    4.69%
+#bram                       0   out of     64    0.00%
+  #bram9k                   0
+  #fifo9k                   0
+#bram32k                    0   out of     16    0.00%
+#dsp                        0   out of     29    0.00%
+#pad                     1445   out of    188  768.62%
+  #ireg                     8
+  #oreg                  1330
+  #treg                     0
+#pll                        0   out of      4    0.00%
+#gclk                       0   out of     16    0.00%
+
+Report Hierarchy Area:
++------------------------------------------------------------------------------------+
+|Instance |Module                       |lut     |ripple  |seq     |bram    |dsp     |
++------------------------------------------------------------------------------------+
+|top      |fat32_volume_scanner_enabled |1197    |280     |2258    |0       |0       |
+|  dut    |fat32_volume_scanner         |1196    |280     |920     |0       |0       |
++------------------------------------------------------------------------------------+

@@ -1,3 +1,14 @@
+# 当前交接：v0.18.0 宣传模式 M2 模块验证完成，生产未启用（2026-10-16）
+
+- 当前任务：用户授权M2；原目录 `E:/form/demo_v_0_0/demo_v_0_0`，`feature/science-publicity-mode`，输入8a90155；硬件输入/开发回退仍是未获整机验收的v0.17.0-m6-local.1，正式回退v0.16.0。无新增worktree，个人问题记录不改不提交。
+- 已完成：scanner→reader新增默认关闭SCAN_PUBLICITY、EDU/VOI独立四槽表、PIC原表透传、目标锁存、原槽mask及map_start逻辑重映射；EDU固定页槽/PIC压缩兼容。修正开启后的扫描提前结束，取消扫描/预检/文件分别失效或保留元数据并排空，不发虚假加载完成。详见[M2实施](docs/宣传模式M2实施.md)、[接口清单](docs/宣传模式接口清单.md)。sd_card_bmp未启用，无生产bit、无local/board标签。
+- 验证范围：[M2验证](diagnostics/publicity_mode/M2_VALIDATION.md)：108份仿真/回归及1份编译日志零错误零告警；96组扫描、53次reader操作分别GAP0/2/5，覆盖目录尾/混排/缺槽/旧卡/取消/错误恢复；全部原输出对8a90155逐周期比较。两top启用参数独立综合至opt_gate，无ERROR；scanner1477 LUT/920寄存器，reader4989 LUT/3162寄存器/9 BRAM9k/7 DSP，后者1条SYN-6562 buffer初值告警。11份RTL快照逐字节一致。无PnR/整机时序/bitgen，面积不是生产增量。
+- 卡住的问题：无M2模块阻塞。M3应用入口、四bank归属/失效/写排空/显示提交及生产缩放联合测试尚未实施，M4才接VOI单次播放。M1四VOI仍为测试音，专业审阅/正式配音/完整听审及HDMI可读性待办。旧M6整机板测、≥40分钟、冷启动/换卡计时及前序未确认项仍待反馈，v0.17.0未发布，不补旧验收。
+- 下一步计划：收到M3指令后接入双应用安全切换、静态四页前后翻，宣传AUTO明确禁用；按实际生产接入运行专项、回归、完整TD后才形成m3-local候选。M1补推已成功，远程宣传分支在M2开始时已核对至8a90155；本阶段只推new-origin当前分支，不建/推硬件标签，不操作main或旧标签。
+- 踩过的坑：新资源在旧资源齐全后必须继续扫；EDU不使用PIC压缩索引。scan_done粘滞，scan_error独立脉冲，不能同拍假设；map_start不排队，ready之外还须两扇区客户空闲。测试副本显式补端口，旧源/冻结releases不改；Windows PowerShell重定向日志为UTF-16，精简证据转换UTF-8。失败attempt01–06/syn01均保留，最终attempt07/syn02；Python用py -I -X utf8且生成新目录。个人记录仍以原909字节副本核对，旧TD工程/best_result/候选不操作。
+
+## 历史交接
+
 # 当前交接：v0.18.0 宣传模式 M1 PC 内容与工具完成，内容待审（2026-10-16）
 
 - 当前任务：用户授权执行宣传模式M1；原目录 `E:/form/demo_v_0_0/demo_v_0_0`、`feature/science-publicity-mode`，输入 `v0.18.0-plan.1`（c375121）；硬件输入仍为未获整机验收的 `v0.17.0-m6-local.1`，开发回退该候选，正式回退v0.16.0。
