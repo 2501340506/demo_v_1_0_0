@@ -1,9 +1,10 @@
 # 当前交接：v0.17.0 M6 local.1 本地通过，等待整机板测（2026-10-16）
 
+- GitHub 备份任务：用户明确要求在新增宣传模式前备份当前工程；本次同步 `new-origin` 的 `feature/mountain-escape-classroom` 及 `v0.17.0-m6-local.1`，纳入 [宣传模式三份方案](docs/选题方案——宣传模式/README.md)。仅备份文档与已有实现，不执行宣传模式 M0、不增加板测结论、不发布正式版；个人问题记录保留本机。远程同步结果以实际推送及远程引用核对为准。
 - 当前任务：M6 第二张场景卡、M5 问题修复及整机验收准备；基线 v0.17.0-m5-local.1（34d7a82），原目录 feature/mountain-escape-classroom，正式回退 v0.16.0。用户个人问题记录不改不提交。
 - 已完成：普通场景文字放大为黑色 32px；预警文字居中红色 32/64px 缩放，配循环警报音；示意村与山洪村两张卡可生成。按最新要求，KEY4 短按恢复 AUTO；场景 KEY1 长按一秒调速，短按切预警，长短互斥。自动轮播等待当前阶段 t=239 且终态帧显示后再推进。见 [M6 实施计划](docs/M6_IMPLEMENTATION.md)、[整机板测清单](diagnostics/mountain_scene/BOARD_VALIDATION_M6.md)。
 - 本地验证：实现 bc19864；118 份仿真、36 份编译日志及 19 项 PC 测试核验通过。系统 591 帧/481827 PCM、预览 293 帧/238405 PCM、真实场景 173939 PCM/11 会话。TD attempt02：15083 LUT（76.95%）、9751 寄存器、56 BRAM9k、2 BRAM32k、13 DSP，Setup +0.101ns/Hold +0.019ns，TNS 0，无 ERROR、完整 bitgen；111 个工程输入及根构建脚本逐字节一致，仅备份四个变化生产文件。固定 [候选](releases/v0.17.0/m6-local.1/README.md)、[验证](releases/v0.17.0/m6-local.1/VALIDATION.md)，bit 673856 字节、双卡各十个媒体文件。审计同 M5，保留两块 BRAM32k dob[9] dummy 模型说明。
-- 卡住的问题：无本地阻塞；具体 M6 候选板测、≥40 分钟稳定性、Flash 冷启动和换卡复位耗时待用户实际反馈。尚未建立 board/正式标签、未推送 M6、未合并 main。attempt01/03 Setup 负裕量拒绝交付。
+- 卡住的问题：无本地阻塞；具体 M6 候选板测、≥40 分钟稳定性、Flash 冷启动和换卡复位耗时待用户实际反馈。尚未建立 board/正式标签、未合并 main；M6 远程备份按顶部任务执行，备份不等于板测验收。attempt01/03 Setup 负裕量拒绝交付。
 - 下一步计划：用户按 [固定板测清单](releases/v0.17.0/m6-local.1/BOARD_VALIDATION.md) 验证并回传真实数据，填 [BOARD_RESULT](releases/v0.17.0/m6-local.1/BOARD_RESULT.md) 及方案书第 9 节；明确确认后建立 board、推送对应分支/local/board 标签，复用验收 bit 发布 v0.17.0、归档并合并 main。失败保留 local.1，修复出递增候选。
 - 踩过的坑：TD 脚本 exit 0 和生成 bit 不代表时序合格，必须查 final_timing。长系统回归不例化场景文字，须结合双卡生产顶层和真实 BRAM 专项。SND1–3 为节拍音效、SND4 警报，不能当作旁白同步证据。换卡仍需复位。TD GUI 重新加载磁盘工程再保存；旧候选/用户素材/个人记录保留。M5 独立板测及 M1/M3、M2 历史未确认项不倒填。
 
