@@ -2,9 +2,9 @@
 
 - 当前任务：用户授权执行宣传模式M1；原目录 `E:/form/demo_v_0_0/demo_v_0_0`、`feature/science-publicity-mode`，输入 `v0.18.0-plan.1`（c375121）；硬件输入仍为未获整机验收的 `v0.17.0-m6-local.1`，开发回退该候选，正式回退v0.16.0。
 - 已完成：新增 [PC打包工具与使用说明](tools/publicity/README.md)，制作“认识—识别—应对—准备”四页脚本/原创示意图/来源记录/内容模板，固定PNG/WAV输入；[生成目录](tools/publicity/geohazard_basics/generated/manifest.json)含EDU1–4.BMP、VOI1–4.PCM、五预览及清单。所有音频均为2/6/8/10秒测试音，无人声、不匹配讲解稿，画面与清单明确非正式配音；完整稿独立保存。
-- 验证范围：16项PC测试通过，四BMP共1228800像素独立反读一致，四PCM共1248000样本/2496000字节与WAV及原标准WAV工具提取一致。14个打包文件共6670941字节在两个新目录分别与固定包逐字节一致；9个输入文件同字体/Pillow重生成一致。45个文字框避让检查、四页总览审看通过；详见 [M1验证](diagnostics/publicity_mode/M1_VALIDATION.md)。仅PC提交并推送new-origin当前分支，无RTL/TD/旧候选改动，无bit、无local/board标签。
+- 验证范围：16项PC测试通过，四BMP共1228800像素独立反读一致，四PCM共1248000样本/2496000字节与WAV及原标准WAV工具提取一致。14个打包文件共6670941字节在两个新目录分别与固定包逐字节一致；9个输入文件同字体/Pillow重生成一致。45个文字框避让检查、四页总览审看通过；详见 [M1验证](diagnostics/publicity_mode/M1_VALIDATION.md)。PC实现提交d5ddf21；三次推送new-origin当前分支因连接重置/443超时失败，远程尚未同步，联网探测同样超时。无RTL/TD/旧候选改动，无bit、无local/board标签。
 - 卡住的问题：无PC工具阻塞。专业审阅、正式配音和完整听审、实际HDMI遮挡及电视距离可读性仍待确认；测试音不能作为正式宣传讲解。旧M6整机板测、≥40分钟、冷启动/换卡计时及前序未确认项继续等待，v0.17.0未正式发布，不补旧验收。
-- 下一步计划：获M2指令后按 [实际接口清单](docs/宣传模式接口清单.md) 扩展EDU/VOI扫描与四槽映射，覆盖目录尾/缺槽/旧卡；未接生产无bit只提交，接生产则按里程碑完成回归/TD再建对应候选。M3静态切模式、M4单次讲解EOF/五秒AUTO、M5/M6尚未实施；内容人工审阅与正式录音列M6前待办。
+- 下一步计划：网络恢复后先执行 `git -c push.followTags=false push new-origin HEAD:refs/heads/feature/science-publicity-mode` 并核对远程引用，不操作origin/main/旧标签。获M2指令后按 [实际接口清单](docs/宣传模式接口清单.md) 扩展EDU/VOI扫描与四槽映射，覆盖目录尾/缺槽/旧卡；未接生产无bit只提交，接生产则按里程碑完成回归/TD再建对应候选。M3静态切模式、M4单次讲解EOF/五秒AUTO、M5/M6尚未实施；内容人工审阅与正式录音列M6前待办。
 - 踩过的坑：`wave.getnframes()`会向下取整奇数data长度，必须先核对RIFF实际chunk尺寸；attempt01失败证据保留，修复后attempt02全过。生成器一律新目录、拒绝覆盖，Python使用 `py -I -X utf8`；固定输入/输出用定向gitattributes避免autocrlf改变JSON字节。字体不分发，另机重画可能差异，复现直接用固定PNG/WAV。个人问题记录909字节与开始副本一致，不纳入提交；旧worktree/TD状态/best_result不操作。
 
 ## 历史交接
