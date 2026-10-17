@@ -91,6 +91,8 @@ def compile_pack(config, output):
     require(isinstance(spec.get("name"), str) and spec["name"].strip(), "name is required")
     require(isinstance(spec.get("content_version"), str) and spec["content_version"].strip(),
             "content_version is required")
+    hardware = spec.get("hardware_support", "pending M2-M5; M1 is PC-only")
+    require(isinstance(hardware, str) and hardware.strip(), "hardware_support must be nonempty text")
     pages = spec.get("pages")
     require(isinstance(pages, list) and len(pages) == 4, "exactly four pages required")
     require(all(isinstance(p, dict) and type(p.get("id")) is int for p in pages)
@@ -150,7 +152,7 @@ def compile_pack(config, output):
         "content_review": "pending_human_review", "formal_narration": False,
         "image_format": "640x480 RGB888 bottom-up BMP BI_RGB; 24bpp",
         "audio_format": "48000Hz mono signed s16le raw PCM (no WAV header)",
-        "minimum_display_seconds_target": 5, "hardware_support": "pending M2-M5; M1 is PC-only",
+        "minimum_display_seconds_target": 5, "hardware_support": hardware,
         "layout": spec.get("layout", {}), "pages": records,
         "files": [{"path": name, "bytes": len(data)} for name, data in sorted(files.items())],
     }

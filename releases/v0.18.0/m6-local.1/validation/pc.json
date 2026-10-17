@@ -1,0 +1,33 @@
+{
+  "tests": 16,
+  "failures": 0,
+  "errors": 0,
+  "success": true,
+  "scope": "PC-only; no RTL simulation or TD build",
+  "evidence": {
+    "readback": {
+      "bmp_pixels": 1228800,
+      "bmp_bytes": 3686616,
+      "pcm_bytes": 2496000,
+      "pcm_samples": 1248000,
+      "seconds": [
+        2,
+        6,
+        8,
+        10
+      ]
+    },
+    "pack_reproduction": {
+      "files_per_tree": 14,
+      "bytes_per_tree": 6670941,
+      "compared_to_frozen_trees": 2
+    },
+    "input_reproduction": {
+      "files": 9,
+      "text_boxes_checked": 45,
+      "pillow_version": "12.3.0",
+      "font_file": "simhei.ttf",
+      "font_bytes": 9745792
+    }
+  }
+}

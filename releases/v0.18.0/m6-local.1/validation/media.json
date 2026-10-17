@@ -1,0 +1,103 @@
+{
+  "success": true,
+  "bmp_pixels": 1228800,
+  "narration": [
+    {
+      "slot": 1,
+      "bytes": 3782058,
+      "samples": 1891029,
+      "seconds": 39.3964375,
+      "peak": 29370,
+      "nonzero": 1533437,
+      "rail_samples": 0
+    },
+    {
+      "slot": 2,
+      "bytes": 3964944,
+      "samples": 1982472,
+      "seconds": 41.3015,
+      "peak": 30542,
+      "nonzero": 1615805,
+      "rail_samples": 0
+    },
+    {
+      "slot": 3,
+      "bytes": 4422354,
+      "samples": 2211177,
+      "seconds": 46.0661875,
+      "peak": 30930,
+      "nonzero": 1798734,
+      "rail_samples": 0
+    },
+    {
+      "slot": 4,
+      "bytes": 4591026,
+      "samples": 2295513,
+      "seconds": 47.8231875,
+      "peak": 30815,
+      "nonzero": 1837547,
+      "rail_samples": 0
+    }
+  ],
+  "reproduced_pack_files": 14,
+  "reproduced_pack_bytes": 20954187,
+  "reproduction_trees": 2,
+  "raster_files": 5,
+  "text_boxes": 45,
+  "full_cards": [
+    {
+      "name": "demo",
+      "files": 18,
+      "bytes": 28436020
+    },
+    {
+      "name": "flood",
+      "files": 18,
+      "bytes": 28436214
+    }
+  ],
+  "negative_cards": [
+    {
+      "variant": "missing_voice2",
+      "files": 17,
+      "changed": [
+        "VOI2.PCM"
+      ]
+    },
+    {
+      "variant": "odd_voice2",
+      "files": 18,
+      "changed": [
+        "VOI2.PCM"
+      ]
+    },
+    {
+      "variant": "old_scene",
+      "files": 10,
+      "changed": [
+        "EDU1.BMP",
+        "EDU2.BMP",
+        "EDU3.BMP",
+        "EDU4.BMP",
+        "VOI1.PCM",
+        "VOI2.PCM",
+        "VOI3.PCM",
+        "VOI4.PCM"
+      ]
+    },
+    {
+      "variant": "short_voice1",
+      "files": 18,
+      "changed": [
+        "VOI1.PCM"
+      ]
+    }
+  ],
+  "rejected": [
+    "existing output",
+    "invalid hardware_support: str",
+    "invalid hardware_support: dict",
+    "invalid hardware_support: int"
+  ],
+  "scope": "Actual input/output PC bytes and formats; human content/listening and actual-media board acceptance pending"
+}

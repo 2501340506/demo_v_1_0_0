@@ -1,0 +1,59 @@
+version: 1
+name: 认识地灾，科学避险
+content_version: m6-content.1-2026-10-17
+layout:
+  size:
+  - 640
+  - 480
+  top_reserved:
+  - 0
+  - 0
+  - 640
+  - 60
+  audio_reserved:
+  - 420
+  - 210
+  - 624
+  - 412
+  title_font_px: 32
+  body_font_px: 24
+  note: 640x480 原创教学示意；合成普通话；完整听审与本版HDMI可读性待确认。
+pages:
+- id: 1
+  title: 认识常见地质灾害
+  image: inputs/page1.png
+  audio: inputs/narration1.wav
+  audio_status: narration_unreviewed
+  script: scripts/page1.txt
+  source_refs:
+  - sources/S01.md
+  - sources/S02.md
+- id: 2
+  title: 留意异常，及时报告
+  image: inputs/page2.png
+  audio: inputs/narration2.wav
+  audio_status: narration_unreviewed
+  script: scripts/page2.txt
+  source_refs:
+  - sources/S02.md
+- id: 3
+  title: 听从指挥，按预案避险
+  image: inputs/page3.png
+  audio: inputs/narration3.wav
+  audio_status: narration_unreviewed
+  script: scripts/page3.txt
+  source_refs:
+  - sources/S01.md
+  - sources/S02.md
+  - sources/S03.md
+- id: 4
+  title: 做好准备，熟悉演练
+  image: inputs/page4.png
+  audio: inputs/narration4.wav
+  audio_status: narration_unreviewed
+  script: scripts/page4.txt
+  source_refs:
+  - sources/S01.md
+  - sources/S03.md
+hardware_support: v0.18.0-m5-board.1 bit reused; M6 content/voice and complete-machine
+  acceptance pending

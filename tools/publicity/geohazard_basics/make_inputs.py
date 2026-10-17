@@ -42,7 +42,7 @@ def tone(seconds, period):
     return stream.getvalue()
 
 
-def generate(output, font_path, template=None):
+def generate(output, font_path, template=None, *, test_tones=True):
     output, font_path = Path(output), Path(font_path)
     if output.exists():
         raise ValueError(f"output already exists: {output}")
@@ -110,9 +110,12 @@ def generate(output, font_path, template=None):
         im.save(stream, format="PNG", optimize=False, compress_level=9)
         slot = page["id"]
         files[f"page{slot}.png"] = stream.getvalue()
-        files[f"test_tone{slot}.wav"] = tone(TONE_SECONDS[slot-1], TONE_PERIODS[slot-1])
-        pages.append({"id": slot, "text_bounds": bounds, "test_tone_seconds": TONE_SECONDS[slot-1],
-                      "test_tone_hz": 48000 // TONE_PERIODS[slot-1]})
+        record = {"id": slot, "text_bounds": bounds}
+        if test_tones:
+            files[f"test_tone{slot}.wav"] = tone(TONE_SECONDS[slot-1], TONE_PERIODS[slot-1])
+            record.update(test_tone_seconds=TONE_SECONDS[slot-1],
+                          test_tone_hz=48000 // TONE_PERIODS[slot-1])
+        pages.append(record)
     report = {"template_version": spec["version"], "pillow_version": pillow_version,
               "font_file": font_path.name, "font_bytes": font_path.stat().st_size,
               "formal_narration": False, "top_reserved": TOP, "audio_reserved": AUDIO,

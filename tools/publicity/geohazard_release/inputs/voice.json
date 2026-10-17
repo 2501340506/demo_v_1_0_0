@@ -1,0 +1,13 @@
+{
+    "engine":  "Windows System.Speech / SAPI",
+    "voice":  "Microsoft Huihui Desktop",
+    "culture":  "zh-CN",
+    "rate":  -1,
+    "volume":  100,
+    "sample_rate":  48000,
+    "channels":  1,
+    "bits":  16,
+    "status":  "synthetic_narration_pending_full_listening_review",
+    "provenance":  "Generated from scripts/page1-4.txt; no human voice recording or imitation",
+    "reproduction":  "Freeze WAV inputs; engine output across machines is not guaranteed byte-identical"
+}

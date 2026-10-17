@@ -1,4 +1,8 @@
-# 宣传内容包（M1，PC 工具）
+# 宣传内容包
+
+M6最新交付：[四页科普、四段普通话合成讲解及双村整卡](geohazard_release/README.md)。本机Huihui语音按稿合成，完整听审/专业内容确认及整机板测仍待用户；新包另存，不覆盖下方M1测试音。实际状态见[M6候选](../../releases/v0.18.0/m6-local.1/README.md)。
+
+## M1 历史包与PC工具
 
 当前套件：[认识地灾，科学避险](geohazard_basics/pack.yaml)。四页按“认识—识别—应对—准备”组织，包含 [内容模板](geohazard_basics/content.yaml)、[逐页讲解稿](geohazard_basics/scripts/page1.txt)、[来源记录](geohazard_basics/sources/S01.md)、固定 PNG/WAV 输入和 [预览总览](geohazard_basics/generated/previews/overview.png)。第2–4页讲解稿与其余来源在同级目录。内容版本 `m1-draft.1-2026-10-16`，专业内容、正式配音和电视可读性尚待人工确认。
 

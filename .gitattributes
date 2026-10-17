@@ -2,3 +2,6 @@
 # exactly across checkout so pack reproduction is not changed by core.autocrlf.
 tools/publicity/geohazard_basics/inputs/** -text
 tools/publicity/geohazard_basics/generated/** -text
+tools/publicity/geohazard_release/inputs/** -text whitespace=cr-at-eol
+tools/publicity/geohazard_release/generated/** -text whitespace=cr-at-eol
+tools/publicity/geohazard_release/cards/** -text whitespace=cr-at-eol

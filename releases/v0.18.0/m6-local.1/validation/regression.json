@@ -1,0 +1,387 @@
+{
+  "simulations": 49,
+  "compiler_logs": 52,
+  "results": [
+    {
+      "path": "publicity_m6_final_m5_01/tb_m5_parameters.log",
+      "markers": [
+        "PASS M5 parameters: two apps B/C saturation/default16 V0..10, selection/combo, preview routing, speed/AUTO identity and hold cancellation"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_m5_scenario.log",
+      "markers": [
+        "PASS M5 scenario: non00 terminal gate/return frame, preview backpressure/same-page, warning exit, failed commit and preserved speed"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_m5_preview.log",
+      "markers": [
+        "PASS M5 current-set preview CARD_CASE=0: focus/previous/next, same-page commit, identity, missing targets, scene stage/audio and warning synchronization; commits=10"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_m5_recovery.log",
+      "markers": [
+        "PASS M5 recovery: switch-time rescan canceled/rearmed, physical rescan, read failure and retry; boots=2 commits=7"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_volume.log",
+      "markers": [
+        "PASS volume all 11 levels stereo extremes ramp stalls samples=4710"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_adjust_cdc.log",
+      "markers": [
+        "PASS CDC coalescing atomic frame commit"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_adjust_keys.log",
+      "markers": [
+        "PASS keys modes combo endpoints long holds cancellation legacy"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_adjust_osd.log",
+      "markers": [
+        "PASS OSD bounds highlight decimal and percent pixels"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m5_01/tb_adjust_decimal.log",
+      "markers": [
+        "PASS decimal all 256 picture values and 11 volume levels within blanking"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_m4_player.log",
+      "markers": [
+        "PASS M4 player: 925 exact source samples, signed/nonzero tails, short prefill, FIFO backpressure, zero-volume output, cancel and identity reuse"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_m4_auto.log",
+      "markers": [
+        "PASS M4 AUTO: actual 300-frame minimum, long/short/missing/error, old identity, two-frame HDMI tail, manual priority, same-page restart, non00 latch/return, AUTO off and mode reentry"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_m4_stream.log",
+      "markers": [
+        "PASS M4 stream: 1459 exact fragmented source samples, 2/512/1202-byte single play, no short-cache/long-file loop, concurrent pictures=248, cancel, missing/odd/empty/read error"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_audio_stream.log",
+      "markers": [
+        "PASS audio stream: fragmented 1202-byte loops, concurrent pictures=613, short-file prefill, mid-sector stop/restart, error fallback, odd/empty/missing"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_pcm_stream_player.log",
+      "markers": [
+        "PASS PCM player: 5300 exact signed samples, pointer wraps, prefill, underflow, 4800 ticks/100000 clocks, stalled stop/restart"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_audio_mux.log",
+      "markers": [
+        "PASS audio mux: stalled tone/music boundaries, unselected tone drain, fallback, reset"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_m4_01/tb_m4_metadata.log",
+      "markers": [
+        "PASS M4 metadata equivalence: 800 cases / 19428 cycles; full-word vs registered half-words, bounds, equality, carry, odd/empty/missing, single and loop; same public outputs and state latency"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_scenario.log",
+      "markers": [
+        "PASS M6 scenario: 1/2/4x thresholds, manual saturation, AUTO complete animation and terminal frame, AUTO off holds, warning holds, requests/audio/exit"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_scenario_cdc.log",
+      "markers": [
+        "PASS M4 CDC/frame: 13106 samples across wraps, 566 frame events, 8192 first-pixel and frame-hold checks"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_scene_fade.log",
+      "markers": [
+        "PASS M4 fade: 4682 samples each direction, monotonic exact 14, backpressure hold, normal 256, interrupted fade"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_scene_keys.log",
+      "markers": [
+        "PASS M4 keys: long entry/exit, short auto, separate KEY1 long speed, next/warn, rescan, switch exit, held suppression, missing-picture gate, legacy preview"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_m5_scan.log",
+      "markers": [
+        "PASS M5 scan: six scenarios GAP=0; FAT directory chain, resources after PIC/BGM/SND, duplicate, attributes/extensions, missing and rescan"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_m5_loader.log",
+      "markers": [
+        "PASS M5 loader: 10 cases GAP=0; 4096 bytes/eight clusters, offsets, final partial sector, missing/bad sizes/cluster/sector/early EOF and reload"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_m6_text.log",
+      "markers": [
+        "PASS M6 text: 4778947 pixel/bundle comparisons, four stage titles, village, scrolling, warning, 13 legacy glyphs, malformed/reload/missing resources; actual EG4 BRAM32k"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_frame_cache_control.log",
+      "markers": [
+        "PASS cache: first display, background fill, concurrent hits, full-cache no reads",
+        "PASS cache: miss priority, full-cache rescan, old bank released only on commit",
+        "PASS cache: rescan cancels write, completes pending display/audio, compacted count",
+        "PASS cache: failed/empty scan keeps picture, non-display bank allocation",
+        "PASS cache: one retry, failed preload skipped, manual retry recovers",
+        "PASS cache: first-load retry/fallback, all-bad rescan preserves display",
+        "PASS cache: timeout retains cache hits, stops reads, rescan recovers",
+        "PASS cache: offered-start cancellation and active communication fault",
+        "PASS cache: real player AUTO, next-before-previous, same-direction merge",
+        "PASS cache: coincident rescan, load success and display acknowledgement",
+        "PASS cache: acceptance-edge priority, background completion preserves AUTO interval",
+        "PASS cache: AUTO skips known failures and falls forward after in-flight failure",
+        "PASS frame cache control: loads=55 commits=44 cache_completions=43 hits=20 request_failures=4 cycles=857"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_transition_s1.log",
+      "markers": [
+        "PASS transition S1: 3 async transactions, delayed commit, reset, bypass, 27648 RGB checks"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_transition_wipe.log",
+      "markers": [
+        "PASS S2 wipe: AUTO/manual/AUTO, held source, boundaries 0..640, 95200 pixel checks"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_transition_player.log",
+      "markers": [
+        "PASS transition player: pending next/previous, coalesced repeated key, relative target, AUTO full interval; commits=5"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_preview_control.log",
+      "markers": [
+        "PASS preview control: transition, focus, uncached failure/success, mailbox, exit, rescan, stopped storage"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_preview_keys.log",
+      "markers": [
+        "PASS preview keys: short, long rescan without short, held keys across modes"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_preview_player.log",
+      "markers": [
+        "PASS preview player: AUTO exit, 11 fullscreen manual request, return to MAN"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_adjust.log",
+      "markers": [
+        "PASS RGB 9216 vectors, dynamic parameters, four-cycle sidebands"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_media_commit_cdc.log",
+      "markers": [
+        "PASS S8 held-data CDC: 24 back-to-back events, repeated IDs and all four images"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_media_player_control.log",
+      "markers": [
+        "PASS control handshake, committed index, priority, capture, single image and autoplay"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_pcm_production.log",
+      "markers": [
+        "PASS production PCM: 9279 exact comparisons / 9279 samples through HDMI bridge; 4 images, fragmented loop, in-flight rescan, error fallback/retry, missing BGM, audio-only fresh boot, short loop"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_pcm_preview_rescan.log",
+      "markers": [
+        "PASS audio start/scan boundary waits for registered stop and drain",
+        "PASS preview exit: delayed frame ack, audio drain, scan and restart",
+        "PASS production PCM: 9280 exact comparisons / 9280 samples through HDMI bridge; 4 images, fragmented loop, in-flight rescan, error fallback/retry, missing BGM, audio-only fresh boot, short loop"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_scenario_pcm.log",
+      "markers": [
+        "PASS stage 0 cluster 12 fresh PCM and complete fade-in; t=3",
+        "PASS stage 1 cluster 8 fresh PCM and complete fade-in; t=12",
+        "PASS stage 2 cluster 10 fresh PCM and complete fade-in; t=12",
+        "PASS stage 3 cluster 9 fresh PCM and complete fade-in; t=12",
+        "PASS stage 0 cluster 12 fresh PCM and complete fade-in; t=12",
+        "PASS stage 3 cluster 9 fresh PCM and complete fade-in; t=239",
+        "PASS stage 0 cluster 12 fresh PCM and complete fade-in; t=3",
+        "PASS stage 1 cluster 8 fresh PCM and complete fade-in; t=12",
+        "PASS M6 actual PCM: 173939 exact samples, 11 sessions, separate AUTO/speed keys, automatic complete stage, four stages/wrap/warning, SND3 fallback, muted selection, rescan and no-audio frame clock"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_m5_loader_gap2.log",
+      "markers": [
+        "PASS M5 loader: 10 cases GAP=2; 4096 bytes/eight clusters, offsets, final partial sector, missing/bad sizes/cluster/sector/early EOF and reload"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_unit_01/tb_m5_loader_gap5.log",
+      "markers": [
+        "PASS M5 loader: 10 cases GAP=5; 4096 bytes/eight clusters, offsets, final partial sector, missing/bad sizes/cluster/sector/early EOF and reload"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_voice_01/tb_m4_top.log",
+      "markers": [
+        "PASS M4 production top: 1536 exact VOI source samples / 6 sessions, 21948 scaled PCM and 21948 HDMI payload samples; four pages, AUTO after transmitted tail, scene warning and return; real 307200-pixel scaler"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_pixels_01/tb_m5_pixels.log",
+      "markers": [
+        "PASS M5 production final pixels: 262080 RGB/timing, 149760 glyph-region, 37440 clean-content, 52416 preview; 9953280 decoded HDMI TMDS pixels; actual SD BMP/scaler/bank/identity/keys/layers"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_status_01/tb_m5_status.log",
+      "markers": [
+        "PASS M5 production status: 46592 exact final RGB pixels across 14 CDC windows; EDU/SCENE/COMPAT, pages, AUTO, N/W/V/D/E, BUSY/ERROR/NO SET"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_legacy_01/tb_scenario_top.log",
+      "markers": [
+        "PASS M4 production top injected pixels=414125 audio=1392 default/adjust/preview/black/mute"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_legacy_01/tb_m6_top.log",
+      "markers": [
+        "PASS M6 production top: SD sector service -> loader -> BRAM -> resource CDC -> visible text, 684745 final HDMI bundle checks, 6 sector requests, four stages/speeds/warning/panel"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_system_01/tb_cache_system.log",
+      "markers": [
+        "PASS integrated cache hits/AUTO: starts=4 reads=9028 commits=14",
+        "PASS integrated rescan: pending commit, active load, compact/missing/no card preserve old pixels",
+        "PASS integrated ordinary failure retry/skip/manual reload with retained FAT32 volume",
+        "PASS integrated timeout keeps cached manual switching",
+        "PASS cache system: starts=14 completions=10 commits=22 cues=22 hits=15 frames=591 refreshes=365203",
+        "PASS S2 origin: 2 AUTO wipes, 15 manual fades",
+        "PASS transition system: 17 fades, 17 black frames, 183705600 pixels"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_preview_01/tb_preview_system.log",
+      "markers": [
+        "PASS preview failure recovery: failed foreground retains preview, retry, timeout cached selection",
+        "PASS preview system: frames=293 preview=200 commits=10 cues=10 refresh=180720"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_mode0_01/tb_m4_mode.log",
+      "markers": [
+        "PASS M4 modes CARD_CASE=0: 2048 exact page/session samples in 8 sessions; four VOI, one-shot, preview same-page replay, parameter preservation, AUTO fallback, scene warning and reentry"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_mode1_01/tb_m4_mode.log",
+      "markers": [
+        "PASS M4 modes CARD_CASE=1: 1792 exact page/session samples in 7 sessions; four VOI, one-shot, preview same-page replay, parameter preservation, AUTO fallback, scene warning and reentry"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_mode2_01/tb_m4_mode.log",
+      "markers": [
+        "PASS M4 modes CARD_CASE=2: 1792 exact page/session samples in 7 sessions; four VOI, one-shot, preview same-page replay, parameter preservation, AUTO fallback, scene warning and reentry"
+      ]
+    },
+    {
+      "path": "publicity_m6_final_mode3_01/tb_m4_mode.log",
+      "markers": [
+        "PASS M4 modes CARD_CASE=3: 1792 exact page/session samples in 7 sessions; four VOI, one-shot, preview same-page replay, parameter preservation, AUTO fallback, scene warning and reentry"
+      ]
+    }
+  ],
+  "compiler": [
+    "publicity_m6_final_m5_01/compile.log",
+    "publicity_m6_final_m5_01/vendor.log",
+    "publicity_m6_final_m5_01/encrypted.log",
+    "publicity_m6_final_m5_01/pll.log",
+    "publicity_m6_final_m4_01/compile.log",
+    "publicity_m6_final_m4_01/vendor.log",
+    "publicity_m6_final_m4_01/encrypted.log",
+    "publicity_m6_final_m4_01/pll.log",
+    "publicity_m6_final_unit_01/compile.log",
+    "publicity_m6_final_unit_01/vendor.log",
+    "publicity_m6_final_unit_01/encrypted.log",
+    "publicity_m6_final_unit_01/pll.log",
+    "publicity_m6_final_voice_01/compile.log",
+    "publicity_m6_final_voice_01/vendor.log",
+    "publicity_m6_final_voice_01/encrypted.log",
+    "publicity_m6_final_voice_01/pll.log",
+    "publicity_m6_final_pixels_01/compile.log",
+    "publicity_m6_final_pixels_01/vendor.log",
+    "publicity_m6_final_pixels_01/encrypted.log",
+    "publicity_m6_final_pixels_01/pll.log",
+    "publicity_m6_final_status_01/compile.log",
+    "publicity_m6_final_status_01/vendor.log",
+    "publicity_m6_final_status_01/encrypted.log",
+    "publicity_m6_final_status_01/pll.log",
+    "publicity_m6_final_legacy_01/compile.log",
+    "publicity_m6_final_legacy_01/vendor.log",
+    "publicity_m6_final_legacy_01/encrypted.log",
+    "publicity_m6_final_legacy_01/pll.log",
+    "publicity_m6_final_system_01/compile.log",
+    "publicity_m6_final_system_01/vendor.log",
+    "publicity_m6_final_system_01/encrypted.log",
+    "publicity_m6_final_system_01/pll.log",
+    "publicity_m6_final_preview_01/compile.log",
+    "publicity_m6_final_preview_01/vendor.log",
+    "publicity_m6_final_preview_01/encrypted.log",
+    "publicity_m6_final_preview_01/pll.log",
+    "publicity_m6_final_mode0_01/compile.log",
+    "publicity_m6_final_mode0_01/vendor.log",
+    "publicity_m6_final_mode0_01/encrypted.log",
+    "publicity_m6_final_mode0_01/pll.log",
+    "publicity_m6_final_mode1_01/compile.log",
+    "publicity_m6_final_mode1_01/vendor.log",
+    "publicity_m6_final_mode1_01/encrypted.log",
+    "publicity_m6_final_mode1_01/pll.log",
+    "publicity_m6_final_mode2_01/compile.log",
+    "publicity_m6_final_mode2_01/vendor.log",
+    "publicity_m6_final_mode2_01/encrypted.log",
+    "publicity_m6_final_mode2_01/pll.log",
+    "publicity_m6_final_mode3_01/compile.log",
+    "publicity_m6_final_mode3_01/vendor.log",
+    "publicity_m6_final_mode3_01/encrypted.log",
+    "publicity_m6_final_mode3_01/pll.log"
+  ],
+  "inherited_m5_simulations": 183,
+  "inherited_m5_compiler_logs": 69,
+  "actual_m6_full_media_in_rtl": false,
+  "scope": "Current RTL protocol/output regressions use synthetic test vectors; actual M6 files fully compared on PC; actual card/HDMI/PCM/listening pending"
+}

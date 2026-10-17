@@ -1,0 +1,85 @@
+{
+  "format": "M6-dual-mode-card-v1",
+  "content_version": "m6-content.1-2026-10-17",
+  "variant": "full",
+  "scene": "tools/scenes/flood_village/generated",
+  "publicity": "tools/publicity/geohazard_release/generated",
+  "files": [
+    {
+      "name": "EDU1.BMP",
+      "bytes": 921654
+    },
+    {
+      "name": "EDU2.BMP",
+      "bytes": 921654
+    },
+    {
+      "name": "EDU3.BMP",
+      "bytes": 921654
+    },
+    {
+      "name": "EDU4.BMP",
+      "bytes": 921654
+    },
+    {
+      "name": "FONT.BIN",
+      "bytes": 1696
+    },
+    {
+      "name": "PIC1.BMP",
+      "bytes": 1228854
+    },
+    {
+      "name": "PIC2.BMP",
+      "bytes": 1228854
+    },
+    {
+      "name": "PIC3.BMP",
+      "bytes": 1228854
+    },
+    {
+      "name": "PIC4.BMP",
+      "bytes": 1228854
+    },
+    {
+      "name": "SND1.PCM",
+      "bytes": 768000
+    },
+    {
+      "name": "SND2.PCM",
+      "bytes": 768000
+    },
+    {
+      "name": "SND3.PCM",
+      "bytes": 768000
+    },
+    {
+      "name": "SND4.PCM",
+      "bytes": 768000
+    },
+    {
+      "name": "TEXT.BIN",
+      "bytes": 104
+    },
+    {
+      "name": "VOI1.PCM",
+      "bytes": 3782058
+    },
+    {
+      "name": "VOI2.PCM",
+      "bytes": 3964944
+    },
+    {
+      "name": "VOI3.PCM",
+      "bytes": 4422354
+    },
+    {
+      "name": "VOI4.PCM",
+      "bytes": 4591026
+    }
+  ],
+  "bytes": 28436214,
+  "notes": [],
+  "review": "Content, synthetic narration and actual board measurements pending",
+  "usage": "Copy card/* only to FAT32 root; replace card while powered off, then reset"
+}

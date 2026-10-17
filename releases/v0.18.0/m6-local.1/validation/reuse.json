@@ -1,0 +1,457 @@
+{
+  "baseline": "v0.18.0-m5-board.1 / e49bb94; production bit f2d45c8",
+  "engineering_inputs_equal": 111,
+  "inputs": [
+    {
+      "path": "TD_project/demo.al",
+      "bytes": 44990
+    },
+    {
+      "path": "user_source/hdl_source/SD/switch_mode_control.v",
+      "bytes": 1230
+    },
+    {
+      "path": "user_source/hdl_source/IP/afifo_16_32_256.v",
+      "bytes": 34859
+    },
+    {
+      "path": "user_source/hdl_source/IP/afifo_32_16_256.v",
+      "bytes": 34123
+    },
+    {
+      "path": "user_source/hdl_source/IP/sys_pll.v",
+      "bytes": 2567
+    },
+    {
+      "path": "user_source/ip_source/s3_single_pll/sys_pll_s3.v",
+      "bytes": 3015
+    },
+    {
+      "path": "user_source/hdl_source/IP/video_pll.v",
+      "bytes": 2389
+    },
+    {
+      "path": "user_source/hdl_source/SD/ax_debounce.v",
+      "bytes": 2201
+    },
+    {
+      "path": "user_source/hdl_source/SD/bmp_read.v",
+      "bytes": 16701
+    },
+    {
+      "path": "user_source/hdl_source/SD/color_bar.v",
+      "bytes": 10117
+    },
+    {
+      "path": "user_source/hdl_source/SD/frame_fifo_read.v",
+      "bytes": 11953
+    },
+    {
+      "path": "user_source/hdl_source/SD/frame_fifo_write.v",
+      "bytes": 12568
+    },
+    {
+      "path": "user_source/hdl_source/SD/frame_read_write.v",
+      "bytes": 11450
+    },
+    {
+      "path": "user_source/hdl_source/SD/sd_card_bmp.v",
+      "bytes": 49272
+    },
+    {
+      "path": "user_source/hdl_source/SD/sd_card_cmd.v",
+      "bytes": 12844
+    },
+    {
+      "path": "user_source/hdl_source/SD/sd_card_sec_read_write.v",
+      "bytes": 8668
+    },
+    {
+      "path": "user_source/hdl_source/SD/sd_card_top.v",
+      "bytes": 9081
+    },
+    {
+      "path": "user_source/hdl_source/SD/sdram.v",
+      "bytes": 3335
+    },
+    {
+      "path": "user_source/hdl_source/SD/seg_decoder.v",
+      "bytes": 766
+    },
+    {
+      "path": "user_source/hdl_source/SD/seg7_panel.v",
+      "bytes": 2928
+    },
+    {
+      "path": "user_source/hdl_source/SD/seg_scan.v",
+      "bytes": 2121
+    },
+    {
+      "path": "user_source/hdl_source/SD/spi_master.v",
+      "bytes": 3794
+    },
+    {
+      "path": "user_source/hdl_source/SD/video_define.v",
+      "bytes": 21
+    },
+    {
+      "path": "user_source/hdl_source/SD/video_delay.v",
+      "bytes": 2270
+    },
+    {
+      "path": "user_source/hdl_source/video_transition_control.v",
+      "bytes": 1203
+    },
+    {
+      "path": "user_source/hdl_source/video_transition_pixels.v",
+      "bytes": 690
+    },
+    {
+      "path": "user_source/hdl_source/video_transition_sd_control.v",
+      "bytes": 2445
+    },
+    {
+      "path": "user_source/hdl_source/SD/video_timing_data.v",
+      "bytes": 2827
+    },
+    {
+      "path": "user_source/hdl_source/include/global_def.v",
+      "bytes": 429
+    },
+    {
+      "path": "user_source/hdl_source/include/sdr_as_ram.enc.v",
+      "bytes": 7538
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_phy_warpper.v",
+      "bytes": 4250
+    },
+    {
+      "path": "user_source/hdl_source/lane_lvds_10_1.v",
+      "bytes": 4850
+    },
+    {
+      "path": "user_source/hdl_source/top_tf_hdmi_audio.v",
+      "bytes": 35237
+    },
+    {
+      "path": "user_source/hdl_source/include/sdr_init_ref.enc.v",
+      "bytes": 9059
+    },
+    {
+      "path": "user_source/hdl_source/include/sdr_wrrd.enc.v",
+      "bytes": 15637
+    },
+    {
+      "path": "user_source/hdl_source/SD/dual_key_event_router.v",
+      "bytes": 6608
+    },
+    {
+      "path": "user_source/hdl_source/SD/key_gesture_control.v",
+      "bytes": 4088
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_display_control.v",
+      "bytes": 2121
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_player_control.v",
+      "bytes": 4207
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_policy.v",
+      "bytes": 494
+    },
+    {
+      "path": "user_source/hdl_source/SD/key_press_debounce.v",
+      "bytes": 1409
+    },
+    {
+      "path": "user_source/hdl_source/SD/mode_key_control.v",
+      "bytes": 10997
+    },
+    {
+      "path": "user_source/hdl_source/audio/pcm_test_tone.v",
+      "bytes": 2908
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_audio_acr_packetizer.v",
+      "bytes": 2323
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_audio_infoframe_packetizer.v",
+      "bytes": 1632
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_audio_packet_scheduler.v",
+      "bytes": 3593
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_audio_sample_packetizer.v",
+      "bytes": 5901
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_audio_symbol_core.v",
+      "bytes": 9898
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_bch8.v",
+      "bytes": 982
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_data_island_mapper.v",
+      "bytes": 1691
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_data_island_scheduler.v",
+      "bytes": 6450
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_terc4_encoder.v",
+      "bytes": 900
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/hdmi_tmds_channel_encoder.v",
+      "bytes": 4202
+    },
+    {
+      "path": "user_source/hdl_source/hdmi_audio/media_hdmi_audio_bridge.v",
+      "bytes": 2854
+    },
+    {
+      "path": "user_source/hdl_source/audio/fat32_pcm_stream.v",
+      "bytes": 5972
+    },
+    {
+      "path": "user_source/hdl_source/audio/pcm_stream_player.v",
+      "bytes": 6708
+    },
+    {
+      "path": "user_source/hdl_source/audio/audio_source_mux.v",
+      "bytes": 1053
+    },
+    {
+      "path": "user_source/hdl_source/audio/pcm_media_tone.v",
+      "bytes": 10011
+    },
+    {
+      "path": "user_source/hdl_source/audio/media_commit_cdc.v",
+      "bytes": 1214
+    },
+    {
+      "path": "user_source/hdl_source/reset_sync.v",
+      "bytes": 411
+    },
+    {
+      "path": "user_source/hdl_source/uart/uart_tx_byte.v",
+      "bytes": 1267
+    },
+    {
+      "path": "user_source/hdl_source/uart/uart_boot_reporter.v",
+      "bytes": 1169
+    },
+    {
+      "path": "user_source/hdl_source/uart/uart_event_logger.v",
+      "bytes": 12970
+    },
+    {
+      "path": "user_source/hdl_source/SD/bmp24_decoder.v",
+      "bytes": 6334
+    },
+    {
+      "path": "user_source/hdl_source/SD/bmp_header_check.v",
+      "bytes": 6671
+    },
+    {
+      "path": "user_source/hdl_source/SD/sd_sector_adapter.v",
+      "bytes": 3864
+    },
+    {
+      "path": "user_source/hdl_source/SD/sd_sector_service.v",
+      "bytes": 3867
+    },
+    {
+      "path": "user_source/hdl_source/SD/fat32_volume_scanner.v",
+      "bytes": 26097
+    },
+    {
+      "path": "user_source/hdl_source/SD/fat32_file_streamer.v",
+      "bytes": 11621
+    },
+    {
+      "path": "user_source/hdl_source/SD/fat32_bmp_reader.v",
+      "bytes": 19075
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_frame_loader.v",
+      "bytes": 7019
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_thumbnail_loader.v",
+      "bytes": 4544
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_preview_control.v",
+      "bytes": 2842
+    },
+    {
+      "path": "user_source/hdl_source/SD/thumbnail_address.v",
+      "bytes": 1603
+    },
+    {
+      "path": "user_source/hdl_source/SD/thumbnail_layout.v",
+      "bytes": 768
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_frame_reader.v",
+      "bytes": 4346
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_frame_cache_control.v",
+      "bytes": 12619
+    },
+    {
+      "path": "user_source/hdl_source/SD/media_frame_load_control.v",
+      "bytes": 3743
+    },
+    {
+      "path": "user_source/hdl_source/osd/osd_font_5x7.v",
+      "bytes": 9182
+    },
+    {
+      "path": "user_source/hdl_source/osd/osd_font_cn_16x16.v",
+      "bytes": 3458
+    },
+    {
+      "path": "user_source/hdl_source/osd/osd_status_cdc.v",
+      "bytes": 1438
+    },
+    {
+      "path": "user_source/hdl_source/osd/status_osd_overlay.v",
+      "bytes": 2926
+    },
+    {
+      "path": "user_source/hdl_source/osd/scroll_text_overlay.v",
+      "bytes": 5230
+    },
+    {
+      "path": "user_source/hdl_source/osd/osd_alpha_band.v",
+      "bytes": 992
+    },
+    {
+      "path": "user_source/hdl_source/osd/osd_pixel_position.v",
+      "bytes": 939
+    },
+    {
+      "path": "user_source/hdl_source/uart/uart_rx_byte.v",
+      "bytes": 2946
+    },
+    {
+      "path": "user_source/hdl_source/uart/subtitle_uart_controller.v",
+      "bytes": 7158
+    },
+    {
+      "path": "user_source/hdl_source/osd/subtitle_frame_commit.v",
+      "bytes": 1910
+    },
+    {
+      "path": "user_source/hdl_source/osd/timestamp_osd.v",
+      "bytes": 2490
+    },
+    {
+      "path": "user_source/hdl_source/audio_vis/audio_ring_levels.v",
+      "bytes": 3245
+    },
+    {
+      "path": "user_source/hdl_source/audio_vis/audio_ring_rom.v",
+      "bytes": 247997
+    },
+    {
+      "path": "user_source/hdl_source/audio_vis/audio_ring_overlay.v",
+      "bytes": 2333
+    },
+    {
+      "path": "user_source/hdl_source/SD/image_scale_nearest.v",
+      "bytes": 4631
+    },
+    {
+      "path": "user_source/hdl_source/SD/bmp_sector_buffer.v",
+      "bytes": 1556
+    },
+    {
+      "path": "user_source/hdl_source/SD/bmp_scale_stream.v",
+      "bytes": 4086
+    },
+    {
+      "path": "user_source/hdl_source/adjust/adjust_osd_overlay.v",
+      "bytes": 3579
+    },
+    {
+      "path": "user_source/hdl_source/adjust/brightness_contrast_adjust.v",
+      "bytes": 2048
+    },
+    {
+      "path": "user_source/hdl_source/adjust/media_adjust_cdc.v",
+      "bytes": 1018
+    },
+    {
+      "path": "user_source/hdl_source/adjust/media_adjust_control.v",
+      "bytes": 1230
+    },
+    {
+      "path": "user_source/hdl_source/adjust/pcm_master_volume.v",
+      "bytes": 1613
+    },
+    {
+      "path": "user_source/hdl_source/scene/hazard_layer.v",
+      "bytes": 1785
+    },
+    {
+      "path": "user_source/hdl_source/scene/scene_demo_timing.v",
+      "bytes": 1784
+    },
+    {
+      "path": "user_source/hdl_source/scene/scenario_fsm.v",
+      "bytes": 3807
+    },
+    {
+      "path": "user_source/hdl_source/scene/scene_event_cdc.v",
+      "bytes": 1300
+    },
+    {
+      "path": "user_source/hdl_source/scene/scenario_audio_control.v",
+      "bytes": 1719
+    },
+    {
+      "path": "user_source/hdl_source/scene/scenario_frame.v",
+      "bytes": 1164
+    },
+    {
+      "path": "user_source/hdl_source/scene/scene_bram32k.v",
+      "bytes": 699
+    },
+    {
+      "path": "user_source/hdl_source/scene/bin_to_bram_loader.v",
+      "bytes": 3678
+    },
+    {
+      "path": "user_source/hdl_source/scene/scene_text_overlay.v",
+      "bytes": 8743
+    },
+    {
+      "path": "user_source/constraints_source/pin.adc",
+      "bytes": 5914
+    },
+    {
+      "path": "user_source/constraints_source/timing.sdc",
+      "bytes": 3742
+    }
+  ],
+  "root_build_script_equal": true,
+  "candidate_bit_equal_to_m5": true,
+  "bit_bytes": 673856,
+  "personal_record_equal": true,
+  "personal_bytes": 909,
+  "td_rebuilt": false,
+  "rtl_changed": false
+}
