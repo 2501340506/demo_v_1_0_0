@@ -37,10 +37,16 @@ set_output_delay -clock hdmi_5x_clk -min 0.000 [get_ports {HDMI_CLK_P HDMI_D0_P 
 set_max_delay -from [get_clocks hdmi_5x_clk] -to [get_ports {HDMI_CLK_P HDMI_D0_P HDMI_D1_P HDMI_D2_P}] 3.500 -datapath_only
 # UART is asynchronous at the receiver. Bound only FPGA TX propagation;
 # 10 ns is an engineering budget versus the 8680 ns serial bit interval.
-set_output_delay -clock sd_card_clk -max 0.000 [get_ports uart_tx]
-set_output_delay -clock sd_card_clk -min 0.000 [get_ports uart_tx]
-set_max_delay -from [get_clocks sd_card_clk] -to [get_ports uart_tx] 10.000 -datapath_only
+# UART_LOG_ENABLE=0: TX is constant high and has no timed launch endpoint.
+# TD broadens the old max-delay to all sd_card_clk paths on this constant port.
+# Its SDC reader does not evaluate Tcl if guards. Keep these commands disabled.
+# When setting UART_LOG_ENABLE=1, uncomment all three UART_TX_ON commands below.
+# UART_TX_ON set_output_delay -clock sd_card_clk -max 0.000 [get_ports uart_tx]
+# UART_TX_ON set_output_delay -clock sd_card_clk -min 0.000 [get_ports uart_tx]
+# UART_TX_ON set_max_delay -from [get_clocks sd_card_clk] -to [get_ports uart_tx] 10.000 -datapath_only
 
 # Asynchronous UART input: TD packs rx_meta into the F12 input PAD FF.
 # Only port-to-input-register timing is exempt; rx_sync remains timed.
-set_false_path -from [get_ports uart_rx] -to [get_cells {uart_rx_syn_4}]
+# UART_SUBTITLE_ENABLE=0: the receiver/PAD FF does not exist in this build.
+# When restoring UART_SUBTITLE_ENABLE=1, uncomment UART_RX_ON and audit its target.
+# UART_RX_ON set_false_path -from [get_ports uart_rx] -to [get_cells {uart_rx_syn_4}]

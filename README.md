@@ -1,4 +1,12 @@
-# 当前开发阶段：v0.18.0 宣传模式 M6，等待内容听审与整机实测
+# 当前开发阶段：UART 资源裁减 S1，本地通过，待上板
+
+已按用户选择默认关闭串口日志和串口在线字幕，保留数码管 SD 调试页、固定/TEXT.BIN 字幕及双模式功能。LUT 16022→14092（减少1930，12.05%）；寄存器10686→9530（减少1156）；BRAM9k 56→46（释放10块）；BRAM32k和DSP不变。完整TD `uart_reduction_td_attempt05`：14092 LUT（71.90%）、9530寄存器、46 BRAM9k、2 BRAM32k、13 DSP；Setup +0.040ns/Hold +0.019ns，STNS/HTNS均0；11份本轮仿真/20份编译模型日志通过，实际模型边界和既有时序例外见[验证](releases/v0.18.0/uart-s1-local.1/VALIDATION.md)。
+
+[固定候选与bit](releases/v0.18.0/uart-s1-local.1/README.md) · [板测步骤/真实记录](releases/v0.18.0/uart-s1-local.1/BOARD_RESULT.md) · [计划](docs/UART资源裁减分阶段计划.md) · [交接](HANDOFF.md)。标签 `v0.18.0-uart-s1-local.1`，原目录分支 `feature/uart-resource-reduction`。恢复UART须同步恢复SDC对应的TX/RX约束，详见候选说明。
+
+本候选未获板测确认；M6内容/完整听审、≥40分钟及整机计时继续待办。硬件回退M5 board.1原bit，正式回退v0.16.0；未发布、未合并main。
+
+## 历史交付：v0.18.0 宣传模式 M6 local.1（验收仍待办）
 
 用户确认“M5无误”，已记录并推送 `v0.18.0-m5-board.1`。M6在原目录 `feature/science-publicity-mode` 制作四页科普内容、四段本机普通话合成讲解（合计约175秒）及两套双模式整卡；[内容、四段试听及整卡](tools/publicity/geohazard_release/README.md)。旧M1测试音保留，G:\原卡未改。新素材已反读并逐字节复现，最终RTL回归49份仿真/52份编译模型日志核验通过，实际范围见[本版验证](releases/v0.18.0/m6-local.1/VALIDATION.md)。
 

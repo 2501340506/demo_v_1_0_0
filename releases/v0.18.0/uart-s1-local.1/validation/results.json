@@ -1,0 +1,54 @@
+{
+  "baseline": "075ab05",
+  "build": "uart_reduction_td_attempt05",
+  "resources": {
+    "lut": 14092,
+    "reg": 9530,
+    "bram9k": 46,
+    "bram32k": 2,
+    "dsp": 13
+  },
+  "timing_ns": {
+    "SWNS": 0.04,
+    "HWNS": 0.019,
+    "STNS": 0.0,
+    "HTNS": 0.0
+  },
+  "input_count": 111,
+  "simulations": {
+    "uart_reduction_options01/options00.log": "PASS UART options",
+    "uart_reduction_options01/options01.log": "PASS UART options",
+    "uart_reduction_options01/options10.log": "PASS UART options",
+    "uart_reduction_options01/options11.log": "PASS UART options",
+    "uart_reduction_options01/subtitle.log": "PASS UART subtitle:",
+    "uart_reduction_options01/logger.log": "PASS ",
+    "uart_reduction_pixels01/tb_m5_pixels.log": "PASS M5 production final pixels:",
+    "uart_reduction_status01/tb_m5_status.log": "PASS ",
+    "uart_reduction_legacy01/tb_scenario_top.log": "PASS ",
+    "uart_reduction_legacy01/tb_m6_top.log": "PASS ",
+    "uart_reduction_voice01/tb_m4_top.log": "PASS "
+  },
+  "compile_logs": [
+    "uart_reduction_legacy01/compile.log",
+    "uart_reduction_legacy01/encrypted.log",
+    "uart_reduction_legacy01/pll.log",
+    "uart_reduction_legacy01/vendor.log",
+    "uart_reduction_options01/compile.log",
+    "uart_reduction_options01/encrypted.log",
+    "uart_reduction_options01/pll.log",
+    "uart_reduction_options01/vendor.log",
+    "uart_reduction_pixels01/compile.log",
+    "uart_reduction_pixels01/encrypted.log",
+    "uart_reduction_pixels01/pll.log",
+    "uart_reduction_pixels01/vendor.log",
+    "uart_reduction_status01/compile.log",
+    "uart_reduction_status01/encrypted.log",
+    "uart_reduction_status01/pll.log",
+    "uart_reduction_status01/vendor.log",
+    "uart_reduction_voice01/compile.log",
+    "uart_reduction_voice01/encrypted.log",
+    "uart_reduction_voice01/pll.log",
+    "uart_reduction_voice01/vendor.log"
+  ],
+  "bit_bytes": 672692
+}

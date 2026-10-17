@@ -1,0 +1,56 @@
+{
+  "audit_summary": [
+    "2.1 There are 0 leaf clock pins driven by multiple clocks. (HIGH)",
+    "2.2 There are 0 clocks created on internal clock network. (HIGH)",
+    "2.3 There are 0 unexpandable clock sets. (HIGH)",
+    "2.4 There are 0 local clocks. (HIGH)",
+    "2.5 There are 0 generated clocks that are not connected to their master clocks. (HIGH)",
+    "There are 4 nodes are dangling. (HIGH)",
+    "DummyNode in Model: EG_PHY_BRAM32K",
+    "DummyNode in Model: EG_PHY_LSLICE",
+    "DummyNode in Model: EG_PHY_MSLICE",
+    "DummyNode in Model: EG_PHY_PAD",
+    "There are 0 invalid constraints. (HIGH)",
+    "There are 0 clock pins that have no clock constraints. (HIGH)",
+    "There are 0 clocks whose clock frequency do not match the PLL setting. (HIGH)",
+    "There are 0 combinational loops. (HIGH)",
+    "7. checking soft fifo set_max_delay constraints. (HIGH)",
+    "There are 0 max-delay datapath-only paths that are part of the provided async clock paths, whereas the timing between other registers is not relaxed or ignored. (HIGH)",
+    "There are 0 constraints that have no timing paths. (MEDIUM)",
+    "1            1            0            0   set_multicycle_path 3 -setup -end -from [get_ports sd_miso] -to [get_clocks sd_card_clk]",
+    "2            2            0            0   set_multicycle_path 3 -setup -end -from [get_clocks sd_card_clk] -to [get_ports {sd_mosi sd_ncs}]",
+    "1            1            0            0   set_max_delay -from [get_clocks sd_card_clk] -to [get_ports sd_dclk] 5.000 -datapath_only",
+    "8            8            0            0   set_max_delay -from [get_clocks hdmi_5x_clk] -to [get_ports {HDMI_CLK_P HDMI_D0_P HDMI_D1_P HDMI_D2_P}] 3.500 -datapath_only",
+    "1            1            0            0   set_multicycle_path 2 -hold -end -from [get_ports sd_miso] -to [get_clocks sd_card_clk]",
+    "2            2            0            0   set_multicycle_path 3 -hold -end -from [get_clocks sd_card_clk] -to [get_ports {sd_mosi sd_ncs}]",
+    "There are 9 input ports that with no input delay specified. (MEDIUM)",
+    "There are 17 output ports that with no output delay specified. (MEDIUM)",
+    "There are 0 input ports with partial input delay specified. (MEDIUM)",
+    "There are 0 output ports with partial output delay specified. (MEDIUM)",
+    "14. checking abnormal set_input_delay constraints. (MEDIUM)",
+    "There is 1 abnormal set_input_delay constraint. (MEDIUM)",
+    "set_input_delay -clock sd_card_clk -max 21.000 [get_ports sd_miso]",
+    "set_input_delay -clock sd_card_clk -min 0.000 [get_ports sd_miso]"
+  ],
+  "warning_delta": {
+    "syn_1": {
+      "new": [
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"U3/u2_ram/u2_wrrd/Sdr_rd_dout_reg[9]\" in ../../../user_source/hdl_source/include/sdr_wrrd.enc.v(line) / pin \"clk\""
+      ],
+      "gone": [
+        "HDL-5314 WARNING: net 'text_rom' does not have a driver in ../../../user_source/hdl_source/uart/uart_event_logger.v(line)",
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_uart_logger/ramread1_syn_4\" in ../../../user_source/hdl_source/uart/uart_event_logger.v(line) / pin \"bea[0]\"",
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_uart_logger/ramread1_syn_4\" in ../../../user_source/hdl_source/uart/uart_event_logger.v(line) / pin \"beb[0]\"",
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_uart_rx/rx_meta_reg\" in ../../../user_source/hdl_source/uart/uart_rx_byte.v(line) / pin \"clk\"",
+        "SYN-6562 WARNING: The init value of \"u_uart_logger/ramread1_syn_4(../../../user_source/hdl_source/uart/uart_event_logger.v(line))\" will be ignored since gate eram_init is set to off",
+        "USR-6001 WARNING: No cells matched 'get_cells uart_rx_syn_4'",
+        "USR-8012 CRITICAL-WARNING: value for option -to is invalid.",
+        "USR-8159 CRITICAL-WARNING: Command set_false_path -from [get_ports uart_rx] -to [get_cells {uart_rx_syn_4}] in E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/BUILD/user_source/constraints_source/timing.sdc(line) fails."
+      ]
+    },
+    "phy_1": {
+      "new": [],
+      "gone": []
+    }
+  }
+}
