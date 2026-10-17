@@ -418,7 +418,9 @@ wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || (PUBLICITY_ENABLE ? (rescan_pending || rescan_raw) : rescan_wait);
 wire ctrl_offer=ctrl_load_request && !controls_blocked && !scene_owns && !transition_block && !preview_intent && !preview_selecting;
 wire [1:0] preview_target;
-wire cache_offer=ctrl_offer || preview_offer || (scene_request && !transition_block) || public_offer;
+wire scene_preview=PUBLICITY_ENABLE && scene_mode;
+wire scene_select_ready;
+wire cache_offer=ctrl_offer || (preview_offer && !scene_preview) || (scene_request && !transition_block) || public_offer;
 wire [1:0] cache_target=scene_request?scene_target:preview_offer?preview_target:public_offer?(img_idx+2'd1):ctrl_target_image;
 assign scene_request_accept=scene_request && ctrl_request_ready && !transition_block;
 generate if(PREVIEW_ENABLE)begin:g_preview
@@ -426,7 +428,7 @@ generate if(PREVIEW_ENABLE)begin:g_preview
  .first_image_committed(first_image_committed),.transition_busy(transition_busy),.foreground_busy(foreground_busy),
  .rescan_wait(rescan_wait),.next_event(media_next_request),.previous_event(media_previous_request),.toggle_event(preview_key_toggle),
  .current_image(img_idx),.image_count(image_count),.cache_valid(cache_valid),.cache_banks(cache_banks),
- .request_ready(ctrl_request_ready),.request_failed(request_failed),.storage_stopped(timeout_stopped),.display_request(cache_display_request),.display_committed(cache_display_ack),
+ .request_ready(scene_preview?scene_select_ready:ctrl_request_ready),.request_failed(request_failed),.storage_stopped(timeout_stopped),.display_request(cache_display_request),.display_committed(cache_display_ack),
  .request_valid(preview_offer),.request_image(preview_target),.preview_intent(preview_intent),.selecting(preview_selecting),
  .fullscreen_ready(preview_fullscreen_ready),.preview_request(preview_request),.preview_descriptor(preview_descriptor),.preview_ack(preview_ack));
 end else begin:g_no_preview
@@ -496,8 +498,9 @@ generate if(SCENE_ENABLE)begin:g_scenario
  scene_event_cdc events(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
   .sample_accept(bgm_valid && bgm_ready),.frame_start(transition_frame_start),
   .clk(clk),.rst(rst),.sample_tick(sample_tick),.frame_tick(frame_tick));
- scenario_fsm #(.PRESERVE_SPEED(PUBLICITY_ENABLE),.UI_GATE(PUBLICITY_ENABLE)) control(.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto && (!PUBLICITY_ENABLE || !controls_blocked)),
+ scenario_fsm #(.PRESERVE_SPEED(PUBLICITY_ENABLE),.UI_GATE(PUBLICITY_ENABLE),.PREVIEW_SELECT(PUBLICITY_ENABLE)) control(.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto && (!PUBLICITY_ENABLE || !controls_blocked)),
   .ui_play(mode==0 && !controls_blocked),
+  .select_request(preview_offer && scene_preview && !controls_blocked),.select_stage(preview_target),.select_ready(scene_select_ready),
   .scene_ready(first_image_committed && image_count==4 && !scan_busy),
   .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed),
   .sample_tick(sample_tick),.audio_running(scene_audio_running),.frame_start(frame_tick),.muted(scene_muted_sd),
@@ -519,7 +522,7 @@ generate if(SCENE_ENABLE)begin:g_scenario
  assign selected_audio_size=selected_publicity?voi_sizes[selected_stage*32+:32]:use_snd?snd_sizes[selected_stage*32+:32]:audio_size;
  assign scenario_state={layer_enable,alert_level,stage,t_now};
 end else begin:g_no_scenario
- assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_meta=0;assign scene_fade=0;
+ assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_meta=0;assign scene_fade=0;assign scene_select_ready=0;
  assign scene_muted_sd=0;assign scene_audio_running=0;assign scene_stream_run=1;
  assign selected_publicity=0;assign selected_audio_scene=0;assign selected_audio_stage=0;assign audio_version=0;assign common_audio_ready=1;
  assign selected_audio_found=audio_found;assign selected_audio_cluster=audio_cluster;assign selected_audio_size=audio_size;

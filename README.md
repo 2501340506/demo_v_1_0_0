@@ -1,10 +1,10 @@
-# 当前开发阶段：v0.18.0 宣传模式 M4 local.1，待板测
+# 当前开发阶段：v0.18.0 宣传模式 M5 local.1，待板测
 
-原目录分支 `feature/science-publicity-mode`，输入M3 local.1（fdb8065）/board.1（adfdd66）。用户已确认“M3无误”，M3原bit与板测标签已固定并同步。M4接入VOI逐页单次播放、实际源样本消费完成和会话身份；00 KEY4短按开启/关闭AUTO，完整淡入后至少300帧tick且有效讲解结束才翻页。缺失/错误静音回退，参数/预览页保留完成并停止自动翻页，返回00重新计时。
+原目录分支 `feature/science-publicity-mode`，输入M4 local.1（eb7deb3）/board.1（e548d72）。用户已确认“M4功能正常”，复用M4原bit记录总体确认。M5完成参数页与B/C/V优先级、应用身份保持、非00 AUTO门控及当前资源预览；修正情景11焦点路由，选中经原情景事务同步图片、阶段和音频，同页重播、退出预警。
 
-169份仿真及53份编译/模型日志核验通过，最终生产top通过；TD publicity_m4_td_attempt14：15966 LUT（81.46%）、10683寄存器、56 BRAM9k、2 BRAM32k、13 DSP；Setup +0.072ns/Hold +0.003ns，TNS0，无ERROR且完整bitgen。固定[候选与bit](releases/v0.18.0/m4-local.1/README.md)，标签v0.18.0-m4-local.1，等待板测。见[M4实施](docs/宣传模式M4实施.md)、[验证记录](diagnostics/publicity_mode/M4_VALIDATION.md)、[固定板测步骤](releases/v0.18.0/m4-local.1/BOARD_VALIDATION.md)。00宣传末尾A/M指自动/手动，V/D/N/E/W指播放/完成/缺失/错误/等待；完整OSD仍待M5。
+183份仿真及69份编译/模型日志核验通过；TD `publicity_m5_td_attempt27`：16022 LUT（81.74%）、10686寄存器、56 BRAM9k、2 BRAM32k、13 DSP；Setup +0.006ns/Hold +0.030ns，TNS0，STA覆盖率99.97%，无ERROR、完整bitgen。固定[候选与bit](releases/v0.18.0/m5-local.1/README.md)，标签`v0.18.0-m5-local.1`。完整生产top核对实际BMP/scaler写像素、最终RGB/时序/TMDS和逐样本PCM/HDMI音频，模型及采样窗口边界见[验证](diagnostics/publicity_mode/M5_VALIDATION.md)。
 
-M1[四页内容包](tools/publicity/README.md)的VOI仍为2/6/8/10秒测试音，不能作为正式配音或听审结论。开发回退为已获总体确认的[M3固定bit](releases/v0.18.0/m3-local.1/demo.bit)，正式回退v0.16.0。M5/M6待实施，前序v0.17.0/M6未验收状态不变。计划入口：[按键矩阵](docs/专业科普宣传模式分阶段修改计划.md)、[接口清单](docs/宣传模式接口清单.md)、[交接](HANDOFF.md)。
+按[完整操作与板测](docs/宣传模式操作与板测.md)上板并填写[真实结果](releases/v0.18.0/m5-local.1/BOARD_RESULT.md)；M5板测待确认、无board标签，M6未执行。开发回退为已获总体确认的[M4固定bit](releases/v0.18.0/m4-local.1/demo.bit)，正式回退v0.16.0。M1四VOI仍是2/6/8/10秒无人声测试音，正式配音与专业内容审阅留M6；前序v0.17.0/M6未确认项不补结论。 计划与接口见[阶段计划](docs/专业科普宣传模式分阶段修改计划.md)、[接口清单](docs/宣传模式接口清单.md)、[交接](HANDOFF.md)。
 
 ## 前序候选：v0.17.0 M6 local.1 本地通过，待板测
 

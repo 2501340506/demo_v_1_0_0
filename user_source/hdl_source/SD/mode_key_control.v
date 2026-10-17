@@ -45,10 +45,13 @@ module mode_key_control #(
      else if(press_mode!=mode || application_busy)playback_armed<=0;
      else if(stable1 && stable2 && stable4)playback_armed<=1;
     end
-    assign previous_event = !scene_mode && enable && (!PUBLICITY_ENABLE || playback_armed) && (press_mode == 0 || (PREVIEW_ENABLE && press_mode == 3)) && press_mode==mode && press1;
+    // Scene playback keys belong to the FSM only on 00. On 11 both apps
+    // navigate the current resource preview without changing the stage.
+    wire scene_play_keys=scene_mode && (!PUBLICITY_ENABLE || mode==0);
+    assign previous_event = !scene_play_keys && enable && (!PUBLICITY_ENABLE || playback_armed) && (press_mode == 0 || (PREVIEW_ENABLE && press_mode == 3)) && press_mode==mode && press1;
     reg next_raw;
-    assign next_event=next_raw && !scene_mode;
-    assign scene_next=next_raw && scene_mode;
+    assign next_event=next_raw && !scene_play_keys;
+    assign scene_next=next_raw && scene_play_keys;
     reg warn_event;
     assign scene_warn=SCENE_ENABLE && warn_event;
     localparam integer HOLD_CYCLES = (CLK_FREQ_HZ / 1000) * RESCAN_HOLD_MS;

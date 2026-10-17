@@ -1,9 +1,10 @@
 // SD-domain scene controller. PCM ticks are lossless playback events from CDC.
-module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0)(
+module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0)(
  input clk,rst,enable,scene_ready,key_next,key_mode,key_speed,
  input sample_tick,audio_running,frame_start,muted,auto_enable,
  input request_ready,picture_done,picture_failed,transition_idle,audio_ready,
  input ui_play,
+ input select_request,input [1:0] select_stage,output select_ready,
  output reg [1:0] stage,speed,output reg warn_mode,
  output reg [7:0] t_now,output [1:0] alert_level,
  output stage_req,output [1:0] requested_stage,
@@ -17,6 +18,7 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0)(
  reg [10:0] samples;
  reg running_q,terminal_frame;
  wire [10:0] limit=speed==0?11'd1599:speed==1?11'd799:11'd399;
+ assign select_ready=PREVIEW_SELECT && enable && scene_ready && state==RUN;
  assign stage_req=state==PICTURE && !sent;
  assign requested_stage=target;
  assign fade_mute=state!=OFF && state!=RUN;
@@ -41,7 +43,9 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0)(
     end
     RUN:begin
      if(!enable || !scene_ready)state<=EXIT_FADE;
-     else if(key_mode || (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start))))begin
+     else if(select_ready && select_request)begin
+      target<=select_stage;target_warn<=0;sent<=0;state<=PICTURE;
+     end else if(key_mode || (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start))))begin
       target<=key_mode?(warn_mode?2'd0:2'd3):stage+2'd1;
       target_warn<=key_mode?!warn_mode:warn_mode;sent<=0;state<=PICTURE;
      end else if(key_speed)begin speed<=speed==2?2'd0:speed+2'd1;samples<=0;half_frame<=0;end
