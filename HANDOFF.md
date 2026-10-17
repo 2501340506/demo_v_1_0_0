@@ -1,3 +1,13 @@
+# 当前交接：M4总体确认，执行宣传模式M5（2026-10-17）
+
+- 当前任务：用户反馈“M4功能正常”，执行M5参数/OSD/预览/完整回归。原目录feature/science-publicity-mode，输入eb7deb3，开发回退v0.18.0-m4-board.1复用M4原bit，正式回退v0.16.0。
+- 已完成：记录[M4总体确认](releases/v0.18.0/m4-local.1/BOARD_RESULT.md)，不补造单项、次数、时长。
+- 卡住的问题：无；M5尚在实施，M1正式配音/内容审阅及前序M6仍待办。
+- 下一步：核对参数显示优先级、身份与AUTO门控、当前集预览，专项与生产top像素/PCM、全回归、TD与审计合格后固定v0.18.0-m5-local.1；待板测。
+- 注意：个人问题记录按当前字节保存，不改不提交；不动TD用户工程、best_result、旧worktree/旧候选。Python使用py -I -X utf8；只推new-origin当前分支及本阶段标签。
+
+## 历史交接
+
 # 当前交接：宣传模式 M4 local.1 本地通过，待板测（2026-10-17）
 
 - 当前任务：用户确认M3无误后执行M4；原目录feature/science-publicity-mode，输入M3 local.1 fdb8065/board.1 adfdd66，开发回退M3固定bit，正式回退v0.16.0。
