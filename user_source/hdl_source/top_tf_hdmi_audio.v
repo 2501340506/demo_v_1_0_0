@@ -126,11 +126,14 @@ wire [4:0] transition_level;
 wire [1:0] application_mode;
 wire application_busy,application_error;
 wire [5:0] display_identity;
-wire [7:0] committed_bundle;
+wire [15:0] committed_bundle;
+wire [7:0] display_kind;
+reg [7:0] pixel_kind,pending_kind;
 assign audio_image=committed_bundle[1:0];
 reg [5:0] pixel_identity;
 reg [5:0] pending_identity;
 reg identity_pending;
+reg identity_frame_active;
 
 wire App_rd_en;
 wire [ADDR_BITS-1:0] App_rd_addr;
@@ -180,10 +183,15 @@ wire [3:0] sub_length_src, sub_length_pixel;
 wire sub_enable_src, sub_enable_pixel, sub_text_changed, sub_frame_start,scene_first_active;
 // Publish the identity bundled with the acknowledged bank at frame blanking.
 always @(posedge video_clk or posedge rst_video)begin
- if(rst_video)begin pixel_identity<=0;pending_identity<=0;identity_pending<=0;end
+ if(rst_video)begin pixel_identity<=0;pending_identity<=0;identity_pending<=0;pixel_kind<=0;pending_kind<=0;identity_frame_active<=0;end
  else begin
-  if(audio_update)begin pending_identity<=committed_bundle[7:2];identity_pending<=1;end
-  if(sub_frame_start && identity_pending)begin pixel_identity<=pending_identity;identity_pending<=0;end
+  // The memory reader acknowledges just AFTER VS starts its FIFO reload.
+  // Consume that bank's mailbox anywhere in this vertical blank, before the
+  // first pixel; waiting for the next VS would apply its type one frame late.
+  if(sub_frame_start)identity_frame_active<=0;
+  else if(de)identity_frame_active<=1;
+  if(audio_update)begin pending_identity<=committed_bundle[7:2];pending_kind<=committed_bundle[15:8];identity_pending<=1;end
+  if(!identity_frame_active && !de && identity_pending)begin pixel_identity<=pending_identity;pixel_kind<=pending_kind;identity_pending<=0;end
  end
 end
 // Frame position is also used by application, parameter and transition commits.
@@ -348,7 +356,7 @@ sd_card_bmp #(
     .SCAN_MAX_SECTOR   (32'd131071),
     .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE),.PUBLICITY_ENABLE(PUBLICITY_ENABLE)
 ) sd_card_bmp_m0(
-    .application_mode(application_mode),.application_busy(application_busy),.application_error(application_error),.display_identity(display_identity),
+    .application_mode(application_mode),.application_busy(application_busy),.application_error(application_error),.display_identity(display_identity),.display_kind(display_kind),
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
     .scenario_meta(scenario_meta_src),.font_valid(font_valid_src),.text_valid(text_valid_src),
     .font_count(font_count_src),.text_bytes(text_bytes_src),.bin_wr_en(bin_wr_en),.bin_wr_text(bin_wr_text),
@@ -471,8 +479,14 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scenario
 end else begin:g_scene_off
  assign scene_meta_pixel=0;assign scene_stage=0;assign scene_time=0;assign scene_fast=0;assign scene_slow=0;assign scene_enable=0;
 end endgenerate
-hazard_layer #(.SIDE_WIDTH(48)) u_hazard(
+reg [9:0] hazard_frame_count;
+always @(posedge video_clk or posedge rst_video)begin
+ if(rst_video)hazard_frame_count<=0;
+ else if(sub_frame_start)hazard_frame_count<=hazard_frame_count+1'b1;
+end
+disaster_layer #(.SIDE_WIDTH(48)) u_hazard(
  .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.arrival(vout_rgba_raw[7:0]),
+ .kind(pixel_kind),.de(de),.frame_start(sub_frame_start),.frame_cnt(hazard_frame_count),
  .stage(scene_stage),.t_now(scene_time),.enable(scene_enable && de && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.thumbnail(preview_pixel),
  .blink_fast(scene_fast),.blink_slow(scene_slow),
  .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor,transition_level,transition_wipe,display_valid,audio_enable}),
@@ -532,9 +546,9 @@ sdram U3(
 );
 
 // S8: melody changes only after the display handoff has completed.
-media_commit_cdc #(.WIDTH(8)) u_media_commit_cdc (
+media_commit_cdc #(.WIDTH(16)) u_media_commit_cdc (
  .src_clk(sd_card_clk), .dst_clk(video_clk), .src_rst(rst_sd), .dst_rst(rst_video),
- .src_image({display_identity,committed_image}), .src_valid(committed_valid), .src_ready(committed_ready),
+ .src_image({display_kind,display_identity,committed_image}), .src_valid(committed_valid), .src_ready(committed_ready),
  .media_id(committed_bundle), .media_update(audio_update), .media_enable(audio_enable)
 );
 

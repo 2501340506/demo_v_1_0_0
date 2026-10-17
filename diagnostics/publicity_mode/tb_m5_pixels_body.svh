@@ -83,15 +83,16 @@
  end
  golden=rgb;
  end endfunction
- reg checking=0;reg [23:0] expected[0:10];reg valid_check[0:10];reg [12:0] timings[0:10];
- integer ex[0:10],ey[0:10],q;integer checked=0,glyph_checked=0,content_checked=0,preview_checked=0,tmds_checked=0;
+ localparam FINAL_DELAY=18; // ten-clock disaster layer + eight downstream clocks
+ reg checking=0;reg [23:0] expected[0:FINAL_DELAY];reg valid_check[0:FINAL_DELAY];reg [12:0] timings[0:FINAL_DELAY];
+ integer ex[0:FINAL_DELAY],ey[0:FINAL_DELAY],q;integer checked=0,glyph_checked=0,content_checked=0,preview_checked=0,tmds_checked=0;
  reg [23:0] core_expected;reg core_video;
  function [7:0] untmds(input [9:0] sym);
  reg [7:0] z,v;integer j;begin z=sym[9]?~sym[7:0]:sym[7:0];v[0]=z[0];
  for(j=1;j<8;j++)v[j]=sym[8]?(z[j]^z[j-1]):~(z[j]^z[j-1]);untmds=v;end endfunction
  `define H top_dut.u_media_hdmi_audio_bridge.u_symbol_core
  always @(posedge pix)if(!rst)begin
-  for(q=10;q>0;q--)begin expected[q]=expected[q-1];valid_check[q]=valid_check[q-1];timings[q]=timings[q-1];ex[q]=ex[q-1];ey[q]=ey[q-1];end
+  for(q=FINAL_DELAY;q>0;q--)begin expected[q]=expected[q-1];valid_check[q]=valid_check[q-1];timings[q]=timings[q-1];ex[q]=ex[q-1];ey[q]=ey[q-1];end
   expected[0]=golden(memory_pixel,vx,top_dut.ring_y);
   valid_check[0]=checking && de && vx>=8 && vx<632 &&
    ((top_dut.ring_y>=28 && top_dut.ring_y<52) || (top_dut.ring_y>=60 && top_dut.ring_y<64));
@@ -102,10 +103,10 @@
    if({untmds(`H.channel2_symbol),untmds(`H.channel1_symbol),untmds(`H.channel0_symbol)}!==core_expected)$fatal(1,"TMDS final RGB mismatch");
    tmds_checked++;
   end
-  if(valid_check[10])begin
-   if({top_dut.final_hs,top_dut.final_vs,top_dut.final_de,top_dut.final_x}!==timings[10])$fatal(1,"M5 final pixel timing");
-   if(top_dut.final_rgb!==expected[10])$fatal(1,"M5 final pixel mismatch xy=%0d,%0d actual=%h expected=%h app=%d mode=%d descriptor=%h",ex[10],ey[10],top_dut.final_rgb,expected[10],app,top_dut.adjust_mode,memory_descriptor);
-   checked++;if(ey[10]>=32 && ey[10]<48)glyph_checked++;if(ey[10]>=60)content_checked++;
+  if(valid_check[FINAL_DELAY])begin
+   if({top_dut.final_hs,top_dut.final_vs,top_dut.final_de,top_dut.final_x}!==timings[FINAL_DELAY])$fatal(1,"M5 final pixel timing");
+   if(top_dut.final_rgb!==expected[FINAL_DELAY])$fatal(1,"M5 final pixel mismatch xy=%0d,%0d actual=%h expected=%h app=%d mode=%d descriptor=%h",ex[FINAL_DELAY],ey[FINAL_DELAY],top_dut.final_rgb,expected[FINAL_DELAY],app,top_dut.adjust_mode,memory_descriptor);
+   checked++;if(ey[FINAL_DELAY]>=32 && ey[FINAL_DELAY]<48)glyph_checked++;if(ey[FINAL_DELAY]>=60)content_checked++;
    if(memory_descriptor[17])preview_checked++;
   end
  end

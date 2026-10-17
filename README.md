@@ -1,3 +1,11 @@
+# 当前开发阶段：灾害 S1 本地通过，实施 SW3 菜单 S2
+
+原目录分支 `feature/mountain-disaster-selector`，基线 `7e3ac02`。四类图层与 BMP 类型已接入，保留旧编码及双应用。[S1 固定候选与 bit](releases/v0.19.0/s1-local.1/README.md)：15780 LUT、10878 寄存器、52 BRAM9k、2 BRAM32k、26 DSP；DSP 相对基线 +13，Setup +0.129ns/Hold +0.012ns、TNS0。45 份仿真通过，板测待验收。UART 两项默认关，SD 调试保留。
+
+[分阶段计划](docs/灾害移植与SW3选择分阶段计划.md) · [验证](releases/v0.19.0/s1-local.1/VALIDATION.md) · [交接](HANDOFF.md)。S2 接入 SW3=C6 四宫格、实际长目录与独立缓存。未发布、未合并 main，无 board 标签。
+
+## 历史开发状态
+
 # 当前开发阶段：UART 资源裁减 S1，本地通过，待上板
 
 已按用户选择默认关闭串口日志和串口在线字幕，保留数码管 SD 调试页、固定/TEXT.BIN 字幕及双模式功能。LUT 16022→14092（减少1930，12.05%）；寄存器10686→9530（减少1156）；BRAM9k 56→46（释放10块）；BRAM32k和DSP不变。完整TD `uart_reduction_td_attempt05`：14092 LUT（71.90%）、9530寄存器、46 BRAM9k、2 BRAM32k、13 DSP；Setup +0.040ns/Hold +0.019ns，STNS/HTNS均0；11份本轮仿真/20份编译模型日志通过，实际模型边界和既有时序例外见[验证](releases/v0.18.0/uart-s1-local.1/VALIDATION.md)。

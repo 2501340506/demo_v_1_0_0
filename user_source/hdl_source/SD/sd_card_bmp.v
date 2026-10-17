@@ -24,6 +24,7 @@ module sd_card_bmp #(
     output [4:0] scenario_meta,
     output [1:0] application_mode,output application_busy,application_error,
     output reg [5:0] display_identity,
+    output reg [7:0] display_kind,
     output [3:0] publicity_audio_status,
     output font_valid,text_valid,output [7:0] font_count,output [12:0] text_bytes,
     output bin_wr_en,bin_wr_text,output [11:0] bin_wr_addr,output [7:0] bin_wr_data,
@@ -286,6 +287,14 @@ always @(posedge clk or posedge rst) begin
 end
 
 wire load_request,load_accept,load_result_valid,load_result_ready,load_success,load_timeout;
+wire [7:0] loaded_kind;
+reg [7:0] bank_kind[0:3];
+integer kind_i;
+always @(posedge clk or posedge rst)begin
+ if(rst)for(kind_i=0;kind_i<4;kind_i=kind_i+1)bank_kind[kind_i]<=0;
+ else if(load_result_valid && load_result_ready && load_success)
+  bank_kind[write_buf_idx]<=loaded_kind;
+end
 wire cancel_request,cancel_ack,parser_cancel,load_start_pulse;
 wire source_done_now,write_finish_now,load_fault,memory_failure;
 wire [2:0] load_fault_code,memory_code;
@@ -388,7 +397,7 @@ reg commit_pending;
 // Do not issue it again on the clock the core consumes that acknowledgement.
 assign cache_display_ack=commit_pending && commit_ack_sync[1]==display_commit_request;
 always @(posedge clk or posedge rst) begin
- if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;display_identity<=0;end
+ if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;display_identity<=0;display_kind<=0;end
  else begin
   if(!cache_display_request) commit_pending<=0;
   else if(!commit_pending && preview_fullscreen_ready && (!controls_blocked || app_black_permit) && (!transition_needed || transition_permit) &&
@@ -396,6 +405,7 @@ always @(posedge clk or posedge rst) begin
           (!PUBLICITY_ENABLE || application_mode!=1 || scene_muted_sd || !AUDIO_ENABLE)) begin
    disp_buf_idx<=cache_display_bank;
    display_identity<={resource_version,scan_application};
+   display_kind<=bank_kind[cache_display_bank];
    display_commit_request<=~display_commit_request;
    commit_pending<=1;
   end
@@ -663,7 +673,7 @@ fat32_bmp_reader #(.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUD
  .scan_start(scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
  .load_start(load_start_pulse),.load_cancel(parser_cancel),.load_cluster(32'd0),.load_size(32'd0),.load_index(load_idx),
- .load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
+ .loaded_kind(loaded_kind),.load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
  .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),.write_req(write_req),.write_req_ack(write_req_ack_sync),.write_ready(write_ready),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),

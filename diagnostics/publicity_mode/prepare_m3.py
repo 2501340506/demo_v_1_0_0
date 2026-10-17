@@ -112,17 +112,17 @@ tb = tb.replace("frame_div++;", '''frame_div++;
 start = tb.index(" integer b0,d0,c0,i;")
 tb = tb[:start] + '''
  reg [12:0] timing_pipe[0:2];integer timing_checks=0,muted_samples=0,plain_pixels=0,scene_pixels=0;
- reg [23:0] hazard_pipe[0:1];
+ reg [23:0] hazard_pipe[0:9];
  always @(posedge pix)if(!rst)begin
   timing_pipe[2]=timing_pipe[1];timing_pipe[1]=timing_pipe[0];
   timing_pipe[0]={top_dut.ring_hs,top_dut.ring_vs,top_dut.ring_de,top_dut.ring_x};
-  hazard_pipe[1]=hazard_pipe[0];hazard_pipe[0]=top_dut.vout_data;
+  for(integer h=9;h>0;h--)hazard_pipe[h]=hazard_pipe[h-1];hazard_pipe[0]=top_dut.vout_data;
   #1;
   if(timing_checks>3 && {top_dut.final_hs,top_dut.final_vs,top_dut.final_de,top_dut.final_x}!==timing_pipe[2])$fatal(1,"top final timing bundle");
   timing_checks++;
   if(!busy && app==1 && de)begin
    if(top_dut.pixel_identity!==identity || top_dut.scene_text_active)$fatal(1,"top publicity identity/layers");
-   if(top_dut.hazard_rgb!==hazard_pipe[1])$fatal(1,"publicity hazard bypass");
+   if(top_dut.hazard_rgb!==hazard_pipe[9])$fatal(1,"publicity hazard bypass");
    plain_pixels++;
    if(!top_dut.scenario_muted)$fatal(1,"publicity not muted");
    if(top_dut.volume_valid && top_dut.volume_ready)begin

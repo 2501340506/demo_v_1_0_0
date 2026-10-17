@@ -62,13 +62,14 @@ module tb_m5_status;
  golden=(row<7 && col<5 && bits[34-row*5-col])?
    ((error || (app==1 && voice==4))?24'hff4040:24'hffffff):24'h102030;
  end endfunction
- reg check=0;reg valid[0:10];reg [23:0] expected[0:10];integer i,count=0,windows=0;
+ localparam FINAL_DELAY=18; // ten-clock disaster layer + eight downstream clocks
+ reg check=0;reg valid[0:FINAL_DELAY];reg [23:0] expected[0:FINAL_DELAY];integer i,count=0,windows=0;
  always @(posedge pix)begin
- for(i=10;i>0;i--)begin valid[i]=valid[i-1];expected[i]=expected[i-1];end
+ for(i=FINAL_DELAY;i>0;i--)begin valid[i]=valid[i-1];expected[i]=expected[i-1];end
  valid[0]=check && de && x>=400 && x<608 && y>=8 && y<24;
  expected[0]=golden(x,y);#1;
- if(valid[10])begin
-  if(dut.final_rgb!==expected[10])$fatal(1,"status final RGB actual=%h expected=%h app=%d voice=%d busy=%b error=%b",dut.final_rgb,expected[10],app,voice,busy,error);
+ if(valid[FINAL_DELAY])begin
+  if(dut.final_rgb!==expected[FINAL_DELAY])$fatal(1,"status final RGB actual=%h expected=%h app=%d voice=%d busy=%b error=%b",dut.final_rgb,expected[FINAL_DELAY],app,voice,busy,error);
   count++;
  end
  end

@@ -34,20 +34,21 @@ module tb_scenario_top;
    hazard=result;
   end
  endfunction
- reg [23:0] expected[0:5];reg [9:0] xs[0:5];reg [2:0] syncs[0:5];
+ localparam ADJUST_DELAY=14;
+ reg [23:0] expected[0:ADJUST_DELAY-1];reg [9:0] xs[0:ADJUST_DELAY-1];reg [2:0] syncs[0:ADJUST_DELAY-1];
  integer count=0,checks=0,audio_checks=0;integer t,v;
  function [7:0] channel(input integer p,input integer bv,input integer cv);
   integer a,z;begin a=(p*bv)>>7;if(a>255)a=255;z=(((a-128)*cv)>>>7)+128;channel=z<0?0:z>255?255:z;end
  endfunction
  always @(posedge pix)if(!rst)begin
-  for(integer i=5;i>0;i--)begin expected[i]=expected[i-1];xs[i]=xs[i-1];syncs[i]=syncs[i-1];end
+  for(integer i=ADJUST_DELAY-1;i>0;i--)begin expected[i]=expected[i-1];xs[i]=xs[i-1];syncs[i]=syncs[i-1];end
   scene_rgb=hazard(input_rgb,input_t,dut.scene_stage,dut.scene_time,dut.scene_fast,dut.scene_slow,dut.scene_enable && de,descriptor[17]);
   expected[0]=valid_picture && de?{channel(scene_rgb[23:16],dut.brightness_frame,dut.contrast_frame),
    channel(scene_rgb[15:8],dut.brightness_frame,dut.contrast_frame),channel(scene_rgb[7:0],dut.brightness_frame,dut.contrast_frame)}:0;
   xs[0]=x;syncs[0]={hs,vs,de};count++;
   #1;
-  if(count>=6)begin
-   if(dut.adjusted_rgb!==expected[5] || dut.adjust_x!==xs[5] || {dut.adjust_hs,dut.adjust_vs,dut.adjust_de}!==syncs[5])$fatal(1,"top pixel/timing alignment");
+  if(count>=ADJUST_DELAY)begin
+   if(dut.adjusted_rgb!==expected[ADJUST_DELAY-1] || dut.adjust_x!==xs[ADJUST_DELAY-1] || {dut.adjust_hs,dut.adjust_vs,dut.adjust_de}!==syncs[ADJUST_DELAY-1])$fatal(1,"top pixel/timing alignment");
    if(dut.adjust_preview && dut.adjust_de)begin
     if(dut.thumb_border && dut.preview_rgb!==24'hffff00)$fatal(1,"adjusted focus border");
     if(!dut.thumb_border && !dut.thumb_valid && dut.preview_rgb!==0)$fatal(1,"empty preview");

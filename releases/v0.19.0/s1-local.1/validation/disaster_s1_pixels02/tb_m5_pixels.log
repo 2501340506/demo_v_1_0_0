@@ -1,0 +1,90 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/disaster_s1_pixels02/work tb_m5_pixels glbl "+F_BYTES=1504" "+T_BYTES=102" -l E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.log -do "run -all; quit -f" 
+# Start time: 05:00:01 on Oct 18,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../user_source/ip_source/s3_single_pll/sys_pll_s3.v(89): (vopt-2241) Connection width does not match width of port 'load_reg'. The port definition is at: E:\TD\sim_release\eg4\eg_phy_pll.v(25).
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(70): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(231): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2685) [TFMPC] - Too few port connections for 'U3'.  Expected 23, found 14.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_DQ'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_DM'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_ADDR'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_BA'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_WE'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_CAS'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_RAS'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDR_CKE'.
+# ** Warning: ../user_source/hdl_source/top_tf_hdmi_audio.v(531): (vopt-2718) [TFMPC] - Missing connection for port 'SDRAM_CLK'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2685) [TFMPC] - Too few port connections for 'top_dut'.  Expected 21, found 9.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'uart_tx'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'sd_mosi'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'sd_dclk'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'sd_ncs'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_DDC_SDA'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_DDC_SCL'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_D0_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_D1_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_D2_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'HDMI_CLK_P'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'seg_data'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(26): (vopt-2718) [TFMPC] - Missing connection for port 'seg_sel'.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_wrrd.enc.v(77): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# ** Warning: (vsim-3015) E:/form/demo_v_0_0/demo_v_0_0/TD_project/../user_source/ip_source/s3_single_pll/sys_pll_s3.v(89): [PCDPC] - Port size (5) does not match connection size (1) for port 'load_reg'. The port definition is at: E:/TD/sim_release/eg4/eg_phy_pll.v(25).
+#    Time: 0 fs  Iteration: 0  Instance: /tb_m5_pixels/top_dut/sys_pll_m0/pll_inst File: E:/TD/sim_release/eg4/eg_phy_pll.v
+# run -all
+# ******************** : The Attribute            REFCLK_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to           1.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             FBCLK_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to           2.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC0_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          10.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC1_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          25.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC2_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          25.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC3_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to          40.  Legal values for this attribute are           1 to         128.
+# ******************** : The Attribute             CLKC4_DIV on pll instance tb_m5_pixels.top_dut.sys_pll_m0.pll_inst.para_int_range_chk is set to           8.  Legal values for this attribute are           1 to         128.
+# M5 pixel window app=1 mode=0 page=0 B/C/V=128/128/10 preview=0 count=      17472
+# M5 pixel window app=1 mode=1 page=0 B/C/V=144/128/10 preview=0 count=      34944
+# M5 pixel window app=1 mode=1 page=0 B/C/V=144/128/ 9 preview=0 count=      52416
+# M5 pixel window app=1 mode=2 page=0 B/C/V=144/112/ 9 preview=0 count=      69888
+# M5 pixel window app=1 mode=3 page=0 B/C/V=144/112/ 9 preview=1 count=      87360
+# M5 pixel window app=1 mode=3 page=0 B/C/V=144/112/ 9 preview=1 count=     104832
+# M5 pixel window app=1 mode=3 page=1 B/C/V=144/112/ 9 preview=0 count=     122304
+# M5 pixel window app=2 mode=0 page=0 B/C/V=144/112/ 9 preview=0 count=     139776
+# M5 pixel window app=2 mode=0 page=0 B/C/V=144/112/ 9 preview=0 count=     157248
+# M5 pixel window app=2 mode=1 page=0 B/C/V=144/112/ 9 preview=0 count=     174720
+# M5 pixel window app=2 mode=2 page=0 B/C/V=144/112/ 9 preview=0 count=     192192
+# M5 pixel window app=2 mode=3 page=0 B/C/V=144/112/ 9 preview=1 count=     209664
+# M5 pixel window app=2 mode=3 page=1 B/C/V=144/112/ 9 preview=0 count=     227136
+# M5 pixel window app=2 mode=0 page=1 B/C/V=144/112/ 9 preview=0 count=     244608
+# M5 pixel window app=1 mode=0 page=0 B/C/V=144/112/ 9 preview=0 count=     262080
+# PASS M5 production final pixels: 262080 RGB/timing, 149760 glyph-region, 37440 clean-content, 52416 preview; 9953280 decoded HDMI TMDS pixels; actual SD BMP/scaler/bank/identity/keys/layers
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/disaster_s1_pixels02/tb_m5_pixels.sv(306)
+#    Time: 179626010 ns  Iteration: 1  Instance: /tb_m5_pixels
+# End time: 05:29:54 on Oct 18,2026, Elapsed time: 0:29:53
+# Errors: 0, Warnings: 45

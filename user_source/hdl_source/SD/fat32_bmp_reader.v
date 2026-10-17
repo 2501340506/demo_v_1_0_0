@@ -27,6 +27,7 @@ module fat32_bmp_reader #(
  output ready, output reg scan_done,scan_error,scan_found_valid,
  output reg [31:0] scan_found_cluster,scan_found_size,
  output reg [2:0] scan_found_total,
+ output reg [7:0] loaded_kind,
  output reg load_done,load_error, output reg [2:0] bmp_error,
  output reg [7:0] fat_error, output [3:0] state_code,
  output write_req,input write_req_ack,input write_ready,
@@ -43,6 +44,9 @@ module fat32_bmp_reader #(
  reg [31:0] task_cluster,task_size,header_lba;
  reg [7:0] io_error;
  reg stream_finished,decode_finished;
+ // Read type from the actual file stream, never from a scan or preload of
+ // another image. Invalid/ordinary tags pass through; zero retains v1.
+ reg [7:0] kind_hazard,kind_role;
  wire volume_done,volume_busy,stream_busy,stream_done,stream_valid;
  wire [7:0] volume_error,stream_error,stream_byte,spc;
  wire [31:0] fat_lba,data_lba,max_cluster,stream_offset;
@@ -58,6 +62,20 @@ module fat32_bmp_reader #(
  wire request_allowed=(state==READ_FILE && decode_error==0 && !load_cancel);
  wire header_match;wire [33:0] required_end;
  wire [31:0] header_file_len;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin kind_hazard<=0;kind_role<=0;loaded_kind<=0;end
+  else begin
+   if(state==START_FILE)begin kind_hazard<=0;kind_role<=0;end
+   if(state==READ_FILE && stream_valid)begin
+    if(stream_offset==6)kind_hazard<=stream_byte;
+    if(stream_offset==7)kind_role<=stream_byte;
+   end
+   if(state==RESULT && bmp_error==0)
+    loaded_kind<=kind_hazard==0 && kind_role==0 ? 8'd0 :
+      kind_hazard>=1 && kind_hazard<=4 && kind_role>=1 && kind_role<=4 ?
+      {kind_hazard[3:0],kind_role[3:0]} : 8'hff;
+  end
+ end
  // Header fields settle before byte 54; completion is after byte 511.
  // Keep the 34-bit bound comparator off the mapped-slot write enables.
  reg header_end_hi_lt,header_end_hi_eq,header_end_lo_le,header_end_top_ok;
