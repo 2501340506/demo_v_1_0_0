@@ -56,7 +56,8 @@ module rfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
     wire [ADDR_WIDTH_W-1:0] ram_wr_addr;
     genvar hold_bit;
     generate for(hold_bit=0;hold_bit<ADDR_WIDTH_W;hold_bit=hold_bit+1)begin:g_address_hold
-        if(hold_bit==2)begin:g_delay
+        // TD10 also measured wr_addr[7] -> reader RAM hold (-0.012 ns).
+        if(hold_bit==2 || hold_bit==7)begin:g_delay
             (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
                 u_hold(.o(ram_wr_addr[hold_bit]),.a(wr_addr[hold_bit]));
         end else assign ram_wr_addr[hold_bit]=wr_addr[hold_bit];

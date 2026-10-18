@@ -37,7 +37,11 @@ module image_scale_nearest (
  end endgenerate
  wire [10:0] ram_input_x;
  assign ram_input_x[10:6]=in_x[10:6];
- assign ram_input_x[4:0]=in_x[4:0];
+ assign ram_input_x[4]=in_x[4];
+ assign ram_input_x[2:0]=in_x[2:0];
+ // TD10: raw_pipe_x[3] -> line RAM hold was -0.020 ns.
+ (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_line_address3_hold (.o(ram_input_x[3]),.a(in_x[3]));
  (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
   u_line_address_hold (.o(ram_input_x[5]),.a(in_x[5]));
  reg pixel_black;

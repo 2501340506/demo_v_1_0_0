@@ -80,7 +80,9 @@ endfunction
        else auto_count <= auto_count + 1'b1;
      end else auto_count <= 0;
      if (request_accept && load_request) begin
-       auto_count <= 0;
+       // Navigation makes auto_allowed false; an AUTO request has auto_tick
+       // set. Both cases already reset above. Avoid feeding cache-ready and
+       // preview arbitration back through the 32-bit counter reset mux.
        if (next_load_request) next_pending <= 0;
        else if (previous_load_request) previous_pending <= 0;
      end
