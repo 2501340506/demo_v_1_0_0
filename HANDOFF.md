@@ -1,9 +1,10 @@
 # 当前交接：灾害 S2 本地通过、板测待验收（2026-10-18）
 
 - 当前任务：原目录 feature/mountain-disaster-selector；基线 7e3ac02，S1 afffa80。两阶段本地实现/仿真/TD 已完成，候选 `v0.19.0-s2-local.1`，无 board、正式发布或 main 合并。
+- GitHub 同步：S2 候选提交 `62c01ba` 及 `v0.19.0-s2-local.1` 已推送 new-origin；已用 ls-remote 核对功能分支和标签指向该提交，计划及 S1 标签也在远程。候选源码与 bit 不再改动，后续交接记录采用独立文档提交。
 - 已完成：四类图层、SW3=C6 四图中文菜单、真实 VFAT 子目录、根目录优先及独立缓存；确认/取消/忙中安全接管与按键释放，保留既有功能。固定 releases/v0.19.0/s2-local.1，17525 LUT、11760 寄存器、57 BRAM9k、2 BRAM32k、14 DSP，Setup +0.047ns / Hold +0.030ns，STNS/HTNS 均 0；120 份 S2 仿真及 86 份编译/模型日志通过，审计和证据范围见候选 VALIDATION。
 - 当前待办：用户烧录固定候选，按 docs/灾害SW3操作与板测.md 检查四类选择、16 图、宣传、预览、参数、音频、预警与数码管。未收到具体候选板测反馈，不能记板级通过。
-- 下一步：提交并同步 GitHub 功能分支及本阶段 local 标签，核对远程引用；具体板测确认后才补 board 记录和标签。失败修复递增 local 编号。前版内容听审及整机待办不补造结论。
+- 下一步：用户烧录固定 S2 候选并反馈板测；具体确认后才补 board 记录和标签。失败修复递增 local 编号。前版内容听审及整机待办不补造结论。
 - 踩过的坑：boot 高电平不得暂停未完成首图事务；AUTO 必须在整个按键释放交接期间保留 pause；扫描单拍错误需锁存；菜单原色旁路旧 OSD/参数；LOAD_SELECT 和寄存 quiesce/owner 缩短仲裁路径；FAT 范围比较分拍、FIFO Gray 满判断避免长组合使能；hash8 采用等价逐位展开减少 DSP。bitgen/exit0 不等于时序通过，失败构建保留本地。
 - 保护：个人记录、用户 TD 日志/状态、best_result、旧 worktree、G:\ 原卡不改不提交；不写哈希、不批量删除。[本地阶段归档](docs/history/2026-10-18/mountain-disaster-selector/README.md)。
 
