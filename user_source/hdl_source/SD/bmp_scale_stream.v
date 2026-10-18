@@ -68,9 +68,16 @@ module bmp_scale_stream #(parameter NATIVE_THUMB_ENABLE=0)(
   .pixel_ready(raw_ready),.pixel_rgb(),.pixel_rgba(raw_rgb),.pixel_x(px),.pixel_y(py),
   .frame_commit(),.bmp_done(decoder_done),.bmp_error(error),.file_ready(bytes_ready),
   .image_width(w),.image_height(h));
+ // Final TD03 measured raw_pipe_rgb[16] -> line BRAM at -0.020 ns.
+ // Delay only that data bit, retaining both native and scaled cycle timing.
+ wire [31:0] scale_input_rgb;
+ assign scale_input_rgb[31:17]=raw_pipe_rgb[31:17];
+ assign scale_input_rgb[15:0]=raw_pipe_rgb[15:0];
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_scale_data_hold(.o(scale_input_rgb[16]),.a(raw_pipe_rgb[16]));
  image_scale_nearest scaler(.clk(clk),.rst(rst || file_start),.start(header_valid && !native_mode),
   .image_width(w),.image_height(h),.in_valid(raw_pipe_valid && !native_mode),.in_ready(scaler_in_ready),
-  .in_rgb(raw_pipe_rgb),.in_x(raw_pipe_x),.in_y(raw_pipe_y),.out_valid(scaler_valid),.out_ready(scaler_ready),
+  .in_rgb(scale_input_rgb),.in_x(raw_pipe_x),.in_y(raw_pipe_y),.out_valid(scaler_valid),.out_ready(scaler_ready),
   .out_rgb(scaler_rgb),.done(scaler_done));
  always @(posedge clk or posedge rst)begin
   if(rst)begin done<=0;decode_seen<=0;scale_seen<=0;reported<=0;end

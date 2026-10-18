@@ -107,10 +107,30 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
         end
     end
 
+    // Decode each entry independently. Dynamic partial vector writes infer
+    // serial priority muxes through request arbitration in the TD mapper.
+    // Preserve the original load -> phase -> manual-clear priority exactly.
+    genvar entry;
+    generate for(entry=0;entry<4;entry=entry+1)begin:g_cache_flags
+        always @(posedge clk or posedge rst)begin
+            if(rst)begin cache_valid[entry]<=0;cache_failed[entry]<=0;end
+            else if(phase==QUIESCE && load_state==LOAD_IDLE && !display_request && !committed_valid)begin
+                cache_valid[entry]<=0;cache_failed[entry]<=0;
+            end else begin
+                if(!stop_load && load_state==LOAD_WAIT && load_result_valid && !load_timeout && load_image==entry)begin
+                    if(load_success)begin cache_valid[entry]<=1;cache_failed[entry]<=0;end
+                    else if(retry_used)cache_failed[entry]<=1;
+                end
+                if(phase==RUN && !rescan_event && accept_request && request_manual && request_image==entry)
+                    cache_failed[entry]<=0;
+            end
+        end
+    end endgenerate
+
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             phase <= SCAN_ISSUE; load_state <= LOAD_IDLE;
-            image_count <= 0; image_last <= 3'd7; cache_valid <= 0; cache_failed <= 0;
+            image_count <= 0; image_last <= 3'd7;
             for (i=0; i<4; i=i+1) bank_map[i] <= 0;
             foreground_pending <= 0; foreground_manual <= 0; foreground_image <= 0; retry_used <= 0;
             load_image <= 0; load_bank <= 0; storage_stopped <= 0;
@@ -144,8 +164,6 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
                         load_state <= LOAD_IDLE;
                         load_failed <= 1; failed_image <= load_image;
                     end else if (load_success) begin
-                        cache_valid[load_image] <= 1;
-                        cache_failed[load_image] <= 0;
                         cache_complete <= 1; cache_complete_image <= load_image;
                         load_state <= LOAD_IDLE;
                     end else if (!retry_used) begin
@@ -153,7 +171,6 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
                         retry_event <= 1;
                         load_state <= LOAD_ISSUE;
                     end else begin
-                        cache_failed[load_image] <= 1;
                         if(STRICT_FIRST_ENABLE && strict_first && !first_image_committed)storage_stopped<=1;
                         load_failed <= 1; failed_image <= load_image;
                         load_state <= LOAD_IDLE;
@@ -177,7 +194,7 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
                     end
                 end
                 QUIESCE: if (load_state == LOAD_IDLE && !display_request && !committed_valid) begin
-                    cache_valid <= 0; cache_failed <= 0; image_count <= 0; image_last <= 3'd7;
+                    image_count <= 0; image_last <= 3'd7;
                     foreground_pending <= 0; first_image_committed <= 0;
                     storage_stopped <= 0;
                     phase <= SCAN_ISSUE;
@@ -190,7 +207,6 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
                             foreground_pending <= 1;
                             foreground_manual <= request_manual;
                             foreground_image <= request_image;
-                            if (request_manual) cache_failed[request_image] <= 0;
                             if (cache_valid[request_image]) begin
                                 cache_hit <= 1; cache_hit_image <= request_image;
                             end
