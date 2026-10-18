@@ -1,4 +1,4 @@
-param([string]$RunName='bottom_wave_integration01')
+param([string]$RunName='bottom_wave_integration01',[switch]$Narration)
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..')).Replace('\','/')
 $out="$root/diagnostics/output/$RunName"
@@ -11,6 +11,13 @@ foreach($layout in @('legacy','publicity')){
  [IO.File]::WriteAllText("$out/tb_layout_$layout.sv",$bench)
 }
 Copy-Item "$root/diagnostics/osd/cn_reference_rows.hex" "$out/cn_reference_rows.hex"
+$extra=@();$tests=@('tb_wave_top','tb_layout_legacy','tb_layout_publicity')
+if($Narration){
+ & py -I -X utf8 "$root/tools/publicity/make_narration_subtitles.py" --out $out
+ if($LASTEXITCODE){throw 'Narration vectors failed'}
+ $extra=@("$root/diagnostics/narration_subtitles/tb_narration_top.sv")
+ $tests+=@('tb_narration_top')
+}
 $sim='F:/modelsim/win64';$lib="$out/work"
 & "$sim/vlib.exe" $lib *> "$out/library.log"
 $vendor=Get-ChildItem 'E:/TD/sim_release/eg4/*.v','E:/TD/sim_release/common/*.v' | ForEach-Object {$_.FullName}
@@ -25,12 +32,12 @@ try {
  & "$sim/vlog.exe" -work $lib '../user_source/ip_source/s3_single_pll/sys_pll_s3.v' *> "$out/pll.log"
  & "$sim/vlog.exe" -work $lib '+incdir+../user_source/hdl_source/include' @enc *> "$out/encrypted.log"
  if($LASTEXITCODE){throw 'encrypted compile'}
- & "$sim/vlog.exe" -sv '+define+SIMULATION' -work $lib '+incdir+../user_source/hdl_source/include' @plain "$root/diagnostics/single_pll/sdram_bl4_model.sv" "$PSScriptRoot/tb_wave_top.sv" "$out/tb_layout_legacy.sv" "$out/tb_layout_publicity.sv" *> "$out/compile.log"
+ & "$sim/vlog.exe" -sv '+define+SIMULATION' -work $lib '+incdir+../user_source/hdl_source/include' @plain "$root/diagnostics/single_pll/sdram_bl4_model.sv" "$PSScriptRoot/tb_wave_top.sv" "$out/tb_layout_legacy.sv" "$out/tb_layout_publicity.sv" @extra *> "$out/compile.log"
  if($LASTEXITCODE){throw 'compile failed'}
 }finally{Pop-Location}
 Push-Location $out
 try{
- foreach($name in @('tb_wave_top','tb_layout_legacy','tb_layout_publicity')){
+ foreach($name in $tests){
   & "$sim/vsim.exe" -c -quiet -lib $lib $name glbl -l "$out/$name.log" -do 'run -all; quit -f' *> "$out/$name.console.log"
   $log=Get-Content "$out/$name.log" -Raw
   if($LASTEXITCODE -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS '){throw "FAIL $name"}

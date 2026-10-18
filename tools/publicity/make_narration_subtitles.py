@@ -70,6 +70,22 @@ def generate(out, update_rtl=False):
     rom += ''.join(f" rows[{i}]=16'h{v:04x};\n" for i,v in enumerate(rows))
     rom += 'end\nalways @(posedge clk) data<=rows[address];\nendmodule\n'
     (out/'font_rom.v').write_text(rom, encoding='ascii')
+    (out/'preview').mkdir(exist_ok=True)
+    for page in pages:
+        im = Image.open(ROOT/f"releases/v0.20.0/s1-local.1/card/EDU{page['page']}.BMP").convert('RGB')
+        draw = ImageDraw.Draw(im)
+        draw.rectangle((0,420,639,443), fill=(32,40,56))
+        phase = (20*25000000//420000)*page['step_q8']//256
+        for x in range(8,632):
+            tx = x+phase-632
+            if 0 <= tx < page['characters']*16:
+                code = codes[page['page']-1][tx//16]
+                for y in range(16):
+                    if rows[code*16+y] & (0x8000>>(tx%16)):
+                        im.putpixel((x,424+y), (255,255,255))
+        for bar in range(80):
+            draw.rectangle((bar*8+2,452,bar*8+4,479), fill=(180,90,200))
+        im.save(out/f"preview/page{page['page']}_max_wave.png")
     if update_rtl:
         rtl = ROOT/'user_source/hdl_source/scene/scene_text_overlay.v'
         original = rtl.read_text(encoding='utf-8').split(MARKER)[0]
