@@ -1,5 +1,6 @@
 """Write pre-tag fast-start delivery documentation from the audited manifest."""
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -8,6 +9,22 @@ TARGET = ROOT/'releases/v0.23.0/s2-local.1'
 
 def main():
     m = json.loads((TARGET/'MANIFEST.json').read_text(encoding='utf-8'))
+    settings = (TARGET/'reports/settings.cfg').read_text(encoding='utf-8')
+    seed = int(re.search(r'place seed (\d+)', settings)[1])
+    extra_builds = []
+    for name in ('fast_start_td02', 'fast_start_td03'):
+        if name == m['build']:
+            continue
+        report = ROOT/f'diagnostics/output/{name}/TD_project/demo_Runs/phy_1/final_timing.rpt'
+        if report.exists():
+            raw = report.read_bytes()
+            s = raw.decode('utf-16' if raw.startswith((b'\xff\xfe', b'\xfe\xff')) else 'utf-8-sig')
+            values = ', '.join(f'{k}={re.search(k+":\\s*([-\\d.]+)ns", s)[1]}ns'
+                               for k in ('SWNS', 'HWNS', 'STNS', 'HTNS'))
+            extra_builds.append(f'{name}：{values}，未用于本候选。')
+        else:
+            extra_builds.append(f'{name}：冻结时无最终验收报告，未用于本候选。')
+    extra_status = ' '.join(extra_builds)
     t, r = m['timing_ns'], m['resources']
     timing = f"Setup +{t['SWNS']:.3f}ns / Hold +{t['HWNS']:.3f}ns，STNS/HTNS=0"
     resource = f"{r['lut']} LUT、{r['reg']} 寄存器、{r['bram']} BRAM9k、{r['bram32k']} BRAM32k、{r['dsp']} DSP"
@@ -33,7 +50,7 @@ def main():
 
 ## 复现与回退
 
-从基线恢复未改文件，将 `sources/` 覆盖回原路径；这里只备份相对基线修改的 11 个生产文件和本轮工具/测试。采用 `reproduce/demo.al`，保留用户自己的 GUI 工程；在仓库运行 `diagnostics/bottom_waveform/run_td.ps1 -BuildName <新名称> -Seed 43`，选项以 reports/settings.cfg 为准。构建后运行 audit_s2.ps1、check_font_map.py 和 review_fast_build.py。不能只凭 bitgen 判定验收。
+从基线恢复未改文件，将 `sources/` 覆盖回原路径；这里只备份相对基线修改的 11 个生产文件和本轮工具/测试。采用 `reproduce/demo.al`，保留用户自己的 GUI 工程；在仓库运行 `diagnostics/bottom_waveform/run_td.ps1 -BuildName <新名称> -Seed {seed}`，选项以 reports/settings.cfg 为准。构建后运行 audit_s2.ps1、check_font_map.py 和 review_fast_build.py。不能只凭 bitgen 判定验收。
 
 回退烧录 [v0.22.0 固定 bit](../../v0.22.0/s1-local.1/demo.bit)；新增 THUMB 对旧固件无影响，原 PIC/EDU/PCM/FONT/TEXT 内容未改变。当前无 board 标签、未正式发布或合并 main。
 ''', encoding='utf-8')
@@ -74,6 +91,8 @@ def main():
 最终物理17个字体BRAM的INIT/INITP逐位解码，276字形×21行共5796行全部21位与v0.22字模相同。依据第一次TD实测路径注册应用scene_enable和菜单退出摘要，old_rgb[10]及读FIFO本地复位增加恒等LUT，不增加图像流水周期；对应等价/存储专项通过。
 
 历史 fast_start_td01：Setup −3.376ns/STNS −109.161ns、Hold −0.020ns/HTNS −0.032ns，失败bit未交付。controller08/09的物理超时注入不符合可重试文件错误模型，之后case18改为两次实际BMP文件内容损坏；10已通过。unit01/02等历史适配器失败保留本地，不计本轮有效通过。
+
+其他同源码布局诊断：{extra_status}
 
 ## S0 与实板边界
 
