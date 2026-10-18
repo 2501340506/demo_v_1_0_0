@@ -1,0 +1,48 @@
+{
+  "firmware": "v0.19.0-s2-local.1",
+  "production_rtl_changed": false,
+  "new_td_build": false,
+  "pixel_bundle_comparisons": {
+    "landslide_village": 4779111,
+    "debris_village": 4779149,
+    "flood_village": 4779060,
+    "quake_village": 4779113
+  },
+  "total_comparisons": 19116433,
+  "card_write": {
+    "added_files": [
+      "G:\\情景模式\\landslide_village\\FONT.BIN",
+      "G:\\情景模式\\landslide_village\\TEXT.BIN",
+      "G:\\情景模式\\landslide_village\\SND1.PCM",
+      "G:\\情景模式\\landslide_village\\SND2.PCM",
+      "G:\\情景模式\\landslide_village\\SND3.PCM",
+      "G:\\情景模式\\landslide_village\\SND4.PCM",
+      "G:\\情景模式\\debris_village\\FONT.BIN",
+      "G:\\情景模式\\debris_village\\TEXT.BIN",
+      "G:\\情景模式\\debris_village\\SND1.PCM",
+      "G:\\情景模式\\debris_village\\SND2.PCM",
+      "G:\\情景模式\\debris_village\\SND3.PCM",
+      "G:\\情景模式\\debris_village\\SND4.PCM",
+      "G:\\情景模式\\flood_village\\FONT.BIN",
+      "G:\\情景模式\\flood_village\\TEXT.BIN",
+      "G:\\情景模式\\flood_village\\SND1.PCM",
+      "G:\\情景模式\\flood_village\\SND2.PCM",
+      "G:\\情景模式\\flood_village\\SND3.PCM",
+      "G:\\情景模式\\flood_village\\SND4.PCM",
+      "G:\\情景模式\\quake_village\\FONT.BIN",
+      "G:\\情景模式\\quake_village\\TEXT.BIN",
+      "G:\\情景模式\\quake_village\\SND1.PCM",
+      "G:\\情景模式\\quake_village\\SND2.PCM",
+      "G:\\情景模式\\quake_village\\SND3.PCM",
+      "G:\\情景模式\\quake_village\\SND4.PCM"
+    ],
+    "added_count": 24,
+    "all_added_files_byte_equal": true,
+    "unchanged_existing_files": 26,
+    "unchanged_existing_bytes": 40110268,
+    "existing_files_byte_equal": true,
+    "board_display_and_audio": "pending"
+  },
+  "vendor_warning": "vlog-2275 glbl overwritten by common/al_phy_glbl.v; existing vendor model duplication",
+  "board_result": "pending display and listening review"
+}
