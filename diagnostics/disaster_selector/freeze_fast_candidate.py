@@ -95,6 +95,9 @@ def freeze(name):
         for case in (0, 11, 16):
             copy(ROOT/f'diagnostics/output/{run}/metrics{case}.txt', f'validation/{run}/metrics{case}.txt')
     assets = ROOT/'diagnostics/output/fast_resource_pack01'
+    pack_tests = read(assets/'scene_pack_tests.log')
+    assert 'Ran 8 tests' in pack_tests and re.search(r'^OK\s*$', pack_tests, re.M)
+    copy(assets/'scene_pack_tests.log', 'validation/scene_pack_tests.log')
     for path in ('full_sd_resources.zip', 'thumbnail_additions.zip', 'assets_manifest.json'):
         copy(assets/path, 'assets/'+path)
     for source in sorted((assets/'card').rglob('THUMB.BMP')):
