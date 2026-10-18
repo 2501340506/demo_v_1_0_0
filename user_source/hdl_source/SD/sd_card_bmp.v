@@ -100,6 +100,9 @@ wire [5:0] directory_valid;
 wire [191:0] directory_clusters;
 reg [31:0] scene_parent,publicity_directory,resource_directory,selected_directory;
 reg scene_parent_valid,root_pic_complete,root_edu_complete,menu_resource_active;
+// Capture the wide nonzero test when discovering the root directory. TD04
+// measured a seven-LUT fallback path from publicity_directory into scan_state.
+reg publicity_directory_valid;
 reg directory_boot_fallback;
 reg [2:0] resource_hazard,selected_hazard;
 // FAT32 directory and board controls stay here; cache ownership is independent.
@@ -271,7 +274,7 @@ always @(posedge clk or posedge rst) begin
   scan_error_seen<=0;img_found_count<=0;map_start_pulse<=0;map_publicity<=0;map_boot<=0;
   pic_checked<=0;edu_checked<=0;scan_application<=0;resource_version<=0;bins_pending<=0;
   scan_directory_pending<=0;scan_hazard_pending<=0;
-  scene_parent<=0;scene_parent_valid<=0;publicity_directory<=0;resource_directory<=0;resource_hazard<=0;
+  scene_parent<=0;scene_parent_valid<=0;publicity_directory<=0;publicity_directory_valid<=0;resource_directory<=0;resource_hazard<=0;
   selected_directory<=0;selected_hazard<=0;root_pic_complete<=0;root_edu_complete<=0;menu_resource_active<=0;directory_boot_fallback<=0;
  end else begin
   scan_start_pulse<=0;map_start_pulse<=0;
@@ -291,7 +294,7 @@ always @(posedge clk or posedge rst) begin
     end else begin
      scan_state<=SC_RESET;map_publicity<=MENU_ENABLE && PUBLICITY_ENABLE;map_boot<=PUBLICITY_ENABLE;scan_application<=0;
      pic_checked<=0;edu_checked<=0;resource_directory<=0;resource_hazard<=0;
-     scene_parent<=0;scene_parent_valid<=0;publicity_directory<=0;root_pic_complete<=0;root_edu_complete<=0;directory_boot_fallback<=0;
+     scene_parent<=0;scene_parent_valid<=0;publicity_directory<=0;publicity_directory_valid<=0;root_pic_complete<=0;root_edu_complete<=0;directory_boot_fallback<=0;
     end
    end
    SC_SELECT_DIRECTORY:begin
@@ -316,6 +319,7 @@ always @(posedge clk or posedge rst) begin
       if(MENU_ENABLE)begin
        scene_parent<=directory_clusters[31:0];scene_parent_valid<=directory_valid[0];
        publicity_directory<=directory_valid[1]?directory_clusters[63:32]:32'd0;
+       publicity_directory_valid<=directory_valid[1] && directory_clusters[63:32]!=0;
       end
       map_publicity<=1;scan_state<=MENU_ENABLE?SC_DECIDE:SC_MAP_ISSUE;
      end else if(SCENE_ENABLE && !scan_error_seen && !bmp_scan_error)scan_state<=SC_BIN_START;
@@ -336,7 +340,7 @@ always @(posedge clk or posedge rst) begin
       edu_checked<=(!scan_error_seen && !bmp_scan_error)?mapped_valid:4'd0;
       if(mapped_valid==15 && !scan_error_seen && !bmp_scan_error)begin
        scan_application<=1;map_boot<=0;scan_success<=1;scan_state<=SC_BIN_START;
-      end else if(MENU_ENABLE && publicity_directory!=0)begin
+      end else if(MENU_ENABLE && publicity_directory_valid)begin
        resource_directory<=publicity_directory;resource_hazard<=0;scan_application<=1;map_boot<=0;directory_boot_fallback<=1;scan_state<=SC_DIRECTORY_ISSUE;
       end else begin map_publicity<=0;map_boot<=0;scan_application<=0;scan_state<=SC_MAP_ISSUE;end
      end else if(MENU_ENABLE && directory_boot_fallback && (scan_error_seen || bmp_scan_error || mapped_valid!=15))begin
