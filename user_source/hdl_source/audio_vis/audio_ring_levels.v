@@ -1,5 +1,5 @@
 // Actual accepted PCM only. 128 slots leave 32 spare while copying 96 entries.
-module audio_ring_levels(
+module audio_ring_levels #(parameter integer BAR_COUNT=96)(
  input wire clk, rst, frame_start, pcm_valid,
  input wire signed [15:0] pcm_left, pcm_right,
  input wire [6:0] bar_index,
@@ -17,8 +17,8 @@ module audio_ring_levels(
  // Heights live in two identically written distributed RAMs: one read by the
  // display, one by the copy update. Copies always write 0,1,2... so the
  // entries written since reset form a prefix; the rest read as reset zero.
- reg [4:0] display_heights [0:95];
- reg [4:0] update_heights [0:95];
+ reg [4:0] display_heights [0:BAR_COUNT-1];
+ reg [4:0] update_heights [0:BAR_COUNT-1];
  reg [6:0] filled;
  reg seen_sample;
  reg copying, copy_valid, copy_zero;
@@ -58,22 +58,22 @@ module audio_ring_levels(
   if (rst) begin
    peak<=0; sample_count<=0; write_pointer<=0; history_count<=0; seen_sample<=0;
    copying<=0; copy_valid<=0; copy_zero<=1; copy_pointer<=0; copy_index<=0;
-   missing<=96; result_index<=0; result_zero<=1; filled<=0;
+   missing<=BAR_COUNT; result_index<=0; result_zero<=1; filled<=0;
   end else begin
    if(pcm_valid) begin
     seen_sample<=1;
     if(sample_count==31) begin
      peak<=0; sample_count<=0; write_pointer<=write_pointer+1'b1;
-     if(history_count<96) history_count<=history_count+1'b1;
+     if(history_count<BAR_COUNT) history_count<=history_count+1'b1;
     end else begin peak<=next_peak; sample_count<=sample_count+1'b1; end
    end
    if(frame_start) begin
     seen_sample<=pcm_valid;
-    copying<=1; copy_pointer<=write_pointer-7'd96; copy_index<=0;
-    missing<=7'd96-history_count; copy_zero<=!seen_sample;
+    copying<=1; copy_pointer<=write_pointer-BAR_COUNT; copy_index<=0;
+    missing<=BAR_COUNT-history_count; copy_zero<=!seen_sample;
    end else if(copying) begin
     copy_pointer<=copy_pointer+1'b1;
-    if(copy_index==95) copying<=0;
+    if(copy_index==BAR_COUNT-1) copying<=0;
     else copy_index<=copy_index+1'b1;
    end
    copy_valid<=copying;

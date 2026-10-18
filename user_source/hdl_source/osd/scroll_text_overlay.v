@@ -9,7 +9,8 @@ module scroll_text_overlay #(
     parameter integer PIXELS_PER_FRAME = 1,
     parameter integer CN_ENABLE = 0,
     parameter integer RUNTIME_ENABLE = 0,
-    parameter integer BRAM_ENABLE = 0
+    parameter integer BRAM_ENABLE = 0,
+    parameter integer ALT_LAYOUT_ENABLE = 0
 )(
     input clk, rst, vs, de,
     input [9:0] pixel_x,
@@ -20,7 +21,8 @@ module scroll_text_overlay #(
     input [119:0] runtime_text,
     input [3:0] runtime_length,
     input runtime_enable, runtime_text_changed,
-    input font_override,output [7:0] font_character,output [3:0] font_row,font_column,output font_region
+    input font_override,output [7:0] font_character,output [3:0] font_row,font_column,output font_region,
+    input alternate_layout
 );
     localparam integer MIXED_LEN = 12;
     localparam integer MAX_WIDTH = (RUNTIME_ENABLE ? 15 : (CN_ENABLE ? MIXED_LEN : TEXT_LEN)) * 16;
@@ -61,7 +63,8 @@ module scroll_text_overlay #(
     // Use a signed local coordinate: negative means not yet inside the text.
     wire signed [31:0] text_x = $signed({1'b0,scroll}) +
                                                 $signed({1'b0,pixel_x}) - WINDOW_RIGHT;
-    wire [8:0] dy = line_y - TEXT_Y;
+    wire [8:0] text_y = ALT_LAYOUT_ENABLE && alternate_layout ? 9'd424 : TEXT_Y;
+    wire [8:0] dy = line_y - text_y;
     reg [7:0] character;
     function [7:0] mixed_char;
         input integer index;
@@ -93,7 +96,7 @@ module scroll_text_overlay #(
     osd_font_5x7 font(.character(ascii_char), .row(dy[3:1]), .pixels(glyph));
     osd_font_cn_16x16 cn_font(.character(character), .row(dy[3:0]), .pixels(cn_glyph));
     wire in_region = ENABLE && subtitle_enabled && started && de && pixel_x >= WINDOW_LEFT && pixel_x < WINDOW_RIGHT &&
-                     line_y >= TEXT_Y && line_y < TEXT_Y + 16 && text_x >= 0 && text_x < text_width;
+                     line_y >= text_y && line_y < text_y + 9'd16 && text_x >= 0 && text_x < text_width;
     wire is_cn = character[7:4] == 4'h8;
     assign font_character=character;assign font_row=dy[3:0];assign font_column=text_x[3:0];
     assign font_region=in_region && is_cn;

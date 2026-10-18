@@ -42,7 +42,7 @@ def tone(seconds, period):
     return stream.getvalue()
 
 
-def generate(output, font_path, template=None, *, test_tones=True):
+def generate(output, font_path, template=None, *, test_tones=True, bottom_waveform=False):
     output, font_path = Path(output), Path(font_path)
     if output.exists():
         raise ValueError(f"output already exists: {output}")
@@ -55,14 +55,16 @@ def generate(output, font_path, template=None, *, test_tones=True):
         draw = ImageDraw.Draw(im)
         # These backgrounds intentionally carry no content under production OSD.
         draw.rectangle((0, 0, 639, 59), fill=INK)
-        draw.rounded_rectangle(AUDIO, radius=18, fill="#e5ebe3")
+        if not bottom_waveform:
+            draw.rounded_rectangle(AUDIO, radius=18, fill="#e5ebe3")
         bounds = []
 
         def label(x, y, value, size=24, fill=INK):
             box = draw.textbbox((x, y), value, font=fonts[size])
             if not (0 <= box[0] < box[2] <= 640 and 60 <= box[1] < box[3] <= 480):
                 raise ValueError(f"text outside page: {value}: {box}")
-            for reserved in (TOP, AUDIO):
+            reserved_regions = (TOP, (0, 420, 640, 480)) if bottom_waveform else (TOP, AUDIO)
+            for reserved in reserved_regions:
                 if max(box[0], reserved[0]) < min(box[2], reserved[2]) and max(box[1], reserved[1]) < min(box[3], reserved[3]):
                     raise ValueError(f"text overlaps OSD: {value}: {box}")
             draw.text((x, y), value, font=fonts[size], fill=fill)
@@ -103,9 +105,10 @@ def generate(output, font_path, template=None, *, test_tones=True):
             raise ValueError(f"unknown diagram: {kind}")
         for i, point in enumerate(page["points"]):
             label(24, 238 + i * 41, point, 24)
-        label(24, 414, spec["disclaimer"], 20, "#a13c1d")
-        label(24, 443, page["source"], 16)
-        label(24, 462, spec["edition"], 16)
+        label(24, 396 if bottom_waveform else 414, spec["disclaimer"], 20, "#a13c1d")
+        if not bottom_waveform:
+            label(24, 443, page["source"], 16)
+            label(24, 462, spec["edition"], 16)
         stream = io.BytesIO()
         im.save(stream, format="PNG", optimize=False, compress_level=9)
         slot = page["id"]
@@ -118,7 +121,8 @@ def generate(output, font_path, template=None, *, test_tones=True):
         pages.append(record)
     report = {"template_version": spec["version"], "pillow_version": pillow_version,
               "font_file": font_path.name, "font_bytes": font_path.stat().st_size,
-              "formal_narration": False, "top_reserved": TOP, "audio_reserved": AUDIO,
+              "formal_narration": False, "top_reserved": TOP,
+              "audio_reserved": (0, 452, 640, 480) if bottom_waveform else AUDIO,
               "pages": pages}
     files["generation.json"] = (json.dumps(report, ensure_ascii=False, indent=2)+"\n").encode("utf-8")
     output.mkdir(parents=True, exist_ok=False)

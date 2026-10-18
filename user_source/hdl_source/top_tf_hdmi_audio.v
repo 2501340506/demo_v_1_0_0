@@ -582,14 +582,16 @@ thumbnail_layout u_thumbnail_layout(.in_de(adjust_de),.pixel_x(adjust_x),.pixel_
 osd_pixel_position u_ring_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
  .line_y(ring_y),.frame_start(ring_frame_start),.first_active());
 generate if(AUDIO_VIS_ENABLE) begin:g_audio_vis
- audio_ring_levels u_levels(.clk(video_clk),.rst(rst_video),.frame_start(ring_frame_start),
+ audio_ring_levels #(.BAR_COUNT(80)) u_levels(.clk(video_clk),.rst(rst_video),.frame_start(ring_frame_start),
   .pcm_valid(ring_tap_valid),.pcm_left(ring_tap_left),.pcm_right(ring_tap_right),
   .bar_index(ring_bar_index),.bar_height(ring_bar_height));
 end else begin:g_no_audio_vis
  assign ring_bar_height=5'd0;
 end endgenerate
 audio_ring_overlay #(.ENABLE(AUDIO_VIS_ENABLE)) u_audio_ring(
- .clk(video_clk),.rst(rst_video),.hs(adjust_hs),.vs(adjust_vs),.de(adjust_de),.enable(adjust_audio && !adjust_preview),
+ // Use committed frame identity: scene/legacy audio must never draw bars.
+ .clk(video_clk),.rst(rst_video),.hs(adjust_hs),.vs(adjust_vs),.de(adjust_de),
+ .enable(PUBLICITY_ENABLE && pixel_identity[1:0]==1 && adjust_valid && adjust_audio && !adjust_preview),
  .pixel_x(adjust_x),.pixel_y(adjust_y),.rgb_in(preview_rgb),.bar_height(ring_bar_height),
  .bar_index(ring_bar_index),.hs_out(ring_hs),.vs_out(ring_vs),.de_out(ring_de),.x_out(ring_x),.rgb_out(ring_rgb));
 
@@ -619,7 +621,8 @@ status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
     .active(status_glyph_active)
 );
-scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1),.BRAM_ENABLE(SCENE_DEMO_ENABLE)) u_scroll_osd (
+scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1),.BRAM_ENABLE(SCENE_DEMO_ENABLE),.ALT_LAYOUT_ENABLE(PUBLICITY_ENABLE)) u_scroll_osd (
+ .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.image_valid(audio_enable),
  .rgb_in(parameter_rgb),.rgb_out(scroll_rgb),.active(scroll_glyph_active),
  .font_override(font_available),.font_character(legacy_font_char),.font_row(legacy_font_row),
@@ -630,7 +633,8 @@ scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNT
 timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(scroll_rgb),.rgb_out(timestamp_rgb),.active(timestamp_glyph_active));
-osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1)) u_osd_band(
+osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1),.ALT_LAYOUT_ENABLE(PUBLICITY_ENABLE)) u_osd_band(
+ .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
  .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
