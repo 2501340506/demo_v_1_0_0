@@ -35,7 +35,7 @@ def main():
     resource = f"{r['lut']} LUT、{r['reg']} 寄存器、{r['bram']} BRAM9k、{r['bram32k']} BRAM32k、{r['dsp']} DSP"
     (TARGET/'README.md').write_text(f'''# 四宫格与开机加速本地候选
 
-候选：`v0.23.0-s2-local.1`；基线 `31de2b0 / v0.22.0-s1-local.1`；生产源码提交 `b791d86`，冻结时提交 `{m['source_commit']}`。功能分支 `feature/thumbnail-fast-start`。本地仿真和完整 TD 通过，实板显示与耗时待测。
+候选：`v0.23.0-s2-local.1`；基线 `31de2b0 / v0.22.0-s1-local.1`；首个功能实现提交 `b791d86`，含后续时序修正的冻结源码提交 `{m['source_commit']}`。功能分支 `feature/thumbnail-fast-start`。本地仿真和完整 TD 通过，实板显示与耗时待测。
 
 ## 使用
 
@@ -97,7 +97,7 @@ def main():
 
 历史 fast_start_td01：Setup −3.376ns/STNS −109.161ns、Hold −0.020ns/HTNS −0.032ns，失败bit未交付。controller08/09的物理超时注入不符合可重试文件错误模型，之后case18改为两次实际BMP文件内容损坏；10已通过。unit01/02等历史适配器失败保留本地，不计本轮有效通过。
 
-其他同源码布局诊断：{extra_status}
+其他布局诊断（含此前源码版本）：{extra_status}
 
 ## S0 与实板边界
 
