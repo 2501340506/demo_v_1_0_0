@@ -23,6 +23,8 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))   # -I drops the script directory
 import hazard_v3 as v3  # noqa: E402
 from PIL import Image, ImageDraw
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from make_menu_thumbnails import thumbnail
 
 T_MAX = 239          # 0..239: arrival time
 T_SPOT = 250         # refuge point, blinks
@@ -636,6 +638,8 @@ def main():
         bmp = out / 'sd' / f'PIC{n + 1}.BMP'
         write_bmp32(bmp, rgb, T, kind)
         check_bmp32(bmp, rgb, T, kind)
+        if n == 0:
+            thumbnail(bmp, out / 'sd' / 'THUMB.BMP')
         Image.fromarray(t_preview3(T) if fmt == 3 else t_preview(T)).save(out / 'tmap' / f'PIC{n + 1}_T.png')
         if a.gif and fmt == 3:
             frames = [Image.fromarray(v3.render(rgb, T, hz, role, k // 2 % 240, k & 1023)).convert(

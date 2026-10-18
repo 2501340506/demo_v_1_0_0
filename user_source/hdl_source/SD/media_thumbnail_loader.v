@@ -2,7 +2,7 @@
 // Both representations belong to one cache entry. Never publish either until
 // both writers have drained. The grant stays fixed throughout an issued burst.
 module media_thumbnail_loader #(
- parameter MENU_ENABLE=0,
+ parameter MENU_ENABLE=0, NATIVE_MENU_ENABLE=0,
  parameter ADDR_BITS=21, BURST_SIZE=64,
  parameter WRITE_V_FLIP=1, FRAME_WIDTH=640, FRAME_HEIGHT=480
 )(
@@ -10,7 +10,7 @@ module media_thumbnail_loader #(
  input Sdr_init_done, Sdr_init_ref_vld, Sdr_busy, App_rd_busy,
  output O_wr_busy, App_wr_en, output [ADDR_BITS-1:0] App_wr_addr,
  output [31:0] App_wr_din, output [3:0] App_wr_dm,
- input menu_mode,
+ input menu_mode,native_menu,
  input write_req, output write_req_ack,
  input write_cancel_req, output write_cancel_ack,
  input [ADDR_BITS-1:0] write_addr_0,write_addr_1,write_addr_2,write_addr_3,
@@ -43,7 +43,8 @@ module media_thumbnail_loader #(
    if(x==FRAME_WIDTH-1)begin xp<=0;yp<=yp==4?0:yp+1'b1;end
   end
  end
- wire take_menu=(xp==0 || xp==2) && (WRITE_V_FLIP?(yp==2 || yp==4):(yp==0 || yp==2));
+ wire take_menu=(NATIVE_MENU_ENABLE && native_menu) ||
+  ((xp==0 || xp==2) && (WRITE_V_FLIP?(yp==2 || yp==4):(yp==0 || yp==2)));
  wire take_thumb=!x[0] && (WRITE_V_FLIP ? row[0] : !row[0]);
  assign write_ready=ready[0] && (menu || !take_thumb || ready[1]);
  assign write_req_ack=ack[0] && (menu || ack[1]);

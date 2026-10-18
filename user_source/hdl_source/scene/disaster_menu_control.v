@@ -3,7 +3,7 @@
 // its display descriptor has actually committed at a frame boundary.
 module disaster_menu_control #(parameter CLK_FREQ_HZ=100000000)(
  input clk,rst,sw3,key1,key2,key4,input [1:0] switch_mode,
- input safe_idle,backend_ready,exit_done,input [3:0] scene_valid,
+ input safe_idle,backend_ready,exit_done,rejected,input [3:0] scene_valid,
  output reg pending,active,enter,confirm,cancel,
  output reg [1:0] focus,output blocked,
  output reg [1:0] effective_mode
@@ -49,7 +49,11 @@ module disaster_menu_control #(parameter CLK_FREQ_HZ=100000000)(
      end
     end
    end
+   if(active && exiting && !sw[0] && sw_q)begin
+    cancel<=1;fullscreen_override<=1;override_page<=saved_page;
+   end
    if(exiting && exit_done)begin active<=0;exiting<=0;armed<=0;saved_switch<=switch_mode;end
+   if(rejected)begin exiting<=0;armed<=0;fullscreen_override<=0;end
   end
  end
 endmodule

@@ -126,7 +126,7 @@ wire preview_request,preview_ack;
 wire [31:0] preview_descriptor,pixel_descriptor;
 wire [17:0] normal_preview_descriptor;
 wire normal_preview_request,normal_preview_ack;
-wire menu_write_mode,menu_visible,menu_display_off;
+wire menu_write_mode,menu_native,menu_visible,menu_display_off;
 wire [1:0] menu_focus,effective_mode;
 wire [3:0] menu_valid;
 
@@ -369,7 +369,7 @@ sd_card_bmp #(
     .SCAN_MAX_SECTOR   (32'd131071),
     .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE),.PUBLICITY_ENABLE(PUBLICITY_ENABLE)
 ) sd_card_bmp_m0(
-    .sw3(sw3),.menu_write_mode(menu_write_mode),.menu_visible(menu_visible),.menu_focus(menu_focus),
+    .sw3(sw3),.menu_write_mode(menu_write_mode),.menu_native(menu_native),.menu_visible(menu_visible),.menu_focus(menu_focus),
     .menu_valid(menu_valid),.menu_display_off(menu_display_off),.effective_mode(effective_mode),
     .application_mode(application_mode),.application_busy(application_busy),.application_error(application_error),.display_identity(display_identity),.display_kind(display_kind),
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
@@ -515,12 +515,12 @@ video_transition_pixels u_video_transition_pixels(
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.
-media_thumbnail_loader #(.MENU_ENABLE(MENU_ENABLE),.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
+media_thumbnail_loader #(.MENU_ENABLE(MENU_ENABLE),.NATIVE_MENU_ENABLE(MENU_ENABLE),.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
     .rst(rst_mem),.mem_clk(ext_mem_clk),.write_clk(sd_card_clk),.write_rst(rst_sd),
     .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
     .App_rd_busy(frame_rd_busy || frame_refill_priority),.O_wr_busy(frame_wr_busy),
     .App_wr_en(App_wr_en),.App_wr_addr(App_wr_addr),.App_wr_din(App_wr_din),.App_wr_dm(App_wr_dm),
-    .menu_mode(menu_write_mode),.write_req(sd_card_write_req),.write_req_ack(sd_card_write_req_ack),
+    .menu_mode(menu_write_mode),.native_menu(menu_native),.write_req(sd_card_write_req),.write_req_ack(sd_card_write_req_ack),
     .write_cancel_req(write_cancel_req),.write_cancel_ack(write_cancel_ack),
     .write_finish(frame_write_finish),.source_done(source_frame_done),.source_error(source_frame_error),
     .error_toggle(frame_error_toggle),.memory_error(frame_memory_error),

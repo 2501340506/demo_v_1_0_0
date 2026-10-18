@@ -1,5 +1,6 @@
-module bmp_scale_stream (
+module bmp_scale_stream #(parameter NATIVE_THUMB_ENABLE=0)(
  input clk,rst,file_start,input [31:0] file_size,
+ input native_thumb,
  input file_valid,input [7:0] file_byte,input [31:0] file_byte_offset,
  input file_end,input [7:0] upstream_error,
  output data_permit,output pixel_valid,input pixel_ready,output [31:0] pixel_rgb,
@@ -16,7 +17,10 @@ module bmp_scale_stream (
  reg [31:0] pixel_slot[0:1];
  reg read_slot,write_slot;
  reg [1:0] pixel_count;
- wire push_pixel=scaler_valid && scaler_ready;
+ reg raw_pipe_valid;
+ reg [31:0] raw_pipe_rgb;
+ wire native_mode=NATIVE_THUMB_ENABLE && native_thumb;
+ wire push_pixel=(native_mode?raw_pipe_valid:scaler_valid) && scaler_ready;
  wire pop_pixel=pixel_valid && pixel_ready;
  assign scaler_ready=pixel_count<2;
  assign pixel_valid=pixel_count!=0;
@@ -25,7 +29,7 @@ module bmp_scale_stream (
   if(rst)begin read_slot<=0;write_slot<=0;pixel_count<=0;end
   else if(file_start)begin read_slot<=0;write_slot<=0;pixel_count<=0;end
   else begin
-   if(push_pixel)begin pixel_slot[write_slot]<=scaler_rgb;write_slot<=~write_slot;end
+   if(push_pixel)begin pixel_slot[write_slot]<=native_mode?raw_pipe_rgb:scaler_rgb;write_slot<=~write_slot;end
    if(pop_pixel)read_slot<=~read_slot;
    case({push_pixel,pop_pixel})
     2'b10:pixel_count<=pixel_count+1'b1;
@@ -37,11 +41,9 @@ module bmp_scale_stream (
  reg decode_seen,scale_seen,reported;
  // Registered ready/valid boundary keeps decoder counters and coordinates
  // out of the scaler's row-selection cone.
- reg raw_pipe_valid;
- reg [31:0] raw_pipe_rgb;
  reg [15:0] raw_pipe_x,raw_pipe_y;
  wire scaler_in_ready;
- assign raw_ready=!raw_pipe_valid || scaler_in_ready;
+ assign raw_ready=!raw_pipe_valid || (native_mode?scaler_ready:scaler_in_ready);
  always @(posedge clk or posedge rst)begin
   if(rst)begin raw_pipe_valid<=0;raw_pipe_rgb<=0;raw_pipe_x<=0;raw_pipe_y<=0;end
   else if(file_start)raw_pipe_valid<=0;
@@ -66,8 +68,8 @@ module bmp_scale_stream (
   .pixel_ready(raw_ready),.pixel_rgb(),.pixel_rgba(raw_rgb),.pixel_x(px),.pixel_y(py),
   .frame_commit(),.bmp_done(decoder_done),.bmp_error(error),.file_ready(bytes_ready),
   .image_width(w),.image_height(h));
- image_scale_nearest scaler(.clk(clk),.rst(rst || file_start),.start(header_valid),
-  .image_width(w),.image_height(h),.in_valid(raw_pipe_valid),.in_ready(scaler_in_ready),
+ image_scale_nearest scaler(.clk(clk),.rst(rst || file_start),.start(header_valid && !native_mode),
+  .image_width(w),.image_height(h),.in_valid(raw_pipe_valid && !native_mode),.in_ready(scaler_in_ready),
   .in_rgb(raw_pipe_rgb),.in_x(raw_pipe_x),.in_y(raw_pipe_y),.out_valid(scaler_valid),.out_ready(scaler_ready),
   .out_rgb(scaler_rgb),.done(scaler_done));
  always @(posedge clk or posedge rst)begin
@@ -79,7 +81,7 @@ module bmp_scale_stream (
     if(decoder_done)decode_seen<=1;
     if(scaler_done)scale_seen<=1;
     if(!reported && error==0 && upstream_error==0 &&
-       (decode_seen || decoder_done) && scale_seen && pixel_count==0)begin done<=1;reported<=1;end
+       (decode_seen || decoder_done) && (native_mode?!raw_pipe_valid:scale_seen) && pixel_count==0)begin done<=1;reported<=1;end
    end
   end
  end

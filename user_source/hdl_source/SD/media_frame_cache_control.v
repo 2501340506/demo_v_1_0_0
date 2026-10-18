@@ -6,8 +6,8 @@
 // reader actually committed at a frame boundary, not merely queued a target.
 // Cancel supersedes an offered/accepted load and is held until cancel_ack;
 // that acknowledgement must mean source stopped, burst finished and FIFO clear.
-module media_frame_cache_control #(parameter PAUSE_ENABLE=0)(
- input pause,
+module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=0)(
+ input pause,strict_first,
     input clk, rst,
     input rescan_event,
     output scan_request,
@@ -154,6 +154,7 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0)(
                         load_state <= LOAD_ISSUE;
                     end else begin
                         cache_failed[load_image] <= 1;
+                        if(STRICT_FIRST_ENABLE && strict_first && !first_image_committed)storage_stopped<=1;
                         load_failed <= 1; failed_image <= load_image;
                         load_state <= LOAD_IDLE;
                     end

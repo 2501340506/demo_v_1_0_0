@@ -29,12 +29,15 @@ module disaster_layer #(parameter SIDE_WIDTH=1)(
  // Preserve delay on the two measured short legacy BRAM input paths.
  wire [23:0] old_ram_input;
  assign old_ram_input[23:16]=old_rgb[23:16];
- assign old_ram_input[14:4]=old_rgb[14:4];
+ assign old_ram_input[14:11]=old_rgb[14:11];
+ assign old_ram_input[9:4]=old_rgb[9:4];
  assign old_ram_input[2:0]=old_rgb[2:0];
  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
   u_old_hold3(.o(old_ram_input[3]),.a(old_rgb[3]));
  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
   u_old_hold15(.o(old_ram_input[15]),.a(old_rgb[15]));
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_old_hold10(.o(old_ram_input[10]),.a(old_rgb[10]));
  wire [SIDE_WIDTH-1:0] side_ram_input;
  genvar side_bit;
  // TD18/28/29 exposed different bits of the same direct sideband/BRAM bus.

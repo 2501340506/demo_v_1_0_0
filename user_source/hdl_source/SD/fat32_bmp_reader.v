@@ -5,13 +5,14 @@ module fat32_bmp_reader #(
  parameter integer MAX_VISITED_CLUSTERS=8192,
  // 1: loads select a found image by index from the scanner table instead of
  // taking load_cluster/load_size; the table only changes during a scan.
- parameter integer DIRECTORY_ENABLE=0,
+ parameter integer DIRECTORY_ENABLE=0, FAST_START=0,
  parameter integer LOAD_BY_INDEX=0
 )(
  input clk,rst,sd_init_done,scan_start,load_start,load_cancel,
  // Opt-in module interface. Remap only when ready and both sector clients idle;
  // the caller must invalidate/quiesce its frame caches before requesting it.
  input map_start,resource_publicity,
+ input menu_preview,menu_fallback,output native_thumb,
  input [31:0] directory_cluster,input [2:0] expected_hazard,
  output [5:0] directory_valid,output [191:0] directory_clusters,
  output reg active_publicity,
@@ -53,7 +54,10 @@ module fat32_bmp_reader #(
  wire volume_done,volume_busy,stream_busy,stream_done,stream_valid;
  wire [7:0] volume_error,stream_error,stream_byte,spc;
  wire [31:0] fat_lba,data_lba,max_cluster,stream_offset;
- wire [3:0] mask=active_publicity ? edu_valid : pic_valid;
+ reg preview_scan,thumb_selected;
+ wire thumb_found;wire [31:0] thumb_cluster,thumb_size;
+ assign native_thumb=FAST_START && thumb_selected;
+ wire [3:0] mask=native_thumb?{3'd0,thumb_found}:active_publicity ? edu_valid : pic_valid;
  wire [31:0] clusters[0:3],sizes[0:3];
  wire scan_req,file_req;wire [31:0] scan_lba,file_lba;
  wire sector_busy,sector_valid,sector_done;
@@ -128,8 +132,8 @@ module fat32_bmp_reader #(
  // Resolve logical-to-physical mapping before selecting the wide metadata.
  // Both scanning and loading use the same registered physical table index.
  wire [1:0] select_slot=candidate[1:0];
- wire [31:0] selected_cluster=active_publicity ? edu_clusters[32*select_slot+:32] : clusters[select_slot];
- wire [31:0] selected_size=active_publicity ? edu_sizes[32*select_slot+:32] : sizes[select_slot];
+ wire [31:0] selected_cluster=native_thumb?thumb_cluster:active_publicity ? edu_clusters[32*select_slot+:32] : clusters[select_slot];
+ wire [31:0] selected_size=native_thumb?thumb_size:active_publicity ? edu_sizes[32*select_slot+:32] : sizes[select_slot];
 
  reg [7:0] header_hazard,header_role;
  wire header_valid;
@@ -183,7 +187,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
    scan_sector_byte<=sector_byte;scan_sector_error<=sector_error;scan_sector_index<=sector_index;
   end
  end
- fat32_volume_scanner #(.DIRECTORY_ENABLE(DIRECTORY_ENABLE),.SCAN_AUDIO(SCAN_AUDIO),.SCAN_TEXT(SCAN_TEXT),.SCAN_PUBLICITY(SCAN_PUBLICITY),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
+ fat32_volume_scanner #(.REUSE_GEOMETRY(FAST_START),.DIRECTORY_ENABLE(DIRECTORY_ENABLE),.SCAN_AUDIO(SCAN_AUDIO),.SCAN_TEXT(SCAN_TEXT),.SCAN_PUBLICITY(SCAN_PUBLICITY),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
  .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY && scan_cancel_q)),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .directory_cluster(directory_cluster),.directory_valid(directory_valid),.directory_clusters(directory_clusters),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
@@ -192,6 +196,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
  .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
  .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
+ .thumb_found(thumb_found),.thumb_cluster(thumb_cluster),.thumb_size(thumb_size),
  .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_sector_valid),
  .sector_byte(scan_sector_byte),.sector_byte_index(scan_sector_index),.sector_done(scan_sector_done),.sector_error(scan_sector_error));
  // Keep the file response in one pipeline bundle: the last byte may arrive
@@ -236,14 +241,15 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .sector_byte(sector_byte),.sector_index(sector_index),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));
+ wire [31:0] header_width,header_height;wire header_32;
  bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(SCALE_ENABLE)) preflight(
  .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(header_valid),
  .file_byte(header_byte),.file_byte_offset({23'd0,header_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
- .file_len(header_file_len),.pixel_offset(),.width(),.height(),.required_end(required_end),.header_match(header_match),
- .skip_format(),.header_complete(),.is_32(),.row_stride(),.expected_pixels());
+ .file_len(header_file_len),.pixel_offset(),.width(header_width),.height(header_height),.required_end(required_end),.header_match(header_match),
+ .skip_format(),.header_complete(),.is_32(header_32),.row_stride(),.expected_pixels());
  generate if(SCALE_ENABLE)begin:g_scale
- bmp_scale_stream scaled(
- .clk(clk),.rst(decoder_reset),.file_start(file_go),.file_size(task_size),
+ bmp_scale_stream #(.NATIVE_THUMB_ENABLE(FAST_START)) scaled(
+ .clk(clk),.rst(decoder_reset),.file_start(file_go),.file_size(task_size),.native_thumb(native_thumb),
  .file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),.file_byte_offset(stream_offset),
  .file_end(stream_done),.upstream_error(stream_error),.data_permit(data_permit),
  .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error));
@@ -262,7 +268,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  always @(posedge clk or posedge rst)begin
  if(rst)begin
  state<=IDLE;scan_go<=0;file_go<=0;header_go<=0;scan_done<=0;scan_error<=0;
- active_publicity<=0;metadata_ready<=0;mapping_ready<=0;mapped_valid<=0;scan_found_slot<=0;cancelled<=0;
+ active_publicity<=0;preview_scan<=0;thumb_selected<=0;metadata_ready<=0;mapping_ready<=0;mapped_valid<=0;scan_found_slot<=0;cancelled<=0;
  scan_found_valid<=0;scan_found_cluster<=0;scan_found_size<=0;scan_found_total<=0;
  load_done<=0;load_error<=0;bmp_error<=0;fat_error<=0;candidate<=0;
  task_cluster<=0;task_size<=0;header_lba<=0;header_shift_count<=0;found_slot[0]<=0;found_slot[1]<=0;found_slot[2]<=0;found_slot[3]<=0;io_error<=0;stream_finished<=0;decode_finished<=0;ack_wait<=0;
@@ -287,9 +293,9 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  end else case(state)
  IDLE:if(sd_init_done)begin
  if(scan_start)begin scan_done<=0;scan_found_total<=0;candidate<=0;fat_error<=0;bmp_error<=0;io_error<=0;scan_go<=1;state<=SCAN;cancelled<=0;
- active_publicity<=SCAN_PUBLICITY ? resource_publicity : 1'b0;metadata_ready<=0;mapping_ready<=0;mapped_valid<=0;end
+ active_publicity<=SCAN_PUBLICITY ? resource_publicity : 1'b0;preview_scan<=FAST_START && menu_preview;thumb_selected<=0;metadata_ready<=0;mapping_ready<=0;mapped_valid<=0;end
  else if(SCAN_PUBLICITY && map_start && !sector_busy && !a_busy)begin
-  if(metadata_ready)begin active_publicity<=resource_publicity;scan_done<=0;scan_found_total<=0;candidate<=0;mapped_valid<=0;mapping_ready<=0;fat_error<=0;bmp_error<=0;io_error<=0;state<=SELECT;cancelled<=0;end
+  if(metadata_ready)begin active_publicity<=resource_publicity;preview_scan<=0;thumb_selected<=0;scan_done<=0;scan_found_total<=0;candidate<=0;mapped_valid<=0;mapping_ready<=0;fat_error<=0;bmp_error<=0;io_error<=0;state<=SELECT;cancelled<=0;end
   else begin scan_error<=1;fat_error<=8'h24;end
  end
  else if(load_start)begin
@@ -303,17 +309,18 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  LOAD_SELECT:begin task_cluster<=selected_cluster;task_size<=selected_size;state<=WRITE_WAIT;end
  SCAN:if(volume_done)begin
  if(volume_error!=0)begin fat_error<=(volume_error==8'h10 && io_error!=0)?io_error:volume_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
- else begin metadata_ready<=1;state<=SELECT;end
+ else begin metadata_ready<=1;thumb_selected<=preview_scan && thumb_found && !menu_fallback;state<=SELECT;end
  end
  SELECT:if(!sector_busy)begin
- if(candidate==4)state<=SCAN_FINISH;
+ if(candidate==4 || (preview_scan && candidate==1))state<=SCAN_FINISH;
  else begin
  task_cluster<=selected_cluster;task_size<=selected_size;
  state<=SCAN_PUBLICITY?SELECT_RANGE:SELECT_CHECK;end
  end
  SELECT_RANGE:state<=SELECT_CHECK;
  SELECT_CHECK:begin
- if(SCAN_PUBLICITY?selected_bad_q:selected_bad)begin candidate<=candidate+1'b1;state<=SELECT;end
+ if(SCAN_PUBLICITY?selected_bad_q:selected_bad)begin
+  if(native_thumb)thumb_selected<=0;else candidate<=candidate+1'b1;state<=SELECT;end
  else begin
  header_lba<=task_cluster-2;header_shift_count<=header_cluster_shift;state<=HEADER_SHIFT;end
  end
@@ -323,15 +330,21 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  HEADER_RESET:state<=HEADER_REQ;
  HEADER_REQ:if(!sector_busy)begin header_go<=1;state<=HEADER_WAIT;end
  HEADER_WAIT:if(control_sector_done)begin
- if(control_sector_error!=0)begin fat_error<=control_sector_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
+ if(control_sector_error!=0 && native_thumb)begin
+  thumb_selected<=0;io_error<=0;state<=SELECT;
+ end else if(control_sector_error!=0)begin fat_error<=control_sector_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
  else state<=HEADER_CHECK;
  end
  HEADER_CHECK:begin
- if(header_match && (strict_hazard==0 || (header_hazard=={5'd0,strict_hazard} && header_role=={5'd0,candidate}+8'd1)) && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
+ if(header_match && (native_thumb ? (header_width==256 && header_height==192 && !header_32) :
+    (strict_hazard==0 || (header_hazard=={5'd0,strict_hazard} && header_role=={5'd0,candidate}+8'd1))) && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
  mapped_valid[candidate[1:0]]<=1;scan_found_slot<=candidate[1:0];
  scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;
- if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];end
- candidate<=candidate+1'b1;state<=SELECT;
+ if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];
+ candidate<=candidate+1'b1;
+ end else if(native_thumb)thumb_selected<=0;
+ else candidate<=candidate+1'b1;
+ state<=SELECT;
  end
  SCAN_FINISH:if(!sector_busy)begin scan_done<=1;mapping_ready<=(bmp_error==0 && fat_error==0);state<=IDLE;end
  WRITE_WAIT:if(write_req_ack)state<=START_FILE;

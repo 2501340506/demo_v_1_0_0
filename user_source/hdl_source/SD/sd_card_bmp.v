@@ -30,7 +30,7 @@ module sd_card_bmp #(
     output font_valid,text_valid,output [7:0] font_count,output [12:0] text_bytes,
     output bin_wr_en,bin_wr_text,output [11:0] bin_wr_addr,output [7:0] bin_wr_data,
     input sw3,
-    output menu_write_mode,output menu_visible,output [1:0] menu_focus,
+    output menu_write_mode,output menu_native,output menu_visible,output [1:0] menu_focus,
     output [3:0] menu_valid,output [1:0] effective_mode,
     input menu_display_off,
     input                       clk,
@@ -90,6 +90,8 @@ wire [31:0] desired_directory;
 wire menu_pending,menu_active,menu_blocked,menu_enter,menu_confirm,menu_cancel;
 wire menu_owner,menu_ready,menu_discard,menu_load_request,menu_load_ready,menu_scan,menu_direct;
 wire menu_force,menu_exit,menu_resume;
+wire [1:0] menu_force_target;
+wire menu_preview,menu_fallback,menu_rejected;
 wire [31:0] menu_directory,menu_selected_directory;
 wire [2:0] menu_hazard,menu_selected_hazard;
 wire menu_publicity;
@@ -123,8 +125,10 @@ wire normal_transition_active,normal_transition_wipe;
 wire [4:0] normal_transition_level;
 
 localparam SC_IDLE=0,SC_RESET=1,SC_INIT=2,SC_SCAN=3,SC_RESULT=4,SC_BIN_START=5,SC_BIN_WAIT=6,
- SC_MAP_ISSUE=7,SC_MAP_WAIT=8,SC_DECIDE=9,SC_DIRECTORY_ISSUE=10,SC_DIRECTORY_WAIT=11,SC_SELECT_DIRECTORY=12;
+ SC_MAP_ISSUE=7,SC_MAP_WAIT=8,SC_DECIDE=9,SC_DIRECTORY_ISSUE=10,SC_DIRECTORY_WAIT=11,SC_SELECT_DIRECTORY=12,
+ SC_FIRST_WAIT=13,SC_BG_BIN_START=14,SC_BG_BIN_WAIT=15;
 reg [3:0] scan_state;
+reg bins_pending;
 // Separate the application/resource mux from the directory comparison. TD24
 // measured eight LUT levels from app_target through this IDLE decision.
 reg [31:0] scan_directory_pending;
@@ -183,7 +187,7 @@ wire [8:0] a_index;
 wire font_found,text_found;
 wire [31:0] font_cluster,font_size,text_cluster,text_size;
 wire bin_done,bin_req;wire [31:0] bin_lba;
-wire bin_owner=SCENE_ENABLE && (scan_state==SC_BIN_START || scan_state==SC_BIN_WAIT);
+wire bin_owner=SCENE_ENABLE && (scan_state==SC_BIN_START || scan_state==SC_BIN_WAIT || scan_state==SC_BG_BIN_START || scan_state==SC_BG_BIN_WAIT);
 // Retiming the complete shared response keeps protocol state/valid off the
 // audio and BIN byte-register enables. Capture ownership with the response;
 // coincident last-byte and done remain coincident at both consumers.
@@ -199,7 +203,7 @@ always @(posedge clk)begin
 end
 wire response_busy=a_busy || a_valid || a_done || response_valid || response_done;
 generate if(SCENE_ENABLE)begin:g_bins
- bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(parser_rst || (MENU_ENABLE && scan_accept)),.start(scan_state==SC_BIN_START),
+ bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(parser_rst || (MENU_ENABLE && scan_accept)),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
   .font_found(font_found),.text_found(text_found),.font_cluster(font_cluster),.font_size(font_size),
   .text_cluster(text_cluster),.text_size(text_size),.spc(audio_spc),.fat_lba(audio_fat_lba),
   .data_lba(audio_data_lba),.max_cluster(audio_max_cluster),.done(bin_done),
@@ -221,7 +225,7 @@ wire audio_run=audio_session && scene_stream_run;
 assign scan_accept=scan_request && !menu_owner && scan_state==SC_IDLE && !audio_run && audio_stopped;
 always @(posedge clk or posedge rst) begin
  if(rst)audio_session<=0;
- else if(menu_pause || scan_request || (!PUBLICITY_ENABLE && rescan_event) || (PUBLICITY_ENABLE && app_stop_audio))audio_session<=0;
+ else if(menu_pause || bins_pending || scan_request || (!PUBLICITY_ENABLE && rescan_event) || (PUBLICITY_ENABLE && app_stop_audio))audio_session<=0;
  // After remapping, READY may precede the target audio request. Keep the old
  // selection stopped until the common controller selects the new resource set.
  // Register this gate here: do not add resource decode to audio_run's fanout.
@@ -265,7 +269,7 @@ always @(posedge clk or posedge rst) begin
  if(rst) begin
   scan_state<=SC_IDLE;reset_count<=0;scan_start_pulse<=0;scan_result_valid<=0;scan_success<=0;
   scan_error_seen<=0;img_found_count<=0;map_start_pulse<=0;map_publicity<=0;map_boot<=0;
-  pic_checked<=0;edu_checked<=0;scan_application<=0;resource_version<=0;
+  pic_checked<=0;edu_checked<=0;scan_application<=0;resource_version<=0;bins_pending<=0;
   scan_directory_pending<=0;scan_hazard_pending<=0;
   scene_parent<=0;scene_parent_valid<=0;publicity_directory<=0;resource_directory<=0;resource_hazard<=0;
   selected_directory<=0;selected_hazard<=0;root_pic_complete<=0;root_edu_complete<=0;menu_resource_active<=0;directory_boot_fallback<=0;
@@ -285,7 +289,7 @@ always @(posedge clk or posedge rst) begin
       scan_state<=SC_SELECT_DIRECTORY;
      end else scan_state<=SC_MAP_ISSUE;
     end else begin
-     scan_state<=SC_RESET;map_publicity<=0;map_boot<=PUBLICITY_ENABLE;scan_application<=0;
+     scan_state<=SC_RESET;map_publicity<=MENU_ENABLE && PUBLICITY_ENABLE;map_boot<=PUBLICITY_ENABLE;scan_application<=0;
      pic_checked<=0;edu_checked<=0;resource_directory<=0;resource_hazard<=0;
      scene_parent<=0;scene_parent_valid<=0;publicity_directory<=0;root_pic_complete<=0;root_edu_complete<=0;directory_boot_fallback<=0;
     end
@@ -308,12 +312,12 @@ always @(posedge clk or posedge rst) begin
     if(scan_done) begin
      scan_success<=!scan_error_seen && !bmp_scan_error;
      if(PUBLICITY_ENABLE && !scan_error_seen && !bmp_scan_error)begin
-      pic_checked<=mapped_valid;root_pic_complete<=mapped_valid==15;
+      pic_checked<=MENU_ENABLE?4'd0:mapped_valid;root_pic_complete<=MENU_ENABLE?(pic_valid==15):(mapped_valid==15);
       if(MENU_ENABLE)begin
        scene_parent<=directory_clusters[31:0];scene_parent_valid<=directory_valid[0];
        publicity_directory<=directory_valid[1]?directory_clusters[63:32]:32'd0;
       end
-      map_publicity<=1;scan_state<=SC_MAP_ISSUE;
+      map_publicity<=1;scan_state<=MENU_ENABLE?SC_DECIDE:SC_MAP_ISSUE;
      end else if(SCENE_ENABLE && !scan_error_seen && !bmp_scan_error)scan_state<=SC_BIN_START;
      else begin scan_result_valid<=1;scan_state<=SC_RESULT;end
     end
@@ -351,9 +355,14 @@ always @(posedge clk or posedge rst) begin
    end
    SC_DIRECTORY_ISSUE:if(bmp_ready && !a_busy)begin scan_start_pulse<=1;scan_error_seen<=0;img_found_count<=0;scan_state<=SC_DIRECTORY_WAIT;end
    SC_DIRECTORY_WAIT:if(!scan_done && !scan_start_pulse)scan_state<=SC_DECIDE;
-   SC_BIN_START:scan_state<=SC_BIN_WAIT;
+   SC_BIN_START:if(MENU_ENABLE && scan_application==1)begin
+    bins_pending<=1;scan_result_valid<=1;scan_state<=SC_RESULT;
+   end else scan_state<=SC_BIN_WAIT;
    SC_BIN_WAIT:if(bin_done)begin scan_result_valid<=1;scan_state<=SC_RESULT;end
-   SC_RESULT: if(scan_result_ready) begin scan_result_valid<=0;scan_state<=SC_IDLE;end
+   SC_RESULT: if(scan_result_ready) begin scan_result_valid<=0;scan_state<=bins_pending?SC_FIRST_WAIT:SC_IDLE;end
+   SC_FIRST_WAIT:if(first_image_committed || application_error)scan_state<=SC_BG_BIN_START;
+   SC_BG_BIN_START:scan_state<=SC_BG_BIN_WAIT;
+   SC_BG_BIN_WAIT:if(bin_done)begin bins_pending<=0;scan_state<=SC_IDLE;end
    default:scan_state<=SC_IDLE;
   endcase
  end
@@ -415,6 +424,7 @@ wire transition_permit, transition_busy;
 wire scene_muted_sd,scene_audio_running;
 reg transition_auto;
 wire [1:0] cache_display_image,cache_display_bank;
+wire app_initial_display;
 wire transition_needed=TRANSITION_ENABLE && !controls_blocked && !preview_selecting && first_image_committed &&
                        display_valid && cache_display_bank!=current_bank;
 video_transition_sd_control #(.ENABLE(TRANSITION_ENABLE)) u_transition_sd_control(
@@ -431,10 +441,10 @@ generate if(PUBLICITY_ENABLE)begin:g_application
  scene_event_cdc frame_events(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
   .sample_accept(1'b0),.frame_start(transition_frame_start),.clk(clk),.rst(rst),
   .sample_tick(),.frame_tick(app_frame_tick));
- publicity_app_control #(.MENU_ENABLE(MENU_ENABLE)) application(
-  .force_request(menu_force),.clk(clk),.rst(rst),.toggle_request(application_toggle),
+ publicity_app_control #(.MENU_ENABLE(MENU_ENABLE),.FAST_BOOT(MENU_ENABLE)) application(
+  .force_request(menu_force),.force_target(menu_force_target),.clk(clk),.rst(rst),.toggle_request(application_toggle),
   .retry_request(media_auto_toggle_request && effective_mode==0),.rescan_request(rescan_event),
-  .pic_complete(pic_checked==15 || (MENU_ENABLE && selected_directory!=0)),.pic_any(pic_checked!=0),.edu_complete(edu_checked==15),
+  .pic_complete(pic_checked==15 || (MENU_ENABLE && (root_pic_complete || selected_directory!=0))),.pic_any(pic_checked!=0 || (MENU_ENABLE && pic_valid!=0)),.edu_complete(edu_checked==15),
   .scan_valid(scan_result_valid && scan_result_ready),.scan_success(scan_success && img_found_count!=0),.scan_application(scan_application),
   .idle(!foreground_busy && !transition_busy && !scene_fade && preview_fullscreen_ready),
   .black(app_black_permit),.muted(scene_muted_sd || !AUDIO_ENABLE),.audio_stopped(audio_stopped),
@@ -442,7 +452,7 @@ generate if(PUBLICITY_ENABLE)begin:g_application
   .scene_ready(scenario_state[12] && !scene_fade),.frame_tick(app_frame_tick),.fade_busy(app_fade_busy),
   .app(application_mode),.target(app_target),.busy(application_busy),.error(application_error),.rejected(app_rejected),
   .physical(app_physical),.reload(app_reload),.stop_audio(app_stop_audio),.scene_enable(app_scene_enable),
-  .fade_request(app_fade_request),.release_fade(app_release));
+  .fade_request(app_fade_request),.release_fade(app_release),.initial_display(app_initial_display));
  reg release_q,release_toggle;
  (* ASYNC_REG="TRUE" *) reg [1:0] release_sync;
  reg release_seen;
@@ -464,6 +474,7 @@ end else begin:g_no_application
  assign app_physical=1;assign app_reload=0;assign app_stop_audio=0;assign app_scene_enable=0;
  assign app_fade_request=0;assign app_release=0;assign app_rejected=0;
  assign app_level=16;assign app_pixel_active=0;assign app_black_permit=1;assign app_fade_busy=0;
+ assign app_initial_display=0;
 end endgenerate
 reg rescan_pending;
 wire rescan_wait=(rescan_pending || rescan_raw || controls_blocked);
@@ -482,9 +493,9 @@ always @(posedge clk or posedge rst) begin
  if(rst) begin commit_pending<=0;display_commit_request<=0;disp_buf_idx<=0;display_identity<=0;display_kind<=0;end
  else begin
   if(!cache_display_request) commit_pending<=0;
-  else if(!commit_pending && preview_fullscreen_ready && (!app_controls_blocked || app_black_permit) && (!transition_needed || transition_permit) &&
+  else if(!commit_pending && preview_fullscreen_ready && (!app_controls_blocked || app_black_permit || app_initial_display) && (!transition_needed || transition_permit) &&
           (!scene_owns || !scene_audio_running || scene_muted_sd) &&
-          (!PUBLICITY_ENABLE || application_mode!=1 || scene_muted_sd || !AUDIO_ENABLE)) begin
+          (!PUBLICITY_ENABLE || application_mode!=1 || scene_muted_sd || !AUDIO_ENABLE || app_initial_display)) begin
    disp_buf_idx<=cache_display_bank;
    display_identity<={resource_version,scan_application};
    display_kind<=bank_kind[cache_display_bank];
@@ -539,8 +550,8 @@ always @(posedge clk or posedge rst) begin
  else if(ctrl_request_accept) transition_auto<=ctrl_auto_load_request;
  else if(public_accept)transition_auto<=1;
 end
-media_frame_cache_control #(.PAUSE_ENABLE(MENU_ENABLE)) u_cache_control(
- .pause(cache_pause),
+media_frame_cache_control #(.PAUSE_ENABLE(MENU_ENABLE),.STRICT_FIRST_ENABLE(MENU_ENABLE)) u_cache_control(
+ .pause(cache_pause || (bins_pending && first_image_committed)),.strict_first(scan_application!=0),
  .clk(clk),.rst(rst),.rescan_event(cache_rescan_event),
  .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),
  .scan_success(scan_success),.scan_image_count(img_found_count),.scan_result_ready(scan_result_ready),.scan_busy(scan_busy),
@@ -642,7 +653,7 @@ generate if(PUBLICITY_ENABLE)begin:g_publicity
   .pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),
   .enable((application_mode==1 && !app_stop_audio && !scan_busy) || public_commit),
   .commit(public_commit),.commit_page(cache_display_image),.page_pending(cache_display_request && scan_application==1),
-  .busy(controls_blocked || transition_block || foreground_busy),.ui_play(effective_mode==0),.frame_tick(frame_tick),
+  .busy(controls_blocked || transition_block || foreground_busy || bins_pending),.ui_play(effective_mode==0),.frame_tick(frame_tick),
   .toggle_auto(media_auto_toggle_request && effective_mode==0),.manual(manual_activity || ctrl_load_request || preview_offer || scene_request),
   .offer_ready(ctrl_request_ready && !ctrl_offer && !preview_offer && !scene_request && !transition_block && !foreground_busy),
   .audio_ready(common_audio_ready),.selected_publicity(selected_publicity),.selected_found(selected_audio_found && AUDIO_ENABLE),
@@ -710,6 +721,22 @@ reg [15:0] diag_events;
 reg [1:0] diag_image;
 reg [2:0] diag_error;
 reg [3:0] diag_phase;
+// Performance markers share the existing nonblocking UART queue. Pending
+// bits preserve concurrent events; no diagnostic signal gates business work.
+reg [7:0] pending_timing;
+reg menu_ready_seen,bin_pending_seen,sdram_seen,source_timing_seen,write_timing_seen;
+reg [2:0] timing_slot;
+always @* begin
+ timing_slot=0;
+ if(pending_timing[0])timing_slot=0;
+ else if(pending_timing[1])timing_slot=1;
+ else if(pending_timing[2])timing_slot=2;
+ else if(pending_timing[3])timing_slot=3;
+ else if(pending_timing[4])timing_slot=4;
+ else if(pending_timing[5])timing_slot=5;
+ else if(pending_timing[6])timing_slot=6;
+ else timing_slot=7;
+end
 always @* begin
  diag_events=0;diag_image=img_idx;diag_error=0;diag_phase=1;
  if(diag_commit) begin
@@ -727,6 +754,13 @@ always @* begin
  else if(pending_skip) begin diag_events[6]=1;diag_image=skip_idx;diag_phase=3;end
  else if(pending_complete) begin diag_events[11]=1;diag_image=complete_idx;diag_phase=4'hc;end
  else if(pending_hit) begin diag_events[11]=1;diag_image=hit_idx;diag_phase=4'hd;end
+ else if(|pending_timing)begin
+  diag_events[11]=1;
+  case(timing_slot)
+   0:diag_phase=9;1:diag_phase=10;2:diag_phase=11;3:diag_phase=4;
+   4:diag_phase=5;5:diag_phase=6;6:diag_phase=14;default:diag_phase=8;
+  endcase
+ end
  else if(effective_auto!=auto_seen) diag_events[10]=1;
 end
 always @(posedge clk or posedge rst) begin
@@ -735,10 +769,22 @@ always @(posedge clk or posedge rst) begin
   pending_complete<=0;pending_hit<=0;pending_fault<=0;complete_idx<=0;hit_idx<=0;fault_idx<=0;fault_error<=0;fault_phase<=0;
   pending_retry<=0;pending_skip<=0;retry_idx<=0;skip_idx<=0;
   init_seen<=0;init_fail_seen<=0;auto_seen<=0;timeout_seen<=0;
+  pending_timing<=0;menu_ready_seen<=0;bin_pending_seen<=0;sdram_seen<=0;source_timing_seen<=0;write_timing_seen<=0;
  end else begin
   underflow_sync<={underflow_sync[0],reader_underflow};reader_code0<=reader_error;reader_code1<=reader_code0;read_fault_seen<=read_fault;
   init_seen<=sd_init_done;init_fail_seen<=sd_init_failed;auto_seen<=effective_auto;timeout_seen<=timeout_stopped;
   diagnostics<={diag_events,diag_image,sd_sec_read_addr,diag_error,diag_phase,effective_auto};
+  menu_ready_seen<=menu_ready;bin_pending_seen<=bins_pending;sdram_seen<=sdram_ready;
+  source_timing_seen<=source_done_now;write_timing_seen<=write_finish_now;
+  if(diag_events[11] && diag_phase!=12 && diag_phase!=13)pending_timing[timing_slot]<=0;
+  if(menu_enter)pending_timing[0]<=1;
+  if(menu_ready && !menu_ready_seen)pending_timing[1]<=1;
+  if(menu_confirm)pending_timing[2]<=1;
+  if(source_done_now && !source_timing_seen)pending_timing[3]<=1;
+  if(write_finish_now && !write_timing_seen)pending_timing[4]<=1;
+  if(bin_pending_seen && !bins_pending)pending_timing[5]<=1;
+  if(sdram_ready && !sdram_seen)pending_timing[6]<=1;
+  if(scan_done && (scan_state==SC_SCAN || scan_state==SC_DECIDE))pending_timing[7]<=1;
   if(diag_events[8]) pending_fault<=0;
   if(diag_events[5]) pending_retry<=0;
   if(diag_events[6]) pending_skip<=0;
@@ -778,24 +824,25 @@ assign safe_menu_idle=scan_state==SC_IDLE && bmp_ready && !load_busy && !load_re
 generate if(MENU_ENABLE)begin:g_menu
  disaster_menu_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) ui(
   .clk(clk),.rst(rst),.sw3(sw3),.key1(key1),.key2(key2),.key4(key4),.switch_mode(mode),
-  .safe_idle(safe_menu_idle),.backend_ready(menu_ready),.exit_done(menu_exit),.scene_valid(menu_valid),
+  .safe_idle(safe_menu_idle),.backend_ready(menu_ready),.rejected(menu_rejected),.exit_done(menu_exit),.scene_valid(menu_valid),
   .pending(menu_pending),.active(menu_active),.enter(menu_enter),.confirm(menu_confirm),.cancel(menu_cancel),
   .focus(menu_focus),.blocked(menu_blocked),.effective_mode(effective_mode));
  disaster_menu_backend backend(.clk(clk),.rst(rst),.enter(menu_enter),.confirm(menu_confirm),.cancel(menu_cancel),.focus(menu_focus),
   .parent_valid(scene_parent_valid),.parent_cluster(scene_parent),
   .original_directory(resource_directory),.original_publicity(reader_publicity),.original_hazard(resource_hazard),
-  .reader_ready(bmp_ready),.scan_done(scan_done),.scan_error(bmp_scan_error),.mapped_valid(mapped_valid),
+  .original_app(application_mode),
+  .invalidate(scan_accept && app_physical),.native_thumb(menu_native),.reader_ready(bmp_ready),.scan_done(scan_done),.scan_error(bmp_scan_error),.mapped_valid(mapped_valid),
   .directory_valid(directory_valid),.directory_clusters(directory_clusters),
   .load_accept(load_accept),.load_result_valid(load_result_valid),.load_success(load_success),
   .source_done(bmp_load_done),.source_error(parser_load_error),
-  .application_busy(application_busy),.scene_ready(scenario_state[12] && !scene_fade),
+  .application_busy(application_busy),.application_error(application_error),.storage_busy(load_busy),.scene_ready(scenario_state[12] && !scene_fade),
   .display_committed(cache_display_request && cache_display_ack),.display_off(menu_display_off),
-  .owner(menu_owner),.ready(menu_ready),.discard(menu_discard),.menu_write(menu_write_mode),
+  .owner(menu_owner),.ready(menu_ready),.discard(menu_discard),.menu_write(menu_write_mode),.preview_mode(menu_preview),.fallback_thumbnail(menu_fallback),.rejected(menu_rejected),
   .scan_start(menu_scan),.directory(menu_directory),.publicity(menu_publicity),.hazard(menu_hazard),
   .load_request(menu_load_request),.load_result_ready(menu_load_ready),.direct_load(menu_direct),
   .load_index(menu_load_index),.write_slot(menu_slot),.valid(menu_valid),.visible(menu_visible),
   .force_scene(menu_force),.exit_done(menu_exit),.resume(menu_resume),
-  .selected_directory(menu_selected_directory),.selected_hazard(menu_selected_hazard));
+  .selected_directory(menu_selected_directory),.selected_hazard(menu_selected_hazard),.force_target(menu_force_target));
 end else begin:g_no_menu
  assign menu_pending=0;assign menu_active=0;assign menu_blocked=0;assign menu_enter=0;assign menu_confirm=0;assign menu_cancel=0;
  assign menu_owner=0;assign menu_ready=0;assign menu_discard=0;assign menu_load_request=0;assign menu_load_ready=0;
@@ -803,10 +850,13 @@ end else begin:g_no_menu
  assign menu_directory=0;assign menu_selected_directory=0;assign menu_hazard=0;assign menu_selected_hazard=0;assign menu_publicity=0;
  assign menu_load_index=0;assign menu_slot=0;assign menu_valid=0;assign menu_visible=0;assign menu_focus=0;
  assign menu_write_mode=0;assign effective_mode=mode;
+ assign menu_preview=0;assign menu_fallback=0;assign menu_rejected=0;
+ assign menu_force_target=2;
 end endgenerate
 
-fat32_bmp_reader #(.DIRECTORY_ENABLE(MENU_ENABLE),.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.SCAN_TEXT(SCENE_ENABLE),.SCAN_PUBLICITY(PUBLICITY_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
+fat32_bmp_reader #(.FAST_START(MENU_ENABLE),.DIRECTORY_ENABLE(MENU_ENABLE),.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.SCAN_TEXT(SCENE_ENABLE),.SCAN_PUBLICITY(PUBLICITY_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
+ .menu_preview(menu_owner && menu_preview),.menu_fallback(menu_fallback),.native_thumb(menu_native),
  .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
  .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
  .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
@@ -840,19 +890,21 @@ endmodule
 // Application identity is independent of the switch page. A logical reload
 // uses the cache's cancel/drain handshake, never the physical SD reset.
 // app: 0 COMPAT, 1 PUBLICITY, 2 SCENARIO. Target stays bundled through commit.
-module publicity_app_control #(parameter MENU_ENABLE=0)(
- input force_request,
+module publicity_app_control #(parameter MENU_ENABLE=0,FAST_BOOT=0)(
+ input force_request,input [1:0] force_target,
  input clk,rst,toggle_request,retry_request,rescan_request,
  input pic_complete,pic_any,edu_complete,scan_valid,scan_success,
  input [1:0] scan_application,
  input idle,black,muted,audio_stopped,committed,failed,scene_ready,frame_tick,fade_busy,
  output reg [1:0] app,target,
  output reg busy,output error,output reg rejected,physical,reload,
- output reg stop_audio,output scene_enable,fade_request,release_fade
+ output reg stop_audio,scene_enable,output fade_request,release_fade,initial_display
 );
  localparam BOOT=0,RUN=1,WAIT_IDLE=2,FADE=3,STOP=4,LOAD=5,FIRST=6,READY=7,FADE_IN=8,ERROR=9;
  reg [3:0] state;
  reg [2:0] settle;
+ reg boot_direct;
+ assign initial_display=boot_direct;
  reg [3:0] next_state;
  reg [1:0] next_app,next_target;
  reg [2:0] next_settle;
@@ -860,8 +912,7 @@ module publicity_app_control #(parameter MENU_ENABLE=0)(
  wire [1:0] alternate=(state==ERROR?target:app)==2 ? (edu_complete?2'd1:2'd0) : 2'd2;
  wire alternate_available=alternate==2?pic_complete:alternate==1?edu_complete:pic_any;
  assign error=state==ERROR;
- assign scene_enable=app==2 && (state==RUN || state==WAIT_IDLE || state==READY || state==FADE_IN);
- assign fade_request=state!=RUN && state!=WAIT_IDLE && state!=FADE_IN;
+ assign fade_request=!boot_direct && state!=RUN && state!=WAIT_IDLE && state!=FADE_IN;
  assign release_fade=state==FADE_IN;
  // Decode the *next* state into registered boundary controls. Their cycle
  // semantics match the state decode, without a decode LUT on high-fanout
@@ -874,7 +925,7 @@ module publicity_app_control #(parameter MENU_ENABLE=0)(
     next_target=scan_application;next_state=scan_success?FIRST:ERROR;
    end
    RUN:begin
-    if(MENU_ENABLE && force_request)begin next_target=2;next_physical=0;next_rejected=0;next_state=WAIT_IDLE;end
+    if(MENU_ENABLE && force_request)begin next_target=force_target;next_physical=0;next_rejected=0;next_state=WAIT_IDLE;end
     else if(rescan_request)begin next_physical=1;next_rejected=0;next_state=WAIT_IDLE;end
     else if(toggle_request)begin
      if(alternate_available)begin next_target=alternate;next_physical=0;next_rejected=0;next_state=WAIT_IDLE;end
@@ -890,7 +941,7 @@ module publicity_app_control #(parameter MENU_ENABLE=0)(
    end
    FIRST:begin
     if(failed)next_state=ERROR;
-    else if(committed)begin next_app=target;next_settle=0;next_state=READY;end
+    else if(committed)begin next_app=target;next_settle=0;next_state=boot_direct?RUN:READY;end
    end
    READY:begin
     // Two actual frame boundaries settle identity/scenario mailboxes.
@@ -903,7 +954,7 @@ module publicity_app_control #(parameter MENU_ENABLE=0)(
    end
    FADE_IN:if(!fade_busy)next_state=RUN;
    ERROR:begin
-    if(MENU_ENABLE && force_request)begin next_target=2;next_physical=0;next_rejected=0;next_state=STOP;end
+    if(MENU_ENABLE && force_request)begin next_target=force_target;next_physical=0;next_rejected=0;next_state=STOP;end
     else if(rescan_request)begin next_physical=1;next_state=STOP;next_rejected=0;end
     else if(toggle_request && alternate_available)begin next_target=alternate;next_physical=0;next_state=STOP;next_rejected=0;end
     else if(retry_request)begin next_physical=0;next_state=STOP;next_rejected=0;end
@@ -914,12 +965,14 @@ module publicity_app_control #(parameter MENU_ENABLE=0)(
  always @(posedge clk or posedge rst)begin
   if(rst)begin
    state<=BOOT;app<=0;target<=0;physical<=1;reload<=0;rejected<=0;settle<=0;
-   busy<=1;stop_audio<=1;
+   busy<=1;stop_audio<=1;scene_enable<=0;boot_direct<=FAST_BOOT;
   end else begin
    state<=next_state;app<=next_app;target<=next_target;physical<=next_physical;
    reload<=next_reload;rejected<=next_rejected;settle<=next_settle;
+   if(next_state==RUN || next_state==ERROR)boot_direct<=0;
    busy<=next_state!=RUN;
    stop_audio<=next_state!=RUN && next_state!=READY && next_state!=FADE_IN && next_state!=WAIT_IDLE;
+   scene_enable<=next_app==2 && (next_state==RUN || next_state==WAIT_IDLE || next_state==READY || next_state==FADE_IN);
   end
  end
 endmodule

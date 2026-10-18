@@ -2,7 +2,7 @@
 // contract; fields are captured as bytes arrive, without a 512-byte mux array.
 module fat32_volume_scanner #(
     parameter integer MAX_VISITED_CLUSTERS = 8192,
-    parameter integer DIRECTORY_ENABLE = 0,
+    parameter integer DIRECTORY_ENABLE = 0, REUSE_GEOMETRY=0,
     parameter integer SCAN_AUDIO = 0, SCAN_TEXT = 0, SCAN_PUBLICITY = 0
 )(
     input wire clk, input wire rst_n, input wire scan_start,
@@ -16,6 +16,7 @@ module fat32_volume_scanner #(
     output reg [3:0] resource_valid,
     output reg [31:0] resource0_cluster, resource1_cluster, resource2_cluster, resource3_cluster,
     output reg [31:0] resource0_size, resource1_size, resource2_size, resource3_size,
+    output reg thumb_found,output reg [31:0] thumb_cluster,thumb_size,
     output reg audio_found, output reg [31:0] audio_cluster, audio_size,
     output reg [3:0] snd_valid,
     output reg [127:0] snd_clusters,snd_sizes,
@@ -51,7 +52,7 @@ module fat32_volume_scanner #(
     reg audio_match;
     reg snd_match;
     reg font_match,text_match;
-    reg edu_match,voi_match;
+    reg edu_match,voi_match,thumb_match,geometry_valid;
     reg [1:0] resource_index;
     reg [31:0] entry_cluster, entry_size, fat_entry;
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
@@ -185,6 +186,31 @@ module fat32_volume_scanner #(
         end
     end
     wire [31:0] committed_size={entry_size_high,entry_size[23:0]};
+    // THUMB   BMP is an independent 8.3 entry, never a PIC stage alias.
+    reg thumb_commit;
+    always @(posedge clk or negedge rst_n)begin
+     if(!rst_n)begin thumb_match<=0;thumb_commit<=0;thumb_found<=0;thumb_cluster<=0;thumb_size<=0;end
+     else begin
+      thumb_commit<=state==DIR_WAIT && sector_valid && !dir_end && sector_byte_index[4:0]==31 && thumb_match;
+      if(state==IDLE && scan_start)begin thumb_found<=0;thumb_cluster<=0;thumb_size<=0;thumb_match<=0;end
+      else if(thumb_commit && DIRECTORY_ENABLE && !thumb_found)begin
+       thumb_found<=1;thumb_cluster<=entry_cluster;thumb_size<=committed_size;
+      end
+      if(state==DIR_WAIT && sector_valid && !dir_end)case(sector_byte_index[4:0])
+       0:thumb_match<=DIRECTORY_ENABLE && sector_byte=="T";
+       1:thumb_match<=thumb_match && sector_byte=="H";
+       2:thumb_match<=thumb_match && sector_byte=="U";
+       3:thumb_match<=thumb_match && sector_byte=="M";
+       4:thumb_match<=thumb_match && sector_byte=="B";
+       5,6,7:thumb_match<=thumb_match && sector_byte==" ";
+       8:thumb_match<=thumb_match && sector_byte=="B";
+       9:thumb_match<=thumb_match && sector_byte=="M";
+       10:thumb_match<=thumb_match && sector_byte=="P";
+       11:thumb_match<=thumb_match && (sector_byte & 8'h18)==0;
+       default:;
+      endcase
+     end
+    end
     // Cluster bytes finish at offset 27, four byte times before commit.
     // Two stages fit between the final cluster byte (27) and commit (31),
     // even with contiguous bytes. Split the wide range comparator first.
@@ -259,7 +285,7 @@ module fat32_volume_scanner #(
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;
-            layout_bad<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
+            layout_bad<=0;geometry_valid<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
             fat_hi_gt<=0;fat_hi_eq<=0;fat_lo_gt<=0;fat_too_small<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
@@ -339,8 +365,9 @@ module fat32_volume_scanner #(
             end
             case(state)
                 IDLE:if(scan_start) begin
-                    fs_error<=0;partition_lba<=0;mbr_match<=0;dir_end<=0;
-                    sector_lba<=0;state<=ZERO_REQ;
+                    fs_error<=0;mbr_match<=0;dir_end<=0;
+                    if(REUSE_GEOMETRY && geometry_valid)state<=LAYOUT_CHECK;
+                    else begin partition_lba<=0;sector_lba<=0;state<=ZERO_REQ;end
                 end
                 ZERO_REQ:if(!sector_busy)begin sector_req<=1;state<=ZERO_WAIT;end
                 ZERO_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=ZERO_PARSE;end
@@ -413,7 +440,7 @@ module fat32_volume_scanner #(
                 end
                 LAYOUT_ACCEPT:begin
                     if(layout_bad)fail(ERR_BPB);
-                    else begin current_cluster<=requested_directory==0?root_cluster:requested_directory;visited<=1;dir_sector<=0;state<=ROOT;end
+                    else begin geometry_valid<=1;current_cluster<=requested_directory==0?root_cluster:requested_directory;visited<=1;dir_sector<=0;state<=ROOT;end
                 end
                 ROOT:begin cluster_offset<=current_cluster-2;shift_count<=cluster_shift;state<=ROOT_SHIFT;end
                 ROOT_SHIFT:if(shift_count!=0)begin cluster_offset<={cluster_offset[30:0],1'b0};shift_count<=shift_count-1'b1;end

@@ -119,7 +119,10 @@ module rfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
                 end
         end
     assign rd_rst = asy_r_rst1 ; 
-    assign wr_rst = asy_w_rst1 ; 
+    // TD fast-start build: reset release -> wr_addr removal was -0.012 ns.
+    // Preserve the two-flop synchronizer and delay only its local fanout.
+    (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+        u_write_reset_hold(.o(wr_rst),.a(asy_w_rst1));
     // =============================================
     // address generate logic below;
     // =============================================

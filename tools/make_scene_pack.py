@@ -14,6 +14,7 @@ from PIL import Image, ImageDraw
 import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scene_text import encode_text
+from make_menu_thumbnails import thumbnail
 
 
 HAZARD = ((0, 0, 0), (96, 48, 16), (0, 96, 224), (0, 192, 64))
@@ -304,6 +305,7 @@ def build(scene_path, output=None):
                 "board_validation": "pending", "visual_confirmation": "pending"}
     if text_pack:
         manifest["text"] = text_pack[2]
+    thumbnail(out / "PIC1.BMP", out / "THUMB.BMP")
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"PASS: {out}: 4 BI_RGB BMPs, all RGB/T bytes read back, 24 expected PNGs read back")
     return manifest
