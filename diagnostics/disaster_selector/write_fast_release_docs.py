@@ -72,7 +72,7 @@ def main():
 
 | 范围 | 日志数 | 内容 |
 |---|---:|---|
-| 控制器 fast_controller16/15 | 19 | 四类16图、PIC1先进入、新/旧/坏THUMB回退、四阶段预检拒绝、确认/取消/失败恢复、可选资源清除、根目录/宣传子目录/旧图回退；case16先提交首帧再FONT/TEXT；case18两次坏PIC2保留PIC1，其他预取继续，手动重试完整提交 |
+| 控制器 fast_controller16/17 | 19 | 四类16图、PIC1先进入、新/旧/坏THUMB回退、四阶段预检拒绝、确认/取消/失败恢复、可选资源清除、根目录/宣传子目录/旧图回退；case16先提交首帧再FONT/TEXT；case18两次坏PIC2保留PIC1，其他预取继续，手动重试完整提交 |
 | 目录 fast_directories01 | 19 | FAT32分区/卷/长目录及资源扫描 |
 | 缓存/参数/预览/字幕/转场等 fast_unit04 | 22 | 原情景、CDC、按键、fade、AUTO、参数、PCM、预览、gap2/5背压 |
 | 音频 fast_m4_01 | 7 | 播放器、metadata、AUTO、stream及共享通路 |
@@ -96,7 +96,7 @@ def main():
 
 最终物理17个字体BRAM的INIT/INITP逐位解码，276字形×21行共5796行全部21位与v0.22字模相同。依据TD实测路径注册应用scene_enable、菜单退出摘要和宣传目录有效性，缓存标记改为逐项独立更新；预览目标使用已寄存的offer选择，重扫仍门控request_valid，有效请求目标不变；old_rgb[10]、缩放器输入位16及读FIFO本地复位增加恒等LUT，不增加图像流水周期；对应等价/存储专项通过。
 
-历史 fast_start_td01：Setup −3.377ns/STNS −109.161ns、Hold −0.020ns/HTNS −0.032ns，失败bit未交付。controller08/09的物理超时注入不符合可重试文件错误模型，之后case18改为两次实际BMP文件内容损坏；10已通过。unit01/02等历史适配器失败保留本地，不计本轮有效通过。
+历史 fast_start_td01：Setup −3.376ns/STNS −109.161ns、Hold −0.020ns/HTNS −0.032ns，失败bit未交付。controller08/09的物理超时注入不符合可重试文件错误模型，之后case18改为两次实际BMP文件内容损坏；10已通过。unit01/02等历史适配器失败保留本地，不计本轮有效通过。
 
 其他布局诊断（含此前源码版本）：{extra_status}
 
