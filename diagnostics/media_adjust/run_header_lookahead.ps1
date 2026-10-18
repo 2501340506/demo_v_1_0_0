@@ -30,7 +30,7 @@ $instance
 "@
 [IO.File]::WriteAllText("$out/stream_checked.v",'`timescale 1ns/1ps'+"`n"+$stream.Replace('endmodule',"$check`nendmodule"))
 $bench=Get-Content "$root/diagnostics/image_scaling/tb_scale_stream.sv" -Raw
-$bench=$bench.Replace('reg [31:0] size,offset;','reg [7:0] upstream=0; reg [31:0] size,offset;').Replace('offset,fe,8''d0,','offset,fe,upstream,')
+$bench=$bench.Replace('reg [31:0] size,offset;','reg [7:0] upstream=0; reg [31:0] size,offset;').Replace('offset,fe,8''d0,','offset,fe,upstream,').Replace('.upstream_error(8''d0)','.upstream_error(upstream)')
 # Keep the original five-size pixel oracle, use file_start for subsequent
 # images, and deliver file_end on the last byte (including partial sectors).
 $bench=$bench.Replace('rst=1;checking=0;fv=0;fe=0;repeat(3)@(negedge clk);rst=0;',

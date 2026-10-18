@@ -9,7 +9,7 @@ module image_scale_nearest (
  output reg done
 );
  localparam IDLE=0,ASPECT=1,ASPECT_DIV=2,X_DIV=3,Y_DIV=4,SETUP=5,
-            ROW=6,CAPTURE=7,FETCH=8,EMIT=9,DRAIN=10,ROW_CHECK=11;
+            ROW=6,CAPTURE=7,FETCH=8,EMIT=9,DRAIN=10,ROW_CHECK=11,ASPECT_COMPARE=12;
  reg [3:0] state;
  reg [10:0] sw,sh,dw,dh,left,top,x,y;
  reg [10:0] source_last_x; // Frame-constant row endpoint, computed before capture.
@@ -17,6 +17,8 @@ module image_scale_nearest (
  reg [20:0] dividend;
  reg [10:0] divisor,quotient;
  reg width_fit;
+ reg [20:0] width_product,height_product;
+ reg aspect_hi_gt,aspect_hi_eq,aspect_lo_ge;
  reg [10:0] xq,xr,yq,yr,sx,xrem,sy,yrem;
  reg [10:0] buffered_y;
  reg row_valid;
@@ -54,18 +56,28 @@ module image_scale_nearest (
   if(rst) begin
    state<=IDLE;source_last_x<=0;right_edge<=0;bottom_edge<=0;sw<=0;sh<=0;dw<=0;dh<=0;left<=0;top<=0;x<=0;y<=0;
    dividend<=0;divisor<=1;quotient<=0;width_fit<=0;
+   width_product<=0;height_product<=0;aspect_hi_gt<=0;aspect_hi_eq<=0;aspect_lo_ge<=0;
    xq<=0;xr<=0;yq<=0;yr<=0;sx<=0;xrem<=0;sy<=0;yrem<=0;
    buffered_y<=0;row_valid<=0;pixel_black<=1;done<=0;row_inside<=0;row_not_top<=0;
   end else begin
    done<=0;
    if(start) begin
     sw<=image_width[10:0];sh<=image_height[10:0];source_last_x<=image_width[10:0]-11'd1;
-    row_valid<=0;state<=ASPECT;
+    // Constant shifts/adds avoid a DSP output followed by a wide compare.
+    width_product<=({10'd0,image_width[10:0]}<<9)-({10'd0,image_width[10:0]}<<5);
+    height_product<=({10'd0,image_height[10:0]}<<9)+({10'd0,image_height[10:0]}<<7);
+    row_valid<=0;state<=ASPECT_COMPARE;
    end else case(state)
+    ASPECT_COMPARE: begin
+     aspect_hi_gt<=width_product[20:10]>height_product[20:10];
+     aspect_hi_eq<=width_product[20:10]==height_product[20:10];
+     aspect_lo_ge<=width_product[9:0]>=height_product[9:0];
+     state<=ASPECT;
+    end
     ASPECT: begin
-     width_fit<=sw*21'd480 >= sh*21'd640;
-     if(sw*21'd480 >= sh*21'd640) begin dividend<=sh*21'd640;divisor<=sw;end
-     else begin dividend<=sw*21'd480;divisor<=sh;end
+     width_fit<=aspect_hi_gt || (aspect_hi_eq && aspect_lo_ge);
+     if(aspect_hi_gt || (aspect_hi_eq && aspect_lo_ge)) begin dividend<=height_product;divisor<=sw;end
+     else begin dividend<=width_product;divisor<=sh;end
      quotient<=0;state<=ASPECT_DIV;
     end
     ASPECT_DIV: if(dividend>=divisor) begin dividend<=dividend-divisor;quotient<=quotient+1'b1;end

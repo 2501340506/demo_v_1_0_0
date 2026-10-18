@@ -139,15 +139,23 @@ module fat32_bmp_reader #(
  wire header_valid;
  wire [7:0] header_byte;
  wire [8:0] header_index;
+ // Decode identity-byte strobes with the response bundle, before the
+ // registered index fans out through the general BMP header decoder.
+ reg hazard_capture_q,role_capture_q;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin hazard_capture_q<=0;role_capture_q<=0;end
+  else begin
+   hazard_capture_q<=state==HEADER_WAIT && sector_valid && sector_index==6;
+   role_capture_q<=state==HEADER_WAIT && sector_valid && sector_index==7;
+  end
+ end
  always @(posedge clk or posedge rst)begin
   if(rst)begin strict_hazard<=0;header_hazard<=0;header_role<=0;end
   else begin
    if(state==IDLE && scan_start)strict_hazard<=DIRECTORY_ENABLE?expected_hazard:3'd0;
    if(state==HEADER_RESET)begin header_hazard<=0;header_role<=0;end
-   if(header_valid)begin
-    if(header_index==6)header_hazard<=header_byte;
-    if(header_index==7)header_role<=header_byte;
-   end
+   if(SCAN_PUBLICITY ? hazard_capture_q : (header_valid && header_index==6))header_hazard<=header_byte;
+   if(SCAN_PUBLICITY ? role_capture_q : (header_valid && header_index==7))header_role<=header_byte;
   end
  end
  reg metadata_ready,mapping_ready,cancelled;

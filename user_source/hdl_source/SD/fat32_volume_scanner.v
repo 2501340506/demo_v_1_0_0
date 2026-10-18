@@ -62,6 +62,7 @@ module fat32_volume_scanner #(
     reg [2:0] shift_count;   // layout and root shifts move one bit per cycle
     reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
     reg fat_hi_gt,fat_hi_eq,fat_lo_gt,fat_too_small;
+    reg fat_mid_gt,fat_mid_eq;
     reg root_hi_gt,root_hi_eq,root_lo_gt,dir_hi_gt,dir_hi_eq,dir_lo_gt;
     reg capacity_hi_gt,capacity_hi_eq,capacity_lo_ge,layout_fields_bad,dir_small;
     wire bpb_fields_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
@@ -286,7 +287,7 @@ module fat32_volume_scanner #(
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;
             layout_bad<=0;geometry_valid<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
-            fat_hi_gt<=0;fat_hi_eq<=0;fat_lo_gt<=0;fat_too_small<=0;
+            fat_hi_gt<=0;fat_hi_eq<=0;fat_lo_gt<=0;fat_too_small<=0;fat_mid_gt<=0;fat_mid_eq<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
@@ -464,14 +465,16 @@ module fat32_volume_scanner #(
                     // fat_entry is stable after sector_done and through FAT_CHECK.
                     fat_hi_gt<=next_cluster[31:16]>max_cluster[31:16];
                     fat_hi_eq<=next_cluster[31:16]==max_cluster[31:16];
-                    fat_lo_gt<=next_cluster[15:0]>max_cluster[15:0];
+                    fat_mid_gt<=next_cluster[15:8]>max_cluster[15:8];
+                    fat_mid_eq<=next_cluster[15:8]==max_cluster[15:8];
+                    fat_lo_gt<=next_cluster[7:0]>max_cluster[7:0];
                     fat_too_small<=next_cluster<2;
                     fat_loop<=next_cluster==current_cluster;
                     fat_limit<=visited>=MAX_VISITED_CLUSTERS;
                     state<=FAT_COMPARE;
                 end
                 FAT_COMPARE:begin
-                    fat_bad<=fat_too_small || fat_hi_gt || (fat_hi_eq && fat_lo_gt);
+                    fat_bad<=fat_too_small || fat_hi_gt || (fat_hi_eq && (fat_mid_gt || (fat_mid_eq && fat_lo_gt)));
                     state<=FAT_CHECK;
                 end
                 FAT_CHECK:begin

@@ -23,6 +23,11 @@ module disaster_layer #(parameter SIDE_WIDTH=1)(
  reg [23:0] old_q;
  reg [SIDE_WIDTH-1:0] side_q;
  reg [4:0] write_slot;
+ // TD08 measured a direct register-to-BRAM address Hold violation on bit 4.
+ wire [4:0] ram_write_slot;
+ assign ram_write_slot[3:0]=write_slot[3:0];
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_address_hold4(.o(ram_write_slot[4]),.a(write_slot[4]));
  reg [3:0] fill_count;
  reg old_primed,side_primed;
  reg [9:0] select_delay;
@@ -48,10 +53,10 @@ module disaster_layer #(parameter SIDE_WIDTH=1)(
     u_hold(.o(side_ram_input[side_bit]),.a(side_in[side_bit]));
  end endgenerate
  always @(posedge clk)begin
-  old_delay[write_slot]<=old_ram_input;
-  old_q<=old_delay[write_slot-5'd7];
-  side_delay[write_slot]<=side_ram_input;
-  side_q<=side_delay[write_slot-5'd9];
+  old_delay[ram_write_slot]<=old_ram_input;
+  old_q<=old_delay[ram_write_slot-5'd7];
+  side_delay[ram_write_slot]<=side_ram_input;
+  side_q<=side_delay[ram_write_slot-5'd9];
  end
  always @(posedge clk or posedge rst)begin
   if(rst)begin

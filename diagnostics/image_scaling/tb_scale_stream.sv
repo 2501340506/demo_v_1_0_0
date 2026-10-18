@@ -4,7 +4,9 @@ module tb_scale_stream;
  always #5 clk=~clk;
  reg [31:0] size,offset;reg [7:0] byte_in;
  wire permit,pv,done;wire [31:0] rgb;wire [2:0] error;
- bmp_scale_stream dut(clk,rst,start,size,fv,byte_in,offset,fe,8'd0,permit,pv,ready,rgb,done,error);
+ bmp_scale_stream dut(.clk(clk),.rst(rst),.file_start(start),.file_size(size),.native_thumb(1'b0),
+  .file_valid(fv),.file_byte(byte_in),.file_byte_offset(offset),.file_end(fe),.upstream_error(8'd0),
+  .data_permit(permit),.pixel_valid(pv),.pixel_ready(ready),.pixel_rgb(rgb),.done(done),.error(error));
  integer w,h,stride,total,dw,dh,l,t,count,xx,yy,sx,sy,cycles=0,done_count;
  reg [7:0] header[0:53];reg [31:0] expected;reg checking=0;
  function [23:0] pattern(input integer x,y);pattern={8'(x*7+y),8'(y*3+x/7),8'(x^y)};endfunction
