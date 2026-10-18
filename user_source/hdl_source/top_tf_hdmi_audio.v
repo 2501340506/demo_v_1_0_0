@@ -639,8 +639,21 @@ osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1),.ALT_LAY
  .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
  .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
 );
+wire [23:0] app_status_pixel;
 generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  wire [10:0] font_addr,text_addr;wire [15:0] font_data,text_data;
+ wire [10:0] scene_addr,narration_addr;
+ wire publicity_selected=PUBLICITY_ENABLE && pixel_identity[1:0]==1;
+ wire scene_hs,scene_vs,scene_de,narration_hs,narration_vs,narration_de;
+ wire [9:0] scene_x,narration_x;wire [23:0] scene_rgb,narration_rgb;
+ reg [2:0] publicity_delay;
+ always @(posedge video_clk or posedge rst_video)
+  if(rst_video)publicity_delay<=0;
+  else publicity_delay<={publicity_delay[1:0],publicity_selected};
+ assign text_addr=publicity_selected?narration_addr:scene_addr;
+ assign {final_hs,final_vs,final_de,final_x,final_content_rgb}=publicity_delay[2]?
+  {narration_hs,narration_vs,narration_de,narration_x,narration_rgb}:
+  {scene_hs,scene_vs,scene_de,scene_x,scene_rgb};
  media_adjust_cdc resource_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
   .src_state({1'b0,font_valid_src,text_valid_src,font_count_src,text_bytes_src}),
   .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(resources_pixel));
@@ -649,18 +662,27 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  scene_bram32k text_ram(.wr_clk(sd_card_clk),.wr_en(bin_wr_en && bin_wr_text),
   .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(text_addr),.rd_data(text_data));
  scene_text_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
-  .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21]),
+  .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21] && !publicity_selected),
   .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),
   .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),
   .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
   .font_available(font_available),.scene_text_active(scene_text_active),
-  .font_addr(font_addr),.font_data(font_data),.text_addr(text_addr),.text_data(text_data),
-  .hs_out(final_hs),.vs_out(final_vs),.de_out(final_de),.x_out(final_x),.rgb_out(final_content_rgb));
+  .font_addr(font_addr),.font_data(font_data),.text_addr(scene_addr),.text_data(text_data),
+  .hs_out(scene_hs),.vs_out(scene_vs),.de_out(scene_de),.x_out(scene_x),.rgb_out(scene_rgb));
+ if(PUBLICITY_ENABLE)begin:g_narration
+  publicity_subtitle_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
+   .pixel_x(ring_x),.rgb_in(band_rgb),.text_valid(resources_pixel[21] && publicity_selected),
+   .text_bytes(resources_pixel[12:0]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1]),
+   .playing(app_status_pixel[14:12]==3'd2),.restart(audio_update),.page(audio_image),
+   .text_addr(narration_addr),.text_data(text_data),
+   .hs_out(narration_hs),.vs_out(narration_vs),.de_out(narration_de),.x_out(narration_x),.rgb_out(narration_rgb));
+ end else begin:g_no_narration
+  assign narration_addr=0;assign {narration_hs,narration_vs,narration_de,narration_x,narration_rgb}=0;
+ end
 end else begin:g_no_scene_text
  assign resources_pixel=0;assign font_available=0;assign scene_text_active=0;
  assign final_hs=ring_hs;assign final_vs=ring_vs;assign final_de=ring_de;assign final_x=ring_x;assign final_content_rgb=band_rgb;
 end endgenerate
-wire [23:0] app_status_pixel;
 media_adjust_cdc app_status_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
  .src_state({8'd0,publicity_audio_status,application_busy,application_error,osd_error_src,application_mode}),
  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(app_status_pixel));
