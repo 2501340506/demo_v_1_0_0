@@ -1,0 +1,285 @@
+{
+  "baseline": "34fce4d / v0.21.0-s1-local.1",
+  "source_commit": "867de3c9251bf37e14aedd4b5a18011d472f1633",
+  "build": "song_td02",
+  "timing_ns": {
+    "SWNS": 0.023,
+    "HWNS": 0.004,
+    "STNS": 0.0,
+    "HTNS": 0.0
+  },
+  "resources": {
+    "lut": 17649,
+    "reg": 11886,
+    "bram": 53,
+    "bram32k": 2,
+    "dsp": 15
+  },
+  "source_byte_comparisons": 134,
+  "production_files": [
+    "user_source/hdl_source/scene/scene_text_overlay.v"
+  ],
+  "simulation_logs": [
+    "song_unit01/test.log",
+    "song_integration01/tb_layout_legacy.log",
+    "song_integration01/tb_layout_publicity.log",
+    "song_integration01/tb_narration_top.log",
+    "song_integration01/tb_wave_top.log",
+    "song_scene_text01/debris_village/text.log",
+    "song_scene_text01/flood_village/text.log",
+    "song_scene_text01/landslide_village/text.log",
+    "song_scene_text01/quake_village/text.log"
+  ],
+  "board_status": "pending",
+  "card_status": "written and byte verified",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "bytes": 9
+    },
+    {
+      "file": "card/TEXT.BIN",
+      "bytes": 1242
+    },
+    {
+      "file": "card_write_result.json",
+      "bytes": 2386
+    },
+    {
+      "file": "demo.bit",
+      "bytes": 675020
+    },
+    {
+      "file": "font_rows.hex",
+      "bytes": 46368
+    },
+    {
+      "file": "preview/page1_max_wave.png",
+      "bytes": 53773
+    },
+    {
+      "file": "preview/page2_max_wave.png",
+      "bytes": 58870
+    },
+    {
+      "file": "preview/page3_max_wave.png",
+      "bytes": 71366
+    },
+    {
+      "file": "preview/page4_max_wave.png",
+      "bytes": 57420
+    },
+    {
+      "file": "README.md",
+      "bytes": 2577
+    },
+    {
+      "file": "reports/audit/audit.tcl",
+      "bytes": 394
+    },
+    {
+      "file": "reports/audit/check_timing.txt",
+      "bytes": 43886
+    },
+    {
+      "file": "reports/audit/console.log",
+      "bytes": 7902
+    },
+    {
+      "file": "reports/audit/exceptions.log",
+      "bytes": 8782
+    },
+    {
+      "file": "reports/audit/exceptions.tcl",
+      "bytes": 766
+    },
+    {
+      "file": "reports/audit/exceptions.timing",
+      "bytes": 72463
+    },
+    {
+      "file": "reports/audit/font_rom_check.json",
+      "bytes": 275
+    },
+    {
+      "file": "reports/audit/sw3_sync.timing",
+      "bytes": 11561
+    },
+    {
+      "file": "reports/audit/warning_review.json",
+      "bytes": 1319
+    },
+    {
+      "file": "reports/build_song_td02.log",
+      "bytes": 199208
+    },
+    {
+      "file": "reports/demo_phy.area",
+      "bytes": 33150
+    },
+    {
+      "file": "reports/final_timing.rpt",
+      "bytes": 1572823
+    },
+    {
+      "file": "reports/settings.cfg",
+      "bytes": 745
+    },
+    {
+      "file": "reports/source_check.json",
+      "bytes": 7490
+    },
+    {
+      "file": "reports/synthesis/build_song_td02.log",
+      "bytes": 212418
+    },
+    {
+      "file": "reports/synthesis/demo_gate.area",
+      "bytes": 19848
+    },
+    {
+      "file": "reports/synthesis/settings.cfg",
+      "bytes": 493
+    },
+    {
+      "file": "reports/timing.sdc",
+      "bytes": 4568
+    },
+    {
+      "file": "reproduce/demo.al",
+      "bytes": 46713
+    },
+    {
+      "file": "reproduce/run_td_build.ps1",
+      "bytes": 5356
+    },
+    {
+      "file": "rollback/TEXT.BIN",
+      "bytes": 1242
+    },
+    {
+      "file": "sources/diagnostics/bottom_waveform/run_integration.ps1",
+      "bytes": 3411
+    },
+    {
+      "file": "sources/diagnostics/bottom_waveform/run_td.ps1",
+      "bytes": 1547
+    },
+    {
+      "file": "sources/diagnostics/narration_subtitles/check_font_map.py",
+      "bytes": 2631
+    },
+    {
+      "file": "sources/diagnostics/narration_subtitles/run_unit.ps1",
+      "bytes": 1469
+    },
+    {
+      "file": "sources/diagnostics/narration_subtitles/tb_narration.sv",
+      "bytes": 6179
+    },
+    {
+      "file": "sources/diagnostics/narration_subtitles/tb_narration_top.sv",
+      "bytes": 3845
+    },
+    {
+      "file": "sources/diagnostics/narration_subtitles/update_card.py",
+      "bytes": 3344
+    },
+    {
+      "file": "sources/diagnostics/song_subtitles/freeze_candidate.py",
+      "bytes": 6388
+    },
+    {
+      "file": "sources/diagnostics/song_subtitles/review_build.py",
+      "bytes": 3030
+    },
+    {
+      "file": "sources/tools/publicity/make_narration_subtitles.py",
+      "bytes": 5643
+    },
+    {
+      "file": "sources/user_source/hdl_source/scene/scene_text_overlay.v",
+      "bytes": 158100
+    },
+    {
+      "file": "subtitles.json",
+      "bytes": 4064
+    },
+    {
+      "file": "text_words.hex",
+      "bytes": 3726
+    },
+    {
+      "file": "validation/song_integration01/compile.log",
+      "bytes": 19876
+    },
+    {
+      "file": "validation/song_integration01/encrypted.log",
+      "bytes": 1740
+    },
+    {
+      "file": "validation/song_integration01/pll.log",
+      "bytes": 796
+    },
+    {
+      "file": "validation/song_integration01/tb_layout_legacy.log",
+      "bytes": 3469
+    },
+    {
+      "file": "validation/song_integration01/tb_layout_publicity.log",
+      "bytes": 3517
+    },
+    {
+      "file": "validation/song_integration01/tb_narration_top.log",
+      "bytes": 15488
+    },
+    {
+      "file": "validation/song_integration01/tb_wave_top.log",
+      "bytes": 15085
+    },
+    {
+      "file": "validation/song_integration01/vendor.log",
+      "bytes": 12624
+    },
+    {
+      "file": "validation/song_scene_text01/compile.log",
+      "bytes": 1994
+    },
+    {
+      "file": "validation/song_scene_text01/debris_village/text.log",
+      "bytes": 1382
+    },
+    {
+      "file": "validation/song_scene_text01/flood_village/text.log",
+      "bytes": 1381
+    },
+    {
+      "file": "validation/song_scene_text01/landslide_village/text.log",
+      "bytes": 1375
+    },
+    {
+      "file": "validation/song_scene_text01/quake_village/text.log",
+      "bytes": 1381
+    },
+    {
+      "file": "validation/song_scene_text01/vendor.log",
+      "bytes": 12622
+    },
+    {
+      "file": "validation/song_unit01/compile.log",
+      "bytes": 1776
+    },
+    {
+      "file": "validation/song_unit01/test.log",
+      "bytes": 1400
+    },
+    {
+      "file": "validation/song_unit01/vendor.log",
+      "bytes": 12610
+    },
+    {
+      "file": "VALIDATION.md",
+      "bytes": 3419
+    }
+  ]
+}

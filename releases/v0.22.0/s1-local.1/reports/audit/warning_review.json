@@ -1,0 +1,28 @@
+{
+  "reviewed": true,
+  "font_rom_initialization_verified": true,
+  "baseline": "narration_subtitles_td01",
+  "comparisons": {
+    "syn_1": {
+      "current_warning_count": 73,
+      "baseline_warning_count": 73,
+      "new_signatures": [],
+      "additional_repetitions": [],
+      "removed": []
+    },
+    "phy_1": {
+      "current_warning_count": 7,
+      "baseline_warning_count": 7,
+      "new_signatures": [],
+      "additional_repetitions": [],
+      "removed": []
+    }
+  },
+  "review_notes": [
+    "No new normalized warning signatures relative to narration_subtitles_td01. Repetition counts recorded separately.",
+    "Initialized font array rows warning retained. All 5796 rows / 21 bits decoded from final physical BRAM INIT/INITP and match generated Song font exactly.",
+    "Existing SDRAM placement fallback, local SDRAM clock and unsupported pre-route hold fixing remain. Final routed timing must independently pass setup/hold and zero TNS.",
+    "Existing optimized dangling pins, PLL/clock-buffer and asynchronous keys/DDC/segment/UART IO delay omissions plus SD input delay warning retained; no invalid/no-path/ignored constraints or combinational loops.",
+    "TF/SDRAM physical loading, screen visibility and speech synchronization remain board validation tasks."
+  ]
+}

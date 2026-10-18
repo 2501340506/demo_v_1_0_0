@@ -1,3 +1,11 @@
+# 当前开发阶段：宣传黑色宋体字幕本地通过
+
+字幕改为黑色宋体、16增至21像素（约+31%）、取消底框，保留完整讲解滚动和最大波形上方9行间距，仅宣传显示。已更新TF卡宣讲目录的TEXT.BIN，读回逐字节一致，其余49应用媒体文件逐字节未变。需配套烧录新bit并更新TEXT，重插卡/KEY3复位。
+
+[固定固件及使用](releases/v0.22.0/s1-local.1/README.md) · [验证](releases/v0.22.0/s1-local.1/VALIDATION.md) · [计划](docs/宣传黑色宋体字幕计划.md) · [S1归档](docs/history/2026-10-19/publicity-black-song-font/README.md)。9项本轮仿真及完整TD通过，Setup +0.023ns / Hold +0.004ns，STNS/HTNS=0。实板待反馈，未正式发布或合main。
+
+## 历史开发状态
+
 # 当前开发阶段：宣讲全文滚动字幕已补卡，固件本地通过
 
 原目录分支 `feature/publicity-narration-subtitles`。新增四页599字完整语音字幕，显示于最大波形上方；仅宣讲显示，随播放滚动，换页/重播从头。G:\宣讲模式\TEXT.BIN 已写入并读回一致，其余49媒体逐字节未变。**需烧录新固件后重插卡/KEY3复位才生效**。
