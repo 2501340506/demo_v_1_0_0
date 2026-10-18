@@ -9,9 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / 'releases/v0.23.0/s2-local.1'
 BASELINE = '31de2b0'
-RUNS = ('fast_app_equivalence02', 'fast_backend03', 'fast_layer_equivalence01', 'fast_display02',
-        'fast_controller10', 'fast_controller11', 'fast_writer01', 'fast_ui01', 'fast_directories01',
-        'fast_cache_equivalence01', 'fast_m4_01', 'fast_pixels01', 'fast_unit03', 'fast_narration01')
+RUNS = ('fast_app_equivalence02', 'fast_backend03', 'fast_layer_equivalence01', 'fast_display03',
+        'fast_controller12', 'fast_controller13', 'fast_writer01', 'fast_ui01', 'fast_directories01',
+        'fast_cache_equivalence02', 'fast_m4_01', 'fast_pixels01', 'fast_unit04', 'fast_narration01')
 
 
 def read(path):

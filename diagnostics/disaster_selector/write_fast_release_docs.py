@@ -12,7 +12,10 @@ def main():
     settings = (TARGET/'reports/settings.cfg').read_text(encoding='utf-8')
     seed = int(re.search(r'place seed (\d+)', settings)[1])
     extra_builds = []
-    for name in ('fast_start_td02', 'fast_start_td03'):
+    for folder in sorted((ROOT/'diagnostics/output').glob('fast_start_td[0-9][0-9]')):
+        name = folder.name
+        if name == 'fast_start_td01':
+            continue
         if name == m['build']:
             continue
         report = ROOT/f'diagnostics/output/{name}/TD_project/demo_Runs/phy_1/final_timing.rpt'
@@ -22,6 +25,8 @@ def main():
             values = ', '.join(f'{k}={re.search(k+":\\s*([-\\d.]+)ns", s)[1]}ns'
                                for k in ('SWNS', 'HWNS', 'STNS', 'HTNS'))
             extra_builds.append(f'{name}：{values}，未用于本候选。')
+        elif (folder/'SUPERSEDED.txt').exists():
+            extra_builds.append(f'{name}：旧源码布线仍拥塞且无最终报告，已停止，未用于本候选。')
         else:
             extra_builds.append(f'{name}：冻结时无最终验收报告，未用于本候选。')
     extra_status = ' '.join(extra_builds)
@@ -67,13 +72,13 @@ def main():
 
 | 范围 | 日志数 | 内容 |
 |---|---:|---|
-| 控制器 fast_controller10/11 | 19 | 四类16图、PIC1先进入、新/旧/坏THUMB回退、四阶段预检拒绝、确认/取消/失败恢复、可选资源清除、根目录/宣传子目录/旧图回退；case16先提交首帧再FONT/TEXT；case18两次坏PIC2保留PIC1，其他预取继续，手动重试完整提交 |
+| 控制器 fast_controller12/13 | 19 | 四类16图、PIC1先进入、新/旧/坏THUMB回退、四阶段预检拒绝、确认/取消/失败恢复、可选资源清除、根目录/宣传子目录/旧图回退；case16先提交首帧再FONT/TEXT；case18两次坏PIC2保留PIC1，其他预取继续，手动重试完整提交 |
 | 目录 fast_directories01 | 19 | FAT32分区/卷/长目录及资源扫描 |
-| 缓存/参数/预览/字幕/转场等 fast_unit03 | 22 | 原情景、CDC、按键、fade、AUTO、参数、PCM、预览、gap2/5背压 |
+| 缓存/参数/预览/字幕/转场等 fast_unit04 | 22 | 原情景、CDC、按键、fade、AUTO、参数、PCM、预览、gap2/5背压 |
 | 音频 fast_m4_01 | 7 | 播放器、metadata、AUTO、stream及共享通路 |
-| 应用/缓存/图层等价 | 3 | fast_app_equivalence02、fast_cache_equivalence01、fast_layer_equivalence01；应用20万周期×两配置 |
+| 应用/缓存/图层等价 | 3 | fast_app_equivalence02、fast_cache_equivalence02、fast_layer_equivalence01；应用20万周期×两配置 |
 | 菜单后端/按键 | 2 | fast_backend03、fast_ui01；缓存复用、拒绝重选、取消、上电SW3高/按住确认释放 |
-| 内存/最终像素 | 3 | fast_display02生产SDRAM完整帧、fast_writer01四旧/四原生菜单槽及刷新/取消、fast_pixels01最终菜单RGB/时序 |
+| 内存/最终像素 | 3 | fast_display03生产SDRAM完整帧、fast_writer01四旧/四原生菜单槽及刷新/取消、fast_pixels01最终菜单RGB/时序 |
 | 宣传宋体字幕 | 1 | fast_narration01；1,773,418次比较、599字/276字形、黑色透明/波形间距及隐藏 |
 
 控制器使用真实 scanner/reader/BMP/scaler/controller，扇区传输和外部写完成握手由模型提供；原生256×192每像素颜色/顺序及7/11背压验证。真实SDRAM专项验证存储与最终显示，不能据此声称实体卡/显示器链路通过。编译/厂商模型日志一并收录；控制器加载时39个未连接的不用输出端口提示保留，未把仿真称为零警告。
@@ -88,7 +93,7 @@ def main():
 
 相对 song_td02：{counts}。现有数组初始化提示、SDRAM放置回退/本地时钟、异步按键/DDC/数码管/UART IO延迟边界、SD输入延迟提示保留。check_timing 无缺失时钟、无效/无路径/被忽略约束及组合环；SW3端口与首级输入寄存器各1，UART默认关闭。SDC逐字节与基线一致；详细计数与重复项见 reports/audit/warning_review.json。
 
-最终物理17个字体BRAM的INIT/INITP逐位解码，276字形×21行共5796行全部21位与v0.22字模相同。依据第一次TD实测路径注册应用scene_enable和菜单退出摘要，old_rgb[10]及读FIFO本地复位增加恒等LUT，不增加图像流水周期；对应等价/存储专项通过。
+最终物理17个字体BRAM的INIT/INITP逐位解码，276字形×21行共5796行全部21位与v0.22字模相同。依据TD实测路径注册应用scene_enable和菜单退出摘要、缓存标记改为逐项独立更新，old_rgb[10]、缩放器输入位16及读FIFO本地复位增加恒等LUT，不增加图像流水周期；对应等价/存储专项通过。
 
 历史 fast_start_td01：Setup −3.376ns/STNS −109.161ns、Hold −0.020ns/HTNS −0.032ns，失败bit未交付。controller08/09的物理超时注入不符合可重试文件错误模型，之后case18改为两次实际BMP文件内容损坏；10已通过。unit01/02等历史适配器失败保留本地，不计本轮有效通过。
 
