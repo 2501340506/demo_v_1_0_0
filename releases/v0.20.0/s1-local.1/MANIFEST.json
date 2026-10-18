@@ -1,0 +1,351 @@
+{
+  "baseline": "147ef7d / v0.19.0-s2-local.1 RTL",
+  "source_commit": "889132583fb70d5380b8b6e5cca090593a7fdc9a",
+  "build": "bottom_wave_td02",
+  "timing_ns": {
+    "SWNS": 0.106,
+    "HWNS": 0.037,
+    "STNS": 0.0,
+    "HTNS": 0.0
+  },
+  "source_byte_comparisons": 134,
+  "production_files": [
+    "user_source/hdl_source/audio_vis/audio_ring_levels.v",
+    "user_source/hdl_source/audio_vis/audio_ring_overlay.v",
+    "user_source/hdl_source/osd/osd_alpha_band.v",
+    "user_source/hdl_source/osd/scroll_text_overlay.v",
+    "user_source/hdl_source/top_tf_hdmi_audio.v"
+  ],
+  "simulation_logs": [
+    "bottom_wave_unit01/tb_audio_ring.log",
+    "bottom_wave_unit01/tb_wave_levels.log",
+    "bottom_wave_unit01/tb_wave_pixels.log",
+    "bottom_wave_integration01/tb_layout_legacy.log",
+    "bottom_wave_integration01/tb_layout_publicity.log",
+    "bottom_wave_integration01/tb_wave_top.log",
+    "bottom_wave_m5/tb_adjust_cdc.log",
+    "bottom_wave_m5/tb_adjust_decimal.log",
+    "bottom_wave_m5/tb_adjust_keys.log",
+    "bottom_wave_m5/tb_adjust_osd.log",
+    "bottom_wave_m5/tb_m5_parameters.log",
+    "bottom_wave_m5/tb_m5_preview.log",
+    "bottom_wave_m5/tb_m5_recovery.log",
+    "bottom_wave_m5/tb_m5_scenario.log",
+    "bottom_wave_m5/tb_volume.log",
+    "bottom_wave_m4/tb_audio_mux.log",
+    "bottom_wave_m4/tb_audio_stream.log",
+    "bottom_wave_m4/tb_m4_auto.log",
+    "bottom_wave_m4/tb_m4_metadata.log",
+    "bottom_wave_m4/tb_m4_player.log",
+    "bottom_wave_m4/tb_m4_stream.log",
+    "bottom_wave_m4/tb_pcm_stream_player.log"
+  ],
+  "images_reproduced_byte_for_byte": 4,
+  "board_status": "pending",
+  "copied_files": [
+    {
+      "file": "demo.bit",
+      "bytes": 655232
+    },
+    {
+      "file": "images.json",
+      "bytes": 8124
+    },
+    {
+      "file": "card/EDU1.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "card/EDU2.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "card/EDU3.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "card/EDU4.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "preview/EDU1.png",
+      "bytes": 51782
+    },
+    {
+      "file": "preview/EDU1_waveform.gif",
+      "bytes": 37999
+    },
+    {
+      "file": "preview/EDU2.png",
+      "bytes": 57194
+    },
+    {
+      "file": "preview/EDU2_waveform.gif",
+      "bytes": 68207
+    },
+    {
+      "file": "preview/EDU3.png",
+      "bytes": 69181
+    },
+    {
+      "file": "preview/EDU3_waveform.gif",
+      "bytes": 98676
+    },
+    {
+      "file": "preview/EDU4.png",
+      "bytes": 55304
+    },
+    {
+      "file": "preview/EDU4_waveform.gif",
+      "bytes": 171790
+    },
+    {
+      "file": "preview/overview.png",
+      "bytes": 212945
+    },
+    {
+      "file": "reports/build_bottom_wave_td02.log",
+      "bytes": 194814
+    },
+    {
+      "file": "reports/demo_phy.area",
+      "bytes": 33142
+    },
+    {
+      "file": "reports/final_timing.rpt",
+      "bytes": 1589944
+    },
+    {
+      "file": "reports/settings.cfg",
+      "bytes": 759
+    },
+    {
+      "file": "reports/source_check.json",
+      "bytes": 7871
+    },
+    {
+      "file": "reports/timing.sdc",
+      "bytes": 4568
+    },
+    {
+      "file": "reproduce/demo.al",
+      "bytes": 46713
+    },
+    {
+      "file": "reproduce/run_td_build.ps1",
+      "bytes": 5356
+    },
+    {
+      "file": "validation/bottom_wave_integration01/compile.log",
+      "bytes": 19664
+    },
+    {
+      "file": "validation/bottom_wave_integration01/encrypted.log",
+      "bytes": 1754
+    },
+    {
+      "file": "validation/bottom_wave_integration01/pll.log",
+      "bytes": 810
+    },
+    {
+      "file": "validation/bottom_wave_integration01/tb_layout_legacy.log",
+      "bytes": 3574
+    },
+    {
+      "file": "validation/bottom_wave_integration01/tb_layout_publicity.log",
+      "bytes": 3622
+    },
+    {
+      "file": "validation/bottom_wave_integration01/tb_wave_top.log",
+      "bytes": 15099
+    },
+    {
+      "file": "validation/bottom_wave_integration01/vendor.log",
+      "bytes": 12638
+    },
+    {
+      "file": "validation/bottom_wave_m4/compile.log",
+      "bytes": 21304
+    },
+    {
+      "file": "validation/bottom_wave_m4/encrypted.log",
+      "bytes": 1732
+    },
+    {
+      "file": "validation/bottom_wave_m4/pll.log",
+      "bytes": 788
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_audio_mux.log",
+      "bytes": 1283
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_audio_stream.log",
+      "bytes": 1364
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_m4_auto.log",
+      "bytes": 1867
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_m4_metadata.log",
+      "bytes": 1399
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_m4_player.log",
+      "bytes": 1345
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_m4_stream.log",
+      "bytes": 1377
+    },
+    {
+      "file": "validation/bottom_wave_m4/tb_pcm_stream_player.log",
+      "bytes": 1359
+    },
+    {
+      "file": "validation/bottom_wave_m4/vendor.log",
+      "bytes": 12616
+    },
+    {
+      "file": "validation/bottom_wave_m5/compile.log",
+      "bytes": 20992
+    },
+    {
+      "file": "validation/bottom_wave_m5/encrypted.log",
+      "bytes": 1732
+    },
+    {
+      "file": "validation/bottom_wave_m5/pll.log",
+      "bytes": 788
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_adjust_cdc.log",
+      "bytes": 1237
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_adjust_decimal.log",
+      "bytes": 1788
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_adjust_keys.log",
+      "bytes": 1266
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_adjust_osd.log",
+      "bytes": 1761
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_m5_parameters.log",
+      "bytes": 1354
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_m5_preview.log",
+      "bytes": 1370
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_m5_recovery.log",
+      "bytes": 1323
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_m5_scenario.log",
+      "bytes": 1844
+    },
+    {
+      "file": "validation/bottom_wave_m5/tb_volume.log",
+      "bytes": 1254
+    },
+    {
+      "file": "validation/bottom_wave_m5/vendor.log",
+      "bytes": 12616
+    },
+    {
+      "file": "validation/bottom_wave_unit01/compile.log",
+      "bytes": 3292
+    },
+    {
+      "file": "validation/bottom_wave_unit01/tb_audio_ring.log",
+      "bytes": 1260
+    },
+    {
+      "file": "validation/bottom_wave_unit01/tb_wave_levels.log",
+      "bytes": 1280
+    },
+    {
+      "file": "validation/bottom_wave_unit01/tb_wave_pixels.log",
+      "bytes": 1307
+    },
+    {
+      "file": "sources/user_source/hdl_source/top_tf_hdmi_audio.v",
+      "bytes": 39684
+    },
+    {
+      "file": "sources/user_source/hdl_source/audio_vis/audio_ring_levels.v",
+      "bytes": 3790
+    },
+    {
+      "file": "sources/user_source/hdl_source/audio_vis/audio_ring_overlay.v",
+      "bytes": 1455
+    },
+    {
+      "file": "sources/user_source/hdl_source/osd/osd_alpha_band.v",
+      "bytes": 1161
+    },
+    {
+      "file": "sources/user_source/hdl_source/osd/scroll_text_overlay.v",
+      "bytes": 5390
+    },
+    {
+      "file": "sources/tools/publicity/geohazard_basics/make_inputs.py",
+      "bytes": 7051
+    },
+    {
+      "file": "reports/audit/audit.tcl",
+      "bytes": 408
+    },
+    {
+      "file": "reports/audit/audit.timing",
+      "bytes": 1589944
+    },
+    {
+      "file": "reports/audit/check_timing.txt",
+      "bytes": 58453
+    },
+    {
+      "file": "reports/audit/console.log",
+      "bytes": 7946
+    },
+    {
+      "file": "reports/audit/exceptions.log",
+      "bytes": 8852
+    },
+    {
+      "file": "reports/audit/exceptions.tcl",
+      "bytes": 787
+    },
+    {
+      "file": "reports/audit/exceptions.timing",
+      "bytes": 72556
+    },
+    {
+      "file": "reports/audit/sw3_sync.timing",
+      "bytes": 11585
+    },
+    {
+      "file": "reports/audit/warning_review.json",
+      "bytes": 27920
+    },
+    {
+      "file": "reports/synthesis/build_bottom_wave_td02.log",
+      "bytes": 211512
+    },
+    {
+      "file": "reports/synthesis/demo_gate.area",
+      "bytes": 19440
+    },
+    {
+      "file": "reports/synthesis/settings.cfg",
+      "bytes": 507
+    }
+  ]
+}

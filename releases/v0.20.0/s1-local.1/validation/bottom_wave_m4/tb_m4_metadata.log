@@ -1,0 +1,22 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/bottom_wave_m4/work tb_m4_metadata glbl "+F_BYTES=1504" "+T_BYTES=102" -l E:\form\demo_v_0_0\demo_v_0_0/diagnostics/output/bottom_wave_m4/tb_m4_metadata.log -do "run -all; quit -f" 
+# Start time: 23:27:41 on Oct 18,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS M4 metadata equivalence: 800 cases / 19428 cycles; full-word vs registered half-words, bounds, equality, carry, odd/empty/missing, single and loop; same public outputs and state latency
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/bottom_wave_m4/tb_m4_metadata.sv(49)
+#    Time: 194316 ns  Iteration: 0  Instance: /tb_m4_metadata
+# End time: 23:27:41 on Oct 18,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

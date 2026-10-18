@@ -11,6 +11,11 @@ ASSETS = ROOT/'diagnostics/output/bottom_wave_assets01'
 TARGET = ROOT/'releases/v0.20.0/s1-local.1'
 
 
+def read_log(path):
+    raw = path.read_bytes()
+    return raw.decode('utf-16' if raw.startswith((b'\xff\xfe', b'\xfe\xff')) else 'utf-8-sig', errors='replace')
+
+
 def copy(source, relative):
     dest = TARGET/relative
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -28,7 +33,7 @@ def main(build_name):
     assert metrics['STNS'] == metrics['HTNS'] == 0
     assert not TARGET.exists(), 'Candidate is immutable; use a new number'
     for run in ('syn_1', 'phy_1'):
-        log = (build/f'TD_project/demo_Runs/{run}/build_{build_name}.log').read_text(errors='replace')
+        log = read_log(build/f'TD_project/demo_Runs/{run}/build_{build_name}.log')
         assert not re.search(r'\bERROR:', log)
         if run == 'phy_1':
             assert 'Generate bitstream completely' in log
@@ -55,7 +60,7 @@ def main(build_name):
     for name in ('demo_gate.area', 'settings.cfg', f'build_{build_name}.log'):
         copy(build/'TD_project/demo_Runs/syn_1'/name, 'reports/synthesis/'+name)
     for name in ('audit.timing', 'check_timing.txt', 'exceptions.timing', 'sw3_sync.timing',
-                 'console.log', 'exceptions.log', 'audit.tcl', 'exceptions.tcl'):
+                 'console.log', 'exceptions.log', 'audit.tcl', 'exceptions.tcl', 'warning_review.json'):
         copy(build/'timing_audit'/name, 'reports/audit/'+name)
     copy(ROOT/'user_source/constraints_source/timing.sdc', 'reports/timing.sdc')
     (TARGET/'reports/source_check.json').write_text(json.dumps({'method': 'full byte comparison', 'files': checked}, indent=2)+'\n', encoding='utf-8')
