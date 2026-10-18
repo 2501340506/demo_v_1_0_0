@@ -98,7 +98,7 @@ def freeze(name):
             if source.exists():
                 copy(source, 'validation/'+run+'/'+path)
     copy(ROOT/'diagnostics/output/fast_preview05/mux_proof.txt', 'validation/fast_preview05/mux_proof.txt')
-    for run in ('fast_metrics_baseline03', 'fast_metrics_current05'):
+    for run in ('fast_metrics_baseline03', 'fast_metrics_current06'):
         for case in (0, 11, 16):
             copy(ROOT/f'diagnostics/output/{run}/metrics{case}.txt', f'validation/{run}/metrics{case}.txt')
     assets = ROOT/'diagnostics/output/fast_resource_pack01'
