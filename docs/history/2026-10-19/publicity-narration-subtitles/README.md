@@ -6,4 +6,4 @@ S1本地实现/验证及G盘补卡完成，S2实板反馈仍待办。本归档�
 - [固定候选及烧录说明](../../../../releases/v0.21.0/s1-local.1/README.md)
 - [交接快照](HANDOFF.md) · [验证快照](VALIDATION.md) · [候选说明快照](RELEASE.md)
 
-Git同步：待本地候选提交和标签形成后推送当前分支及本轮plan/local标签；此前连接重置不影响本地文件。
+Git同步：候选提交 cab2b30、当前功能分支及 v0.21.0-plan.1 / v0.21.0-s1-local.1 已成功推送 new-origin。未推送无关分支或历史标签。
