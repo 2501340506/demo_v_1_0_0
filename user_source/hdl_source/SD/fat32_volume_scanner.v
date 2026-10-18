@@ -2,9 +2,13 @@
 // contract; fields are captured as bytes arrive, without a 512-byte mux array.
 module fat32_volume_scanner #(
     parameter integer MAX_VISITED_CLUSTERS = 8192,
+    parameter integer DIRECTORY_ENABLE = 0,
     parameter integer SCAN_AUDIO = 0, SCAN_TEXT = 0, SCAN_PUBLICITY = 0
 )(
     input wire clk, input wire rst_n, input wire scan_start,
+    input wire [31:0] directory_cluster,
+    output reg [5:0] directory_valid,
+    output reg [191:0] directory_clusters,
     output wire scan_busy, output reg scan_done, output reg [7:0] fs_error,
     output reg [31:0] partition_lba,
     output reg [7:0] sectors_per_cluster,
@@ -29,7 +33,7 @@ module fat32_volume_scanner #(
         BOOT_REQ=4, BOOT_WAIT=5, BOOT_PARSE=6, LAYOUT=7, ROOT=8,
         DIR_REQ=9, DIR_WAIT=10, DIR_NEXT=11, FAT_REQ=12, FAT_WAIT=13,
         FAT_PARSE=14, FINISH=15, LAYOUT_SUB=16, LAYOUT_SHIFT=17, LAYOUT_MAX=18, LAYOUT_CHECK=19, ROOT_SHIFT=20, ROOT_ADD=21,
-        LAYOUT_ACCEPT=22,FAT_CHECK=23,LAYOUT_LOAD=24;
+        LAYOUT_ACCEPT=22,FAT_CHECK=23,LAYOUT_LOAD=24,FAT_COMPARE=25,LAYOUT_COMPARE=26;
     localparam ERR_SECTOR=8'h10, ERR_SIGNATURE=8'h20, ERR_BPB=8'h21,
         ERR_LOOP=8'h23, ERR_RANGE=8'h24, ERR_LIMIT=8'h26;
     localparam COUNT_BITS=$clog2(MAX_VISITED_CLUSTERS+1);
@@ -56,6 +60,9 @@ module fat32_volume_scanner #(
     reg data_borrow;   // total_sectors<overhead, from the LAYOUT_SUB subtraction
     reg [2:0] shift_count;   // layout and root shifts move one bit per cycle
     reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
+    reg fat_hi_gt,fat_hi_eq,fat_lo_gt,fat_too_small;
+    reg root_hi_gt,root_hi_eq,root_lo_gt,dir_hi_gt,dir_hi_eq,dir_lo_gt;
+    reg capacity_hi_gt,capacity_hi_eq,capacity_lo_ge,layout_fields_bad,dir_small;
     wire bpb_fields_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
         reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
         total_sectors!=0 && fat_sectors!=0 && root_cluster>=2 &&
@@ -67,6 +74,49 @@ module fat32_volume_scanner #(
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n)bpb_ok<=0;
         else bpb_ok<=bpb_fields_ok;
+    end
+    wire [5:0] directory_match;
+    wire [31:0] matched_cluster;
+    generate if(DIRECTORY_ENABLE)begin:g_directories
+     fat32_lfn_directories matcher(.clk(clk),.rst(!rst_n),.clear(state==IDLE && scan_start),
+      .byte_valid(state==DIR_WAIT && sector_valid && !dir_end),
+      .byte_index(sector_byte_index[4:0]),.byte_data(sector_byte),
+      .directory_match(directory_match),.directory_cluster(matched_cluster));
+    end else begin:g_no_directories
+     assign directory_match=0;assign matched_cluster=0;
+    end endgenerate
+    // Match/cluster and split range predicates travel together for one cycle.
+    // This removes the 32-bit range check from directory/audio-table enables.
+    reg [5:0] directory_match_q;
+    reg [31:0] matched_cluster_q;
+    reg directory_hi_lt,directory_hi_eq,directory_lo_le,directory_min_ok;
+    always @(posedge clk or negedge rst_n)begin
+     if(!rst_n)begin
+      directory_match_q<=0;matched_cluster_q<=0;
+      directory_hi_lt<=0;directory_hi_eq<=0;directory_lo_le<=0;directory_min_ok<=0;
+     end else begin
+      directory_match_q<=directory_match;matched_cluster_q<=matched_cluster;
+      directory_hi_lt<=matched_cluster[31:16]<max_cluster[31:16];
+      directory_hi_eq<=matched_cluster[31:16]==max_cluster[31:16];
+      directory_lo_le<=matched_cluster[15:0]<=max_cluster[15:0];
+      directory_min_ok<=matched_cluster>=2;
+     end
+    end
+    integer directory_slot;
+    always @(posedge clk or negedge rst_n)begin
+     if(!rst_n)begin directory_valid<=0;directory_clusters<=0;end
+     else if(state==IDLE && scan_start)begin directory_valid<=0;directory_clusters<=0;end
+     else if(directory_min_ok && (directory_hi_lt || (directory_hi_eq && directory_lo_le)))
+      for(directory_slot=0;directory_slot<6;directory_slot=directory_slot+1)
+       if(directory_match_q[directory_slot] && !directory_valid[directory_slot])begin
+        directory_valid[directory_slot]<=1;
+        directory_clusters[directory_slot*32+:32]<=matched_cluster_q;
+       end
+    end
+    reg [31:0] requested_directory;
+    always @(posedge clk or negedge rst_n)begin
+     if(!rst_n)requested_directory<=0;
+     else if(state==IDLE && scan_start)requested_directory<=DIRECTORY_ENABLE?directory_cluster:32'd0;
     end
     assign scan_busy=(state!=IDLE);
 
@@ -210,6 +260,7 @@ module fat32_volume_scanner #(
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;
             layout_bad<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
+            fat_hi_gt<=0;fat_hi_eq<=0;fat_lo_gt<=0;fat_too_small<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
             bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
@@ -332,14 +383,37 @@ module fat32_volume_scanner #(
                 else state<=LAYOUT_MAX;
                 LAYOUT_MAX:begin max_cluster<=cluster_count+1;state<=LAYOUT_CHECK;end
                 LAYOUT_CHECK:begin
-                    layout_bad<=data_borrow || data_sectors==0 || cluster_count==0 ||
-                       root_cluster>max_cluster || cluster_count>32'h0fffffee ||
+                    if(DIRECTORY_ENABLE)begin
+                        // BPB fields are stable: compare halfwords first, then
+                        // combine in a separate cycle before directory access.
+                        root_hi_gt<=root_cluster[31:16]>max_cluster[31:16];
+                        root_hi_eq<=root_cluster[31:16]==max_cluster[31:16];
+                        root_lo_gt<=root_cluster[15:0]>max_cluster[15:0];
+                        dir_hi_gt<=requested_directory[31:16]>max_cluster[31:16];
+                        dir_hi_eq<=requested_directory[31:16]==max_cluster[31:16];
+                        dir_lo_gt<=requested_directory[15:0]>max_cluster[15:0];
+                        dir_small<=requested_directory!=0 && requested_directory<2;
+                        capacity_hi_gt<={7'd0,max_cluster[31:23]}>fat_sectors[31:16];
+                        capacity_hi_eq<={7'd0,max_cluster[31:23]}==fat_sectors[31:16];
+                        capacity_lo_ge<=max_cluster[22:7]>=fat_sectors[15:0];
+                        layout_fields_bad<=data_borrow || data_sectors==0 || cluster_count==0 || cluster_count>32'h0fffffee;
+                        state<=LAYOUT_COMPARE;
+                    end else begin
+                     layout_bad<=data_borrow || data_sectors==0 || cluster_count==0 ||
+                       (requested_directory!=0 && (requested_directory<2 || requested_directory>max_cluster)) || root_cluster>max_cluster || cluster_count>32'h0fffffee ||
                        (max_cluster>>7)>=fat_sectors;
+                     state<=LAYOUT_ACCEPT;
+                    end
+                end
+                LAYOUT_COMPARE:begin
+                    layout_bad<=layout_fields_bad || root_hi_gt || (root_hi_eq && root_lo_gt) ||
+                        dir_small || dir_hi_gt || (dir_hi_eq && dir_lo_gt) ||
+                        capacity_hi_gt || (capacity_hi_eq && capacity_lo_ge);
                     state<=LAYOUT_ACCEPT;
                 end
                 LAYOUT_ACCEPT:begin
                     if(layout_bad)fail(ERR_BPB);
-                    else begin current_cluster<=root_cluster;visited<=1;dir_sector<=0;state<=ROOT;end
+                    else begin current_cluster<=requested_directory==0?root_cluster:requested_directory;visited<=1;dir_sector<=0;state<=ROOT;end
                 end
                 ROOT:begin cluster_offset<=current_cluster-2;shift_count<=cluster_shift;state<=ROOT_SHIFT;end
                 ROOT_SHIFT:if(shift_count!=0)begin cluster_offset<={cluster_offset[30:0],1'b0};shift_count<=shift_count-1'b1;end
@@ -350,7 +424,7 @@ module fat32_volume_scanner #(
                 DIR_NEXT:begin
                     // Publicity resources may follow a complete legacy set.
                     // Scan to directory/EOC end even when optional VOI is absent.
-                    if(dir_end || (!SCAN_PUBLICITY && resource_valid==4'hf && (!SCAN_AUDIO || (audio_found && snd_valid==4'hf)) && (!SCAN_TEXT || (font_found && text_found))))state<=FINISH;
+                    if(dir_end || (!DIRECTORY_ENABLE && !SCAN_PUBLICITY && resource_valid==4'hf && (!SCAN_AUDIO || (audio_found && snd_valid==4'hf)) && (!SCAN_TEXT || (font_found && text_found))))state<=FINISH;
                     else if(dir_sector+1'b1<sectors_per_cluster)begin
                         dir_sector<=dir_sector+1'b1;sector_lba<=sector_lba+1'b1;state<=DIR_REQ;
                     end else begin sector_lba<=fat_start_lba+(current_cluster>>7);state<=FAT_REQ;end
@@ -359,9 +433,18 @@ module fat32_volume_scanner #(
                 FAT_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=FAT_PARSE;end
                 FAT_PARSE:begin
                     fat_end<=next_cluster>=32'h0ffffff8;
-                    fat_bad<=next_cluster<2 || next_cluster>max_cluster;
+                    // Split the variable 32-bit range compare across cycles.
+                    // fat_entry is stable after sector_done and through FAT_CHECK.
+                    fat_hi_gt<=next_cluster[31:16]>max_cluster[31:16];
+                    fat_hi_eq<=next_cluster[31:16]==max_cluster[31:16];
+                    fat_lo_gt<=next_cluster[15:0]>max_cluster[15:0];
+                    fat_too_small<=next_cluster<2;
                     fat_loop<=next_cluster==current_cluster;
                     fat_limit<=visited>=MAX_VISITED_CLUSTERS;
+                    state<=FAT_COMPARE;
+                end
+                FAT_COMPARE:begin
+                    fat_bad<=fat_too_small || fat_hi_gt || (fat_hi_eq && fat_lo_gt);
                     state<=FAT_CHECK;
                 end
                 FAT_CHECK:begin

@@ -1,3 +1,55 @@
+# 当前交接：灾害 S2 本地通过、板测待验收（2026-10-18）
+
+- 当前任务：原目录 feature/mountain-disaster-selector；基线 7e3ac02，S1 afffa80。两阶段本地实现/仿真/TD 已完成，候选 `v0.19.0-s2-local.1`，无 board、正式发布或 main 合并。
+- 已完成：四类图层、SW3=C6 四图中文菜单、真实 VFAT 子目录、根目录优先及独立缓存；确认/取消/忙中安全接管与按键释放，保留既有功能。固定 releases/v0.19.0/s2-local.1，17525 LUT、11760 寄存器、57 BRAM9k、2 BRAM32k、14 DSP，Setup +0.047ns / Hold +0.030ns，STNS/HTNS 均 0；120 份 S2 仿真及 86 份编译/模型日志通过，审计和证据范围见候选 VALIDATION。
+- 当前待办：用户烧录固定候选，按 docs/灾害SW3操作与板测.md 检查四类选择、16 图、宣传、预览、参数、音频、预警与数码管。未收到具体候选板测反馈，不能记板级通过。
+- 下一步：提交并同步 GitHub 功能分支及本阶段 local 标签，核对远程引用；具体板测确认后才补 board 记录和标签。失败修复递增 local 编号。前版内容听审及整机待办不补造结论。
+- 踩过的坑：boot 高电平不得暂停未完成首图事务；AUTO 必须在整个按键释放交接期间保留 pause；扫描单拍错误需锁存；菜单原色旁路旧 OSD/参数；LOAD_SELECT 和寄存 quiesce/owner 缩短仲裁路径；FAT 范围比较分拍、FIFO Gray 满判断避免长组合使能；hash8 采用等价逐位展开减少 DSP。bitgen/exit0 不等于时序通过，失败构建保留本地。
+- 保护：个人记录、用户 TD 日志/状态、best_result、旧 worktree、G:\ 原卡不改不提交；不写哈希、不批量删除。[本地阶段归档](docs/history/2026-10-18/mountain-disaster-selector/README.md)。
+
+## 历史交接
+
+# 最新状态：S2 时序修正中
+
+TD32/33最终均失败：32 Setup -1.153ns/STNS -25.527ns、Hold -.012ns/HTNS -.016ns；33 Setup -.388ns/STNS -.406ns、Hold -.012ns/HTNS -.027ns。当前修复33实测的短音频缓存地址、读FIFO地址Hold及写FIFO复位Removal，均使用保留恒等LUT、不增加周期。专项与新完整TD待完成，不交付失败bit。
+
+## 历史记录
+
+# 最新进展：TD31失败，TD32/33验证中（2026-10-18）
+
+TD31 Setup -1.931ns/STNS -35.199ns、Hold +.086ns/HTNS0，失败不交付。TD32/33同RTL seed43/47运行中：依据TD30路径把BMP头/decoder的常数×3改为18位移位加法，audio_ring读地址全部位恒等LUT。header_equivalence03、decoder_equivalence09、ring04已全部通过；scaler11/controller25进行中。最新选择仍120/86；新专项全部PASS后才替换清单。S2仍未提交/tag/push，无local候选；其他保护和待办见下文。
+
+## 历史交接
+
+# 当前状态：S2 功能完成，时序收敛中（2026-10-18）
+
+- 原目录 feature/mountain-disaster-selector；基线7e3ac02。S1 afffa80 / v0.19.0-s1-local.1已固定并推送。S2尚无合格local候选，未提交/推送S2，不建board、不正式发布、不合main。
+- TD28最终Setup +.014ns/STNS0、Hold -.011ns/HTNS -.015ns；TD29 Setup -.782ns/STNS -11.174ns、Hold -.020ns/HTNS -.020ns，均失败不交付。不同位反复出现PCM地址/图层旁带BRAM短路径。
+- TD30最终失败：Setup -.365ns/STNS -.555ns（3端点）、Hold -.004ns/HTNS -.004ns（audio_ring copy_pointer[2]→BRAM）；17509 LUT/11744寄存器/57+2BRAM/16DSP。原PCM及图层旁带Hold已消除；TD31仍在布线。
+- TD30/31使用相同RTL：PCM所有读写地址位、图层全部旁带位统一保留组合恒等LUT，不增加周期/寄存器或改变BRAM延迟；seed43/53，正常时钟与全部原验收门槛不变。完整构建进行中。
+- 最新专项：layer_equivalence04通过100306逐拍比较/303异步复位；M4_12全部7项通过，PCM播放器5300精确样本含指针回绕/停播重启。unit19已全部22项通过（情景音频173939样本/11会话）；scaler10两项全通过。清单替换为上述最新日志后120仿真/86编译模型重新核验通过，继承证据范围见S2_VALIDATION.md。
+- 下一步：读取TD30/31最终真实时序，只有Setup/Hold>0、两TNS=0、资源不超限、无ERROR才审计约束和告警、固定候选、提交/tag/push。未通过时按实测路径处理，bitgen或runner PASS不能当作时序通过。
+- 保护：不改个人记录、用户TD状态/best_result、旧worktree、G:\原卡；不提交个人记录及四个无关031359/055257 TD日志。不写哈希、不批量删除、不重跑一次性integrate/package_s1脚本。unit18误用历史入口的失败保留，不计验收。
+
+## 历史交接
+
+# 当前交接：灾害 S2 功能已接入，收敛 TD 时序（2026-10-18）
+
+- 当前任务：原目录 feature/mountain-disaster-selector，基线 7e3ac02；S1 afffa80 / v0.19.0-s1-local.1 已固定并同步 GitHub。S2 尚未通过本地验收，无 board 标签、正式发布或 main 合并。
+- 已完成：SW3=C6、真实 VFAT 中文目录、四图菜单/固定中文字模、独立 SDRAM 四槽、帧边界描述符、确认/取消及按键释放交接已接入。四类16图、根目录优先、缺/坏/错类型/读失败、参数/AUTO/速度保留和可选 PCM/FONT/TEXT 清除专项通过；菜单最终像素图为合成梯度，非实际卡照片。
+- 最新构建：TD25 Setup -.710ns/STNS -3.526ns（13端点）、Hold +.030ns/HTNS 0，失败不交付；原目录选择负路径已消除，当前主要是缓存空槽分配。TD26(seed41)与TD27(seed43)同源码隔离构建中，未完成，不交付。
+- 最新RTL：依据TD21实测路径，scanner BPB/目录/容量范围比较分半字并增加组合结果拍；内存写入引擎在握手时锁存burst目标，菜单基地址和长度使用mem域同步mode；源域像素计数使用本域长度。BIN/音频SD响应的有效、数据、索引、结束、错误、owner整束增加一级，busy覆盖管线排空。LFN常量ROM取消共享有效信号CE，BMP有效范围行长度收窄到13位。写FIFO地址4、PCM读地址3增加实测Hold恒等LUT，不增加周期。
+- 最新回归：controller21全部11例、unit16全部22项（情景音频173939精确样本）、M4_09全部7项、directories09全部19例、writer08四菜单槽/旧缓存、scaler08、decoder_equivalence06及lfn04已通过。原尺寸voice_top06已PASS（TD21之前快照）；音频/BIN整束响应修改后的voice_top07运行中。TD23将有效范围模式的payload判断按下一个行字节提前寄存并在背压时保持，切断TD22行比较至列CE的7级路径；decoder_equivalence07已PASS，scaler09/controller22运行中。所选清单反映继承和重跑证据，不把未完成测试记通过。
+- 验证范围：清单包含继承证据，不代表全部同次RTL重跑；详见diagnostics/disaster_selector/S2_VALIDATION.md。S1实际卡图192帧/58982400像素、S2生产top最终菜单像素及18拍对齐保留。
+- 历史失败：01/03/04/06/10/11/14/17/18/19/20布线失败，13布线修复工具崩溃；02/05/07/08/09/12/15/16/21时序失败。TD16虽bitgen但Setup-1.567ns/STNS-113.286ns，Hold-.020ns/HTNS-.053ns，17342LUT/11631寄存器/57BRAM9k/2BRAM32k/16DSP，不交付。所有失败产物留diagnostics/output，不入releases。
+- 补充回归：scaler09、controller22、decoder_equivalence08（新增8幅完整行图像）、M4_10及unit17全部通过；voice_top07运行中。TD25针对TD24的app_target经目录mux/比较至scan_state实测路径，新增SC_SELECT_DIRECTORY锁存/比较分拍，仅MENU启用非物理扫描增加一拍；controller23验证中，前6例已PASS。
+- 最新完成：voice_top07完整通过（1536源样本/6会话、21948 PCM/HDMI样本），controller23全11通过。缓存occupied从串行动态位写改并行bank解码，cache_equivalence01通过20万周期×两种PAUSE配置、全部状态/每拍边界与分配等价；controller24全11例PASS，清单120仿真/86编译模型全部核验。
+- 下一步：完成TD26/TD27；失败按实际路径继续收敛。必须Setup/Hold>0、两TNS=0、资源不超限、无ERROR后审计约束/告警、固定候选、提交/tag/push。用户确认具体bit上板前不建board标签。
+- 踩过的坑：boot高SW3不得暂停首图未完成事务；取消整个按键释放交接期间必须保持player pause才能保留AUTO；扫描单拍错误需锁存；菜单原色旁路旧OSD/参数；LOAD_SELECT、寄存quiesce/owner/page及头响应整束寄存缩短仲裁。Python用py -I -X utf8，中文PowerShell管道设UTF8；一次性integrate_s1/integrate_s2/package_s1不重跑。
+- 保护：个人问题记录、用户TD日志/状态、best_result、旧worktree、G:\原卡不改不提交；不写哈希、不批量删除。四个无关td_20261018_031359/055257日志不提交。[板测操作](docs/灾害SW3操作与板测.md)。
+
+## 历史交接
+
 # 当前交接：灾害 S1 local.1 固定，实施 S2（2026-10-18）
 
 - 任务：已授权两阶段计划，原目录 feature/mountain-disaster-selector，基线7e3ac02。完成 S1 后继续 S2。

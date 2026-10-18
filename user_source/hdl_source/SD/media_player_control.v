@@ -1,5 +1,6 @@
-module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000, parameter UI_GATE=0)(
+module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000, parameter UI_GATE=0, parameter PAUSE_ENABLE=0)(
  input clk, rst, enable, scan_done, display_valid, load_busy,
+ input pause,
  input first_image_committed, manual_activity, request_accept,
  input [2:0] image_count,
  input [1:0] current_image,
@@ -61,6 +62,10 @@ endfunction
  always @(posedge clk or posedge rst) begin
    if (rst) begin
      auto_play_en <= 0; auto_count <= 0; next_pending <= 0; previous_pending <= 0; mode_seen <= 0;
+   end else if (PAUSE_ENABLE && pause) begin
+     // A temporary menu owns the keys/cache. Preserve AUTO for cancellation,
+     // but discard queued navigation and restart the playback interval.
+     auto_count <= 0; next_pending <= 0; previous_pending <= 0; mode_seen <= mode;
    end else if (!enable) begin
      auto_play_en <= 0; auto_count <= 0; next_pending <= 0; previous_pending <= 0; mode_seen <= mode;
    end else begin

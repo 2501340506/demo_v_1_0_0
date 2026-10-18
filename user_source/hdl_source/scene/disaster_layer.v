@@ -16,23 +16,55 @@ module disaster_layer #(parameter SIDE_WIDTH=1)(
  hazard_layer_v3 modern(.clk(clk),.rst(rst),.rgb_in(rgb_in),.t_in(arrival),
   .de(de),.frame_start(frame_start),.t_now(t_now),.hazard(kind[6:4]),.role(kind[2:0]),
   .enable(enable && typed),.thumbnail(thumbnail),.frame_cnt(frame_cnt),.rgb_out(new_rgb));
- reg [23:0] old_delay[0:7];
- reg [SIDE_WIDTH-1:0] side_delay[0:9];
+ // Synchronous BRAM reads include the final delay clock. Separate rings
+ // preserve the legacy eight-clock and sideband ten-clock contracts.
+ reg [23:0] old_delay[0:31]; /* fehdl force_ram=1, ram_style="bram" */
+ reg [SIDE_WIDTH-1:0] side_delay[0:31]; /* fehdl force_ram=1, ram_style="bram" */
+ reg [23:0] old_q;
+ reg [SIDE_WIDTH-1:0] side_q;
+ reg [4:0] write_slot;
+ reg [3:0] fill_count;
+ reg old_primed,side_primed;
  reg [9:0] select_delay;
- integer i;
+ // Preserve delay on the two measured short legacy BRAM input paths.
+ wire [23:0] old_ram_input;
+ assign old_ram_input[23:16]=old_rgb[23:16];
+ assign old_ram_input[14:4]=old_rgb[14:4];
+ assign old_ram_input[2:0]=old_rgb[2:0];
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_old_hold3(.o(old_ram_input[3]),.a(old_rgb[3]));
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_old_hold15(.o(old_ram_input[15]),.a(old_rgb[15]));
+ wire [SIDE_WIDTH-1:0] side_ram_input;
+ genvar side_bit;
+ // TD18/28/29 exposed different bits of the same direct sideband/BRAM bus.
+ // Keep identical combinational delay on every bit; the ten-clock contract
+ // and reset priming remain unchanged.
+ generate for(side_bit=0;side_bit<SIDE_WIDTH;side_bit=side_bit+1)begin:g_side_hold
+   (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+    u_hold(.o(side_ram_input[side_bit]),.a(side_in[side_bit]));
+ end endgenerate
+ always @(posedge clk)begin
+  old_delay[write_slot]<=old_ram_input;
+  old_q<=old_delay[write_slot-5'd7];
+  side_delay[write_slot]<=side_ram_input;
+  side_q<=side_delay[write_slot-5'd9];
+ end
  always @(posedge clk or posedge rst)begin
   if(rst)begin
    select_delay<=0;
-   for(i=0;i<8;i=i+1)old_delay[i]<=0;
-   for(i=0;i<10;i=i+1)side_delay[i]<=0;
+   write_slot<=0;
+   fill_count<=0;
+   old_primed<=0;
+   side_primed<=0;
   end else begin
    select_delay<={select_delay[8:0],typed};
-   old_delay[0]<=old_rgb;
-   for(i=1;i<8;i=i+1)old_delay[i]<=old_delay[i-1];
-   side_delay[0]<=side_in;
-   for(i=1;i<10;i=i+1)side_delay[i]<=side_delay[i-1];
+   write_slot<=write_slot+1'b1;
+   if(fill_count!=9)fill_count<=fill_count+1'b1;
+   old_primed<=fill_count>=7;
+   side_primed<=fill_count==9;
   end
  end
- assign rgb_out=select_delay[9]?new_rgb:old_delay[7];
- assign side_out=side_delay[9];
+ assign rgb_out=select_delay[9]?new_rgb:(old_primed?old_q:24'd0);
+ assign side_out=side_primed?side_q:{SIDE_WIDTH{1'b0}};
 endmodule

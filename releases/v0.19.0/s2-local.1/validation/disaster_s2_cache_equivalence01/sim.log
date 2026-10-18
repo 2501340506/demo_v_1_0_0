@@ -1,0 +1,22 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/disaster_s2_cache_equivalence01/work tb_cache_equivalence -l E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/disaster_s2_cache_equivalence01/sim.log -do "run -all; quit -f" 
+# Start time: 19:49:17 on Oct 18,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# PASS cache equivalence: 200000 cycles x 2 PAUSE configurations; all phase/load states, bank allocation, every boundary output and asynchronous reset
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/disaster_selector/tb_cache_equivalence.sv(200)
+#    Time: 2000040 ns  Iteration: 1  Instance: /tb_cache_equivalence
+# End time: 19:49:19 on Oct 18,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0

@@ -12,7 +12,8 @@ param(
     [ValidateRange(1,11)][int]$PlacementStrategy=1,
     [ValidateRange(0,2147483647)][int]$PlacementSeed=0,
     [ValidateSet('medium','high','ultra')][string]$TimingOptimization = 'medium',
-    [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization = 'auto'
+    [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization = 'auto',
+    [ValidateSet('auto','lower_pin_density','adaptive_pin_density','more_lut_pair')][string]$PackMode = 'auto'
 )
 $ErrorActionPreference = 'Stop'
 if ($PostRouteOptimization -and $DisablePostRouteOptimization) { throw 'Choose either high or disabled post-route optimization' }
@@ -56,13 +57,15 @@ foreach ($run in @('syn_1', 'phy_1')) {
     }
     if ($run -eq 'phy_1') {
         $physicalOptions = @()
+        if ($PackMode -ne 'auto') { $physicalOptions += "place pack_mode $PackMode" }
         if ($PlacementSeed -ne 0) { $physicalOptions += "place seed $PlacementSeed" }
         if ($HighFanoutOptimization) { $physicalOptions += 'place hfn_opt_effort high' }
         if ($PlaceHoldFix) { $physicalOptions += 'place fix_hold high' }
         if ($PostRouteOptimization) { $physicalOptions += 'route post_route_opt high route postrt_opt_extra_round 4' }
         if ($DisablePostRouteOptimization) { $physicalOptions += 'route post_route_opt off' }
         if ($HighPlaceEffort) { $physicalOptions += 'place effort high' }
-        if ($HighRouteEffort) { $physicalOptions += 'route effort high' }
+        # TD route effort accepts normal/routability (not placement's high).
+        if ($HighRouteEffort) { $physicalOptions += 'route effort routability' }
         if ($PlacementStrategy -ne 1) { $physicalOptions += "place pr_strategy $PlacementStrategy" }
         if ($TimingOptimization -ne 'medium') { $physicalOptions += "place opt_timing $TimingOptimization" }
         if ($PostPlaceOptimization -ne 'auto') { $physicalOptions += "place post_place_opt $PostPlaceOptimization" }

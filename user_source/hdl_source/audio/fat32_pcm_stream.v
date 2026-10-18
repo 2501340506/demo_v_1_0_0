@@ -29,16 +29,26 @@ module fat32_pcm_stream #(
  wire replaying=(state==REPLAY_REQ || state==REPLAY_OUT);
  reg [7:0] short_mem[0:511];
  reg [8:0] cache_write,replay_offset;
- // attempt33 measured a hold violation on cache_write[3] to short_mem.
- wire [8:0] cache_write_ram;
- assign cache_write_ram[8:4]=cache_write[8:4];
- assign cache_write_ram[2:0]=cache_write[2:0];
- (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
-  u_cache_write_hold (.o(cache_write_ram[3]),.a(cache_write[3]));
+ // TD33 exposed another short replay address path. Buffer every cache
+ // address bit with a kept identity cell, preserving the byte protocol.
+ wire [8:0] cache_write_ram,cache_read_ram;
  reg [7:0] cached_byte;
+ genvar cache_hold_bit;
+ generate for(cache_hold_bit=0;cache_hold_bit<9;cache_hold_bit=cache_hold_bit+1)begin:g_cache_address_hold
+  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+   u_write(.o(cache_write_ram[cache_hold_bit]),.a(cache_write[cache_hold_bit]));
+  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+   u_read(.o(cache_read_ram[cache_hold_bit]),.a(replay_offset[cache_hold_bit]));
+ end endgenerate
+ // TD18 measured the source byte[7] -> cache BRAM data hold path.
+ // Preserve the exact byte/clock protocol with a kept identity cell.
+ wire [7:0] cache_byte;
+ assign cache_byte[6:0]=byte_data[6:0];
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_cache_data_hold(.o(cache_byte[7]),.a(byte_data[7]));
  always @(posedge clk)begin
-  if(state==READ && valid && size_latched<=512)short_mem[cache_write_ram]<=byte_data;
-  if(state==REPLAY_REQ)cached_byte<=short_mem[replay_offset];
+  if(state==READ && valid && size_latched<=512)short_mem[cache_write_ram]<=cache_byte;
+  if(state==REPLAY_REQ)cached_byte<=short_mem[cache_read_ram];
  end
  assign stopped=state==IDLE && player_stopped && !sector_busy;
  assign player_enable=enable && (running || replaying || state==FINISHED);

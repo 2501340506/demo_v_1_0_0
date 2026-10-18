@@ -8,6 +8,8 @@ module top(
     input                       sw1,            // C8，拨上=1
     input                       sw2,            // C7，拨上=1
 
+    input sw3, // C6, up=1; KEY3 remains reset
+
     output [5:0]                seg_sel,
     output [7:0]                seg_data,
 
@@ -30,6 +32,7 @@ module top(
     output                      uart_tx
 );
 
+parameter integer MENU_ENABLE=1;
 parameter integer OSD_ENABLE = 1;
 parameter integer SCROLL_ENABLE = 1;
 parameter integer BAND_ENABLE = 1;
@@ -120,8 +123,14 @@ wire [1:0]  disp_buf_idx;
 wire        display_commit_request, display_commit_ack;
 wire transition_active,transition_wipe;
 wire preview_request,preview_ack;
-wire [17:0] preview_descriptor,pixel_descriptor;
-wire preview_pixel=pixel_descriptor[17];
+wire [31:0] preview_descriptor,pixel_descriptor;
+wire [17:0] normal_preview_descriptor;
+wire normal_preview_request,normal_preview_ack;
+wire menu_write_mode,menu_visible,menu_display_off;
+wire [1:0] menu_focus,effective_mode;
+wire [3:0] menu_valid;
+
+wire preview_pixel=pixel_descriptor[17] || pixel_descriptor[24];
 wire [4:0] transition_level;
 wire [1:0] application_mode;
 wire application_busy,application_error;
@@ -262,7 +271,7 @@ wire [23:0] adjust_frame;
 wire [1:0] adjust_mode=adjust_frame[23:22],adjust_selected=adjust_frame[21:20];
 wire [7:0] brightness_frame=adjust_frame[19:12],contrast_frame=adjust_frame[11:4];
 wire [3:0] volume_frame=adjust_frame[3:0];
-media_adjust_control u_adjust_control(.clk(sd_card_clk),.rst(rst_sd),.mode(switch_mode),
+media_adjust_control u_adjust_control(.clk(sd_card_clk),.rst(rst_sd),.mode(effective_mode),
  .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select),
  .brightness(brightness_src),.contrast(contrast_src),.volume_level(volume_src),.selected(selected_src));
 media_adjust_cdc u_adjust_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
@@ -350,12 +359,18 @@ assign scene_panel={20'd0,scene_panel_sync};
 
 wire frame_write_ready,frame_refill_priority;
 wire signed [15:0] bgm_left,bgm_right;
+disaster_menu_descriptor menu_mailbox(.clk(sd_card_clk),.rst(rst_sd),
+ .normal_request(normal_preview_request),.normal_descriptor(normal_preview_descriptor),.normal_ack(normal_preview_ack),
+ .visible(menu_visible),.focus(menu_focus),.valid(menu_valid),.identity(display_identity),
+ .request(preview_request),.descriptor(preview_descriptor),.ack(preview_ack),.display_off(menu_display_off));
 sd_card_bmp #(
-    .CLK_FREQ_HZ       (100_000_000),
+    .MENU_ENABLE(MENU_ENABLE),    .CLK_FREQ_HZ       (100_000_000),
     .SCAN_START_SECTOR (32'd0),
     .SCAN_MAX_SECTOR   (32'd131071),
     .SCAN_TARGET_COUNT (3'd4), .SCALE_ENABLE(1), .PREVIEW_ENABLE(1), .AUDIO_ENABLE(1), .USE_FRAME_RESULT(1), .TRANSITION_ENABLE(TRANSITION_ENABLE), .SCENE_ENABLE(SCENE_DEMO_ENABLE),.PUBLICITY_ENABLE(PUBLICITY_ENABLE)
 ) sd_card_bmp_m0(
+    .sw3(sw3),.menu_write_mode(menu_write_mode),.menu_visible(menu_visible),.menu_focus(menu_focus),
+    .menu_valid(menu_valid),.menu_display_off(menu_display_off),.effective_mode(effective_mode),
     .application_mode(application_mode),.application_busy(application_busy),.application_error(application_error),.display_identity(display_identity),.display_kind(display_kind),
     .bgm_valid(bgm_valid),.bgm_ready(bgm_ready),.bgm_active(bgm_active),
     .scenario_meta(scenario_meta_src),.font_valid(font_valid_src),.text_valid(text_valid_src),
@@ -395,7 +410,7 @@ sd_card_bmp #(
     .transition_active(transition_active), .transition_level(transition_level),
     .transition_wipe(transition_wipe),
     .display_commit_ack(display_commit_ack),
-    .preview_request(preview_request),.preview_ack(preview_ack),.preview_descriptor(preview_descriptor),
+    .preview_request(normal_preview_request),.preview_ack(normal_preview_ack),.preview_descriptor(normal_preview_descriptor),
     .write_buf_idx     (write_buf_idx),
     .disp_buf_idx      (disp_buf_idx),
 
@@ -457,17 +472,17 @@ video_delay #(.DATA_WIDTH(32)) video_delay_m0(
 assign vout_data = display_valid ? vout_data_raw : 24'd0;
 
 wire adjust_hs,adjust_vs,adjust_de,adjust_wipe,adjust_valid,adjust_audio;
-wire [9:0] adjust_x;wire [8:0] adjust_y;wire [17:0] adjust_descriptor;
+wire [9:0] adjust_x;wire [8:0] adjust_y;wire [31:0] adjust_descriptor;
 wire [4:0] adjust_level;wire [23:0] adjusted_rgb_raw;
-wire [47:0] adjust_side;
+wire [61:0] adjust_side;
 assign {adjust_hs,adjust_vs,adjust_de,adjust_x,adjust_y,adjust_descriptor,adjust_level,adjust_wipe,adjust_valid,adjust_audio}=adjust_side;
-wire adjust_preview=adjust_descriptor[17];
+wire adjust_preview=adjust_descriptor[17] || adjust_descriptor[24];
 wire [23:0] adjusted_rgb=(adjust_valid && adjust_de)?adjusted_rgb_raw:24'd0;
 wire [1:0] scene_stage;
 wire [7:0] scene_time;
 wire scene_fast,scene_slow,scene_enable;
 wire [23:0] hazard_rgb;
-wire [47:0] hazard_side;
+wire [61:0] hazard_side;
 generate if(SCENE_DEMO_ENABLE)begin:g_scenario
  wire [23:0] scenario_pixel_state;
  media_adjust_cdc state_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),.src_state({6'd0,scenario_meta_src,scenario_state_src}),
@@ -484,14 +499,14 @@ always @(posedge video_clk or posedge rst_video)begin
  if(rst_video)hazard_frame_count<=0;
  else if(sub_frame_start)hazard_frame_count<=hazard_frame_count+1'b1;
 end
-disaster_layer #(.SIDE_WIDTH(48)) u_hazard(
- .clk(video_clk),.rst(rst_video),.rgb_in(vout_data),.arrival(vout_rgba_raw[7:0]),
+disaster_layer #(.SIDE_WIDTH(62)) u_hazard(
+ .clk(video_clk),.rst(rst_video),.rgb_in(pixel_descriptor[24]?vout_data_raw:vout_data),.arrival(vout_rgba_raw[7:0]),
  .kind(pixel_kind),.de(de),.frame_start(sub_frame_start),.frame_cnt(hazard_frame_count),
  .stage(scene_stage),.t_now(scene_time),.enable(scene_enable && de && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.thumbnail(preview_pixel),
  .blink_fast(scene_fast),.blink_slow(scene_slow),
  .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor,transition_level,transition_wipe,display_valid,audio_enable}),
  .rgb_out(hazard_rgb),.side_out(hazard_side));
-brightness_contrast_adjust #(.SIDE_WIDTH(48)) u_picture_adjust(
+brightness_contrast_adjust #(.SIDE_WIDTH(62)) u_picture_adjust(
  .clk(video_clk),.rst(rst_video),.rgb_in(hazard_rgb),.brightness(brightness_frame),.contrast(contrast_frame),
  .side_in(hazard_side),
  .rgb_out(adjusted_rgb_raw),.side_out(adjust_side));
@@ -500,12 +515,12 @@ video_transition_pixels u_video_transition_pixels(
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.
-media_thumbnail_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
+media_thumbnail_loader #(.MENU_ENABLE(MENU_ENABLE),.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) u_frame_loader(
     .rst(rst_mem),.mem_clk(ext_mem_clk),.write_clk(sd_card_clk),.write_rst(rst_sd),
     .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
     .App_rd_busy(frame_rd_busy || frame_refill_priority),.O_wr_busy(frame_wr_busy),
     .App_wr_en(App_wr_en),.App_wr_addr(App_wr_addr),.App_wr_din(App_wr_din),.App_wr_dm(App_wr_dm),
-    .write_req(sd_card_write_req),.write_req_ack(sd_card_write_req_ack),
+    .menu_mode(menu_write_mode),.write_req(sd_card_write_req),.write_req_ack(sd_card_write_req_ack),
     .write_cancel_req(write_cancel_req),.write_cancel_ack(write_cancel_ack),
     .write_finish(frame_write_finish),.source_done(source_frame_done),.source_error(source_frame_error),
     .error_toggle(frame_error_toggle),.memory_error(frame_memory_error),
@@ -513,7 +528,7 @@ media_thumbnail_loader #(.WRITE_V_FLIP(1),.FRAME_WIDTH(640),.FRAME_HEIGHT(480)) 
     .write_addr_index(write_buf_idx),.write_len(FRAME_PIXELS),
     .write_en(sd_card_write_en),.write_data(sd_card_write_data),.write_ready(frame_write_ready)
 );
-media_frame_reader #(.PREVIEW_ENABLE(1)) u_frame_reader(
+media_frame_reader #(.MENU_ENABLE(MENU_ENABLE),.DESC_WIDTH(32),.PREVIEW_ENABLE(1)) u_frame_reader(
     .pixel_descriptor(pixel_descriptor),
     .rst(rst_mem),.mem_clk(ext_mem_clk),.read_clk(video_clk),.read_rst(rst_video),
     .Sdr_init_done(Sdr_init_done),.Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),
@@ -645,11 +660,33 @@ wire [23:0] app_status_pixel;
 media_adjust_cdc app_status_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
  .src_state({8'd0,publicity_audio_status,application_busy,application_error,osd_error_src,application_mode}),
  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(app_status_pixel));
+wire [23:0] normal_final_rgb;
 publicity_status_overlay #(.ENABLE(PUBLICITY_ENABLE && OSD_ENABLE)) app_status(
  .clk(video_clk),.rst(rst_video),.vs(final_vs),.de(final_de),.x(final_x),.rgb_in(final_content_rgb),
  .app(pixel_identity[1:0]),.page(audio_image),.busy(app_status_pixel[11]),
  .auto_enable(app_status_pixel[15]),.voice_status(app_status_pixel[14:12]),
- .error(app_status_pixel[10] || app_status_pixel[9:2]==4),.rgb_out(final_rgb));
+ .error(app_status_pixel[10] || app_status_pixel[9:2]==4),.rgb_out(normal_final_rgb));
+// Menu bypasses all old OSDs at the existing final latency (ring2 + text3).
+// Preserve thumbnail colors through the same four clocks as adjustment.
+reg [23:0] menu_raw_rgb[0:3];integer raw_i;
+always @(posedge video_clk)begin
+ menu_raw_rgb[0]<=hazard_rgb;
+ for(raw_i=1;raw_i<4;raw_i=raw_i+1)menu_raw_rgb[raw_i]<=menu_raw_rgb[raw_i-1];
+end
+wire [23:0] menu_rgb;
+disaster_menu_overlay menu_overlay(.x(adjust_x),.y(adjust_y),.focus(adjust_descriptor[23:22]),
+ .valid(adjust_descriptor[21:18]),.rgb_in(menu_raw_rgb[3]),.rgb_out(menu_rgb));
+reg [23:0] menu_delay[0:4];reg [4:0] menu_flag;
+integer menu_i;
+always @(posedge video_clk or posedge rst_video)begin
+ if(rst_video)begin menu_flag<=0;for(menu_i=0;menu_i<5;menu_i=menu_i+1)menu_delay[menu_i]<=0;end
+ else begin
+  menu_flag<={menu_flag[3:0],MENU_ENABLE && adjust_descriptor[24]};
+  menu_delay[0]<=adjust_de?menu_rgb:24'd0;
+  for(menu_i=1;menu_i<5;menu_i=menu_i+1)menu_delay[menu_i]<=menu_delay[menu_i-1];
+ end
+end
+assign final_rgb=menu_flag[4]?menu_delay[4]:normal_final_rgb;
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
 pcm_media_tone #(.FIXED_VOLUME(128)) u_pcm_clock (

@@ -20,3 +20,14 @@ for name in ('tb_m5_parameters.sv','tb_m5_scenario.sv','tb_m5_status.sv'):
     (out/name).write_text((ROOT/'diagnostics/publicity_mode'/name).read_text(encoding='utf-8'),encoding='utf-8')
 print('Prepared M5 preview, parameters and scenario transaction tests')
 runpy.run_path(str(ROOT/'diagnostics/publicity_mode/prepare_m5_pixels.py'))
+
+# New optional controls are explicitly inactive in historical regression copies.
+for p in out.glob('*.sv'):
+    s=p.read_text(encoding='utf-8')
+    s=s.replace('media_frame_cache_control dut (.*)', "media_frame_cache_control dut (.pause(1'b0),.*)")
+    s=s.replace('media_player_control #(.AUTO_PLAY_CYCLES(4)) dut(.*)', "media_player_control #(.AUTO_PLAY_CYCLES(4)) dut(.pause(1'b0),.*)")
+    if '.sw3(' not in s:
+        import re
+        s=re.sub(r'(\.sw2\([^)]*\))', r"\1,.sw3(1'b0)",s)
+    s=s.replace('.sw3()',  ".sw3(1'b0)")
+    p.write_text(s,encoding='utf-8')

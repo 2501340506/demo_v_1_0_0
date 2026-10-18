@@ -50,6 +50,11 @@ module pcm_media_tone #(
     reg [FIFO_BITS-1:0] fifo [0:7];
     reg [2:0] write_pointer;
     reg [2:0] read_pointer;
+    wire [2:0] ram_write_pointer;
+    assign ram_write_pointer[2]=write_pointer[2];
+    assign ram_write_pointer[0]=write_pointer[0];
+    (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+        u_fifo_hold(.o(ram_write_pointer[1]),.a(write_pointer[1]));
     wire [FIFO_BITS-1:0] fifo_out = fifo[read_pointer];
     wire signed [15:0] fifo_sample;
     reg [3:0] fifo_count;
@@ -188,7 +193,7 @@ module pcm_media_tone #(
                 rate_accumulator <= rate_accumulator + RATE_SAMPLE;
 
             if (sample_push) begin
-                fifo[write_pointer] <= fifo_in;
+                fifo[ram_write_pointer] <= fifo_in;
                 write_pointer <= write_pointer + 1'b1;
             end
             if (sample_tick && enable) begin

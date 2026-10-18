@@ -52,6 +52,15 @@ module wfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
     wire [(ADDR_WIDTH_W - 1):0] wr_to_rd_addr ; // write address synchronized to read clock domain
     reg [(ADDR_WIDTH_W - 1):0] wr_addr ; // current write address
     reg [(ADDR_WIDTH_R - 1):0] rd_addr ; // current write address
+    // Identity LUTs repair measured BRAM address hold paths without latency.
+    wire [ADDR_WIDTH_W-1:0] ram_wr_addr;
+    genvar hold_bit;
+    generate for(hold_bit=0;hold_bit<ADDR_WIDTH_W;hold_bit=hold_bit+1)begin:g_address_hold
+        if(hold_bit==0 || hold_bit==4 || hold_bit==5 || hold_bit==6 || hold_bit==7)begin:g_delay
+            (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+                u_hold(.o(ram_wr_addr[hold_bit]),.a(wr_addr[hold_bit]));
+        end else assign ram_wr_addr[hold_bit]=wr_addr[hold_bit];
+    end endgenerate
     wire wr_en_s ; 
     wire rd_en_s ; 
     reg [(ADDR_WIDTH_W - 1):0] shift_rdaddr ; 
@@ -100,7 +109,10 @@ module wfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
                     asy_r_rst1 <=  asy_r_rst0 ;
                 end
         end
-    assign rd_rst = asy_r_rst1 ; 
+    // TD32/33 measured removal from the synchronized reset release to
+    // read-domain registers. A kept identity cell adds no reset cycle.
+    (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+        u_read_reset_hold(.o(rd_rst),.a(asy_r_rst1)); 
     assign wr_rst = asy_w_rst1 ; 
     // =============================================
     // address generate logic below;
@@ -234,7 +246,7 @@ module wfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
                 .wea(wr_en_s), 
                 .ocea(1'b0), 
                 .dia(di), 
-                .addra(wr_addr), 
+                .addra(ram_wr_addr),
                 .clkb(clkr), 
                 .rstb(rd_rst), 
                 .ceb((SHOW_AHEAD_EN | rd_en_s)), 

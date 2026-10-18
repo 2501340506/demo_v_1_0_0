@@ -44,6 +44,9 @@
  // AUTO is accepted in the SD control clock. Sampling this one-cycle event
  // on pix can miss it because the two clocks are asynchronous.
  always @(posedge clk)if(!rst)begin
+  if(`D.public_offer && !`D.scene_request && !`D.preview_offer &&
+     (`D.image_count!=4 || `D.cache_target!==(`D.img_idx+2'd1)))
+   $fatal(1,"publicity AUTO target changed count=%d target=%d current=%d",`D.image_count,`D.cache_target,`D.img_idx);
   if(`D.public_accept)begin
    if(expected_n!=256 || rp<emitted_tail[`D.img_idx])$fatal(1,"AUTO cut HDMI tail page=%d sent=%d tail=%d",`D.img_idx,rp,emitted_tail[`D.img_idx]);
    auto_pages++;

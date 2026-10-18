@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 // Separate read path with the existing non-show-ahead FIFO/output latency.
 module media_frame_reader #(
-    parameter ADDR_BITS=21, BURST_SIZE=64, PREVIEW_ENABLE=0
+    parameter ADDR_BITS=21, BURST_SIZE=64, PREVIEW_ENABLE=0, MENU_ENABLE=0, DESC_WIDTH=18
 )(
     input rst, mem_clk, read_clk, read_rst,
     input Sdr_init_done, Sdr_init_ref_vld, Sdr_busy, App_wr_busy,
@@ -10,16 +10,16 @@ module media_frame_reader #(
     input Sdr_rd_en, input [31:0] Sdr_rd_dout,
     input read_req, output read_req_ack, output read_finish,
     input display_commit_request, output display_commit_ack,
-    input preview_request,input [17:0] preview_descriptor,output preview_ack,
-    output reg [17:0] pixel_descriptor,
+    input preview_request,input [DESC_WIDTH-1:0] preview_descriptor,output preview_ack,
+    output reg [DESC_WIDTH-1:0] pixel_descriptor,
     input [ADDR_BITS-1:0] read_addr_0, read_addr_1, read_addr_2, read_addr_3,
     input [1:0] read_addr_index, input [ADDR_BITS-1:0] read_len,
     input read_en, input display_valid, output [31:0] read_data,
     output reg underflow, output reg [2:0] reader_error
 );
     wire fifo_clear, fifo_empty, fifo_full;
-    wire [17:0] frame_descriptor;
-    reg [17:0] pixel_descriptor_meta;
+    wire [DESC_WIDTH-1:0] frame_descriptor;
+    reg [DESC_WIDTH-1:0] pixel_descriptor_meta;
     // The memory snapshot changes only during FIFO reload in vertical blank.
     // Both stages settle well before the first active pixel of that frame.
     always @(posedge read_clk or posedge read_rst) begin
@@ -53,7 +53,7 @@ module media_frame_reader #(
         .di(Sdr_rd_dout),.dout(fifo_data),.empty_flag(fifo_empty),.full_flag(fifo_full),
         .wrusedw(fifo_words),.rdusedw()
     );
-    frame_fifo_read #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.ADDR_BITS(ADDR_BITS),.BURST_BITS(9),.BURST_SIZE(BURST_SIZE)) reader(
+    frame_fifo_read #(.MENU_ENABLE(MENU_ENABLE),.DESC_WIDTH(DESC_WIDTH),.PREVIEW_ENABLE(PREVIEW_ENABLE),.ADDR_BITS(ADDR_BITS),.BURST_BITS(9),.BURST_SIZE(BURST_SIZE)) reader(
         .rst(rst),.mem_clk(mem_clk),.Sdr_init_done(Sdr_init_done),
         .Sdr_init_ref_vld(Sdr_init_ref_vld),.Sdr_busy(Sdr_busy),.Sdr_rd_en(Sdr_rd_en),
         .App_wr_busy(App_wr_busy),.O_rd_busy(O_rd_busy),.App_rd_en(App_rd_en),.App_rd_addr(App_rd_addr),

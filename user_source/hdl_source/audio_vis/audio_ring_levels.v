@@ -36,7 +36,15 @@ module audio_ring_levels(
   end else new_height = result_zero ? 5'd0 : history_q;
  end
  // Read port has a synchronous RAM latency; unwritten entries are masked.
- always @(posedge clk) history_q <= history[copy_pointer];
+ wire [6:0] history_read_address;
+ // TD18 and TD30 exposed distinct short bits of this direct BRAM address.
+ // Match their combinational delay without changing the synchronous read.
+ genvar address_bit;
+ generate for(address_bit=0;address_bit<7;address_bit=address_bit+1)begin:g_copy_hold
+  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+   u_hold(.o(history_read_address[address_bit]),.a(copy_pointer[address_bit]));
+ end endgenerate
+ always @(posedge clk) history_q <= history[history_read_address];
  always @(posedge clk) begin
   if (pcm_valid && !rst && sample_count == 31) history[write_pointer] <= level;
  end

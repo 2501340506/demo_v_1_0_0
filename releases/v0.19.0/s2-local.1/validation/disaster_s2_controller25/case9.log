@@ -1,0 +1,88 @@
+# vsim -c -quiet -lib E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/disaster_s2_controller25/work tb_selector_controller glbl -l E:/form/demo_v_0_0/demo_v_0_0/diagnostics/output/disaster_s2_controller25/case9.log -do "run -all; quit -f" -gCASE_ID=9 
+# Start time: 20:34:56 on Oct 18,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2685) [TFMPC] - Too few port connections for 'dut'.  Expected 86, found 49.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'SD_MOSI'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'SD_DCLK'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'SD_nCS'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'transition_wipe'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'transition_active'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'source_frame_error'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'committed_valid'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'committed_image'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'display_valid'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'osd_error_code'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'auto_play_indicator'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'combo_debug_active'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'combo_event_count'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'diagnostics'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'sd_debug'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'state_code'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_select'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_restore'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_increase'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_decrease'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_data'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_addr'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_text'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_en'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'text_bytes'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'font_count'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'text_valid'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'font_valid'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'publicity_audio_status'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'display_kind'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_meta'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_state'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_fade'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bgm_right'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bgm_left'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bgm_active'.
+# ** Warning: E:\form\demo_v_0_0\demo_v_0_0\diagnostics\disaster_selector/tb_selector_controller.sv(19): (vopt-2718) [TFMPC] - Missing connection for port 'bgm_valid'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# app state= 0 scan= 1 dir=         0 reads=          0
+# app state= 6 scan= 0 dir=        40 reads=         10
+# app state= 7 scan= 0 dir=        40 reads=         11
+# app state= 8 scan= 0 dir=        40 reads=         12
+# app state= 1 scan= 0 dir=        40 reads=         12
+# backend state=18 scene=0 valid=0000
+# backend state=18 scene=1 valid=0001
+# backend state=18 scene=2 valid=0001
+# backend state=18 scene=3 valid=0101
+# backend state=11 scene=3 valid=1101
+# backend state=19 scene=3 valid=1101
+# backend state=18 scene=0 valid=0000
+# backend state=18 scene=1 valid=0001
+# backend state=18 scene=2 valid=0001
+# backend state=18 scene=3 valid=0101
+# backend state=11 scene=3 valid=1101
+# backend state=15 scene=3 valid=1101
+# backend state=16 scene=3 valid=1101
+# app state= 2 scan= 0 dir=        40 reads=         98
+# app state= 3 scan= 0 dir=        40 reads=         98
+# app state= 4 scan= 0 dir=        40 reads=         98
+# app state= 5 scan= 0 dir=        40 reads=         98
+# app state= 6 scan= 0 dir=        52 reads=        104
+# app state= 7 scan= 0 dir=        52 reads=        105
+# app state= 8 scan= 0 dir=        52 reads=        106
+# app state= 1 scan= 0 dir=        52 reads=        106
+# backend state=17 scene=3 valid=1101
+# backend state=19 scene=3 valid=1101
+# PASS selector controller case=          9 scenes=          1 menuWrites=          6 commits=          4 reads=        106 confirm/cancel/cache/page/AUTO/held keys
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/disaster_selector/tb_selector_controller.sv(217)
+#    Time: 179288740 ns  Iteration: 1  Instance: /tb_selector_controller
+# End time: 20:35:24 on Oct 18,2026, Elapsed time: 0:00:28
+# Errors: 0, Warnings: 38

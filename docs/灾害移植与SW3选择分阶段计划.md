@@ -26,4 +26,8 @@ SDRAM 菜单四槽从 1536000 开始，各 49152 字，不覆盖原全屏及预�
 
 ## 交付状态
 
-两阶段分别记录 LUT、寄存器、BRAM、DSP 相对基线变化，更新 README、CHANGELOG、HANDOFF 和 releases。最终用户上板检查四类选择、16 图、宣传、阶段预览、参数、音频、预警及数码管；此前仅记“本地通过、板测待验收”。当前：S1 本地通过并固定 v0.19.0-s1-local.1；15780 LUT、10878 寄存器、52 BRAM9k、2 BRAM32k、26 DSP，Setup +0.129ns/Hold +0.012ns、TNS0。板测待验收，继续 S2。
+两阶段本地完成。S1 `afffa80` / `v0.19.0-s1-local.1`：15780 LUT、10878 寄存器、52 BRAM9k、2 BRAM32k、26 DSP，Setup +0.129ns/Hold +0.012ns、TNS0，45 份仿真通过。
+
+S2 `v0.19.0-s2-local.1`：17525 LUT、11760 寄存器、57 BRAM9k、2 BRAM32k、14 DSP；Setup +0.047ns / Hold +0.030ns，STNS/HTNS 均 0，120 份仿真及 86 份编译/模型日志通过。实际构建 `disaster_s2_td_attempt35`，资源差值、审计及证据范围见 releases/v0.19.0/s2-local.1。失败构建留本地，不作为候选。
+
+本地通过、板测待验收。用户上板前不建立 board 标签、不正式发布或合并 main；G:\ 原卡、个人记录及旧 TD 状态保留。本地阶段归档见 [归档](history/2026-10-18/mountain-disaster-selector/README.md)。

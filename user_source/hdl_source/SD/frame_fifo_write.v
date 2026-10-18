@@ -4,6 +4,7 @@ module frame_fifo_write
 (
 	parameter MEM_DATA_BITS          = 32,
     parameter BURST_GATE_ENABLE = 0,
+    parameter MENU_ENABLE = 0,
 	parameter ADDR_BITS              = 21,
 	parameter BURST_BITS             = 9,
 	parameter BURST_SIZE             = 128,
@@ -19,6 +20,7 @@ module frame_fifo_write
     input							 Sdr_busy,
 	input							 App_rd_busy,
 	input                            burst_permit,
+    input menu_mode,
     output							 O_wr_busy,
 	
 	output 							 App_wr_en,
@@ -73,6 +75,7 @@ reg                                 write_req_d0;                //asynchronous 
 reg                                 write_req_d1;                //the second
 reg                                 write_req_d2;                //third,Why do you need 3 ? Here's the design habit
 reg[CNT_BITS - 1:0]                 write_cnt;                   //written bursts
+reg[CNT_BITS - 1:0]                 target_bursts;
 reg[1:0]                            write_addr_index_d0;
 reg[1:0]                            write_addr_index_d1;
 reg[3:0]                            state;                       //state machine
@@ -99,8 +102,23 @@ wire into_burst;
 // pointer-to-state timing path while preserving the existing one-cycle check.
 assign into_burst = (!BURST_GATE_ENABLE || burst_permit) && !Sdr_busy && !Sdr_init_ref_vld && !cancel_active && (rdusedw_latched >= BURST_SIZE && ~App_rd_busy);
 
-wire [ADDR_BITS - 1:0] addr_step = (WRITE_V_FLIP && wr_x == VFLIP_LINE_LAST_X) ?
-	(~VFLIP_LINE_JUMP + 1'b1) : {{(ADDR_BITS - 1){1'b0}}, 1'b1};
+reg [1:0] menu_sync;
+reg menu_geometry;
+always @(posedge mem_clk or posedge rst)begin
+ if(rst)begin menu_sync<=0;menu_geometry<=0;end
+ else begin menu_sync<={menu_sync[0],MENU_ENABLE && menu_mode};
+  if(state==S_ACK)menu_geometry<=menu_sync[1];
+ end
+end
+wire [ADDR_BITS-1:0] first_offset=menu_sync[1]?21'd48896:VFLIP_FIRST_ADDR_OFFSET;
+wire [ADDR_BITS-1:0] base0=(MENU_ENABLE && menu_sync[1])?21'd1536000:write_addr_0;
+wire [ADDR_BITS-1:0] base1=(MENU_ENABLE && menu_sync[1])?21'd1585152:write_addr_1;
+wire [ADDR_BITS-1:0] base2=(MENU_ENABLE && menu_sync[1])?21'd1634304:write_addr_2;
+wire [ADDR_BITS-1:0] base3=(MENU_ENABLE && menu_sync[1])?21'd1683456:write_addr_3;
+wire [X_BITS-1:0] line_last=menu_geometry?256-1:VFLIP_LINE_LAST_X;
+wire [ADDR_BITS-1:0] line_jump=menu_geometry?21'd511:VFLIP_LINE_JUMP;
+wire [ADDR_BITS - 1:0] addr_step = (WRITE_V_FLIP && wr_x == line_last) ?
+	(~line_jump + 1'b1) : {{(ADDR_BITS - 1){1'b0}}, 1'b1};
 assign App_wr_addr = {App_wr_addr_r[ADDR_BITS - 1:0]};
 //assign O_wr_busy = (state != S_IDLE || (S_IDLE && write_req_d2));
 assign O_wr_busy = (state == S_WRITE_BURST || (state == S_CHECK_FIFO && into_burst));//在突发，或者将要突发，则显示busy
@@ -152,20 +170,20 @@ begin
 			begin
 				wr_x <= 0;
 				if(write_addr_index_d1 == 2'd0)
-					App_wr_addr_r <= WRITE_V_FLIP ? (write_addr_0 + VFLIP_FIRST_ADDR_OFFSET) : write_addr_0;
+					App_wr_addr_r <= WRITE_V_FLIP ? (base0 + first_offset) : base0;
 				else if(write_addr_index_d1 == 2'd1)
-					App_wr_addr_r <= WRITE_V_FLIP ? (write_addr_1 + VFLIP_FIRST_ADDR_OFFSET) : write_addr_1;
+					App_wr_addr_r <= WRITE_V_FLIP ? (base1 + first_offset) : base1;
 				else if(write_addr_index_d1 == 2'd2)
-					App_wr_addr_r <= WRITE_V_FLIP ? (write_addr_2 + VFLIP_FIRST_ADDR_OFFSET) : write_addr_2;
+					App_wr_addr_r <= WRITE_V_FLIP ? (base2 + first_offset) : base2;
 				else if(write_addr_index_d1 == 2'd3)
-					App_wr_addr_r <= WRITE_V_FLIP ? (write_addr_3 + VFLIP_FIRST_ADDR_OFFSET) : write_addr_3;
+					App_wr_addr_r <= WRITE_V_FLIP ? (base3 + first_offset) : base3;
 			end
 		else if(App_wr_en)
 			begin
 				// One adder: +1 inside a row, -VFLIP_LINE_JUMP (mod 2^ADDR_BITS) at row end.
 				App_wr_addr_r <= App_wr_addr_r + addr_step;
 				if(WRITE_V_FLIP)
-					wr_x <= (wr_x == VFLIP_LINE_LAST_X) ? {X_BITS{1'b0}} : wr_x + 1'b1;
+					wr_x <= (wr_x == line_last) ? {X_BITS{1'b0}} : wr_x + 1'b1;
 			end
 		else
 			App_wr_addr_r <= App_wr_addr_r;
@@ -190,6 +208,7 @@ begin
 		App_wr_en_r <= 1'b0;
 		
 		write_cnt <= 0;
+        target_bursts <= 0;
 		fifo_aclr <= 1'b0;
 		write_req_ack <= 1'b0;
 		//wr_burst_len <= ZERO[BURST_BITS - 1:0];
@@ -217,6 +236,9 @@ begin
 			//'S_ACK' state completes the write request response, the FIFO reset, the address latch, and the data length latch
 			S_ACK:
 			begin
+                // Mode crosses before the held request is acknowledged.
+                // Only local, transaction-latched length drives burst completion.
+                target_bursts <= (MENU_ENABLE && menu_sync[1]) ? (49152 >> BURST_LOG2) : write_len[ADDR_BITS-1:BURST_LOG2];
 				//after write request revocation(write_req_d2 == '0'),goto 'S_CHECK_FIFO',write_req_ack goto '0'
 				if(write_req_d2 == 1'b0)
 				begin
@@ -284,7 +306,7 @@ begin
 				end
 				//if the write counter value is less than the frame length, continue writing,
 				//otherwise the writing is complete
-				else if(write_cnt < write_len[ADDR_BITS - 1:BURST_LOG2])
+				else if(write_cnt < target_bursts)
 				begin
 					state <= S_CHECK_FIFO;
 				end

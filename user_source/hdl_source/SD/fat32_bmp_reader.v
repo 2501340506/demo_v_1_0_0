@@ -5,12 +5,15 @@ module fat32_bmp_reader #(
  parameter integer MAX_VISITED_CLUSTERS=8192,
  // 1: loads select a found image by index from the scanner table instead of
  // taking load_cluster/load_size; the table only changes during a scan.
+ parameter integer DIRECTORY_ENABLE=0,
  parameter integer LOAD_BY_INDEX=0
 )(
  input clk,rst,sd_init_done,scan_start,load_start,load_cancel,
  // Opt-in module interface. Remap only when ready and both sector clients idle;
  // the caller must invalidate/quiesce its frame caches before requesting it.
  input map_start,resource_publicity,
+ input [31:0] directory_cluster,input [2:0] expected_hazard,
+ output [5:0] directory_valid,output [191:0] directory_clusters,
  output reg active_publicity,
  output [3:0] pic_valid,edu_valid,voi_valid,voi_invalid,
  output [127:0] pic_clusters,pic_sizes,edu_clusters,edu_sizes,voi_clusters,voi_sizes,
@@ -37,7 +40,7 @@ module fat32_bmp_reader #(
 );
  localparam IDLE=0,SCAN=1,SELECT=2,HEADER_RESET=3,HEADER_REQ=4,
  HEADER_WAIT=5,HEADER_CHECK=6,SCAN_FINISH=7,WRITE_WAIT=8,
- START_FILE=9,READ_FILE=10,DRAIN=11,RESULT=12,HEADER_SHIFT=13,HEADER_ADD=14,SELECT_CHECK=15,SELECT_RANGE=16;
+ START_FILE=9,READ_FILE=10,DRAIN=11,RESULT=12,HEADER_SHIFT=13,HEADER_ADD=14,SELECT_CHECK=15,SELECT_RANGE=16,LOAD_SELECT=17;
  reg [4:0] state;
  reg scan_go,file_go;
  reg [2:0] candidate;
@@ -58,6 +61,19 @@ module fat32_bmp_reader #(
  wire scan_owner=(state==SCAN);
  wire file_owner=(state==START_FILE || state==READ_FILE || state==DRAIN);
  wire abort_file=(state==DRAIN || state==RESULT || state==IDLE || load_cancel);
+ // Local reset summaries settle before file_go. The START_FILE state provides
+ // the release cycle; WRITE_WAIT holds the decoder reset until writer ack.
+ // Request/data gates still observe cancellation immediately.
+ reg abort_file_q,decoder_reset_q,scan_cancel_q;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin abort_file_q<=1;decoder_reset_q<=1;scan_cancel_q<=0;end
+  else begin
+   abort_file_q<=abort_file;
+   decoder_reset_q<=state==WRITE_WAIT || load_cancel;
+   scan_cancel_q<=load_cancel && state==SCAN;
+  end
+ end
+ wire decoder_reset=rst || (SCAN_PUBLICITY?decoder_reset_q:(state==WRITE_WAIT || load_cancel));
  wire [2:0] decode_error;wire decode_done;
  wire request_allowed=(state==READ_FILE && decode_error==0 && !load_cancel);
  wire header_match;wire [33:0] required_end;
@@ -107,13 +123,31 @@ module fat32_bmp_reader #(
   if(rst)selected_bad_q<=0;
   else selected_bad_q<=selected_bad;
  end
+ reg [2:0] strict_hazard;
  reg [1:0] found_slot[0:3];   // scanner slot of each accepted image
- wire [1:0] select_slot=(LOAD_BY_INDEX && state==IDLE) ?
-   ((SCAN_PUBLICITY && active_publicity) ? load_index : found_slot[load_index]) : candidate[1:0];
+ // Resolve logical-to-physical mapping before selecting the wide metadata.
+ // Both scanning and loading use the same registered physical table index.
+ wire [1:0] select_slot=candidate[1:0];
  wire [31:0] selected_cluster=active_publicity ? edu_clusters[32*select_slot+:32] : clusters[select_slot];
  wire [31:0] selected_size=active_publicity ? edu_sizes[32*select_slot+:32] : sizes[select_slot];
+
+ reg [7:0] header_hazard,header_role;
+ wire header_valid;
+ wire [7:0] header_byte;
+ wire [8:0] header_index;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin strict_hazard<=0;header_hazard<=0;header_role<=0;end
+  else begin
+   if(state==IDLE && scan_start)strict_hazard<=DIRECTORY_ENABLE?expected_hazard:3'd0;
+   if(state==HEADER_RESET)begin header_hazard<=0;header_role<=0;end
+   if(header_valid)begin
+    if(header_index==6)header_hazard<=header_byte;
+    if(header_index==7)header_role<=header_byte;
+   end
+  end
+ end
  reg metadata_ready,mapping_ready,cancelled;
- wire indexed_load_valid=mapping_ready && (active_publicity ? mapped_valid[load_index] : {1'b0,load_index}<scan_found_total);
+ wire indexed_load_valid=mapping_ready && (active_publicity || strict_hazard!=0 ? mapped_valid[load_index] : {1'b0,load_index}<scan_found_total);
  assign pic_clusters={clusters[3],clusters[2],clusters[1],clusters[0]};
  assign pic_sizes={sizes[3],sizes[2],sizes[1],sizes[0]};
  function [2:0] spc_shift;
@@ -149,8 +183,9 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
    scan_sector_byte<=sector_byte;scan_sector_error<=sector_error;scan_sector_index<=sector_index;
   end
  end
- fat32_volume_scanner #(.SCAN_AUDIO(SCAN_AUDIO),.SCAN_TEXT(SCAN_TEXT),.SCAN_PUBLICITY(SCAN_PUBLICITY),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
- .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY && load_cancel && state==SCAN)),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
+ fat32_volume_scanner #(.DIRECTORY_ENABLE(DIRECTORY_ENABLE),.SCAN_AUDIO(SCAN_AUDIO),.SCAN_TEXT(SCAN_TEXT),.SCAN_PUBLICITY(SCAN_PUBLICITY),.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS)) scanner(
+ .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY && scan_cancel_q)),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
+ .directory_cluster(directory_cluster),.directory_valid(directory_valid),.directory_clusters(directory_clusters),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
  .resource_valid(pic_valid),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
  .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),.voi_valid(voi_valid),.voi_invalid(voi_invalid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
@@ -162,27 +197,31 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  // Keep the file response in one pipeline bundle: the last byte may arrive
  // with done. Cancellation discards the queued response while the service
  // continues draining the physical read under its existing ownership.
- reg file_sector_valid,file_sector_done,control_sector_done_q;
+ reg file_sector_valid,file_sector_done,control_sector_done_q,header_sector_valid;
  reg [7:0] file_sector_byte,file_sector_error;
  reg [8:0] file_sector_index;
  always @(posedge clk or posedge rst)begin
   if(rst)begin
-   file_sector_valid<=0;file_sector_done<=0;control_sector_done_q<=0;
+   file_sector_valid<=0;file_sector_done<=0;control_sector_done_q<=0;header_sector_valid<=0;
    file_sector_byte<=0;file_sector_error<=0;file_sector_index<=0;
   end else begin
    control_sector_done_q<=sector_done;
+   header_sector_valid<=state==HEADER_WAIT && sector_valid;
    file_sector_valid<=file_owner && !abort_file && sector_valid;
    file_sector_done<=file_owner && !abort_file && sector_done;
    file_sector_byte<=sector_byte;file_sector_error<=sector_error;file_sector_index<=sector_index;
   end
  end
  // In the enabled design, keep the cancel/error decode out of the reader
- // status mux. Header bytes remain direct; only completion waits one cycle.
+ // status mux. Header fields use the same registered response bundle.
  // Drain stays active until this queued response has also been consumed.
  wire control_sector_done=SCAN_PUBLICITY ? control_sector_done_q : sector_done;
  wire [7:0] control_sector_error=SCAN_PUBLICITY ? file_sector_error : sector_error;
+ assign header_valid=SCAN_PUBLICITY ? header_sector_valid : state==HEADER_WAIT && sector_valid;
+ assign header_byte=SCAN_PUBLICITY ? file_sector_byte : sector_byte;
+ assign header_index=SCAN_PUBLICITY ? file_sector_index : sector_index;
  fat32_file_streamer #(.MAX_VISITED_CLUSTERS(SCALE_ENABLE?16384:MAX_VISITED_CLUSTERS),.DATA_GATE_ENABLE(SCALE_ENABLE)) streamer(
- .clk(clk),.rst_n(!rst && !abort_file),.file_start(file_go),.data_permit(data_permit),.first_cluster(task_cluster),.file_size(task_size),
+ .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY?abort_file_q:abort_file)),.file_start(file_go),.data_permit(data_permit),.first_cluster(task_cluster),.file_size(task_size),
  .sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
  .file_busy(stream_busy),.file_done(stream_done),.file_valid(stream_valid),.file_byte(stream_byte),.file_byte_offset(stream_offset),.fs_error(stream_error),
  .sector_req(file_req),.sector_lba(file_lba),.sector_busy(sector_busy),.sector_valid(file_sector_valid),
@@ -198,20 +237,20 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));
  bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(SCALE_ENABLE)) preflight(
- .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(state==HEADER_WAIT && sector_valid),
- .file_byte(sector_byte),.file_byte_offset({23'd0,sector_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
+ .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(header_valid),
+ .file_byte(header_byte),.file_byte_offset({23'd0,header_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
  .file_len(header_file_len),.pixel_offset(),.width(),.height(),.required_end(required_end),.header_match(header_match),
  .skip_format(),.header_complete(),.is_32(),.row_stride(),.expected_pixels());
  generate if(SCALE_ENABLE)begin:g_scale
  bmp_scale_stream scaled(
- .clk(clk),.rst(rst || state==WRITE_WAIT || load_cancel),.file_start(file_go),.file_size(task_size),
+ .clk(clk),.rst(decoder_reset),.file_start(file_go),.file_size(task_size),
  .file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),.file_byte_offset(stream_offset),
  .file_end(stream_done),.upstream_error(stream_error),.data_permit(data_permit),
  .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error));
  end else begin:g_fixed
  assign data_permit=1'b1;
  bmp24_decoder #(.RUNTIME_DIMENSIONS(1),.ALLOW_32(1)) decoder(
- .clk(clk),.rst(rst || state==WRITE_WAIT || load_cancel),.expected_width(bmp_width),.expected_height(bmp_height),
+ .clk(clk),.rst(decoder_reset),.expected_width(bmp_width),.expected_height(bmp_height),
  .file_start(file_go),.file_size(task_size),.file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),
  .file_byte_offset(stream_offset),.file_end(stream_done),.upstream_error(stream_error),
  .header_accepted(),.pixel_valid(pixel_valid),.pixel_rgb(),.pixel_rgba(bmp_data),.pixel_x(),.pixel_y(),
@@ -253,11 +292,15 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
   if(metadata_ready)begin active_publicity<=resource_publicity;scan_done<=0;scan_found_total<=0;candidate<=0;mapped_valid<=0;mapping_ready<=0;fat_error<=0;bmp_error<=0;io_error<=0;state<=SELECT;cancelled<=0;end
   else begin scan_error<=1;fat_error<=8'h24;end
  end
- else if(load_start)begin task_cluster<=LOAD_BY_INDEX ? selected_cluster : load_cluster;task_size<=LOAD_BY_INDEX ? selected_size : load_size;io_error<=0;fat_error<=0;bmp_error<=0;cancelled<=0;
+ else if(load_start)begin
+ if(LOAD_BY_INDEX)candidate<={1'b0,((SCAN_PUBLICITY && active_publicity || strict_hazard!=0)?load_index:found_slot[load_index])};
+ if(!LOAD_BY_INDEX)begin task_cluster<=load_cluster;task_size<=load_size;end
+ io_error<=0;fat_error<=0;bmp_error<=0;cancelled<=0;
  stream_finished<=0;decode_finished<=0;ack_wait<=0;
  if(SCAN_PUBLICITY && LOAD_BY_INDEX && !indexed_load_valid)begin bmp_error<=3;state<=RESULT;end
- else state<=WRITE_WAIT;end
+ else state<=LOAD_BY_INDEX?LOAD_SELECT:WRITE_WAIT;end
  end
+ LOAD_SELECT:begin task_cluster<=selected_cluster;task_size<=selected_size;state<=WRITE_WAIT;end
  SCAN:if(volume_done)begin
  if(volume_error!=0)begin fat_error<=(volume_error==8'h10 && io_error!=0)?io_error:volume_error;bmp_error<=2;scan_error<=1;state<=SCAN_FINISH;end
  else begin metadata_ready<=1;state<=SELECT;end
@@ -284,7 +327,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  else state<=HEADER_CHECK;
  end
  HEADER_CHECK:begin
- if(header_match && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
+ if(header_match && (strict_hazard==0 || (header_hazard=={5'd0,strict_hazard} && header_role=={5'd0,candidate}+8'd1)) && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
  mapped_valid[candidate[1:0]]<=1;scan_found_slot<=candidate[1:0];
  scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;
  if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];end

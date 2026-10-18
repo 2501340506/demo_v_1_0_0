@@ -139,9 +139,15 @@ sd_card_cmd #(.CLK_FREQ_HZ(CLK_FREQ_HZ), .RESPONSE_TIMEOUT_MS(RESPONSE_TIMEOUT_M
 
 wire MISO_delay_top;
 // TD synthesis uses EQN; INIT alone leaves the default constant-zero equation.
-(* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A")) u_miso_delay_top (.o(MISO_delay_top),.a(SD_MISO));
+// Both init and normal capture need the input hold delay. TD09 measured
+// -0.217ns on the old init bypass. These are combinational identities only;
+// they preserve the SPI sample edge and the external timing constraints.
+wire miso_hold_1,miso_hold_2;
+(* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A")) u_miso_hold_1 (.o(miso_hold_1),.a(SD_MISO));
+(* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A")) u_miso_hold_2 (.o(miso_hold_2),.a(miso_hold_1));
+(* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A")) u_miso_delay_top (.o(MISO_delay_top),.a(miso_hold_2));
 wire spi_miso_sample;
-assign spi_miso_sample = sd_init_done ? MISO_delay_top : SD_MISO;
+assign spi_miso_sample = MISO_delay_top;
 
 spi_master spi_master_m0(
 	.sys_clk                        (clk                    ),

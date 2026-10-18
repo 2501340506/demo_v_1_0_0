@@ -31,7 +31,23 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
 
  function [7:0] hash8(input [7:0] a,input [7:0] b);
   reg [7:0] h;
-  begin h=a*8'd73+b*8'd151+(a^b)*8'd37;hash8=h^(h>>4);end
+  integer i;
+  begin
+   // Modulo-256 expansion of 73*a+151*b+37*(a^b). Per bit,
+   // {a,b}=01/10/11 contributes 188/110/224. All coefficients
+   // are even, so bit 7 contributes zero. Constant shifts keep
+   // these small terms in LUTs instead of allocating DSPs.
+   h=0;
+   for(i=0;i<7;i=i+1)begin
+    case({a[i],b[i]})
+     2'b01:h=h+(8'd188<<i);
+     2'b10:h=h+(8'd110<<i);
+     2'b11:h=h+(8'd224<<i);
+     default:;
+    endcase
+   end
+   hash8=h^(h>>4);
+  end
  endfunction
  // k quarters of colour c: 1 a/2+a/4+c/4, 2 a/2+c/2, 3 a/4+c/2+c/4.
  function [23:0] blend(input [23:0] a,input [23:0] c,input [1:0] k);

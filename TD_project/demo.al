@@ -18,6 +18,46 @@
                     <Attr Name="CompileOrder" Val="1"/>
                 </FileInfo>
             </File>
+        <File Path="../user_source/hdl_source/scene/disaster_menu_descriptor.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="115"/>
+                </FileInfo>
+            </File>
+        <File Path="../user_source/hdl_source/scene/disaster_menu_overlay.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="114"/>
+                </FileInfo>
+            </File>
+        <File Path="../user_source/hdl_source/scene/disaster_menu_backend.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="113"/>
+                </FileInfo>
+            </File>
+        <File Path="../user_source/hdl_source/scene/disaster_menu_control.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="112"/>
+                </FileInfo>
+            </File>
+        <File Path="../user_source/hdl_source/SD/fat32_lfn_directories.v">
+                <FileInfo>
+                    <Attr Name="UsedInSyn" Val="true"/>
+                    <Attr Name="UsedInP&R" Val="true"/>
+                    <Attr Name="BelongTo" Val="design_1"/>
+                    <Attr Name="CompileOrder" Val="111"/>
+                </FileInfo>
+            </File>
             <File Path="../user_source/hdl_source/IP/afifo_16_32_256.v">
                 <FileInfo>
                     <Attr Name="UsedInSyn" Val="true"/>

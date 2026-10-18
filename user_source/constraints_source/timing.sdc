@@ -50,3 +50,8 @@ set_max_delay -from [get_clocks hdmi_5x_clk] -to [get_ports {HDMI_CLK_P HDMI_D0_
 # UART_SUBTITLE_ENABLE=0: the receiver/PAD FF does not exist in this build.
 # When restoring UART_SUBTITLE_ENABLE=1, uncomment UART_RX_ON and audit its target.
 # UART_RX_ON set_false_path -from [get_ports uart_rx] -to [get_cells {uart_rx_syn_4}]
+
+# SW3 is asynchronous and debounced after two SD-clock synchronizer stages.
+# Gate-netlist audit: sync0[0] packs into C6's input PAD FF sw3_syn_4.
+# Exempt only the port-to-first-stage path; sync0-to-sync1 remains timed.
+set_false_path -from [get_ports sw3] -to [get_cells {sw3_syn_4}]

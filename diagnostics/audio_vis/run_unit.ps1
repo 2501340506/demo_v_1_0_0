@@ -1,13 +1,13 @@
-param([string]$RunName='ring_s1_unit1')
+param([string]$RunName='ring_s1_unit1',[string]$SimRoot='F:/modelsim/win64',[string]$TdRoot='E:/TD')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$RunName"
 if(Test-Path $out){throw 'Choose a new RunName'}
 New-Item -ItemType Directory -Path $out | Out-Null
-$sim='D:/modelsim/win64';$lib="$out/work".Replace('\','/')
+$sim=$SimRoot;$lib="$out/work".Replace('\','/')
 & "$sim/vlib.exe" $lib *> "$out/library.log"
 $rtl=Get-ChildItem "$root/user_source/hdl_source/audio_vis/*.v" | ForEach-Object {$_.FullName}
-& "$sim/vlog.exe" -sv -work $lib @rtl "$PSScriptRoot/tb_audio_ring.sv" "$PSScriptRoot/tb_ring_pixels.sv" *> "$out/compile.log"
+& "$sim/vlog.exe" -sv -work $lib "$TdRoot/sim_release/common/al_map_lut.v" @rtl "$PSScriptRoot/tb_audio_ring.sv" "$PSScriptRoot/tb_ring_pixels.sv" *> "$out/compile.log"
 if($LASTEXITCODE){throw "Compile failed: $out/compile.log"}
 Push-Location $out
 try{

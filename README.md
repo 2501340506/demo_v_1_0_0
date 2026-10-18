@@ -1,3 +1,13 @@
+# 当前开发阶段：灾害 S2 本地通过、板测待验收
+
+原目录分支 `feature/mountain-disaster-selector`，基线 `7e3ac02`。S1 选择性移植后，S2 已接入 SW3=C6 四类中文菜单、真实长目录扫描和独立缓存；保留双应用、音频、字幕、参数、预警、阶段预览及数码管。UART 两项默认关闭。KEY1/KEY2 选择，KEY4 确认，未确认拨回 0 取消；KEY3 仍复位。
+
+[S2 固定候选与 bit](releases/v0.19.0/s2-local.1/README.md)：17525 LUT、11760 寄存器、57 BRAM9k、2 BRAM32k、14 DSP；DSP 相对基线 +1、相对 S1 -12。Setup +0.047ns / Hold +0.030ns，STNS/HTNS 均 0，120 份仿真及 86 份编译/模型日志通过。[S1 候选](releases/v0.19.0/s1-local.1/README.md) 保留。
+
+[操作与板测](docs/灾害SW3操作与板测.md) · [分阶段计划](docs/灾害移植与SW3选择分阶段计划.md) · [验证](releases/v0.19.0/s2-local.1/VALIDATION.md) · [交接](HANDOFF.md)。未建立 board 标签、未正式发布或合并 main。
+
+## 历史开发状态
+
 # 当前开发阶段：灾害 S1 本地通过，实施 SW3 菜单 S2
 
 原目录分支 `feature/mountain-disaster-selector`，基线 `7e3ac02`。四类图层与 BMP 类型已接入，保留旧编码及双应用。[S1 固定候选与 bit](releases/v0.19.0/s1-local.1/README.md)：15780 LUT、10878 寄存器、52 BRAM9k、2 BRAM32k、26 DSP；DSP 相对基线 +13，Setup +0.129ns/Hold +0.012ns、TNS0。45 份仿真通过，板测待验收。UART 两项默认关，SD 调试保留。

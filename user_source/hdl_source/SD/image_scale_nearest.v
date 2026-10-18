@@ -9,7 +9,7 @@ module image_scale_nearest (
  output reg done
 );
  localparam IDLE=0,ASPECT=1,ASPECT_DIV=2,X_DIV=3,Y_DIV=4,SETUP=5,
-            ROW=6,CAPTURE=7,FETCH=8,EMIT=9,DRAIN=10;
+            ROW=6,CAPTURE=7,FETCH=8,EMIT=9,DRAIN=10,ROW_CHECK=11;
  reg [3:0] state;
  reg [10:0] sw,sh,dw,dh,left,top,x,y;
  reg [10:0] source_last_x; // Frame-constant row endpoint, computed before capture.
@@ -24,14 +24,22 @@ module image_scale_nearest (
  reg [31:0] ram_pixel;
  // Preserve a combinational delay on the measured short BRAM data path.
  // INIT and EQN both describe identity; this does not add a clock of latency.
- // Blue bit 5 moves from bit 5 to bit 13 in {R,G,B,T}.
+ // TD27 also measured short paths on input bits 1 and 28.
  wire [31:0] ram_input_rgb;
- assign ram_input_rgb[31:14]=in_rgb[31:14];
- assign ram_input_rgb[12:0]=in_rgb[12:0];
+ genvar data_bit;
+ generate for(data_bit=0;data_bit<32;data_bit=data_bit+1)begin:g_line_data_hold
+  if(data_bit==1 || data_bit==13 || data_bit==28)begin:g_delay
+   (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+    u_hold (.o(ram_input_rgb[data_bit]),.a(in_rgb[data_bit]));
+  end else assign ram_input_rgb[data_bit]=in_rgb[data_bit];
+ end endgenerate
+ wire [10:0] ram_input_x;
+ assign ram_input_x[10:6]=in_x[10:6];
+ assign ram_input_x[4:0]=in_x[4:0];
  (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
-  u_line_data_hold (.o(ram_input_rgb[13]),.a(in_rgb[13]));
+  u_line_address_hold (.o(ram_input_x[5]),.a(in_x[5]));
  reg pixel_black;
- wire row_inside = y>=top && y<bottom_edge;
+ reg row_inside,row_not_top;
  wire col_inside = x>=left && x<right_edge;
  wire [11:0] xsum={1'b0,xrem}+{1'b0,xr};
  wire [11:0] yborrow={1'b0,yrem}+{1'b0,dh}-{1'b0,yr};
@@ -39,7 +47,7 @@ module image_scale_nearest (
  assign out_valid=state==EMIT;
  assign out_rgb=pixel_black ? {24'd0,8'hFF} : ram_pixel;
  always @(posedge clk) begin
-  if(in_valid && in_ready && state==CAPTURE) line[in_x[10:0]]<=ram_input_rgb;
+  if(in_valid && in_ready && state==CAPTURE) line[ram_input_x]<=ram_input_rgb;
   if(state==FETCH) ram_pixel<=line[sx];
  end
  always @(posedge clk or posedge rst) begin
@@ -47,7 +55,7 @@ module image_scale_nearest (
    state<=IDLE;source_last_x<=0;right_edge<=0;bottom_edge<=0;sw<=0;sh<=0;dw<=0;dh<=0;left<=0;top<=0;x<=0;y<=0;
    dividend<=0;divisor<=1;quotient<=0;width_fit<=0;
    xq<=0;xr<=0;yq<=0;yr<=0;sx<=0;xrem<=0;sy<=0;yrem<=0;
-   buffered_y<=0;row_valid<=0;pixel_black<=1;done<=0;
+   buffered_y<=0;row_valid<=0;pixel_black<=1;done<=0;row_inside<=0;row_not_top<=0;
   end else begin
    done<=0;
    if(start) begin
@@ -77,6 +85,12 @@ module image_scale_nearest (
      bottom_edge<=((11'd480-dh)>>1)+dh;
      x<=0;y<=479;sx<=0;xrem<=0;
      sy<=sh-yq-(yr!=0);yrem<=yr==0?11'd0:dh-yr;
+     state<=ROW_CHECK;
+    end
+    // Compare row bounds before enabling the vertical coordinate arithmetic.
+    ROW_CHECK: begin
+     row_inside<=y>=top && y<bottom_edge;
+     row_not_top<=y!=top;
      state<=ROW;
     end
     ROW: begin
@@ -94,11 +108,11 @@ module image_scale_nearest (
       if(y==0) begin done<=1;state<=DRAIN;end
       else begin
        y<=y-1'b1;
-       if(row_inside && y!=top) begin
+       if(row_inside && row_not_top) begin
         if(yrem<yr) begin sy<=sy-yq-1'b1;yrem<=yborrow[10:0];end
         else begin sy<=sy-yq;yrem<=yrem-yr;end
        end
-       state<=ROW;
+       state<=ROW_CHECK;
       end
      end else begin
       x<=x+1'b1;

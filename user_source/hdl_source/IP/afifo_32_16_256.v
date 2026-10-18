@@ -52,8 +52,26 @@ module rfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
     wire [(ADDR_WIDTH_W - 1):0] wr_to_rd_addr ; // write address synchronized to read clock domain
     reg [(ADDR_WIDTH_W - 1):0] wr_addr ; // current write address
     reg [(ADDR_WIDTH_R - 1):0] rd_addr ; // current write address
+    // Identity LUTs repair measured BRAM address hold paths without latency.
+    wire [ADDR_WIDTH_W-1:0] ram_wr_addr;
+    genvar hold_bit;
+    generate for(hold_bit=0;hold_bit<ADDR_WIDTH_W;hold_bit=hold_bit+1)begin:g_address_hold
+        if(hold_bit==2)begin:g_delay
+            (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+                u_hold(.o(ram_wr_addr[hold_bit]),.a(wr_addr[hold_bit]));
+        end else assign ram_wr_addr[hold_bit]=wr_addr[hold_bit];
+    end endgenerate
+    wire rd_en_s ;
+    // TD33 measured rd_addr[3] -> BRAM hold. Preserve SHOW_AHEAD
+    // arithmetic before the identity cells for both supported FIFO modes.
+    wire [ADDR_WIDTH_R-1:0] ram_rd_next=rd_addr + (SHOW_AHEAD_EN & rd_en_s);
+    wire [ADDR_WIDTH_R-1:0] ram_rd_addr;
+    genvar read_hold_bit;
+    generate for(read_hold_bit=0;read_hold_bit<ADDR_WIDTH_R;read_hold_bit=read_hold_bit+1)begin:g_read_address_hold
+        (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+            u_hold(.o(ram_rd_addr[read_hold_bit]),.a(ram_rd_next[read_hold_bit]));
+    end endgenerate
     wire wr_en_s ; 
-    wire rd_en_s ; 
     reg [(ADDR_WIDTH_W - 1):0] shift_rdaddr ; 
     reg [(ADDR_WIDTH_R - 1):0] shift_wraddr ; 
     wire [(ADDR_WIDTH_W - 1):0] wr_addr_diff ; // the difference between read and write address(synchronized to write clock domain)
@@ -234,13 +252,13 @@ module rfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
                 .wea(wr_en_s), 
                 .ocea(1'b0), 
                 .dia(di), 
-                .addra(wr_addr), 
+                .addra(ram_wr_addr),
                 .clkb(clkr), 
                 .rstb(rd_rst), 
                 .ceb((SHOW_AHEAD_EN | rd_en_s)), 
                 .web(1'b0), 
                 .oceb(1'b1), 
-                .addrb((rd_addr + (SHOW_AHEAD_EN & rd_en_s))), 
+                .addrb(ram_rd_addr), 
                 .dob(dout)) ; 
 endmodule
 

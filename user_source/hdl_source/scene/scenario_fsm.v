@@ -1,5 +1,6 @@
 // SD-domain scene controller. PCM ticks are lossless playback events from CDC.
-module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0)(
+module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, MENU_ENABLE=0)(
+ input pause,restart,
  input clk,rst,enable,scene_ready,key_next,key_mode,key_speed,
  input sample_tick,audio_running,frame_start,muted,auto_enable,
  input request_ready,picture_done,picture_failed,transition_idle,audio_ready,
@@ -31,7 +32,9 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0)(
   if(rst)begin
    state<=OFF;stage<=0;speed<=0;warn_mode<=0;t_now<=0;target<=0;
    target_warn<=0;sent<=0;committed<=0;half_frame<=0;samples<=0;running_q<=0;terminal_frame<=0;
-  end else begin
+  end else if(MENU_ENABLE && restart && state==RUN)begin
+   target<=stage;target_warn<=warn_mode;sent<=0;t_now<=0;samples<=0;half_frame<=0;terminal_frame<=0;state<=PICTURE;
+  end else if(!(MENU_ENABLE && pause && state==RUN))begin
    running_q<=audio_running;
    if(state!=RUN)begin samples<=0;half_frame<=0;terminal_frame<=0;end
    if(UI_GATE && !ui_play)terminal_frame<=0;

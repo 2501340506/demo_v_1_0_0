@@ -1,0 +1,840 @@
+# 当前交接：灾害 S2 本地通过、板测待验收（2026-10-18）
+
+- 当前任务：原目录 feature/mountain-disaster-selector；基线 7e3ac02，S1 afffa80。两阶段本地实现/仿真/TD 已完成，候选 `v0.19.0-s2-local.1`，无 board、正式发布或 main 合并。
+- 已完成：四类图层、SW3=C6 四图中文菜单、真实 VFAT 子目录、根目录优先及独立缓存；确认/取消/忙中安全接管与按键释放，保留既有功能。固定 releases/v0.19.0/s2-local.1，17525 LUT、11760 寄存器、57 BRAM9k、2 BRAM32k、14 DSP，Setup +0.047ns / Hold +0.030ns，STNS/HTNS 均 0；120 份 S2 仿真及 86 份编译/模型日志通过，审计和证据范围见候选 VALIDATION。
+- 当前待办：用户烧录固定候选，按 docs/灾害SW3操作与板测.md 检查四类选择、16 图、宣传、预览、参数、音频、预警与数码管。未收到具体候选板测反馈，不能记板级通过。
+- 下一步：提交并同步 GitHub 功能分支及本阶段 local 标签，核对远程引用；具体板测确认后才补 board 记录和标签。失败修复递增 local 编号。前版内容听审及整机待办不补造结论。
+- 踩过的坑：boot 高电平不得暂停未完成首图事务；AUTO 必须在整个按键释放交接期间保留 pause；扫描单拍错误需锁存；菜单原色旁路旧 OSD/参数；LOAD_SELECT 和寄存 quiesce/owner 缩短仲裁路径；FAT 范围比较分拍、FIFO Gray 满判断避免长组合使能；hash8 采用等价逐位展开减少 DSP。bitgen/exit0 不等于时序通过，失败构建保留本地。
+- 保护：个人记录、用户 TD 日志/状态、best_result、旧 worktree、G:\ 原卡不改不提交；不写哈希、不批量删除。[本地阶段归档](README.md)。
+
+## 历史交接
+
+# 最新状态：S2 时序修正中
+
+TD32/33最终均失败：32 Setup -1.153ns/STNS -25.527ns、Hold -.012ns/HTNS -.016ns；33 Setup -.388ns/STNS -.406ns、Hold -.012ns/HTNS -.027ns。当前修复33实测的短音频缓存地址、读FIFO地址Hold及写FIFO复位Removal，均使用保留恒等LUT、不增加周期。专项与新完整TD待完成，不交付失败bit。
+
+## 历史记录
+
+# 最新进展：TD31失败，TD32/33验证中（2026-10-18）
+
+TD31 Setup -1.931ns/STNS -35.199ns、Hold +.086ns/HTNS0，失败不交付。TD32/33同RTL seed43/47运行中：依据TD30路径把BMP头/decoder的常数×3改为18位移位加法，audio_ring读地址全部位恒等LUT。header_equivalence03、decoder_equivalence09、ring04已全部通过；scaler11/controller25进行中。最新选择仍120/86；新专项全部PASS后才替换清单。S2仍未提交/tag/push，无local候选；其他保护和待办见下文。
+
+## 历史交接
+
+# 当前状态：S2 功能完成，时序收敛中（2026-10-18）
+
+- 原目录 feature/mountain-disaster-selector；基线7e3ac02。S1 afffa80 / v0.19.0-s1-local.1已固定并推送。S2尚无合格local候选，未提交/推送S2，不建board、不正式发布、不合main。
+- TD28最终Setup +.014ns/STNS0、Hold -.011ns/HTNS -.015ns；TD29 Setup -.782ns/STNS -11.174ns、Hold -.020ns/HTNS -.020ns，均失败不交付。不同位反复出现PCM地址/图层旁带BRAM短路径。
+- TD30最终失败：Setup -.365ns/STNS -.555ns（3端点）、Hold -.004ns/HTNS -.004ns（audio_ring copy_pointer[2]→BRAM）；17509 LUT/11744寄存器/57+2BRAM/16DSP。原PCM及图层旁带Hold已消除；TD31仍在布线。
+- TD30/31使用相同RTL：PCM所有读写地址位、图层全部旁带位统一保留组合恒等LUT，不增加周期/寄存器或改变BRAM延迟；seed43/53，正常时钟与全部原验收门槛不变。完整构建进行中。
+- 最新专项：layer_equivalence04通过100306逐拍比较/303异步复位；M4_12全部7项通过，PCM播放器5300精确样本含指针回绕/停播重启。unit19已全部22项通过（情景音频173939样本/11会话）；scaler10两项全通过。清单替换为上述最新日志后120仿真/86编译模型重新核验通过，继承证据范围见S2_VALIDATION.md。
+- 下一步：读取TD30/31最终真实时序，只有Setup/Hold>0、两TNS=0、资源不超限、无ERROR才审计约束和告警、固定候选、提交/tag/push。未通过时按实测路径处理，bitgen或runner PASS不能当作时序通过。
+- 保护：不改个人记录、用户TD状态/best_result、旧worktree、G:\原卡；不提交个人记录及四个无关031359/055257 TD日志。不写哈希、不批量删除、不重跑一次性integrate/package_s1脚本。unit18误用历史入口的失败保留，不计验收。
+
+## 历史交接
+
+# 当前交接：灾害 S2 功能已接入，收敛 TD 时序（2026-10-18）
+
+- 当前任务：原目录 feature/mountain-disaster-selector，基线 7e3ac02；S1 afffa80 / v0.19.0-s1-local.1 已固定并同步 GitHub。S2 尚未通过本地验收，无 board 标签、正式发布或 main 合并。
+- 已完成：SW3=C6、真实 VFAT 中文目录、四图菜单/固定中文字模、独立 SDRAM 四槽、帧边界描述符、确认/取消及按键释放交接已接入。四类16图、根目录优先、缺/坏/错类型/读失败、参数/AUTO/速度保留和可选 PCM/FONT/TEXT 清除专项通过；菜单最终像素图为合成梯度，非实际卡照片。
+- 最新构建：TD25 Setup -.710ns/STNS -3.526ns（13端点）、Hold +.030ns/HTNS 0，失败不交付；原目录选择负路径已消除，当前主要是缓存空槽分配。TD26(seed41)与TD27(seed43)同源码隔离构建中，未完成，不交付。
+- 最新RTL：依据TD21实测路径，scanner BPB/目录/容量范围比较分半字并增加组合结果拍；内存写入引擎在握手时锁存burst目标，菜单基地址和长度使用mem域同步mode；源域像素计数使用本域长度。BIN/音频SD响应的有效、数据、索引、结束、错误、owner整束增加一级，busy覆盖管线排空。LFN常量ROM取消共享有效信号CE，BMP有效范围行长度收窄到13位。写FIFO地址4、PCM读地址3增加实测Hold恒等LUT，不增加周期。
+- 最新回归：controller21全部11例、unit16全部22项（情景音频173939精确样本）、M4_09全部7项、directories09全部19例、writer08四菜单槽/旧缓存、scaler08、decoder_equivalence06及lfn04已通过。原尺寸voice_top06已PASS（TD21之前快照）；音频/BIN整束响应修改后的voice_top07运行中。TD23将有效范围模式的payload判断按下一个行字节提前寄存并在背压时保持，切断TD22行比较至列CE的7级路径；decoder_equivalence07已PASS，scaler09/controller22运行中。所选清单反映继承和重跑证据，不把未完成测试记通过。
+- 验证范围：清单包含继承证据，不代表全部同次RTL重跑；详见diagnostics/disaster_selector/S2_VALIDATION.md。S1实际卡图192帧/58982400像素、S2生产top最终菜单像素及18拍对齐保留。
+- 历史失败：01/03/04/06/10/11/14/17/18/19/20布线失败，13布线修复工具崩溃；02/05/07/08/09/12/15/16/21时序失败。TD16虽bitgen但Setup-1.567ns/STNS-113.286ns，Hold-.020ns/HTNS-.053ns，17342LUT/11631寄存器/57BRAM9k/2BRAM32k/16DSP，不交付。所有失败产物留diagnostics/output，不入releases。
+- 补充回归：scaler09、controller22、decoder_equivalence08（新增8幅完整行图像）、M4_10及unit17全部通过；voice_top07运行中。TD25针对TD24的app_target经目录mux/比较至scan_state实测路径，新增SC_SELECT_DIRECTORY锁存/比较分拍，仅MENU启用非物理扫描增加一拍；controller23验证中，前6例已PASS。
+- 最新完成：voice_top07完整通过（1536源样本/6会话、21948 PCM/HDMI样本），controller23全11通过。缓存occupied从串行动态位写改并行bank解码，cache_equivalence01通过20万周期×两种PAUSE配置、全部状态/每拍边界与分配等价；controller24全11例PASS，清单120仿真/86编译模型全部核验。
+- 下一步：完成TD26/TD27；失败按实际路径继续收敛。必须Setup/Hold>0、两TNS=0、资源不超限、无ERROR后审计约束/告警、固定候选、提交/tag/push。用户确认具体bit上板前不建board标签。
+- 踩过的坑：boot高SW3不得暂停首图未完成事务；取消整个按键释放交接期间必须保持player pause才能保留AUTO；扫描单拍错误需锁存；菜单原色旁路旧OSD/参数；LOAD_SELECT、寄存quiesce/owner/page及头响应整束寄存缩短仲裁。Python用py -I -X utf8，中文PowerShell管道设UTF8；一次性integrate_s1/integrate_s2/package_s1不重跑。
+- 保护：个人问题记录、用户TD日志/状态、best_result、旧worktree、G:\原卡不改不提交；不写哈希、不批量删除。四个无关td_20261018_031359/055257日志不提交。[板测操作](../../../灾害SW3操作与板测.md)。
+
+## 历史交接
+
+# 当前交接：灾害 S1 local.1 固定，实施 S2（2026-10-18）
+
+- 任务：已授权两阶段计划，原目录 feature/mountain-disaster-selector，基线7e3ac02。完成 S1 后继续 S2。
+- 已完成：图层/类型/对齐和双应用45份仿真、TD attempt02及审计通过。固定 releases/v0.19.0/s1-local.1；15780 LUT、10878寄存器、52 BRAM9k、2 BRAM32k、26 DSP，Setup+.129ns/Hold+.012ns、TNS0。板测待验收。
+- 当前问题：S2生产未接入；独立LFN/目录/菜单键/SDRAM写入通过，菜单后端握手测试待修复。
+- 下一步：S1提交/标签/推送，接入S2，完成回归/TD，固定S2并同步GitHub。用户确认前不建board、不正式发布、不合main。
+- 注意：SW3=C6上1，KEY3复位；UART默认双关、数码管保留。保护个人记录、TD状态和G:\卡，不写哈希、不批量删除。ModelSim库用正斜杠，Python用py -I -X utf8，PowerShell管道须UTF8。身份迟到须等垂直消隐，不能横向消隐提交。
+
+## 历史交接
+
+# 当前交接：UART 资源裁减 S1 local.1，本地通过，待板测（2026-10-18）
+
+- 当前任务：用户明确去掉串口日志和串口在线字幕，保留第3项SD数码管调试页；原目录feature/uart-resource-reduction，输入075ab05/M6 local.1。硬件回退M5 board.1原bit，正式回退v0.16.0。
+- 已完成：顶层两参数默认0、generate裁减，TX恒高，保留共享帧边界和固定/TEXT.BIN字幕；仅改top与timing.sdc两个生产文件。LUT 16022→14092（减少1930，12.05%）；寄存器10686→9530（减少1156）；BRAM9k 56→46（释放10块）；BRAM32k和DSP不变。固定[候选](../../../../releases/v0.18.0/uart-s1-local.1/README.md)，标签v0.18.0-uart-s1-local.1。
+- 当前验证：本轮11份仿真与20份编译模型日志通过；四种UART组合/原日志字幕、双应用最终RGB/TMDS、状态栏、TEXT/FONT和逐样本VOI/音量/HDMI。完整TD `uart_reduction_td_attempt05`：14092 LUT（71.90%）、9530寄存器、46 BRAM9k、2 BRAM32k、13 DSP；Setup +0.040ns/Hold +0.019ns，STNS/HTNS均0；实际异常约束与告警审阅见[验证](../../../../releases/v0.18.0/uart-s1-local.1/VALIDATION.md)。111工程输入/根脚本、bit/变化源逐字节核对。
+- 卡住的问题：本地验证及GitHub上传无阻塞；重试已成功上传当前功能分支与本次plan/local标签，并核对远程引用一致，先前curl 55连接重置已恢复。本候选[板测](../../../../releases/v0.18.0/uart-s1-local.1/BOARD_RESULT.md)待用户；前序M6四页内容/完整听审、≥40分钟、Flash冷启动及双向切换/换卡复位原始计时仍待办。新bit不继承M5总体板测确认。
+- 下一步：交用户烧录固定bit并记录本候选板测。具体候选确认后才记board并推送；正式版本及main合并继续等待约定整机验收和发布确认。
+- 踩过的坑：常量TX使TD把旧10ns约束扩大到42455内部路径；SDC内Tcl if无效。最终默认注释三条TX命令和一条RX false-path，恢复日志时，设置 `UART_LOG_ENABLE=1`，并取消 `timing.sdc` 三条 `# UART_TX_ON ` 前缀；恢复在线字幕另设 `UART_SUBTITLE_ENABLE=1`，取消一条 `# UART_RX_ON ` 前缀并审阅其输入寄存器目标。单开字幕时命令生效但无串口回复；两开恢复日志和回复仲裁。任何恢复配置均须重新验证、构建及审阅约束匹配。 attempt01–04均不交付；bitgen/exit0不代表时序通过。RX关闭后的旧false-path已注释；既有IO/model例外保留，不称全IO覆盖。个人记录原字节不改不提交，用户TD/best_result/旧worktree/原卡不动，无哈希/批量删除。
+- [本地阶段归档](../uart-resource-reduction/README.md)。仅归档本轮本地结果，不把UART或M6待测项写成验收完成。
+
+## 历史交接
+
+# 当前交接：宣传模式 M6 local.1 本地通过，待内容听审与整机实测（2026-10-17）
+
+- 当前任务：M5获用户总体确认后执行M6；原目录feature/science-publicity-mode，输入M5 local.1 f2d45c8/board.1 e49bb94，开发回退M5 board.1及其原bit/原M1测试素材，正式回退v0.16.0。
+- 已完成：M5 board.1与分支已推送并核对；[四页内容、四段本机普通话合成讲解及双村18文件整卡](../../../../tools/publicity/geohazard_release/README.md)固定为content.1。全部真实BMP像素/PCM样本反读、两次打包字节复现、整卡和负例校验通过，M1旧16项工具回归通过；[候选](../../../../releases/v0.18.0/m6-local.1/README.md)复用已确认M5原bit，不改RTL/工程、不新TD，111工程输入/根构建脚本/bit逐字节核对一致。
+- 当前验证：最终RTL专项/生产输出/整机与预览回归49份仿真、52份编译模型日志全部通过审计，逐项记录见[本版验证](../../../../releases/v0.18.0/m6-local.1/VALIDATION.md)；M5原183仿真/69编译模型日志和TD27为继承证据，不冒充M6新跑。实际175秒长讲解在PC全样本核对，尚未在RTL/实板完整播完。
+- 卡住的问题：待用户四页内容审阅、四段完整听审、真实电视可读性和整机功能、≥40分钟连续运行、Flash冷启动、双向模式切换及换卡复位原始计时；[记录表](../../../../releases/v0.18.0/m6-local.1/BOARD_RESULT.md)均未预填通过。用户同意合成语音仅是声音方案选择，不是听审结论。
+- 下一步：固定v0.18.0-m6-local.1并同步当前分支与本阶段标签，远程结果以实际核对为准；交用户按[完整操作与计时口径](../../../宣传模式M6整机验收.md)上板。具体候选确认后才记board并推送；约定验收完成且用户明确确认发布后才复用验收bit发布v0.18.0、回填两份方案书实测数据、归档并合并main。
+- 踩过的坑/保护：M1测试音不能充当讲解；新图/音不得继承旧板测；源EOF不等于尾样本已消费；TD27 Setup仅6ps且有既有模型/IO例外。个人记录909字节保持原字节且不提交；不动旧TD/best_result/worktree/G:\原卡；不写哈希、不批量删除。Python用py -I -X utf8。
+
+## 历史交接
+
+# 当前交接：宣传模式 M5 总体确认，执行 M6（2026-10-17）
+
+- 当前任务：用户反馈“M5无误”，授权M6内容与配音定稿、整卡、最终回归及整机验收准备；原目录feature/science-publicity-mode，输入f2d45c8。
+- 已完成：记录[M5总体确认](../../../../releases/v0.18.0/m5-local.1/BOARD_RESULT.md)，建立v0.18.0-m5-board.1并按规则同步；复用[M5原bit](../../../../releases/v0.18.0/m5-local.1/demo.bit)，正式回退v0.16.0。
+- 卡住的问题：尚无M6实际连续运行、冷启动、双向切换及换卡复位耗时；正式内容/完整配音听审待完成。不据M5总体反馈补造数据。
+- 下一步：制作独立版本的四页与普通话配音、双模式整卡及最终验证/板测记录；候选确认后才建M6 board；用户确认发布后复用验收bit发布v0.18.0、归档并合并main。
+- 注意：个人问题记录原字节不改不提交；不动用户TD工程、best_result、旧worktree/原卡及旧内容。Python使用py -I -X utf8；不写哈希，不批量删除。素材变化需重验相关项，旧测试音不充当正式讲解。
+
+## 历史交接
+
+# 当前交接：宣传模式 M5 local.1 本地通过，待板测（2026-10-17）
+
+- 当前任务：用户确认“M4功能正常”后实施M5；原目录feature/science-publicity-mode，输入eb7deb3/总体确认e548d72，开发回退v0.18.0-m4-board.1复用[M4原bit](../../../../releases/v0.18.0/m4-local.1/demo.bit)，正式回退v0.16.0。
+- 已完成：参数、身份与AUTO门控整合；情景11焦点和提交同步阶段/音频/同页重播/退出预警。固定[候选](../../../../releases/v0.18.0/m5-local.1/README.md)、[操作与板测](../../../宣传模式操作与板测.md)，仅备份三个变化生产文件。
+- 验证：183份仿真及69份编译/模型日志核验通过；生产最终像素/状态栏/PCM及旧卡/缺文件/恢复、双村、真实SDRAM系统/预览回归完成。TD `publicity_m5_td_attempt27`：16022 LUT（81.74%）、10686寄存器、56 BRAM9k、2 BRAM32k、13 DSP；Setup +0.006ns/Hold +0.030ns，TNS0，STA覆盖率99.97%，无ERROR、完整bitgen；111输入及根脚本、bit/变化源逐字节一致。审计及边界见[验证](../../../../diagnostics/publicity_mode/M5_VALIDATION.md)和[审计](../../../../releases/v0.18.0/m5-local.1/reports/AUDIT_REVIEW.md)。
+- 卡住的问题：无本地阻塞；M5板测、正式内容/配音、M6≥40分钟与实际计时待办；不替前序补验收结论。
+- 下一步：按操作说明上板，填[实际结果](../../../../releases/v0.18.0/m5-local.1/BOARD_RESULT.md)；获具体候选确认后才建board并同步。失败保留local.1，修复递增候选。M6须另获指令，正式发布/合并main仍待用户确认。
+- 踩过的坑：情景预览直接走cache会使阶段/音频不同步；旧回归未启用宣传不能独立证明双应用输出；TD bitgen/exit0不代表时序通过。失败尝试完整保留在diagnostics/output。审计有既有dummy模型、无IO delay和sd_miso例外，不称零告警/全IO覆盖。个人问题记录原字节不改不提交，TD用户工程/best_result/旧worktree不操作，Python用py -I -X utf8。
+- 归档：[M5阶段归档](../../2026-10-17/publicity-m5/README.md)。只推new-origin当前分支与M5 local标签，远程结果按实际引用核对；未发布v0.18.0。
+
+## 历史交接
+
+# 当前交接：M4总体确认，执行宣传模式M5（2026-10-17）
+
+- 当前任务：用户反馈“M4功能正常”，执行M5参数/OSD/预览/完整回归。原目录feature/science-publicity-mode，输入eb7deb3，开发回退v0.18.0-m4-board.1复用M4原bit，正式回退v0.16.0。
+- 已完成：记录[M4总体确认](../../../../releases/v0.18.0/m4-local.1/BOARD_RESULT.md)，不补造单项、次数、时长。
+- 卡住的问题：无；M5尚在实施，M1正式配音/内容审阅及前序M6仍待办。
+- 下一步：核对参数显示优先级、身份与AUTO门控、当前集预览，专项与生产top像素/PCM、全回归、TD与审计合格后固定v0.18.0-m5-local.1；待板测。
+- 注意：个人问题记录按当前字节保存，不改不提交；不动TD用户工程、best_result、旧worktree/旧候选。Python使用py -I -X utf8；只推new-origin当前分支及本阶段标签。
+
+## 历史交接
+
+# 当前交接：宣传模式 M4 local.1 本地通过，待板测（2026-10-17）
+
+- 当前任务：用户确认M3无误后执行M4；原目录feature/science-publicity-mode，输入M3 local.1 fdb8065/board.1 adfdd66，开发回退M3固定bit，正式回退v0.16.0。
+- 已完成：VOI逐页单次、实际源样本消费完成/会话身份、四相停止排空、五秒AUTO、缺/错静音及状态、参数/预览完成锁存和回00重计；修复新资源未选定前启动旧VOI的29样本额外会话。见[M4实施](../../../宣传模式M4实施.md)。
+- 验证：169份仿真及53份编译/模型日志核验通过；800例/19428周期元数据等价、四种卡、111扫描/reader、17重载及整机长回归；生产top最终通过。publicity_m4_td_attempt14：15966 LUT（81.46%）、10683寄存器、56 BRAM9k、2 BRAM32k、13 DSP；Setup +0.072ns/Hold +0.003ns，TNS0，无ERROR、完整bitgen，审计差异见固定报告；111输入及根脚本、bit/8变化源逐字节核对。固定[候选](../../../../releases/v0.18.0/m4-local.1/README.md)，标签v0.18.0-m4-local.1。
+- 卡住的问题：无本地构建阻塞；M4板测待反馈，M1仍为测试音，正式配音/专业审阅及M5/M6待完成；前序M6未验收不补结论。
+- 下一步：按[固定板测步骤](../../../../releases/v0.18.0/m4-local.1/BOARD_VALIDATION.md)验证并填[真实结果](../../../../releases/v0.18.0/m4-local.1/BOARD_RESULT.md)。确认具体候选后才建board；失败保留local.1并递增修复。按默认流程只推new-origin当前分支及本阶段local标签，不操作main或无关标签。
+- 踩过的坑：源EOF不等于尾样本已消费；静音仍须采样节拍供fade；跨域单拍AUTO不能在pix计数；换表READY早于目标选源时须保持旧流停止。失败TD和旧top保留诊断，不纳入候选。个人问题记录909字节原样保留，不提交；旧TD工程/best_result/旧worktree不操作。
+
+## 历史交接
+
+# 当前交接：宣传模式 M3 board.1 已获用户确认，准备 M4（2026-10-17）
+
+- 当前任务：用户反馈“M3无误”，并授权M4逐页VOI单次播放、消费完成身份握手与五秒AUTO。
+- 已完成：M3候选v0.18.0-m3-local.1（fdb8065）总体板测获确认；[板测记录](../../../../releases/v0.18.0/m3-local.1/BOARD_RESULT.md)只记真实反馈，不补次数/时长/单项结论。board.1复用原bit、不重建。
+- 卡住的问题：无；正式配音/内容审阅及前序M6整机验收仍待办。
+- 下一步：同步M3 board标签后，在原目录feature/science-publicity-mode实施M4，专项、相关回归和完整TD合格后形成v0.18.0-m4-local.1。
+- 注意：个人问题记录不改不提交；无新worktree、不动旧TD/best_result；正常完成须取实际消费尾样本且防旧会话事件，不能用源EOF代替；正式回退v0.16.0。
+
+## 历史交接
+
+# 当前交接：v0.18.0 宣传模式 M3 实施，local.1 本地通过，待板测（2026-10-16）
+
+- 当前任务：执行宣传模式M3，原目录feature/science-publicity-mode，输入8e6bf69；硬件开发回退为未获整机验收的v0.17.0-m6-local.1，正式回退v0.16.0。个人问题记录不改不提交，不建worktree，不补前序验收。
+- 已完成：生产启用双应用；00 KEY4长按一秒切应用、短按保留AUTO；应用与拨码页独立。同卡四bank取消/排空/失效/逻辑重映射，资源版本/应用身份跨域提交；宣传静态四页双向翻页、静音且AUTO禁用，旧卡COMPAT、缺目标拒绝和覆盖后ERROR重试/切回/重扫。详见[M3实施](../../../宣传模式M3实施.md)。
+- 验证进展：最终17项专项、192次身份CDC、307200真实缩放像素、25个稀疏卡边界、20个启动及20个真实扇区链边界通过；108项scanner/reader含默认关闭逐周期比较通过。155份完成日志与33份编译/模型日志核验通过，最终生产top07通过；真SDRAM系统591帧/481827精确PCM、预览293帧/238405 PCM。详细边界见[M3验证](../../../../diagnostics/publicity_mode/M3_VALIDATION.md)。
+- 卡住的问题：无TD阻塞。attempt01–13未达时序/资源或布线门槛，全部拒绝交付；按真实路径分拍scanner/reader及FONT/TEXT元数据，audio_run沿用寄存停止，最终TD14达标：15785 LUT（80.54%）、Setup +0.097ns/Hold +0.024ns、TNS0，无ERROR且完整bitgen。审计汇总及告警集合与M6相同；17专项、20项unit及bin_loader GAP2/5通过，最终生产top07通过，候选已固定[releases/v0.18.0/m3-local.1](../../../../releases/v0.18.0/m3-local.1/README.md)，标签v0.18.0-m3-local.1。
+- 下一步计划：按[固定M3板测清单](../../../../releases/v0.18.0/m3-local.1/BOARD_VALIDATION.md)验证并回传真实结果，记录[BOARD_RESULT](../../../../releases/v0.18.0/m3-local.1/BOARD_RESULT.md)。明确确认后才建立board并同步；失败保留local.1，修复递增候选。当前分支和本阶段local标签按默认流程推new-origin，远程结果以核对为准。M4讲解/EOF/五秒AUTO未实施，M1 VOI仍是测试音。
+- 踩过的坑：启动首图可能快于主音量4682 accepted样本淡变，宣传READY须另等实际静音；取消后旧finish不能交给新bank。最终TD须无ERROR、Setup/Hold>0、TNS0、LUT≤16660。保留厂商模型告警及top测试台watchdog常量诊断，不称零告警。失败证据留diagnostics/output，不纳入候选；中文管道先设UTF-8，Python用py -I -X utf8。
+
+## 历史交接
+
+# 当前交接：v0.18.0 宣传模式 M2 模块验证完成，生产未启用（2026-10-16）
+
+- 当前任务：用户授权M2；原目录 `E:/form/demo_v_0_0/demo_v_0_0`，`feature/science-publicity-mode`，输入8a90155；硬件输入/开发回退仍是未获整机验收的v0.17.0-m6-local.1，正式回退v0.16.0。无新增worktree，个人问题记录不改不提交。
+- 已完成：scanner→reader新增默认关闭SCAN_PUBLICITY、EDU/VOI独立四槽表、PIC原表透传、目标锁存、原槽mask及map_start逻辑重映射；EDU固定页槽/PIC压缩兼容。修正开启后的扫描提前结束，取消扫描/预检/文件分别失效或保留元数据并排空，不发虚假加载完成。详见[M2实施](../../../宣传模式M2实施.md)、[接口清单](../../../宣传模式接口清单.md)。sd_card_bmp未启用，无生产bit、无local/board标签。
+- 验证范围：[M2验证](../../../../diagnostics/publicity_mode/M2_VALIDATION.md)：108份仿真/回归及1份编译日志零错误零告警；96组扫描、53次reader操作分别GAP0/2/5，覆盖目录尾/混排/缺槽/旧卡/取消/错误恢复；全部原输出对8a90155逐周期比较。两top启用参数独立综合至opt_gate，无ERROR；scanner1477 LUT/920寄存器，reader4989 LUT/3162寄存器/9 BRAM9k/7 DSP，后者1条SYN-6562 buffer初值告警。11份RTL快照逐字节一致。无PnR/整机时序/bitgen，面积不是生产增量。
+- 卡住的问题：无M2模块阻塞。M3应用入口、四bank归属/失效/写排空/显示提交及生产缩放联合测试尚未实施，M4才接VOI单次播放。M1四VOI仍为测试音，专业审阅/正式配音/完整听审及HDMI可读性待办。旧M6整机板测、≥40分钟、冷启动/换卡计时及前序未确认项仍待反馈，v0.17.0未发布，不补旧验收。
+- 下一步计划：收到M3指令后接入双应用安全切换、静态四页前后翻，宣传AUTO明确禁用；按实际生产接入运行专项、回归、完整TD后才形成m3-local候选。M1补推已成功，远程宣传分支在M2开始时已核对至8a90155；本阶段只推new-origin当前分支，不建/推硬件标签，不操作main或旧标签。
+- 踩过的坑：新资源在旧资源齐全后必须继续扫；EDU不使用PIC压缩索引。scan_done粘滞，scan_error独立脉冲，不能同拍假设；map_start不排队，ready之外还须两扇区客户空闲。测试副本显式补端口，旧源/冻结releases不改；Windows PowerShell重定向日志为UTF-16，精简证据转换UTF-8。失败attempt01–06/syn01均保留，最终attempt07/syn02；Python用py -I -X utf8且生成新目录。个人记录仍以原909字节副本核对，旧TD工程/best_result/候选不操作。
+
+## 历史交接
+
+# 当前交接：v0.18.0 宣传模式 M1 PC 内容与工具完成，内容待审（2026-10-16）
+
+- 当前任务：用户授权执行宣传模式M1；原目录 `E:/form/demo_v_0_0/demo_v_0_0`、`feature/science-publicity-mode`，输入 `v0.18.0-plan.1`（c375121）；硬件输入仍为未获整机验收的 `v0.17.0-m6-local.1`，开发回退该候选，正式回退v0.16.0。
+- 已完成：新增 [PC打包工具与使用说明](../../../../tools/publicity/README.md)，制作“认识—识别—应对—准备”四页脚本/原创示意图/来源记录/内容模板，固定PNG/WAV输入；[生成目录](../../../../tools/publicity/geohazard_basics/generated/manifest.json)含EDU1–4.BMP、VOI1–4.PCM、五预览及清单。所有音频均为2/6/8/10秒测试音，无人声、不匹配讲解稿，画面与清单明确非正式配音；完整稿独立保存。
+- 验证范围：16项PC测试通过，四BMP共1228800像素独立反读一致，四PCM共1248000样本/2496000字节与WAV及原标准WAV工具提取一致。14个打包文件共6670941字节在两个新目录分别与固定包逐字节一致；9个输入文件同字体/Pillow重生成一致。45个文字框避让检查、四页总览审看通过；详见 [M1验证](../../../../diagnostics/publicity_mode/M1_VALIDATION.md)。PC实现提交d5ddf21；三次推送new-origin当前分支因连接重置/443超时失败，远程尚未同步，联网探测同样超时。无RTL/TD/旧候选改动，无bit、无local/board标签。
+- 卡住的问题：无PC工具阻塞。专业审阅、正式配音和完整听审、实际HDMI遮挡及电视距离可读性仍待确认；测试音不能作为正式宣传讲解。旧M6整机板测、≥40分钟、冷启动/换卡计时及前序未确认项继续等待，v0.17.0未正式发布，不补旧验收。
+- 下一步计划：网络恢复后先执行 `git -c push.followTags=false push new-origin HEAD:refs/heads/feature/science-publicity-mode` 并核对远程引用，不操作origin/main/旧标签。获M2指令后按 [实际接口清单](../../../宣传模式接口清单.md) 扩展EDU/VOI扫描与四槽映射，覆盖目录尾/缺槽/旧卡；未接生产无bit只提交，接生产则按里程碑完成回归/TD再建对应候选。M3静态切模式、M4单次讲解EOF/五秒AUTO、M5/M6尚未实施；内容人工审阅与正式录音列M6前待办。
+- 踩过的坑：`wave.getnframes()`会向下取整奇数data长度，必须先核对RIFF实际chunk尺寸；attempt01失败证据保留，修复后attempt02全过。生成器一律新目录、拒绝覆盖，Python使用 `py -I -X utf8`；固定输入/输出用定向gitattributes避免autocrlf改变JSON字节。字体不分发，另机重画可能差异，复现直接用固定PNG/WAV。个人问题记录909字节与开始副本一致，不纳入提交；旧worktree/TD状态/best_result不操作。
+
+## 历史交接
+
+# 当前交接：v0.18.0 宣传模式 M0 计划完成（2026-10-16）
+
+- 当前任务：按用户指令仅执行宣传模式 M0，在原目录 `E:/form/demo_v_0_0/demo_v_0_0` 建立 `feature/science-publicity-mode`；分支起点 e71f86a（宣传方案文档备份），硬件开发基线 `v0.17.0-m6-local.1`（2c78c3a），开发回退为该固定候选，正式回退为 v0.16.0。
+- 已完成：复核本地和 new-origin 的旧分支/M6 标签；无正式 v0.17.0、无 M6 board。已有三方案及索引同步 M0 状态，建立 [v0.18.0 阶段计划与完整按键矩阵](../../../专业科普宣传模式分阶段修改计划.md)、[实际接口清单](../../../宣传模式接口清单.md)，列清七个活动扫描器例化、十三个冻结副本、reader 内槽映射、四 bank 取消/排空/显示提交、音频实际消费点与 CDC。M0 提交对应 `v0.18.0-plan.1`，按规则同步 new-origin 的当前分支与计划标签。
+- 验证范围：M0 只做文档和源码接口核对；九份文档 UTF-8、269 个本地链接及 diff 检查通过。生产目录/TD工程/M6固定候选相对 M6 标签无 Git 差异；111 个工程输入及根构建脚本与 M6 原隔离快照逐字节一致，268 个固定候选文件与 M6 标签逐字节一致，bit 673856 字节。未修改 RTL、未运行新仿真或 TD、未生成 bit；详细范围见阶段计划 §6。个人 `问题小记录.txt` 与原909字节副本一致，不纳入提交；旧候选、TD用户状态、best_result及旧worktree未操作。
+- 卡住的问题：无 M0 本地阻塞。M6 整机板测、≥40分钟、Flash冷启动和换卡复位计时仍待实际反馈；v0.17.0仍未正式发布/归档/合并main，M5及更早未确认项保持历史状态，不替前序补结论。宣传内容/配音、RTL、双模式板测均未实施。
+- 下一步计划：获 M1 实施指令后，按 [里程碑 M1](../../../选题方案——宣传模式/03_实现里程碑.md) 制作四页科普内容与 `tools/make_publicity_pack.py`，登记来源/讲解稿，输出 EDU/VOI/预览/清单，运行 PC 工具验证与新目录逐字节复现；无生产 bit 不打 local/board 标签。M2后再接扫描和四槽映射，M3静态切模式时宣传AUTO禁用，M4才接自然EOF与五秒AUTO。
+- 踩过的坑：当前离开拨码00会清除scene_mode，需M3解耦应用身份；旧资源齐全会令扫描器提前结束，M2需验证目录尾EDU/VOI；reader有found_slot压缩映射，不能只在顶层改资源mux；PCM短文件和长文件各有循环路径，现音频启动ready不是自然完成；wav_active=0会回到提示音，宣传缺讲解/播完需显式静音。latest-state CDC不能当逐项送达事件队列。基线未经M6板测，不转移v0.16.0结论给新候选。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M6 local.1 本地通过，等待整机板测（2026-10-16）
+
+- GitHub 备份任务：用户明确要求在新增宣传模式前备份当前工程；本次同步 `new-origin` 的 `feature/mountain-escape-classroom` 及 `v0.17.0-m6-local.1`，纳入 [宣传模式三份方案](../../../选题方案——宣传模式/README.md)。仅备份文档与已有实现，不执行宣传模式 M0、不增加板测结论、不发布正式版；个人问题记录保留本机。远程同步结果以实际推送及远程引用核对为准。
+- 当前任务：M6 第二张场景卡、M5 问题修复及整机验收准备；基线 v0.17.0-m5-local.1（34d7a82），原目录 feature/mountain-escape-classroom，正式回退 v0.16.0。用户个人问题记录不改不提交。
+- 已完成：普通场景文字放大为黑色 32px；预警文字居中红色 32/64px 缩放，配循环警报音；示意村与山洪村两张卡可生成。按最新要求，KEY4 短按恢复 AUTO；场景 KEY1 长按一秒调速，短按切预警，长短互斥。自动轮播等待当前阶段 t=239 且终态帧显示后再推进。见 [M6 实施计划](../../../M6_IMPLEMENTATION.md)、[整机板测清单](../../../../diagnostics/mountain_scene/BOARD_VALIDATION_M6.md)。
+- 本地验证：实现 bc19864；118 份仿真、36 份编译日志及 19 项 PC 测试核验通过。系统 591 帧/481827 PCM、预览 293 帧/238405 PCM、真实场景 173939 PCM/11 会话。TD attempt02：15083 LUT（76.95%）、9751 寄存器、56 BRAM9k、2 BRAM32k、13 DSP，Setup +0.101ns/Hold +0.019ns，TNS 0，无 ERROR、完整 bitgen；111 个工程输入及根构建脚本逐字节一致，仅备份四个变化生产文件。固定 [候选](../../../../releases/v0.17.0/m6-local.1/README.md)、[验证](../../../../releases/v0.17.0/m6-local.1/VALIDATION.md)，bit 673856 字节、双卡各十个媒体文件。审计同 M5，保留两块 BRAM32k dob[9] dummy 模型说明。
+- 卡住的问题：无本地阻塞；具体 M6 候选板测、≥40 分钟稳定性、Flash 冷启动和换卡复位耗时待用户实际反馈。尚未建立 board/正式标签、未合并 main；M6 远程备份按顶部任务执行，备份不等于板测验收。attempt01/03 Setup 负裕量拒绝交付。
+- 下一步计划：用户按 [固定板测清单](../../../../releases/v0.17.0/m6-local.1/BOARD_VALIDATION.md) 验证并回传真实数据，填 [BOARD_RESULT](../../../../releases/v0.17.0/m6-local.1/BOARD_RESULT.md) 及方案书第 9 节；明确确认后建立 board、推送对应分支/local/board 标签，复用验收 bit 发布 v0.17.0、归档并合并 main。失败保留 local.1，修复出递增候选。
+- 踩过的坑：TD 脚本 exit 0 和生成 bit 不代表时序合格，必须查 final_timing。长系统回归不例化场景文字，须结合双卡生产顶层和真实 BRAM 专项。SND1–3 为节拍音效、SND4 警报，不能当作旁白同步证据。换卡仍需复位。TD GUI 重新加载磁盘工程再保存；旧候选/用户素材/个人记录保留。M5 独立板测及 M1/M3、M2 历史未确认项不倒填。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M5 local.1 本地通过，等待板测（2026-10-16）
+
+- 当前任务：M5 本地实现完成；原目录 feature/mountain-escape-classroom，开发输入 v0.17.0-m4-local.1，候选 v0.17.0-m5-local.1，正式版回退 v0.16.0。
+- 已完成：ba79e51 实现 FONT/TEXT 扫描加载、两块 BRAM32k、中文及阶段文案、预警红框、速度参数、阶段/A 数码管和工具输出；74a79d3 等周期切分 SD 超时比较，保留 case 字库回退。112 份仿真、28 份编译日志及 15 项 PC 测试通过。TD attempt24：14897 LUT（76.01%）、9707 寄存器、56 BRAM9k、2 BRAM32k、13 DSP，Setup +0.008ns/Hold +0.014ns，TNS 0，无 ERROR、完整 bitgen。111 个工程输入逐字节一致，仅备份 13 个变化输入，固定 bit 673856 字节；见 [候选](../../../../releases/v0.17.0/m5-local.1/README.md)、[验证](../../../../releases/v0.17.0/m5-local.1/VALIDATION.md) 和 [实现约定](../../../M5_IMPLEMENTATION.md)。
+- 卡住的问题：无本地阻塞；M5 板测待确认，未建立 board 标签、未推送 M5。时序余量较小；审计新增两块 BRAM32k 的 ram.dob[9] dummy-node 报告，其他汇总及例外同 M1，原因未在本阶段进一步定位，不写成全审计无差异。用户“M4暂无大问题”已按总体反馈记录 [M4 验收](../../../../releases/v0.17.0/m4-local.1/BOARD_RESULT.md)，m4-board.1 及截至 d4da43a 的分支、M4 local/board 标签已推送；M1/M3 单独板测与 M2 目视不倒填。
+- 下一步计划：按 [M5 板测步骤](../../../../releases/v0.17.0/m5-local.1/BOARD_VALIDATION.md) 验证新卡文案、预警/速度/数码管和旧卡回退；用户确认后记录 board 并推送本分支及 M5 local/board 标签。失败保留 local.1、修复生成 local.2。M6 第二张卡、40 分钟稳定性、Flash 与冷启动计时未实施。
+- 踩过的坑：TD attempt01–23 均因源条目、时序或工具内部错误被拒绝，失败证据留 diagnostics/output，仅交付 attempt24。封装最初误用 M4 bit 长度及审计完全相同假设，已改为实际 M5 长度并严格核对两个新增 BRAM dummy 节点。起始工程及个人记录有用户改动；工程备份 diagnostics/output/m5_initial_project.al 和 m5_project_resaved_2155.al，个人记录不改不提交。TD GUI 保存可能丢新源，请重新加载磁盘工程后再保存；工程仅新增三项。占位音效不证明旁白同步，ffmpeg 路径未实测。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M4 local.1 本地通过，等待板测（2026-10-15）
+
+- 当前任务：按用户明确指令先执行 M4 本地实现，分支 `feature/mountain-escape-classroom`，开发输入 M3 local.1（4aab2ba）；正式版/已板测回退 v0.16.0。M1/M3 板测与 M2 目视仍待确认，不倒填通过。
+- 已完成：0540d43 实现场景 FSM 替换临时 t、四个 SND 槽及逐槽 BGM 回退、实际 accepted PCM 的 Gray CDC、淡变与画面/音频握手；工具输出四段 8 秒占位 PCM。00 下 KEY4 长按 1 秒进入/退出，KEY2 下一阶段/长按 2 秒重扫，KEY1 科普/预警，KEY4 短按 1/2/4 倍速。68 份仿真/22 份编译日志及 12 项 PC 测试通过；TD attempt04：15181 LUT（77.45%）、8882 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.133ns/Hold +0.004ns，TNS 0。108 个输入逐字节一致、31 条审计汇总同 M1。固定 [M4 候选](../../../../releases/v0.17.0/m4-local.1/README.md)，bit 664544 字节，标签 `v0.17.0-m4-local.1`。
+- 卡住的问题：无本地阻塞；M4 板测及实际旁白关键词同步未验证，未建立 board 标签、未推送；M5/M6 未实施。
+- 下一步计划：按 [M4 板测步骤](../../../../releases/v0.17.0/m4-local.1/BOARD_VALIDATION.md) 验证四阶段、速度/预警、无爆音、缺 SND/BGM 和原 24bpp 卡回归。明确确认具体候选后记录该候选 board 并推送分支及对应 local/board 标签；失败保留 local.1、修复生成 local.2。M5 待验收及后续授权。
+- 踩过的坑：TD attempt01 内部崩溃、02 外部 GUI 丢源条目、03 bitgen 前有 ERROR，均不作为候选；仅 attempt04 strategy 7 完整通过。外部工程已先备份到 diagnostics/output/mountain_m4_project_resaved_1907.al，再仅补回四个源条目；请 TD GUI 重新加载后再保存。见 [M4 验证](../../../../releases/v0.17.0/m4-local.1/VALIDATION.md)。ffmpeg 不在 PATH，仅原生 WAV 路径实测；FONT/TEXT、红框/速度 OSD/阶段数码管属于 M5。best_result、旧候选和用户素材保留。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M3 local.1 本地通过，等待板测（2026-10-15）
+
+- 当前任务：用户后续明确要求执行M3，先完成本地实现；M1板测与M2用户目视仍待确认，不倒填通过。分支 `feature/mountain-escape-classroom`，功能基线/已板测回退v0.16.0，输入为M1 local.1与M2素材3535c0b。
+- 已完成：生产提交964c14d实现hazard_layer两拍流水、32位video_delay接线和临时帧时间源；首有效像素锁定阶段/时间，每两帧递增、239循环、切图/退出预览重置。9份仿真及19份编译日志通过审核：24张M2图7393796像素/随行检查、时间源1930帧、新/旧top、真实SDRAM31帧/10137598灾害像素与首像素阶段/bank一致性、PCM两项、预览293帧/238405 PCM、完整系统591帧/481827 PCM。TD attempt02最终14520 LUT、8439寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.104ns/Hold +0.011ns，TNS0，104输入逐字节一致，审计汇总同M1。固定 [M3候选](../../../../releases/v0.17.0/m3-local.1/README.md)，bit664544字节，标签 `v0.17.0-m3-local.1`。
+- 卡住的问题：无本地阻塞；M1/M3均无用户板测反馈，M2目视仍待确认，未建立board标签、未推送。M4–M6未实施。
+- 下一步计划：用户使用M3固定bit，按 [M3板测步骤](../../../../releases/v0.17.0/m3-local.1/BOARD_VALIDATION.md) 检查原24bpp卡及示意村32bpp卡。明确确认具体候选后记录该候选board并推送分支及对应local/board标签，不倒填M1通过；M4等待M3验收和后续授权。失败则保留local.1并修复出local.2。整机回退仍为已验收v0.16.0。
+- 踩过的坑：attempt01为SD缓存路径Setup −0.212ns，保留失败报告；attempt02仅将timing optimization提高到high，功能源码未变。有效运行unit05/top01/legacy_top01/memory04/pcm01/preview01/system01；早期测试台失败保留。顶层43条告警与v0.16.0相同，见 [M3验证](../../../../releases/v0.17.0/m3-local.1/VALIDATION.md)。16:30/16:45 demo.al外部重存两次丢失scene条目，先备份到diagnostics/output/mountain_m3_project_resaved_1630.al与1645.al再仅补回两项，恢复后与构建逐字节一致；请在TD重新加载磁盘工程后再保存；用户其他工程内容/best_result/旧候选未覆盖。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M2 图像工具本地完成（2026-10-15）
+
+- 当前任务：按用户“先执行M2”完成独立PC图像工具，分支 `feature/mountain-escape-classroom`；硬件基线/回退仍为 `v0.16.0`（1818adc），M1候选仍为 `v0.17.0-m1-local.1`（901f29e），尚待板测。正式版仍为v0.16.0。
+- 已完成：[场景工具与精确参考模型](../../../../tools/scenes/README.md)、[虚构示意村配置](../../../../tools/scenes/demo_village/scene.yaml)、4张32bpp BMP及24张expected PNG。灰度/折线/种子三种T来源、避险点250和未覆盖255已实现；参考模型固定配色、混合取整与闪烁相位。8项专项通过，20480个像素与独立标量模型一致；全部BMP的RGB/T反读一致，38个输出和4张输入图均逐字节复现。见 [M2验证](../../../../diagnostics/mountain_scene/M2_VALIDATION.md) 和 [参考拼图](../../../../tools/scenes/demo_village/generated/overview.png)。
+- 卡住的问题：无M2本地阻塞；用户目视、板上素材显示与M1板测尚未确认。M2没有独立bit，不建立local/board标签，本阶段未推送，M3–M6未实施。
+- 下一步计划：用户目视M2拼图/原尺寸参考图；按原 [M1板测步骤](../../../../releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) 验证原卡与32bpp诊断卡，M2场景卡可补充检查底图显示。M1明确通过后记录board并推送分支及M1 local/board标签；M3需M1板测和M2素材确认后再授权推进。
+- 踩过的坑：本机默认Python为3.14，原缺numpy/PyYAML，现已安装，使用 `py -I` 和 `tools/scene_requirements.txt`。BI_RGB的A字节可能被通用图像库忽略，反读必须看原始字节；白色灰度是T=239，未覆盖须用mask/透明区。混合必须先完整加法再移位，stage2前沿暗相仍用3/4。所有生成器拒绝覆盖已有输出；复现用新diagnostics/output目录，历史测试输出不清理。M1 bit不使用T，因此M2四图RGB相同；灾害动画到M3才显示。未改RTL、工程、best_result及用户既有素材。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M1 local.1 已固定，等待板测（2026-10-15）
+
+- 当前任务：M1 32bpp 像素通路本地完成；分支 `feature/mountain-escape-classroom`，标签 `v0.17.0-m1-local.1`，功能基线/回退 `v0.16.0`（1818adc）。候选见 [M1 说明](../../../../releases/v0.17.0/m1-local.1/README.md) 和 [阶段计划](../../../山区避险课堂分阶段修改计划.md)；正式版仍为 v0.16.0。
+- 已完成：五个 SD 加载/缩放文件保存 `{R,G,B,T}`，32bpp A 为 T、24bpp 和黑边为 FF，decoder 保留 RGB 兼容端口。144 份专项/受影响回归日志全部通过，23 份编译日志另存；真实 SDRAM RGBA 31 帧、混合尺寸预览 293 帧/238405 PCM 样本、完整系统 591 帧/481827 PCM 样本。完整 TD attempt01：14358 LUT、8274 寄存器、56 BRAM9k、0 BRAM32k、13 DSP，Setup +0.111ns/Hold +0.003ns，TNS 0；102 个实际工程输入逐字节一致，时序审计类别/异常汇总同基线。固定 [demo.bit](../../../../releases/v0.17.0/m1-local.1/demo.bit) 为 664544 字节，仅备份 5 个变化的生产文件；四张 32bpp 诊断图和板测步骤已固定。
+- 卡住的问题：无本地阻塞；M1 尚未上板，不建立 board 标签，未推送本阶段提交/标签。Hold 仅 3ps，不能以本地通过替代板测。
+- 下一步计划：用户按 [板测步骤](../../../../releases/v0.17.0/m1-local.1/BOARD_VALIDATION.md) 验证原 24bpp 卡和 32bpp 诊断卡；确认通过后记录 `v0.17.0-m1-board.1` 并推送分支及本阶段 local/board 标签。异常时按实际现象修复，出 local.2，不覆盖本候选。M2 可独立授权推进，M3 仍需 M1 板测和 M2 素材；M2–M6 尚未实施，显示侧不使用 T。
+- 踩过的坑：decoder 修复末字节/file_end 同拍旧计数和连续表头校验寄存延迟；早期失败或主动停止的运行保留在 diagnostics/output，不作为通过证据。TD 中间面积 14346，最终布线后为 14358 LUT。实际工具为 E:/TD；单项使用 Intel Starter 10.5b，长回归使用 F:/modelsim/win64 的 SE-64 10.6e，Starter 旧运行因限速主动停止。PCM 两测试台须同批编译；编译/TD 重定向日志为 UTF-16，按 BOM 读取。完整系统的 `vlog-13288` 多宏参数提示及已知 IP 告警保留，未知告警拒绝，见 [验证记录](../../../../releases/v0.17.0/m1-local.1/VALIDATION.md)。用户 TD_project、best_result、旧标签及素材未覆盖。
+
+## 历史交接
+
+# 当前交接：v0.17.0 M0 计划已建立（2026-10-15）
+
+- 当前任务：山区防灾避险课堂 v0.17.0；分支 `feature/mountain-escape-classroom`，功能基线/回退 `v0.16.0`（1818adc），本次仅执行 M0。
+- 已完成：建立 [阶段计划](../../../山区避险课堂分阶段修改计划.md)，固定 M1–M6 范围、依赖、验收、资源目标及 `v0.17.0-mN-local.K` / `mN-board.K` 标签约定；将工作区已有选题方案纳入 `docs/选题方案/`，更新 CHANGELOG。M0 提交对应 `v0.17.0-plan.1`；M1–M6 尚未实施，未修改 RTL、未构建新 bit、无新增板测结论。
+- 卡住的问题：无 M0 阻塞。离线计算 T 的赛题合规性待官方答复，按技术方案暂不阻塞实施；M4 再核实拨码/按键占用，M5 再补齐文本格式细节与字库资源取舍。
+- 下一步计划：下一会话执行 M1（32bpp 像素通路）：A/T 写入 SDRAM 低 8 位，24 位图/黑边写 FF，仿真、受影响回归、完整 TD 后固定 m1-local.1 交板测；不提前实现 hazard_layer。M2 为独立 PC 工具阶段，无 bit 不建 local/board 标签。
+- 踩过的坑：实际方案源在 `E:\form\选题方案`，现已复制入仓库；分支从用户快照 07172f5 建立，保留其中工程、素材和个人记录，user_source 与 v0.16.0 无差异。当前远程为 `new-origin`；旧 worktree 保留不清理。基线 Hold 仅 3ps；上板使用 releases 固定 bit；M5 资源取舍不能悄然破坏旧卡字库回退，换卡第一版需复位。
+
+## 历史交接
+
+# 当前交接：v0.16.0 已发布并合并 main（2026-10-14）
+
+- 当前任务：LUT 极致优化按 S2 结项（用户决定 S3 不做），正式版 v0.16.0 及 main 合并推送。
+- 已完成：S1、S2 板测通过；正式 bit 复用 s2-local.1（662216 字节，逐字节一致），生产源码相对候选标签无变化，未重建。15402→14190 LUT、15→13 DSP。归档 docs/history/2026-10-14/lut-optimization。
+- 卡住的问题：无。
+- 下一步计划：本任务结束；新需求另开功能分支。如需更多 LUT 余量，可从计划中未实施的 S3 批8–11 单独立项。
+- 踩过的坑：LUT 下降会改变布局并暴露新关键路径，按路径等价寄存解决；单批收益在 ±100 噪声内时按累计判断；只记录用户实际反馈。
+
+## 历史交接
+
+# 当前交接：v0.16.0 S2 board.1 通过，进入 S3（2026-10-14）
+
+- 当前任务：LUT 极致优化 S3（放宽到可见行为，逐项取舍），分支 feature/lut-optimization。
+- 已完成：用户确认 s2-local.1 Flash 冷启动、运行 40 分钟功能均正常，记录 releases/v0.16.0/s2-local.1/BOARD_RESULT.md，标签 v0.16.0-s2-board.1，推送分支及 s2-local/s2-board 标签。累计 15402→14190 LUT（−1212）。
+- 卡住的问题：无。
+- 下一步计划：S3 批8 按键共用 1ms 节拍、批9 scanner 清零、批10 字库 BRAM、批11 评估项；构建从 lut_opt_attempt12 起。S3 候选仍按计划做 Flash 持续 20 分钟与完全断电冷启动。
+- 踩过的坑：用户反馈为整体“功能均正常”，未逐项列出 1–26 项，按整体记录。
+
+## 历史交接
+
+# 当前交接：v0.16.0 S2 local.1 已固定，等待板测（2026-10-14）
+
+- 当前任务：LUT 极致优化 S2；候选 releases/v0.16.0/s2-local.1，标签 v0.16.0-s2-local.1，分支 feature/lut-optimization。
+- 已完成：批4（音频包 BCH 共享）、批5a（常数包直出）、批6（逐拍移位、按索引加载）、批7a/7b（字幕提交、数码管单译码器）及两处关键路径等价寄存；attempt11 14190 LUT、Setup +0.144ns、Hold +0.003ns；137 份通过日志，系统统计与 S1 逐项相同。
+- 卡住的问题：无本地阻塞；尚未上板，不建 board 标签、不推送 S2 标签、不进入 S3。
+- 下一步计划：用户按 BOARD_VALIDATION.md 1–26 项板测；通过后记录 s2-board.1 并推送，再进入 S3（按键共享节拍、scanner 清零、字库 BRAM、头检查复用、写引擎合并评估）。
+- 踩过的坑：LUT 下降后布局变化会暴露新关键路径（attempt05 cache_control、attempt10 PCM 启动），按路径做等价寄存后通过；attempt07/08 同输入 TD 布局后崩溃两次，网表变化后消失；批5b TMDS 查表收益不确定未做；读取测试台需补接新端口 load_index。
+
+## 历史交接
+
+# 当前交接：v0.16.0 S1 board.1 通过，进入 S2（2026-10-14）
+
+- 当前任务：LUT 极致优化 S2（结构改写，可见行为不变），分支 feature/lut-optimization。
+- 已完成：用户确认 s1-local.1 功能均正常，记录 releases/v0.16.0/s1-local.1/BOARD_RESULT.md，标签 v0.16.0-s1-board.1，推送分支及 plan/s1-local/s1-board 标签。S1：15402→15072 LUT、15→13 DSP。
+- 卡住的问题：无。
+- 下一步计划：S2 批4 HDMI 音频包 BCH 共享/串行化，新建 HDMI 符号流旧新逐拍比较台；构建从 lut_opt_attempt03 起。
+- 踩过的坑：用户反馈为整体“功能均正常”，未逐项列出，按整体记录。
+
+## 历史交接
+
+# 当前交接：v0.16.0 S1 local.1 已固定，等待板测（2026-10-14）
+
+- 当前任务：LUT 极致优化（功能不变）S1；候选 releases/v0.16.0/s1-local.1，标签 v0.16.0-s1-local.1，分支 feature/lut-optimization。
+- 已完成：批1–3 合并构建 lut_opt_attempt02：15072 LUT（−330）、8490 寄存器、13 DSP（−2），Setup +0.109ns、Hold +0.004ns；时序审计同基线；102 输入逐字节一致。旧新逐周期等价（含变异体）、21 项基础回归、42 项 FAT32、真实 SDRAM 预览/完整系统等 91 份日志通过，系统统计与 v0.15.0 逐项相同。记录见 diagnostics/lut_opt/LUT_RECORD.md。
+- 卡住的问题：无本地阻塞；尚未上板，不建 board 标签、不进入 S2、未推送。
+- 下一步计划：用户按 releases/v0.16.0/s1-local.1/BOARD_VALIDATION.md 1–19 项板测；通过后记录 s1-board.1 并推送分支与 S1 标签，再进入 S2（HDMI BCH/TMDS、簇→LBA、图片表去重）。
+- 踩过的坑：TD 对未改模块有 ±100～150 LUT 波动，单批小收益须累计判断（attempt01 批1 单独 +76）；全部乘法本已在 DSP，"乘法改 DSP"项取消；两个系统测试台层次引用 write_len_latch，已改为 write_len 端口；single_pll/run_refresh_fix.ps1 文件列表过时，装载失败与本次无关。
+
+## 历史交接
+
+# 当前交接：v0.16.0 LUT 极致优化 S0 计划已确认（2026-10-14）
+
+- 当前任务：在用户可见功能不变前提下尽量降低全设计物理 LUT；基线 v0.15.0（15402 LUT/8551 寄存器/54 BRAM9K/15 DSP，Slice 87.72%，Setup +0.139ns、Hold +0.004ns）。分支 feature/lut-optimization，计划 docs/LUT极致优化分阶段修改计划.md，标签 v0.16.0-plan.1。
+- 已完成：依据 v0.15.0 s2-local.1 物理层次报告及源码审查确定 S1（逐周期等价：乘法改DSP、常数长度、位宽）、S2（HDMI BCH/TMDS、簇→LBA、图片表去重等结构改写）、S3（放宽到可见行为：按键共享节拍、scanner清零、字库BRAM、头检查复用、写引擎合并评估）。用户确认等价边界放宽到可见行为，分3阶段各出 local 候选上板。尚未修改 RTL。
+- 卡住的问题：无。
+- 下一步计划：S1 批1（转场与亮度对比度乘法改DSP、提示音常数增益化简），等价台放 diagnostics/lut_opt/，完整TD从 lut_opt_attempt01 起。
+- 踩过的坑：物理层次被扁平化（bridge 名下约830 LUT实为上游视频合成与音频包BCH），按模块LUT只作参考，保留判据以全设计物理LUT为准；估算均未综合。保留用户未跟踪素材与问题小记录.txt 修改，不入提交。
+
+## 历史交接
+
+# 当前交接：v0.15.0 已发布并合并 main（2026-10-13）
+
+- 当前任务：亮度、对比度与总音量调节 S0–S3 已完成，正式版 v0.15.0 及 main 合并推送。
+- 已完成：S2 s2-local.1 用户确认功能均正常；S3 用户确认 Flash 下持续运行 20 分钟、完全断电冷启动通过。正式 bit 复用 s2-local.1（662216 字节，逐字节一致），生产源码相对候选标签无变化，未重建。归档 docs/history/2026-10-13/brightness-contrast-volume。
+- 卡住的问题：无。
+- 下一步计划：本任务结束；新需求另开功能分支。如需更多 LUT/时序余量，可从 TIMING_STRUCTURE.md 中未实施的批4、批6、scanner 清零项开始，单独立任务验证。
+- 踩过的坑：Slice>90% 时 TD 跳过 Hold 修复，是 S2 长期 Hold 负值的根源；局部 LUT 降不等于全设计降；Flash 运行不等于完全断电冷启动；只记录用户实际反馈。保留未跟踪用户素材与既有 worktree。
+
+## 历史交接
+
+# 当前任务：v0.15.0 S2 board.1 通过，S3 待完全断电冷启动
+
+- 当前任务：亮度、对比度、总音量；s2-local.1 用户确认功能均正常，记录 v0.15.0-s2-board.1；同 bit Flash 下持续运行 20 分钟正常。
+- 已完成：S2 板测记录 releases/v0.15.0/s2-local.1/BOARD_RESULT.md；S3 部分结果 releases/v0.15.0/S3_VALIDATION.md。推送功能分支及 v0.15.0-s2-local.1、v0.15.0-s2-board.1。
+- 卡住的问题：完全断电冷启动结果未反馈，不记录 S3 board、不正式发布、不合并 main。
+- 下一步计划：用户确认完全断电冷启动后记录 v0.15.0-s3-board.1，复用原 bit 发布 v0.15.0，归档至 docs/history 并合并 main。
+- 踩过的坑：用户“功能均正常”为整体反馈，未逐项列出第9–12项，按整体记录，不补造单项结果；Flash 运行不等于完全断电冷启动。
+
+## 历史交接
+
+# 当前任务：v0.15.0 S2 local.1 已固定，等待板测
+
+- 当前任务：亮度、对比度、总音量S2；经功能不变的LUT缩减后得到首个时序合格构建，已固定为releases/v0.15.0/s2-local.1，交用户上板。
+- 已完成：attempt46（源码2cc5b57）Setup +0.139ns、Hold +0.004ns，15402 LUT/54 BRAM9K/15 DSP；时序审计12类与v0.14.0一致；102个输入及bit逐字节核对。最终源码重跑21项基础回归、6项调节专项、缩放、四宫格按键、生产顶层、真实SDRAM预览（165帧）与完整系统（591帧、481827 PCM），全部零错误，警告数及类别同历史。标签v0.15.0-s2-local.1。
+- 卡住的问题：无本地阻塞；s2-local.1尚未上板，不建board标签、不进入S3、不推送。Hold余量仅4ps。
+- 下一步计划：用户按releases/v0.15.0/s2-local.1/BOARD_VALIDATION.md 1–12项板测；通过后记录s2-board.1并推送分支及S2标签，再进入S3（20分钟、Flash、完全断电冷启动）。失败则按实际现象定点修复，生成s2-local.2。
+- 踩过的坑：tb_pcm_preview_rescan需与tb_pcm_production同批编译；Windows Python不认Git Bash的/tmp；PATH需临时加Python313；attempt44/45路由Hold修复TD可复现崩溃，网表变化后消失，后续构建可能复现。未做的LUT项（批4、批6、scanner清零）记录在TIMING_STRUCTURE.md，作为将来需要空间时的备选。
+
+## 历史交接
+
+# 当前任务：v0.15.0 S2 LUT缩减（功能不变）——attempt46时序首次通过
+
+- 当前任务：原feature/brightness-contrast-volume分支，按“S2 LUT缩减子计划”降LUT以解除布线拥塞；attempt46完整TD Setup +0.139ns、Hold +0.004ns，尚未时序审计/打包/上板。
+- 已完成：保留批1（圆环heights分布式RAM，attempt41）、批2（video_delay BRAM环、提示音常数增益，attempt42）、批5（字幕逐字节校验、UART文本ROM、数码管计数器，attempt46）。全设计16966→15402 LUT，Slice 96.56%→87.72%，BRAM 52→54。批3（scanner/streamer等价改写，attempt43）全设计LUT+53，已撤回。各批旧新等价、变异及相关回归见diagnostics/media_adjust/TIMING_STRUCTURE.md。attempt46输入与2cc5b57逐文件一致（统一换行）。
+- 卡住的问题：无阻塞。待用户决定：①是否以attempt46作S2候选继续时序审计、补系统回归并打包s2-local.1；②scanner scan_start清零（测试台契约）与滚动字幕字库BRAM化（需pixel_x逐拍递增前提）是否放宽“功能不变”边界。attempt44/45在路由Hold修复阶段TD可复现崩溃，attempt46网表变化后未再出现。
+- 下一步计划：用户确认后，以2cc5b57/attempt46执行timing audit、工程输入逐字节核对、真实SDRAM预览系统及生产联合回归，固定releases/v0.15.0/s2-local.1并建local标签交板测。
+- 踩过的坑：Slice>90%时TD跳过Hold修复，此前Hold负值的根源；局部LUT降不等于全设计降（attempt43）；ROM“does not have a driver”提示与已验证audio_ring_rom相同，需门级仿真证明初值保留；历史脚本固定输出目录，用重定向副本；Git Bash PATH里无python，需临时加Python313目录。
+
+## 历史交接
+
+# 当前任务：v0.15.0 S2 LUT缩减（功能不变）
+
+- 当前任务：原feature/brightness-contrast-volume分支，按docs/亮度对比度与音量调节分阶段修改计划.md“S2 LUT缩减子计划”分6批降LUT，缓解attempt40布线拥塞，从attempt41起。
+- 已完成：子计划落盘；依据attempt40物理层次表及源码确认主要来源（audio_ring_levels寄存器阵列、video_delay移位链、OSD字库/选择、SD多份运算与拷贝、字幕并行校验）。尚未改RTL。
+- 卡住的问题：attempt40时序仍负（Setup -0.587ns、Hold -0.020ns），无合格候选、无local/board标签。
+- 下一步计划：批1 audio_ring_levels heights分布式RAM化，旧新等价及圆环回归后完整TD；按全设计物理LUT决定保留。
+- 踩过的坑：局部LUT下降不等于全设计下降（attempt33/35）；RAM化须核实实际映射及ROM初值；保留用户未跟踪素材、旧worktree，不批量删除。本机Git Bash无python，文档写入用heredoc。
+
+## 历史交接
+
+# 当前任务：v0.15.0 功能已接入，S2物理时序阻塞
+
+- 当前任务：继续v0.15.0 S2时序修复，原feature/brightness-contrast-volume分支；attempt40完整TD及网表检查结束，原预览→音频负路径消除，但整体时序变差，仍无合格候选。
+- 已完成：audio_run直接由现有audio_session寄存器驱动，scan_accept同时等待!audio_run和audio_stopped；原组合停止延后一拍，事务排空后才复位SD。adjust_audio_stop_units1三项、adjust_audio_stop_production1原配置9279样本/预览配置9280样本通过，零错误警告；新增启动边界注入、真实KEY2预览退出延迟应答后重扫。实际使能Q边界保留，102个工程输入与attempt40逐字节一致。未重跑真实SDRAM像素系统。
+- 卡住的问题：attempt40无工具ERROR，Setup WNS/TNS -0.587/-1.030ns（2端点）、Hold -0.020/-0.072ns（7端点），无负Recovery/Removal。16966 LUT、9356寄存器、4732 MSlice/4731 LSlice、52 BRAM9K、15 DSP；比attempt39 LUT+11、MSlice+39。两条Setup实际为图片streamer fs_error[2]经像素接受控制到全图/缩略图FIFO写使能（7级、79%/81%布线）。Hold在UART、缩略图写FIFO、音频短缓存和PCM RAM，具体位见结构记录。无local/board标签。
+- 下一步计划：从attempt41起固定HighFanoutOptimization/strategy5，优先调查fat32_bmp_reader到media_thumbnail_loader/media_frame_loader的像素接受寄存边界，数据/valid/结束/错误/取消需保持事务顺序。补真实SDRAM双writer逐像素和错误/取消/重扫验证，再完整TD并重核Hold。详见[结构优化记录](../../../../diagnostics/media_adjust/TIMING_STRUCTURE.md)。
+- 踩过的坑：audio_session在网表重命名为u_stream/enable，由物理image_count实例Q驱动。Hold物理pending[67]实际是pending[70]，count[0]实际是rd_ptr[3]，PCM wr_bin[11]实际是wr_bin[0]，不能按实例名字猜信号。新测试只在首次启动边界注入scan_request，其余预览重扫用真实KEY2；writer/SD为模型，不冒称完整预览系统重跑。回复验证用run_reply_pipeline，恒等LUT须有EQN；不打包失败bit、不批量删除。
+
+## 历史交接
+
+# 当前任务：v0.15.0 S1独立模块已通过
+
+- 当前任务：亮度、对比度及总音量实现，准备S2生产接入。
+- 已完成：5项ModelSim专项（9216组RGB、音量11档/背压、CDC、按键、OSD）通过；6个模块TD独立综合通过。证据 diagnostics/output/adjust_unit2、adjust_syn1。
+- 卡住的问题：无。
+- 下一步计划：顶层接入、联合回归、完整TD及固定S2候选。
+- 踩过的坑：参数OSD需18字符宽；总音量默认精确透传；S1无bit不建local/board标签。Windows Python标准输入传中文需显式编码，本轮失败操作未改文档，改用补丁写入。
+
+## 历史交接
+
+# 当前任务：v0.15.0 亮度、对比度与总音量（S0）
+
+- 当前任务：按已确认计划实施S0至S2候选，板测后再进入S3。
+- 已完成：检查main及v0.14.0基线，建立功能分支，计划落盘。
+- 卡住的问题：无。
+- 下一步计划：独立模块和专项验证、独立综合，然后生产接入和完整TD。
+- 踩过的坑：课程对比度是占位、亮度默认语义冲突；VS低有效；KEY4在01/10改为切项；保护用户未跟踪素材。
+
+## 历史交接
+
+# 当前交接：v0.14.0 已发布并合并 main（2026-10-13）
+
+- 当前任务：图片缩放与缩略图 S0–S4 已完成，正式版及 main 已推送。
+- 已完成：用户针对 S4 三项回复“已完成；持续运行  20 分钟”；记录验收通过。正式 bit 与 local.3 文件及标签逐字节一致，97 个工程输入与构建统一 CRLF/LF 后内容一致。正式说明、最终验证、计划及历史归档已整理。
+- 卡住的问题：无。正式标签 v0.14.0、S4 board.1 及功能分支、main 已成功推送。
+- 下一步计划：本任务结束；后续若优化大图读取性能，另立任务并验证。生产源码未改变，无需重新仿真或 TD 构建。
+- 踩过的坑：旧计划及首页落后于 S3 板测记录；历史“待板测”不代表当前状态。大图首次读取耗时仍存在，不声称已做吞吐优化。保留所有用户未跟踪素材、旧候选和既有 worktree；中文显式 UTF-8。
+
+## 历史记录
+
+# 当前交接：local.3 功能板测通过，分析图片加载耗时（2026-10-13）
+
+- 当前任务：用户确认 local.3“功能均正常”，询问全部图片加载较慢的解决办法。
+- 已完成：日志四张图片 CACHE_DONE，首图及后续缓存 COMMIT 正常；记录 S3 board.3。按板内 T 计时四次加载约 90/1546/6652/6642 ms；本地 board_samples 文件为 57654/1444858/6220854/6220854 字节，后两张约 0.94 MB/s。当前 streamer 顺序读取全部文件，再由 decoder/scaler 缩放，缩小显示尺寸不减少读卡字节。
+- 卡住的问题：尚未确认卡中实际文件与本地 board_samples 一致；尚无持续播放、Flash 或完全断电冷启动反馈。
+- 下一步计划：优先建议离线等比缩小大图；需保留大图时，另行实施按缩放需求跳行读取或连续读优化，并完成专项验证。S4 待板级验收；本轮只分析性能，未改生产 RTL 或图片素材。
+- 踩过的坑：UART 接收时刻有排队偏差，耗时优先用板内 T；日志不提供文件尺寸，不能仅凭 I 字段认定卡中文件；local.3 BOOT 仍为历史固定字符串。
+
+## 历史交接：local.3 本地交付
+
+- 当前任务：修复 local.2 在 INIT_OK 后 SCAN_DONE/STOP E=2 的板测失败；local.3 已完成本地门级、协议和时序验证，等待用户上板。
+- 已完成：确认 local.2 的 MISO_delay_top 物理 LUT 恒零；根因为 AL_MAP_LUT1 遗漏 TD 使用的 EQN 参数。生产 RTL 已显式设置 EQN="A"。SD 协议/初始化/引脚/重试、外部延迟和扇区测试通过；新 Routed 网表验证 MISO 0/1 均可透传。完整 TD Routed Setup +0.096ns、Hold +0.076ns、失败端点 0；时序审计无未定义时钟、无无效约束、无组合环和遗漏路径。已固定 releases/v0.14.0/s3-local.3，97 个构建输入逐字节一致，相对 local.2 只有 sd_card_top.v 一处生产变化。
+- 卡住的问题：local.3 尚未上板，不能宣称 SD 扫描和四宫格功能板级通过；不建立 board 标签，不进入 S4。
+- 下一步计划：下载 releases/v0.14.0/s3-local.3/demo.bit，先确认 INIT_OK 后不再 STOP E=2，再按同目录 BOARD_VALIDATION.md 检查四宫格、KEY1/KEY2/KEY4、图片音乐、重扫和复位。通过后记录 board.3，再进入 S4。
+- 踩过的坑：INIT 参数不能替代 TD 的 EQN；时序通过也不保证手工原语功能正确，必须检查实际 Routed 网表。arch/al_lmacro.v 只有声明，功能仿真要用 sim_release/common/al_map_lut.v。UART BOOT 仍是历史固定字符串，不能据此判断 bit 版本；SCAN_DONE 的 E=0 是事件编码，不代表扫描成功。
+
+## 历史交接：local.2 本地交付（现已板测失败）
+
+- 当前任务：S3 时序修复 local.2 已完成本地验证和固定，等待用户上板；尚未建立 board.2 或进入 S4。
+- 已完成：新建 feature/thumbnail-timing-margin。文件读取响应 byte/index/valid/done/error 整束流水；修正流水后的错误分类拍序；解码器到缩放器增加一深度 ready/valid 寄存级；文件结束计数/行判断预寄存。未修改 SDC 或时钟频率。
+- 验证结果：42 项 FAT32、末字节同拍、五尺寸完整字节流逐像素、真实 SDRAM 双写通过。mixed4 为253帧/174预览/6提交与提示音/206204 PCM/2会话；failure4 为165帧/60预览/10提交与提示音/139171 PCM/4会话，失败恢复、重试和超时缓存选择通过。attempt2 Routed Setup +0.096ns、Hold +0.076ns、STA 99.97%，16757 LUT、43 BRAM9K、11 DSP、1 PLL；时序审计完成。
+- 固定交付：releases/v0.14.0/s3-local.2/demo.bit；97 个工程输入与构建逐字节一致，76 份通过日志、24 个相对 v0.13.0 变化的生产输入及必要报告已归档。候选包含开始前已有的两个 SPI MISO 保持 LUT 位置调整，并如实归档。
+- 卡住的问题：无本地实现阻塞；local.2 尚未获得用户板测确认。旧 stability/recovery 脚本缺当前模块和 AL_MAP_LUT1 库，装载失败，不记 RTL 失败；完整预览故障测试已覆盖相应行为。
+- 下一步计划：用户按 releases/v0.14.0/s3-local.2/BOARD_VALIDATION.md 上板验证四宫格、KEY1/KEY2/KEY4、图片音乐、重扫和复位；确认通过后建立 board.2 并推送，再进入 S4。当前不把本地通过写成板级通过。
+- 踩过的坑：第一版流水使 io_error 提前可见，将一次可重试读错误分为停止存储的超时；现改为随同一流水事件消费并通过故障恢复测试。ScaleTest 的 case24 仍按旧 8192 簇期待失败，而生产缩放合同为 16384，不把该参数不一致写成 RTL 回归。保留素材、BGM.PCM 删除状态、旧候选和 worktree，不批量删除。
+
+## 历史交接：课程与时序研究
+
+- 当前任务：按用户要求研究第14课文档、配套四个 RTL 与当前项目的时序修复办法；本轮仅研究和文档记录。
+- 已完成：定位原工程 22:44:46 的 strategy1 报告 Setup −0.557ns/Hold −0.012ns，13/3 个失败端点；区别于 attempt17/S3 local.1 的 +0.117ns/+0.012ns。最新 Setup 瓶颈为加载取消/扇区错误返回到 streamer CE，76% 延迟来自布线；Hold 为缩放行 RAM、PCM 写 RAM、全屏 writer RAM 地址短路径。
+- 已完成：比较 attempt17 与当前 user_source 中同路径存在的 113 个文件，仅 sd_card_top.v/spi_master.v 两个已有未提交改动不同。课程 controller 是骨架，文中参考答案未真正把所有显示状态推迟到帧边界，不能直接替换现有邮箱。
+- 卡住的问题：当前工程最新报告仍未达时序门槛；提出的响应整体流水、BRAM 定点保持修正及 BPB 判定拆分尚未实施/验证。本轮未运行新仿真或 TD，不宣称修复完成。
+- 下一步计划：优先给文件读取的 byte/index/valid/done/error 整体流水，保留取消排空语义；随后依据新报告修正 BRAM Hold，必要时拆分 BPB 判定。完整方案、阶段、回退及标签原则见 docs/缩略图课程与时序余量研究.md。
+- 踩过的坑：不能以旧通过报告覆盖当前失败；同沿加寄存器或降低频率不保证修复 Hold；不能只延迟错误不延迟末字节/完成信号。保留用户 SPI 改动、素材、删除状态、旧候选和 worktree，中文读取显式 UTF-8。本轮未修改生产 RTL/约束/工程。
+
+## 历史交接：以下是研究前记录，不代表最新工程通过
+
+# v0.14.0 S3 最终验证中（2026-10-12）
+
+- 本轮完成：streamer 增加 FAT 字段/current_cluster 快照及 ST_FAT_EVAL；SPI MISO 数据路径增加一级保持 LUT，解决器件输入 Hold 偏斜。fat32_7 的42项、stream3五尺寸逐像素、loader3真实双writer、SD扇区协议专项及 preview_final11 联合仿真均通过。attempt17 Setup +0.117ns、Hold +0.012ns，STA coverage 99.97%，审计完成。已固定 `releases/v0.14.0/s3-local.1/demo.bit`，97 个工程输入逐字节核对，尚未板测。
+
+- 当前任务：S2 用户已确认功能正常并完成 board 标签推送，继续 S3 四宫格生产接入；尚无 S3 固定候选。
+- 已完成：四宫格双写入、实际 bank 映射、独立帧描述应答、11 模式交互及叠加层控制；真实 SDRAM 双写、混合尺寸、预览/音乐/失败恢复、OSD、按键和既有系统回归已通过。最新 `scale_s3_fat32_3` 的 42 项和 `scale_s3_stream1` 五种尺寸完整字节流逐像素比较通过。
+- 当前阻塞：无本地实现阻塞；S3 等待用户对 `s3-local.1` 上板反馈。持续播放、Flash 和完全断电冷启动留给 S4。
+- Hold 细节：attempt9 的两条最短视频路径来自 `pcm_stream_player` 的音频 RAM 读地址，分别 −0.004ns/−0.003ns；abnormal 路径为 `fat32_file_streamer.next_self`，工具报告时钟偏斜 2130ps。attempt10 的布局/后置 Hold 选项未改变结果。不能把工具警告或负余量写成通过。
+- 最新源码：拆分 scanner 范围校验、预先寄存 header 簇移位量，并增加缩放输出两像素缓冲切断背压链，完成条件等待缓冲排空。`scale_s3_stream2` 五种尺寸逐像素通过，零错误警告；`scale_s3_fat32_4` 42 项全部通过。
+- 下一步：针对两条 video_clk 音频 RAM 最短路径及 streamer abnormal Hold 路径做最小 RTL/资源调整，再重新专项验证和 TD；在 Setup/Hold 均非负前不运行 timing audit、不打包候选、不建 S3 local/board 标签、不进入 S4。
+- 踩坑：实际 SDRAM 40MHz、连续 BL4 不能直接 stride-2 取图；采用空闲区紧凑缩略图。BMP 底向上抽取奇数流行，对应偶数屏幕行；预览描述应答不等于图片提交。ultra 优化曾布线失败，不能作为通过证据。保留用户素材、旧构建和 worktree。
+- 回退：`releases/v0.14.0/s2-local.1/demo.bit`；总回退 `releases/v0.13.0/demo.bit`。S3 板测及 S4 尚未完成。
+
+## 历史交接：S3 实施过程（以下“进行中”仅代表当时状态）
+
+- 最新（覆盖以下进度）：`scale_s3_regression1` 已通过 591 帧/22 提交/481827 PCM/17 转场/4 UART；`preview_final3` 已通过 165 帧/60 预览帧/10 提交和提示音/139171 PCM/4 会话，包括失败保预览、重试、超时后缓存切换。attempt5 时序仍失败（−0.205/−0.051ns），attempt6 ultra 因扫描器两条网络布线冲突失败，无最终合格报告。
+- 当前运行：`scale_s3_attempt7` high/high 完整 TD；`scale_s3_preview_final4` 最新代码预览/音频/失败恢复联合仿真；`scale_s3_fat32_2` 每簇扇区数等价合法值判断后的 42 项回归。本轮还寄存音频低水位请求，并给数码管状态码增加下降沿暂存，约束保持不变。
+- 更新（优先于下述历史进度）：attempt4 Setup −0.180ns/Hold −0.321ns，未通过；针对新增 FIFO 背压路径把可写余量判断寄存化，阈值 446 保留流水余量。`scale_s3_loader2` 真实 SDRAM 写入专项通过。最新完整 TD 为 `scale_s3_attempt5`；最新联合仿真为 `scale_s3_preview_final3`。final1 功能/PCM检查完成但末尾计数断言未等待 CDC，final2 修正测试等待后重跑，final3 另包含 FIFO ready 流水修改。无 S3 local 标签或固定 bit。
+- 最新进度：混合尺寸真实 SDRAM `preview3` 已通过 189 帧/172 预览帧、6 提交/6 提示音；音频 `preview_audio1` 通过 123 帧、105380 PCM 样本、两次会话。21 项模块回归、42 项 FAT32、碎片缩放、OSD、UART 均通过。`control4` 补充存储停止后选择未缓存格子恢复通过，`player1` AUTO 退出通过。
+- 最新阻塞：attempt1/2/3 均未达时序门槛；attempt3 Setup −0.071ns、Hold +0.067ns。当前 `scale_s3_attempt4` 用最新 UI 修正工程完整构建；`scale_s3_preview_final1` 补跑最终代码 PCM/失败保预览/重试/超时缓存选择；`scale_s3_regression1` 原 S2 配置完整系统兼容回归继续中。不能把进行中或失败记录写成通过，不能交付旧 bit。
+- 时序修正：UART 字符先校验再等价大小写折叠；数码管模式/AUTO 源域下降沿暂存；FAT32 扫描响应字节/索引/有效/结束整体流水。未修改约束。preview2 的旧 2.5秒仿真看门狗不足，preview3 在延长后的上限内正常完成；未改板端超时。
+- 下一步：等待最终系统和 TD；时序不过则继续针对报告修正。通过后执行 timing audit、97 个工程输入（以最终实际统计为准）逐字节比较、`package_s3.py` 固定候选、更新文档和阶段提交/local 标签。候选上板通过前不建 S3 board、不合并 main。
+
+- 当前任务：S2 board 已确认并推送，继续 S3；尚未产生 S3 可上板候选。
+- 本轮完成：新增 `media_thumbnail_loader` 双 FIFO/突发仲裁，增加紧凑缩略图；reader 接入帧描述与 packed 地址；新增 `media_preview_control`，接入 11 模式、焦点、KEY4、预览退出后重扫；顶层预览隐藏字幕/圆环并保留状态和计时。
+- 已验证：`scale_s3_loader1` 真实加密 SDRAM 控制器/物理模型逐像素比较完整帧和缩略图、取消后重载、背压及刷新通过；`scale_s3_control3` 交互/失败保预览/独立应答通过；`scale_s3_keys1` 短按、长按与跨模式按住通过。
+- 进行中：`scale_s3_preview2` 混合尺寸生产链路预览系统仿真、`scale_s3_regression1` 原系统回归、`scale_s3_attempt1` 完整 TD。随后按键接口做了兼容性调整，attempt1 即使通过也不能直接打包，必须以最终工程输入重建。
+- 尚缺：最终系统结果、叠加层与音乐预览验证、最终 TD/时序审计、固定 S3 local 候选及用户板测。下一步先解决实际失败，再完成这些门槛。
+- 踩坑：控制专项前两次 watchdog 来自测试台在正沿后仅半周期发提交信号，未跨采样正沿；修正测试激励后 control3 通过。preview1 为声明顺序编译错误，不算功能结果。保留用户测试图片、Qhc.wav、BGM.PCM 删除状态及旧 worktree/产物。
+
+- 当前任务：实现图片缩放与缩略图计划；S2 板测通过，进入 S3 四宫格生产接入。
+- 已完成：S0 计划标签；S1 缩放10组、完整字节流5组、尺寸/布局、原解码16项、真实SDRAM全屏/紧凑预览及48次交错写、5模块独立综合通过。证据 diagnostics/image_scaling/S1_VALIDATION.md。
+- 卡住的问题：S3 尚未完成生产实现、系统验证、TD 和板测；S4 最终验收尚未开始。
+- 下一步计划：写入紧凑缩略图缓存，接入四宫格读取、跨域显示描述和 11 模式按键；完成系统仿真、TD 后交付 S3 local 候选。当前不合并 main、不正式发布。
+- 固定交付：releases/v0.14.0/s2-local.1，bit 661052 字节，93 个工程输入与通过 TD 的构建逐字节一致；73 份通过日志、14 份相对基线变化的生产输入、必要报告及四张 BMP/参考图已归档。标签 v0.14.0-s2-local.1。
+- 板测结果：用户确认“功能正常，进入下一阶段”。记录为 S2 功能板测通过，不补造时长、次数、Flash 或冷启动结果；建立 v0.14.0-s2-board.1 并推送本功能分支及 S2 相关标签。
+- 系统结果：system4 591 帧、22 次提交/提示音、481827 个正确 PCM 样本、5 个播放会话无欠载/溢出，17 次转场、4 组 UART、字幕/计时/状态、重扫取消、失败保图、重试及超时后缓存切换通过，零错误、18 条既有模型/可选端口警告。
+- S2进展：生产已接入扇区缓存、流式缩放、写背压、图片16384簇上限。字节流及旧解码专项通过，42项FAT32、21项回归、碎片图缩放、9279个HDMI音频样本通过。板测BMP/参考图生成器已准备。
+- 最新结果：mixed5 四种尺寸真实 SDRAM 显示逐像素比较 92 帧通过；probe2 最大横图首载通过；最终碎片图/音频专项和 paths1 通过。attempt5 Setup +0.107ns、Hold +0.035ns，15716 LUT、8260 寄存器、41 BRAM9K、10 DSP、1 PLL，STA 99.97%，时序审计类别同基线，93 个工程输入与构建逐字节一致，bit 661052 字节。
+- 最新定位：大图黑边后写超时根因为writer要求FIFO>64，恰好64字未启动；probe1证明后改为>=64，mixed5/probe2通过。此前满回绕猜测未成立，不作为根因。FAT下一簇检查/扫描选择新增流水以收敛时序。system2/3主动终止并由system4替代，不算通过。attempt1至4均时序失败，不交付。
+- 踩过的坑：课程缩略图固定源尺寸、双线性仅 R 通道；实际 SDRAM 40MHz；注意 BMP 底向上顺序、放大背压和独立预览提交。保留 Qhc.wav、worktree、best_result，不批量删除。
+- 计划：docs/图片缩放与缩略图分阶段修改计划.md；回退 releases/v0.13.0/demo.bit。
+- 实测调整：控制器连续 BL4 返回导致步长2读取失败，S3 改为加载时生成紧凑缩略图，使用空闲字地址1228800至1535999；已验证读取，打包写入属 S3。不能把 S1 地址验证写成 S3 已完成。
+- 文档操作注意：PowerShell 默认编码通过管道送 Python 会损坏中文，已用 .NET UTF-8 写入修复；后续中文用 apply_patch 或显式 UTF-8 文件写入。
+
+## 历史交接
+
+# 当前交接：v0.13.0 正式发布（2026-10-12）
+
+- 当前任务：彩色圆形音频可视化全部阶段结项，正式发布、归档并合并推送main。
+- 已完成：S2功能及S3的20分钟持续播放、Flash和完全断电冷启动均获用户确认。正式bit复用local.2，654068字节，逐字节一致，生产源码/工程未变，未重建；stage board标签已推送。
+- 卡住的问题：无。
+- 下一步计划：使用releases/v0.13.0/demo.bit；后续新需求另开功能分支。
+- 踩过的坑：不补造额外运行时长或次数，不移动旧标签，不将彩色修订复用的历史回归写成重新执行；保留用户Qhc.wav、既有worktree、best_result和旧候选。
+- 归档：docs/history/2026-10-12/circular-audio-visualizer；最终验证releases/v0.13.0/FINAL_VALIDATION.md；回退releases/v0.12.0/demo.bit。
+
+## 历史交接：正式发布准备
+
+- 当前任务：S3全部验收通过，执行v0.13.0正式发布、归档和main合并推送。
+- 已完成：用户对S3要求确认“上述功能均通过”；记录20分钟、Flash、完全断电冷启动通过，标签v0.13.0-s3-board.1。local.2原bit逐字节一致，654068字节，源码/工程未变、未重建。
+- 卡住的问题：无。
+- 下一步计划：复用已验收bit发布正式版，归档计划/交接/验收，合并main并核对远端。
+- 踩过的坑：只记录S3要求覆盖的结果，不补造额外时长/次数；不移动旧标签、不重建原bit，保留用户Qhc.wav及既有worktree/best_result。
+
+## 历史交接：进入S3
+
+- 当前任务：S2彩色圆环功能板测通过，进入S3持续运行、Flash及完全断电冷启动验收。
+- 已完成：用户确认“上述功能均通过，进入下一阶段”；记录v0.13.0-s2-board.2。local.2 bit为654068字节，与标签内文件逐字节一致；源码/工程无变化，未重建。
+- 卡住的问题：S3三项硬件结果尚未反馈，不推定20分钟或Flash/冷启动通过。
+- 下一步计划：继续使用releases/v0.13.0/s2-local.2/demo.bit，按releases/v0.13.0/S3_VALIDATION.md完成验收；全部通过后复用原bit正式发布、归档并合并main。
+- 踩过的坑：功能通过不等于长时间/Flash/完全断电通过；不补造次数或时长，不重建已验收bit，不移动旧标签。保留用户Qhc.wav、既有worktree、best_result。
+
+## 历史交接：彩色local.2交付
+
+- 当前任务：彩色柱条s2-local.2本地候选已交付，等待用户上板。
+- 已完成：96根柱条沿圆周六色渐变，仅改RGB选择。ring_color_unit1的1228800像素/HSV参考、两拍接口、ring_color_osd1、ring_color_music1通过；TD ring_color_attempt1 Setup +0.010ns、Hold +0.036ns，15017 LUT、7928寄存器、34 BRAM9K、4 DSP、1 PLL，约束未改。
+- 交付：releases/v0.13.0/s2-local.2/demo.bit；90个工程输入与构建逐字节一致，4份本次仿真日志和新报告/彩色预览已固定；仅备份相对local.1变化的audio_ring_overlay.v。标签v0.13.0-s2-local.2，沿用feature/circular-audio-visualizer。
+- 卡住的问题：需要彩色候选板测反馈；Setup余量较小但本地时序通过，不视为硬件通过。
+- 下一步计划：用户测试彩色跳动、音乐、切图/转场、字幕和复位/重扫；通过后建立对应board标签并进入S3的20分钟、Flash及完全断电冷启动。
+- 踩过的坑：保留local.1和旧标签；本次重跑颜色相关专项及完整TD，原21项/582帧系统测试仅为未改模块历史依据，不标成彩色版重新通过。回退白色local.1或正式v0.12.0。
+
+## 历史交接：白色柱条 local.1
+
+- 当前任务：v0.13.0 S2 local.1本地候选已交付，待用户上板；S3尚未开始。
+- 已完成：S0/S1/S2本地实现与验证。音频/像素/全部OSD专项、21项回归、9279个HDMI音频样本通过；系统582帧、472955个正确PCM样本、17次转场、4组UART通过。TD ring_s2_attempt1 Setup +0.101ns、Hold +0.004ns，14858 LUT、7928寄存器、34 BRAM9K、4 DSP、1 PLL。独立综合后109443像素比对通过，生产增益音乐20帧预览完成。
+- 交付：releases/v0.13.0/s2-local.1/demo.bit，654068字节；90个工程输入与构建逐字节一致，归档31份仿真通过日志及必要报告，仅备份相对v0.12.0变化的5个生产输入。标签v0.13.0-s2-local.1；功能分支feature/circular-audio-visualizer。
+- 卡住的问题：需要用户对该候选的板测结果；20分钟、Flash及完全断电冷启动未验证，不建立board或正式标签，不合并main。
+- 下一步计划：用户验证音乐圆环、无BGM琶音、手动/AUTO切图与转场、字幕、复位/重扫。通过后记录S2 board并推送，再以同一候选做S3稳定性/Flash/冷启动，最后正式发布。
+- 踩过的坑：教程384样本实际约8ms；新增两拍须同步HS/VS/DE/X。预览需匹配生产PCM右移一位；TD Tcl路径用正斜线，门级网表/厂商库用Verilog模式且完整加载依赖。ROM提示已通过综合后比对，厂商警告如实保留。旧CDC脚本空查询输出不作专门CDC证据。保留Qhc.wav、既有worktree、best_result和旧产物。
+- 计划：docs/圆形音频可视化分阶段计划.md；回退：releases/v0.12.0/demo.bit。
+
+## 历史交接
+
+# 当前交接：v0.12.0 正式发布（2026-10-11）
+
+- 当前任务：S4 验收完成，正式发布、归档并合并推送 main。
+- 已完成：用户确认 local.2 功能正常、20 分钟运行、Flash 烧录与完全断电后图片/音乐自动启动。正式 bit 复用 local.2，629,624 字节，逐字节一致，生产源码/工程无变化，未重建。
+- 卡住的问题：无。原偶发初始化故障物理根因未确定，有界恢复修复已通过板测，保留该边界。
+- 下一步计划：使用 releases/v0.12.0/demo.bit；本任务完成，后续需求另开功能分支。
+- 踩过的坑：修复曾误判 ACMD41 idle 响应并产生无限重试，已纠正；不复用失败构建，不改旧标签，不补造测试次数。保留用户 tools/Qhc.wav、两个 detached worktree、best_result 及历史候选。
+- 归档：docs/history/2026-10-11/pcm-background-audio；验证见 releases/v0.12.0/FINAL_VALIDATION.md。回退 releases/v0.11.0/demo.bit。
+
+## 历史交接
+
+# S3 local.2 功能通过，进入 S4（2026-10-11）
+
+- 当前任务：记录用户“功能通过，进入下一阶段”，建立 S3 board.2，进入最终验收。
+- 已完成：local.2 功能板测通过；bit 与 local.2 标签逐字节一致（629,624 字节），生产源码/工程未变，未重建。板测记录及 S4_VALIDATION.md 已准备，分支和相关标签按流程推送。
+- S4 进展：用户确认 local.2“运行20分钟；功能正常”，持续运行 20 分钟通过，未改源码或重建 bit。
+- 卡住的问题：尚缺 local.2 的 Flash 及完全断电冷启动结果；无本地实现阻塞。
+- 下一步计划：确认同一候选的 Flash 与完全断电冷启动结果，完成 S4 后正式发布、归档及合并 main。
+- 踩过的坑：local.1 的 20 分钟/Flash 结果不能替代 local.2 验收；功能通过不推定冷启动通过，不补造 KEY3 测试次数，不为阶段文字变化重建 bit。保留用户 tools/Qhc.wav。
+
+## 历史交接
+
+# S3 local.2 已交付，待板测（2026-10-11）
+
+- 当前任务：完成 KEY3 初始化超时的受控恢复候选；尚未进入正式发布。
+- 已完成：删除此前补丁中不受次数限制的命令错误重试，保留正常 ACMD41 轮询；仅每次初始化 2000ms 超时触发恢复，默认重试三次。5 项 SD 测试通过，包括耗尽后停止、恢复后初始化成功、每次 88 个启动时钟。
+- 本地验证：21 项回归和生产接口 9,279 个 PCM 样本比较通过；pcm_s3_reset_retry2 完整 TD Setup +0.117ns、Hold +0.002ns，覆盖率 99.97%。13,470 LUT、7,300 寄存器、12 BRAM9K、4 DSP、1 PLL。时序审计分类与 local.1 一致，保留既有提示，约束未修改。
+- 交付：releases/v0.12.0/s3-local.2/demo.bit，87 个工程输入与构建逐字节一致；归档 27 份通过日志，仅备份相对 local.1 修改的两个生产文件。标签 v0.12.0-s3-local.2；回退 releases/v0.12.0/s3-local.1/demo.bit。
+- 卡住的问题：物理根因仍未确定，local.2 尚未板测。旧 pcm_s3_reset_retry1 虽时序通过但含错误重试逻辑，不可交付；其暂存产物已由 retry2 正确结果替换，失败构建保留在 diagnostics/output。
+- 下一步计划：用户验证 local.2 连续 KEY3、音乐/切图/重扫，再以同一候选持续播放、Flash 和完全断电冷启动；通过后记录 board.2，完成 S4 再发布，当前不合并 main。
+- 踩过的坑：命令错误不等于整轮初始化失败；ACMD41 的 idle 响应必须继续轮询。原初始化测试 watchdog 不足四轮，已延长；旧脚本未声明 RunName 导致参数被忽略，现已修正。中文用补丁编辑。
+- 板测边界：用户确认 local.1 功能正常、连续播放 20 分钟及 Flash 烧录通过；该结果不覆盖新的 local.2，完全断电冷启动未确认。
+
+## 历史交接（以下 local.2 暂存状态已由顶部纠正）
+
+- 当前任务：为用户准备 Qhc.wav 的测试 PCM，记录 S3 实际板测反馈。
+- 已完成：tools/Qhc.wav 已转换为 tools/BGM.PCM，48kHz、16bit、有符号小端、单声道，5,761,024 字节、2,880,512 样本、约 60.011 秒。用户确认移走 BGM.PCM 后重扫恢复原图片琶音和提示音。
+- 卡住的问题：用户多次按复位 KEY3 时偶发 ERR:02，INIT_FAIL 时间 0x7D0（2000ms），调试值 0x37FF；属于 SD 初始化阶段失败，根因尚未定位。其他功能用户明确尚未测试，不建立 board 标签、不进入 S4。
+- 下一步计划：使用 releases/v0.12.0/s3-local.2/demo.bit，重点连续按 KEY3 验证初始化重试；通过后再建立 board.2。local.1 仍为回退。
+- 踩过的坑：0x37FF 表示记录的命令为 CMD55、响应字段 FF，不能仅凭此确定电气或协议根因；SCAN_DONE 表示扫描流程结束，不代表初始化成功。ffprobe 当前版本使用 -ch_layout mono，旧 -ac 参数不可用。未修改 RTL 或重建 bit。
+- 用户日志：21:48:36.392 INIT_FAIL T=000007D0 I=0 S=00000000 E=2 P=0 A=0 D=00000000000037FF；21:48:36.397 SCAN_DONE 同一 T、E=0 P=2；21:48:36.403 STOP 同一 T、E=2 P=1。
+- 数码管原始反馈：先显示 00、ERR:02，随后 37FF0F、00001F、00002F、00003F。失败概率及复位次数未提供，不补造。
+- local.2 构建：pcm_s3_reset_retry1，Setup +0.101ns、Hold +0.003ns；SD 协议回归、时序和 CDC 审计通过。尚未板测确认。
+
+## 历史交接
+
+# 当前交接：v0.12.0 S3 local.1 已完成，待上板（2026-10-11）
+
+- 当前任务：S3 候选已完成板级基本确认；调查 KEY3 多次复位导致的偶发 SD 初始化失败，未进入 S4。
+- 已完成：生产接入；3 项音频专项、42 个图片用例、21 项回归、生产 HDMI 桥 9,279 个样本通过。system3 正常退出：582 显示帧、472,955 个正确 PCM 样本、5 次会话，零欠载/溢出；17 次转场、4 组 UART、计时/字幕及错误恢复通过。最终 TD attempt5（high/high）Setup +0.100ns、Hold +0.004ns、覆盖 99.96%，13,204 LUT、7,282 寄存器、12 BRAM9K、4 DSP、1 PLL。
+- 交付：releases/v0.12.0/s3-local.1/demo.bit（629,624 字节），v0.12.0-s3-local.1；87 个工程输入与构建一致，bit 逐字节一致。归档 68 份通过日志和 10 个实际变更生产文件。所有测试/构建已结束。
+- 卡住的问题：多次按 KEY3 时偶发 INIT_FAIL ERR:02，约 2000ms 超时，调试值 37FF（CMD55 后响应 FF）；用户反馈其他功能尚未逐项测试。保留系统 18 条既有模型/可选端口警告及 TD SDRAM ECO、局部时钟、BRAM 提示。
+- 下一步计划：先建立 S3 board 记录；复位修复方向是增加 SD 初始化失败后的受控重试/重新发送启动时钟，禁止沿用半初始化状态，形成新 local 候选后再板测。S4 持续播放、Flash 和冷启动需在复位修复后补测。
+- 修复进展：`sd_card_sec_read_write` 新增 3 次初始化重试和恢复窗口；恢复期间 `sd_card_top` 复位命令/SPI 子模块，使其重新发送 11 个空字节（至少 88 个 SPI 时钟）后再从 CMD0 开始。只有重试耗尽才锁存 ERR:02。SD RTL 编译零错误；CMD55/超时/CRC/读卡协议回归通过。尚未生成新 bit，未宣称 KEY3 修复已上板。
+- 踩过的坑：重扫须等待音频扇区与播放队列停止；图片取消不能重置音频；PowerShell 管道传递中文可能损坏，中文编辑使用补丁工具。
+- 构建历史：attempt1 缺新增模块 CompileOrder；attempt2 Setup −1.171ns 不交付；attempt3 ultra 触发 TD 无效物理引脚错误；attempt4 high/high 通过，约束未改。生产测试重扫为长按 KEY2；空卡重扫保留旧画面；复位测试必须等待 active 先低再高。
+- system2 的旧缓存断言曾误把音乐读卡计为图片读卡；改按 owner 检查后 system3 通过。最终新增模块 CompileOrder 为 200/201/202，重复序号警告已消除。仿真主机耗时不等于板级试听时长。
+- 回退：releases/v0.12.0/s1-local.1/demo.bit；总回退 releases/v0.11.0/demo.bit。
+
+## 历史交接
+
+# 当前交接：v0.12.0 S2 独立模块验证完成（2026-10-11）
+
+- 当前任务：S2 的文件发现、流式播放、音源选择、转换工具、独立综合已完成；下一阶段是 S3 生产接入。
+- 已完成：S1 用户“功能均正常”已记录 board.1，当前分支及 S1 local/board 标签已推送。S2 最终播放器 5,300 个有符号样本逐项比对，扫描/mux/碎片文件+图片并发专项、42 项 FAT32 回归通过；四个模块独立综合通过，播放器 4096×16bit BRAM 推断成功。FFmpeg 三组转换通过，提供 3 秒 440Hz 示例。
+- 卡住的问题：无。S2 没有 bit，不建立 local/board 标签；现有 S1 固件不支持 BGM.PCM。独立综合不等于集成时序通过，保留工具 BRAM 提示。
+- 下一步计划：S3 顶层将 SCAN_AUDIO 置 1、导出稳定卷几何与音频元数据、接 a 客户端、接视频域 PCM/HDMI、协调全局重扫与图片取消；验证后完整 TD 和新 local 候选，再由用户上板。当前回退为 releases/v0.12.0/s1-local.1/demo.bit。
+- 踩过的坑：上一轮 player7 仅验证左右相等，不能证明播放正确；旧草稿 CDC、采样率、背压、重启有缺陷，已重写并逐样本验证。负数在三目表达式中右移曾丢符号，现保留符号位。两字节文件每圈读扇区吞吐不足，≤512 字节改短缓存循环。保留用户字幕、两个既有 worktree、best_result、旧 bit，不删除文件。
+
+证据：releases/v0.12.0/s2-modules；详细结果：diagnostics/pcm_audio/S2_VALIDATION.md。最终运行：pcm_s2_player_exact2、pcm_s2_units_final1、pcm_s2_reader_final2、pcm_s2_syn2、pcm_s2_conversion1，均已结束。
+
+计划：docs/WAV音频播放分阶段修改计划.md。总回退：releases/v0.11.0/demo.bit。
+
+## 历史交接
+# 当前交接：v0.11.0 正式发布（2026-10-11）
+
+- 当前任务：图片转场全部阶段结项，正式版本归档并合并 main、推送。
+- 已完成：S1/S2 整体功能通过，S3 用户确认运行 20 分钟、相关操作通过；board 记录与标签完成。正式 bit 复用 S2 local.1，629,624 字节，与候选和标签内文件逐字节一致；源码/工程未变、未重建。只备份相对 v0.10.0 改动的 10 个生产文件，包含用户字幕修改。
+- 验证：复用 S2 专项、21 项回归和 582 帧完整系统证据；TD Setup +0.106 ns、Hold +0.021 ns，覆盖率 99.96%。原工具警告和审计记录保留。
+- 卡住的问题：无。Flash/完全断电冷启动未单独反馈，作为验收边界保留，不扩大用户结论。
+- 下一步计划：使用 releases/v0.11.0/demo.bit；后续新需求另开功能分支，当前阶段无需继续修改或构建。
+- 踩过的坑：黑底揭示不等于旧图背景混合；不补造时长和单项结果，不重建已验收 bit，不移动旧标签。不删除文件、不改既有 worktree/best_result，保留当前“胆子肥嘟嘟的 FPGA ”字幕。
+
+[正式版](../../../../releases/v0.11.0/README.md) · [最终验证](../../../../releases/v0.11.0/FINAL_VALIDATION.md) · [归档](../../2026-10-11/image-transitions/README.md)
+
+## 历史交接
+
+# 当前交接：S3 20 分钟通过，正式发布归档中（2026-10-11）
+
+- 当前任务：记录 S3 board.1，复用 S2 bit 发布 v0.11.0 并合并 main。
+- 已完成：用户确认运行 20 分钟、相关操作通过；S3 实际反馈已记录，源码/工程未修改。
+- 卡住的问题：无。Flash/完全断电冷启动未单独确认，作为验收边界保留。
+- 下一步计划：推送 board 标签，固定正式 bit，完成最终验证和归档，合并推送并核对远程。
+- 踩过的坑：不补造更长时长或单项结果，不重建已验收 bit，不改历史标签，不删除文件。
+
+## 历史交接
+
+# 当前交接：S2 上板通过，S3 最终验收待反馈（2026-10-11）
+
+- 当前任务：完成 S2 板测记录及 board 标签，进入 S3 最终硬件验收，复用 S2 bit。
+- 已完成：用户反馈“功能均正常，进入下一阶段”，据此记录 S2 整体功能通过；BOARD_RESULT.md 和 S3_VALIDATION.md 已准备，README、CHANGELOG、阶段计划同步更新。
+- 核对：生产源码/工程相对 v0.11.0-s2-local.1 无差异；固定 bit 与标签内文件逐字节一致，629,624 字节。复用既有 S2 专项、21 项回归、完整系统及 TD 证据，不重复运行。
+- 卡住的问题：无本地问题；尚未收到 S3 持续运行时长、Flash/完全断电冷启动结果，不能由 S2 整体功能确认推定这些项目通过。
+- 下一步计划：按 releases/v0.11.0/S3_VALIDATION.md 建议运行 20 分钟，反馈实际时长、Flash 和完全断电冷启动情况。确认最终结果后归档并正式发布 v0.11.0，复用原 bit，再合并 main 和推送。
+- 踩过的坑：不补造测试时长或单项结果，不为版本文字重建 bit，不新建无变化的 S3 local 标签；保留历史候选、用户字幕、既有 worktree 和 best_result，未删除文件。
+- 标签与文件：v0.11.0-s2-board.1；releases/v0.11.0/s2-local.1/demo.bit。正式版仍为 v0.10.0，当前不合并 main。
+
+## 历史交接
+
+# 当前交接：S2 local.1 已固定，待上板（2026-10-11）
+
+- 当前任务：交付 AUTO 黑底水平揭示候选，等待 S2 硬件反馈；未进入 S3。
+- 已完成：S1 用户确认功能正常，board.1 已推送。S2 锁存实际请求来源，手动保持淡出淡入，AUTO 黑场后每帧揭示 40 列；保留字幕、时间、真实 ack、音频及忙时排队。
+- 验证：wipe 95,200 像素、fade 27,648 RGB、player 5 提交及 21 项回归通过。full1 已正常退出：582 显示帧、2 AUTO/15 手动、17 黑场、180,326,400 转场像素、22 提交=22 提示音，OSD/时间及 4 组 UART 检查通过；零错误、18 条既有模型/端口警告。
+- TD：attempt1 Setup +0.106 ns / Hold +0.021 ns，覆盖率 99.96%；11,767 LUT、6,667 寄存器、4 BRAM、4 DSP、1 PLL。约束分类与 S1 一致；保留 SDRAM ECO 位置及移相时钟局部布线提示。
+- 固定候选：releases/v0.11.0/s2-local.1/demo.bit；标签 v0.11.0-s2-local.1。83 个输入与构建快照逐字节一致，bit 629,624 字节一致，只备份 5 个改动生产文件。源码实现提交 d4d99b0。
+- 卡住的问题：无本地阻塞；尚需用户测试 S2，不把 S1 的确认扩展为 S2 已通过。
+- 下一步计划：按候选 BOARD_VALIDATION.md 上板，确认后记录 board 并推送，再复用此 bit 做 S3 持续运行、Flash/完全断电冷启动；按实际反馈记录。
+- 踩过的坑：Wipe 是黑底揭示；来源取实际接受请求，不能取实时 AUTO 状态；完整仿真耗时约 27 分钟，full1 已完成，不必重跑。不要覆盖用户字幕，不改旧标签或 bit，不删除文件。阶段回退 s1-local.1，总回退 v0.10.0。
+
+[候选说明](../../../../releases/v0.11.0/s2-local.1/README.md) · [上板步骤](../../../../releases/v0.11.0/s2-local.1/BOARD_VALIDATION.md)
+
+## 历史交接
+
+# 当前交接：S1 上板通过，进入 S2（2026-10-11）
+
+- 当前任务：S2 AUTO 黑底水平揭示；手动继续淡出淡入。
+- 已完成：用户明确“功能均正常，进入下一阶段”，已记录 S1 整体板测通过；原候选 bit 不变。
+- 卡住的问题：无。S2 RTL 已接入；专项、21 项回归和 TD 已通过（Setup +0.106 ns / Hold +0.021 ns，覆盖率 99.96%），约束分类与 S1 一致。完整系统测试尚在运行。S1 未提供测试次数/时长，不补造。
+- 下一步计划：已完成来源锁存与黑底遮罩，95,200 像素专项、原 fade/player 专项通过。继续跟踪 full1（session 45619，diagnostics/output/transition_s2_full1/system.log），通过后使用 package_s2.py 打包 transition_s2_attempt1 为 s2-local.1；运行未结束不要重启。其他测试和 TD 已结束通过。
+- 踩过的坑：Wipe 为黑底揭示，不是旧图背景混合；S1 的真实 ack、忙时 pending 和重扫队列必须保留。旧 bit、标签与用户字幕不变，不删除文件。
+
+## 历史交接
+
+# 当前交接：v0.11.0 S1 local.1 已交付，待上板（2026-10-11）
+
+- 当前任务：已完成用户要求的本地实施、验证、TD 和候选固定，现在需要用户上板测试 S1；未进入 S2。
+- 已完成：生产视频域帧级淡出/淡入、black 许可控制真实提交、原 reader ack/音频 CDC 保留；忙时方向缓存、AUTO 重计时、重扫排队、首图/重扫首图/同 bank 旁路。保留用户“胆子肥嘟嘟的 FPGA ”字幕。
+- 验证：异步专项 27,648 RGB、播放器联动 5 提交、21 项回归、旁路系统 57 帧/22 提交通过。启用效果联合 full2 582 显示帧、17 完整转场、22 提交与 22 提示音、180,326,400 转场像素、四组 UART 命令及全部 OSD/时间通过；18 条既有模型/可选端口警告保留。
+- TD：attempt2 Setup +0.117 ns / Hold +0.011 ns，覆盖率 99.96%；11,776 LUT、6,677 寄存器、4 BRAM、4 DSP、1 PLL。约束审计与基线分类一致。83 个工程输入与快照一致，bit 629,624 字节逐字节一致。
+- 卡住的问题：无本地阻塞；用户板测未执行，不沿用旧版本验收结论。固定文件 releases/v0.11.0/s1-local.1/demo.bit，标签 v0.11.0-s1-local.1。
+- 下一步计划：用户按候选 BOARD_VALIDATION.md 验证双向切图、AUTO、连续按键、重扫、字幕/时间及音频；通过后记录 board 并推送，再进入 S2 AUTO 黑底水平揭示。回退 releases/v0.10.0/demo.bit。
+- 踩过的坑：前序 permit 错接 ack 和多位亮度 CDC 已修正，lint 不能替代行为证明。full1 因旧测试等待已错过的预载单拍而停止，full2 为最终证据。attempt1 Setup −0.087 ns 不交付。只备份 10 个累计变更生产文件，未删除文件、未动既有 worktree/历史 bit。
+
+[候选与报告](../../../../releases/v0.11.0/s1-local.1/README.md) · [上板步骤](../../../../releases/v0.11.0/s1-local.1/BOARD_VALIDATION.md)
+
+## 历史交接
+
+# 当前交接：v0.11.0 S1 联合验证进行中（2026-10-11）
+
+- 当前任务：继续到 S1 本地验证和 TD 通过、固定上板候选交付；不提前进入 S2。
+- 已完成：发现并修正前序接入把许可错接缓存 ack、读端提前切图的问题。许可现控制实际请求，真实 ack 原样返回。亮度状态移回视频域，跨域只传 start/black/done toggle；busy 阻止新事务并暂停 AUTO，转场重扫排队，首图/重扫首图/同 bank 旁路。
+- 验证：异步专项 3 次事务、延迟提交、复位、关闭旁路及 27,648 个 RGB 检查通过；播放器联动专项 5 次提交通过；旁路系统 57 帧/22 次提交与提示音、21 项回归均通过。TD attempt2 Setup +0.117 ns / Hold +0.011 ns，覆盖率 99.96%；约束审计分类与基线一致。启用转场完整 SDRAM/OSD/UART/音频联合仿真 full2 仍在运行，尚未形成候选。
+- 卡住的问题：无外部阻塞。旧 cache_system2 像素失败与未接端口已保留，不作为通过证据；前序 lint 只证明可编译。
+- 下一步计划：继续跟踪 full2（exec session 38437，diagnostics/output/transition_s1_full2/system.log），运行未结束时不要重复启动。TD 合格输出为 diagnostics/output/transition_s1_attempt2；full2 全部通过后用 package.py 打包、更新记录、建立 local 标签交用户上板。
+- 踩过的坑：初始计划之后已有用户字幕提交 b76ec4f/d3c7996，当前保留“胆子肥嘟嘟的 FPGA ”及新增字模；不能回退掉这些修改。总体回退仍为已发布 v0.10.0。不可逐位同步多位亮度；不能延迟真实 ack 冒充延迟提交；不能用关闭效果的旧仿真证明新转场。
+
+## 历史交接
+
+# 当前交接：OSD 中文字幕替换（2026-10-11）
+
+- 当前任务：将“米醋电子工作室忧郁”改为“胆子肥嘟嘟的”。
+- 已经完成：补入胆、肥、嘟、的四个 16×16 字模，复用子字；默认字幕和静态中文路径改为“胆子肥嘟嘟的 FPGA ”（12 槽），SUB=CN 改为六字中文。同步源域和像素域复位值、UART 字模范围及相关仿真预期，保留既有用户文件修改。
+- 验证：UART 专项通过；像素专项通过 665 帧、12081912 像素和 208 行字模检查，均零错误、零警告。点阵预览已核对。首轮 TD 生成 bit，但 Setup −0.198 ns / Hold +0.040 ns，不作为上板候选；目录 diagnostics/output/subtitle_dandu_build1。
+- 卡住的问题：尚无时序通过的新 bit。第二轮 subtitle_dandu_build2 使用 PostPlaceOptimization=ultra，综合通过，但 TD 布局阶段崩溃，日志末尾为 Oops! coredump；未完成 bit。上板未验证。
+- 下一步计划：源码替换完成；后续需解决 TD 构建，得到时序通过的新 bit 后再烧录观察。run_td.ps1 已增加可选 PostPlaceOptimization 参数，默认仍为 high；未放宽时序约束。
+- 踩过的坑：字幕是字模编号而非 UTF-8 文本，不能仅替换字符串；默认文本在 UART 和帧提交模块各有一份；PowerShell 管道传 Python 的中文字面量可能变问号，字模生成使用 Unicode 转义。保留英文后缀及原字模编号，不修改历史发布 bit，未删除文件。
+
+详细说明：[字幕替换](../../../../diagnostics/osd/SUBTITLE_TEXT.md)。
+
+## 历史交接
+
+# 当前交接：项目组会汇报报告已完成（2026-10-11）
+
+- 当前任务：分析仓库自创建以来相对可审计基线新增的功能和优化，形成组会汇报报告。
+- 已完成：核对首个 Git 版本、当前正式版、各阶段发布说明、生产 RTL、TD 指标和板级记录；报告保存至 `docs/组会汇报报告.md`。报告区分了首版已有能力、后续增量和 v0.11.0 仅规划未实现的内容，并整理了功能演进、量化优化、验证证据、限制及 8～10 分钟汇报提纲。
+- 卡住的问题：仓库未保存未经修改的官方原版，不能精确给出相对官方压缩包的逐文件差异；本报告以 2026-10-02 首个 Git 版本为可审计基线，并已在正文声明该边界。
+- 下一步计划：组会可直接使用本报告；若补充官方原始工程，可再增加一份官方原版与首个 Git 版本的源码差异附录。v0.11.0 图片转场仍按既有方案等待实施。
+- 踩过的坑：README/CHANGELOG 含大量历史状态，不能把旧“待板测”当作当前结论；v0.9.0 个别历史文档存在编码损坏，应以 v0.9.1、v0.10.0 正式记录和源码为准；资源总量随功能增加而上升，不能把局部 LUT 优化表述为全工程持续降耗。保留用户 `问题小记录.txt` 修改，未改 RTL、工程、bit 或历史发布文件。
+
+[组会汇报报告](../../../组会汇报报告.md)
+
+## 历史交接
+
+# 当前交接：图片转场特效方案完成，待实施（2026-10-10）
+
+- 当前任务：读取第十讲课程及配套代码，结合 v0.10.0 规划 v0.11.0 图片转场；本轮范围为方案，不实施 RTL。
+- 已完成：核对课程三个配套文件、播放器、四 bank 缓存、显示提交、reader、视频时序、音频 CDC 和 OSD 链路；建立原目录分支 feature/image-transitions；方案保存至 docs/图片转场特效分阶段修改计划.md。
+- 主要决策：目标图缓存就绪后淡出，全黑后放行原读端提交；手动两方向淡入淡出，AUTO 第二阶段加入黑底水平揭示。真实新旧图 Wipe 与交叉混合另立读链路扩展，不混称已完成。
+- 卡住的问题：已完成 S1 基础模块、像素旁路和显示提交 permit 的 SD 域接入；ModelSim 控制器专项通过，sd_card_bmp lint 通过。像素亮度已接入 SD 域转场状态并在视频域两级同步；完整联合仿真、TD、板测尚未完成。
+- 下一步计划：下一步完成真实 SDRAM/OSD/音频联合仿真，确认转场期间读端、音频和字幕时序，再做相关回归和 TD；当前仍不生成 local 候选；确认后再进入 S2。基线 main/v0.10.0（b192c03），回退 releases/v0.10.0/demo.bit。
+- 踩过的坑：课程只支持 next，缺旧图像素读链路，5 位 ramp 输出不能直接支持 32 帧；项目 VS 为下降沿帧事件，RGB 为 24 位；不能先黑屏再等可能失败的读卡。保留用户 问题小记录.txt 修改和已有 worktree/best_result。中文读取显式 UTF-8，不用历史构建替代新验证。
+
+[详细阶段方案](../../../图片转场特效分阶段修改计划.md)
+
+## 历史交接
+
+# 当前交接：v0.10.0 正式发布（2026-10-10）
+
+- 当前任务：三个阶段结项，正式版本随功能分支合并 main 并推送。
+- 已完成：S1/S2 功能确认，S3 用户运行 20 分钟功能正常；board 标签、正式 bit、验证记录和历史归档完成。正式 bit 与 S3 候选逐字节一致，源码/工程未改、未重建；Setup +0.102 ns、Hold +0.019 ns。
+- 卡住的问题：无。HEX 原始混排发送模式及未单独反馈的 Flash/冷启动边界继续保留，不扩大验收范围。
+- 下一步计划：使用 releases/v0.10.0/demo.bit；后续新需求另开功能分支。正式版及远程 main/功能分支应保持同一文件树。
+- 踩过的坑：不重建已验收 bit，不改旧标签；S1 正确文件在 s1-local.1 目录但对应 local.2/board.1。system1 漏时间层宏，最终证据为 system2；BOOT 旧文字不是版本识别。用户 问题小记录.txt 修改单独保存并恢复，不带入发布；保留既有 worktree 和 best_result。
+
+[正式版](../../../../releases/v0.10.0/README.md) · [最终验证](../../../../releases/v0.10.0/FINAL_VALIDATION.md) · [归档](../../2026-10-10/v0.10.0/README.md)
+
+
+## 历史记录
+
+# 当前交接：S3 板测通过，正式归档中（2026-10-10）
+
+- 当前任务：完成 v0.10.0 正式发布及 main 合并。
+- 已完成：用户确认 S3 运行 20 分钟、功能均正常；记录 S3 board.1，源码与 bit 不变。
+- 卡住的问题：无。
+- 下一步：复用已验收 bit，归档计划和验收，保存用户修改后合并推送 main。
+- 踩过的坑：不把 20 分钟扩大为更长运行或未确认的单项；保留 HEX 发送模式边界，不重建已验收 bit，不改旧标签。
+
+## 历史交接
+
+# 当前交接：S3 local.1 待板测（2026-10-10）
+
+- 当前任务：交付右上角 MM:SS，候选 releases/v0.10.0/s3-local.1/demo.bit，分支 feature/osd-gap-analysis；S2 board.1 已推送。
+- 已完成：timestamp_osd、TIMESTAMP_ENABLE、三层字形保护；360,000 帧完整计数周期/337.92 万像素专项、关闭层零逻辑资源综合、21 项回归、三层文字真实 SDRAM 联合仿真通过。TD Setup +0.102 ns、Hold +0.019 ns，约束未修改。97 个工程/源码输入及固定 bit 逐字节一致，累计 12 个变更生产文件已归档。
+- 卡住的问题：无本地阻塞，仅本候选板测待用户反馈；不沿用 S2 板测或旧版长稳结果。
+- 下一步计划：按候选 BOARD_VALIDATION.md 验证时间、字幕、切图/AUTO/重扫及音频。用户确认后建立 S3 board 标签，再以同一 bit 正式归档 v0.10.0 并合并 main；本轮不提前结项。
+- 踩过的坑：system1 漏开 OSD_TIMESTAMP，只验证旧链路；修正脚本后 system2 才是 S3 联合证据。时间是每 60 视频帧一秒，不是 RTC；关闭模块资源为零不代表整个工程为零。BOOT 旧文字沿用；S2 原始 HEX 混排输入模式未确认，记录边界保留。用户 问题小记录.txt 修改未纳入提交；旧标签和回退 bit 不动。
+
+## 历史交接
+
+# 当前交接：S2 板测通过，进入 S3（2026-10-10）
+
+- 当前任务：实现右上角 MM:SS 累计时间，基线 S2 board.1。
+- 已完成：用户明确 S2 功能均正常；板测记录见 releases/v0.10.0/S2_BOARD_RESULT.md，源码和 bit 不变。
+- 卡住的问题：无实施阻塞；原始 HEX 混排发送模式未确认，保留单项边界。
+- 下一步：实现 S3、专项/系统/回归/TD，交付 local 候选等待板测。
+- 踩过的坑：BOOT 旧版本文字为沿用常量；HEX 必须按原始字节发送。保留 问题小记录.txt 用户修改，不改旧候选和标签。
+
+## 历史交接
+
+# 当前交接：v0.10.0 S2 local.1 待板测（2026-10-10）
+
+- 当前任务：在原目录 feature/osd-gap-analysis 完成 UART 在线字幕 S2；用户指定 RXD F12，S1 已确认功能正常。
+- 已经完成：RX、命令解析、完整配置 request/ack mailbox、帧边界更新、动态中英字幕及日志/回复整行仲裁。UART 专项、144 行字模及 665 帧像素测试、真实 SDRAM 57 帧/22 次音频提交、21 项回归、静态滚动/参数/底条测试通过。
+- 卡住的问题：本地实现无阻塞；仅 S2 板测待用户反馈。TD attempt3 通过，Setup +0.105 ns、Hold +0.067 ns，96 个工程/源码输入逐字节一致，固定 bit 已归档至 releases/v0.10.0/s2-local.1/demo.bit。审计限制与既有模型警告详见候选 README。
+- 下一步计划：交用户按 releases/v0.10.0/s2-local.1/BOARD_VALIDATION.md 测试 F12 RX / D12 TX，115200 8N1；板测通过后建立 S2 board 标签并进入 MM:SS S3。当前只建立 S2 local 标签，正式版仍为 v0.9.1。
+- 踩过的坑：TD 将 RX 第一级寄存器合并到 F12 PAD FF，原 rx_meta_reg 约束无对象；attempt1/2 不可交付。旧启动仿真需将新增 RX 显式接空闲高电平。SystemVerilog 字符串回车使用显式字节 13。S1 已验收 bit 位于 s1-local.1 目录但对应 local.2/board.1，不改旧候选或标签。保留用户已跟踪的 问题小记录.txt 修改；不纳入提交。
+
+## 历史交接
+
+# 当前交接：v0.10.0 S1 board.1 通过，进入 S2（2026-10-10）
+
+- 当前任务：记录固定中文字幕候选板测通过，进入 UART 在线字幕 S2。
+- 已完成：用户确认“功能正常进入下一阶段”；已记录 S1 BOARD_RESULT，建立 v0.10.0-s1-board.1。生产源码和 S1 bit 不变。
+- 卡住的问题：当前顶层只有 uart_tx，没有 uart_rx 端口、引脚约束或 RX 波特率采样模块；S2 可先实现控制器/帧提交和仿真，板级 RX 集成需补充明确引脚。
+- 下一步计划：实现 SUB 命令解析、完整配置 mailbox 和视频域帧提交；保留未约束 RX 为 S2 集成阻塞，不把模块仿真写成板测通过。
+- 踩过的坑：用户只确认功能正常，未提供次数/时长；不补造板测数据。保留用户无关未跟踪文件，不删除目录。
+
+## 历史交接
+
+﻿# 当前交接：v0.10.0 S1 local.2 待上板（2026-10-10）
+
+- 当前任务：交付固定中文/中英滚动字幕候选，等待板测。
+- 已完成：9 个 16×16 汉字 ROM 专项、真实 SDRAM 联合仿真、21 项回归和 TD 通过；Setup +0.104 ns、Hold +0.011 ns。固定 bit 已改为本次 S1 TD 生成的 demo.bit；local.1 曾误复用旧 bit，保留为历史包装入口，不能用于本次上板。
+- 卡住的问题：S1 尚无板测。UART 在线字幕和 MM:SS 时间显示尚未实现。
+- 下一步计划：用户使用 releases/v0.10.0/s1-local.1/demo.bit 上板；通过后建立 s1-board.1，再实施 UART S2。
+- 踩过的坑：TD CompileOrder 必须是整数；本候选 bit 必须与 S1 源码同一构建生成，不能复用 v0.9.1 bit。保留用户无关未跟踪文件，不删除目录。
+
+## 历史交接
+# 当前交接：OSD 功能差距分析完成（2026-10-10）  - 当前任务：对照第九讲和当前 v0.9.1，分析未实现功能，重点中文。 - 已完成：核对参考字库/串口/时间模块和生产链路；分析保存至 docs/OSD功能差距分析.md。固定英文、状态快照、半透明底条已有；中文、在线字幕、文本提交、配置持久化、时间和参数行未接入。 - 卡住的问题：分析无阻塞；若实现中文，具体标语和固定/在线输入范围尚未选定。 - 下一步计划：建议先做有限字库的固定中文/中英滚动，再做在线修改。当前仅文档分析，不改生产源码、不重建 bit；分支 feature/osd-gap-analysis。 - 踩过的坑：课程中文只有 9 个预置点阵和固定短语匹配，不是通用中文；96 位为 12 个字节槽；Flash 启动不等于字幕持久化；正文“尚无滚动”与配套/当前实现不同。  ## 历史交接  # 当前交接：v0.9.1 S4 通过，正式结项（2026-10-10）  - 当前任务：v0.9.1 已正式发布、归档并合并推送 main。 - 已完成：用户明确“S4通过，运行20分钟，功能正常”。实际时长记录为 20 分钟，按用户结论结项。正式 bit 复用 S3 已验收原文件，629624 字节且逐字节一致；未修改生产源码或重建。最终资料归档 docs/history/2026-10-10/osd-optimize。 - 卡住的问题：无验收阻塞；超过 20 分钟的持续运行未验证，不扩写结果。 - 下一步计划：本任务已结项；正式标签、功能分支和 main 已推送。后续新需求另开功能分支，使用 releases/v0.9.1/demo.bit 作为回退基线。 - 踩过的坑：原建议 30 分钟不能写成实际通过 30 分钟；S4 为用户整体确认，不补造单项次数。既有模型警告和审计边界保留，原 bit 不重建，旧标签和 worktree 不变，未删除文件。  [正式版](../../../../releases/v0.9.1/README.md) · [S4 结果](../../../../releases/v0.9.1/S4_VALIDATION.md) · [归档](../../2026-10-10/osd-optimize/README.md)  ## 历史交接  # 当前交接：v0.9.1 S3 功能板测通过，进入 S4（2026-10-10）  - 当前任务：记录 S3 板测通过，进入同一 bit 的 S4 最终验收。 - 已完成：用户反馈“功能正常，进入下一阶段”，已记录 BOARD_RESULT.md；建立 v0.9.1-s3-board.1 并按流程推送功能分支及本阶段标签。生产源码、工程和固定 bit 不变，不重新构建。 - 卡住的问题：S4 Flash、完全断电冷启动、冷启动提示音及 30 分钟运行尚无单项反馈；不推定已通过。 - 下一步计划：按 releases/v0.9.1/S4_VALIDATION.md 验收同一 bit，收到实际结果后正式归档、发布 v0.9.1 并合并 main。 - 踩过的坑：只记录用户原始结论，不补造测试次数或时长；使用 releases 固定 bit，不使用会被覆盖的构建输出。未删除文件，未改旧标签。  ## 历史交接  # 当前交接：v0.9.1 S3 local.1 待上板（2026-10-10）  - 当前任务：交付 feature/osd-optimize 的 v0.9.1-s3-local.1 固定候选，等待用户板测。 - 已完成：状态 1843200 像素、滚动 1030 帧、底条 614400 像素、参数化滚动及 21 项回归通过。真实 SDRAM 57 显示帧、22 提交/提示音、三层 26039248 输出检查通过。完整 TD Setup +0.102 ns、Hold +0.014 ns、覆盖率 99.95%；9826 LUT、5924 寄存器，约束审计分类与既有 S2 相同。75 个工程输入与构建快照逐字节一致，固定 bit 629624 字节，交付 releases/v0.9.1/s3-local.1。 - 卡住的问题：本轮用户板测、Flash、完全断电冷启动和长稳未进行。系统仿真的 18 条既有模型/可选端口警告已记录。历史 v0.9.0 部分中文发布记录为问号，不补造验收细节。 - 下一步计划：用户按固定候选 BOARD_VALIDATION.md 上板；确认后记录 board 并推送；最终验收后归档和发布 v0.9.1，再合并 main。 - 踩过的坑：底条用 RGB 颜色判断字形会漏掉图片本身黄/红/白像素，已改为显式 active；旧“待上板”交接已过期；25 字符槽包含一个前置空槽，保留原布局；课程无确认 toggle 不作为运行时文本 CDC 直接移植。未删除任何文件或目录。  计划见 [OSD优化实施计划](../../../OSD优化实施计划.md)，接口与复现命令见 [OPTIMIZATION](../../../../diagnostics/osd/OPTIMIZATION.md)。  ## 历史交接  # 当前交接：v0.9.0 S3 local.1 待上板（2026-10-10）  - 当前任务：交付半透明 OSD 底条候选，等待板测。 - 已完成：S3 黑色 50% 底条接入，alpha 专项通过；TD Setup +0.101 ns、Hold +0.003 ns；固定候选 releases/v0.9.0/s3-local.1/demo.bit。 - 卡住的问题：S3 尚无板测结论；S4 Flash、冷启动、长稳未验收。 - 下一步计划：测试底条文字保色、背景减半、区域外透传及原有播放功能；通过后建立 s3-board.1，再进行 S4 正式验收。 - 踩过的坑：底条必须位于文字层之后但保留文字颜色；像素 Y 必须在模块内部重建，不能从未连接的顶层占位输入读取。 ## 历史交接 # 当前交接：v0.9.0 S1 board.1 已确认，准备 S2（2026-10-10）  - 当前任务：进入 v0.9.0 S2 滚动字幕实施前的阶段交接。 - 已完成：用户确认 v0.9.0-s1-local.1 步骤 1–3 功能正常；拔出 TF 卡、不插回并重扫后显示红色 `ERR:01`。已记录 [S1 板测结果](../../../../releases/v0.9.0/s1-local.1/BOARD_RESULT.md)，建立 `v0.9.0-s1-board.1`。 - 卡住的问题：无 S1 阶段阻塞。ERR:02、ERR:03、Flash、完全断电冷启动和持续运行时长未单独确认，不扩大为通过。旧图保留及首图前 `PIC:-` 已给出复现步骤，本次未单独反馈其观察结果。 - 下一步计划：按计划实施 S2 固定英文滚动字幕；保留 S1 board.1 作为回退入口，S2 修改后重新专项仿真、回归、TD 并生成递增 local 候选。 - 踩过的坑：`ERR:01` 的复现必须在已显示图片后拔卡重扫；`PIC:-` 必须从未成功提交首图开始，不能在旧图保留场景验证。未批量删除，保留 best_result 和旧 worktree。  [板测记录](../../../../releases/v0.9.0/s1-local.1/BOARD_RESULT.md) · [S1 候选](../../../../releases/v0.9.0/s1-local.1/README.md) · [S2 计划](../../../OSD字幕叠加分阶段修改计划.md)  ## 历史交接 # 当前交接：v0.9.0 OSD S1 实施中（2026-10-09）  - 当前任务：按已确认计划完成 S0/S1 状态 OSD，交付本地候选后等待板测。 - 已完成：核对 main afe4bd3、干净工作区、已有 worktree；建立 feature/osd-overlay，保存 docs/OSD字幕叠加分阶段修改计划.md。v0.8.0 已正式合并，下面历史“待合并”不再代表当前状态。 - 卡住的问题：无；S1 尚未验证，不进入 S2。 - 下一步计划：状态条、状态跨域、真实数据链路专项、回归及 TD，形成固定 bit 和 local 标签。 - 踩过的坑：课程 VS 沿/颜色描述不一致；图号应在首行锁存，不能在提交前的 VS 锁存；PowerShell 中文文件显式 UTF-8。保留旧 worktree 和 best_result，不批量删除。  ## 历史交接 # 当前交接：v0.8.0 S4 验收完成，待正式合并（2026-10-09）  - 当前任务：完成四 bank 帧缓存 v0.8.0 正式归档，复用 S3 已验收原 bit，合并 main。 - 已完成：用户确认 Flash 烧录、完全断电冷启动、提示音正常；持续运行 30 分钟功能正常。S3 board.1 已推送，S4 记录已更新，源码和 bit 未变。 - 卡住的问题：无。正式版仍需提交归档、建立 v0.8.0 标签并合并推送 main。 - 下一步计划：提交 S4/正式说明，建立 v0.8.0，合并 feature/four-bank-frame-cache 到 main，推送分支及正式标签，核对远程结果。 - 踩过的坑：持续运行时长只记录用户明确反馈；固定 bit 复用，不因文档变更重建。中文文档使用 UTF-8，未动 best_result、旧 worktree 或历史标签。  ## 历史交接  # 当前交接：S4 运行 30 分钟正常（2026-10-09）  - 当前任务：记录用户最新持续运行反馈，补齐 S4 实际验收结果。 - 已完成：用户反馈“运行30分钟功能正常”，已写入 S4 验收记录。S3 board.1、对应 local 标签及功能分支此前已推送；本次源码与 bit 不变，无需重建。 - 卡住的问题：Flash 烧录、完全断电冷启动及提示音尚未单独确认，已向用户询问；不把运行时长推定为其他单项通过。 - 下一步计划：收到剩余实际结果后完成 S4、正式版本归档及 main 合并；继续复用 releases/v0.8.0/s3-local.1/demo.bit。 - 踩过的坑：不能把日志跨度当实测时长；本次 30 分钟来自用户明确反馈。未补造 AUTO 模式或操作次数。中文保持 UTF-8，不修改生产源码、best_result 或已有 worktree。  ## 历史交接  # 当前交接：S3 板测通过，S4 待实测（2026-10-09）  - 当前任务：记录 S3 board.1，推送功能分支及 S3 local/board 标签；准备同一 bit 的 S4 验收。 - 已完成：用户确认缓存切图显著加快、重扫快速、无图数码管状态正常。原始 UART 已归档，274 次缓存命中到提交为 0～17 ms，5 次重扫、3 次无图、2 次恢复；详见 [板测记录](../../../../releases/v0.8.0/s3-local.1/BOARD_RESULT.md)。沿用 S3 本地仿真及 TD 结果，生产源码与固定 bit 不变。 - 卡住的问题：无软件实施阻塞；Flash、断电冷启动、持续播放及提示音专项尚未获得用户实际反馈，不发布正式版或合并 main。 - 下一步计划：按 [S4 步骤](../../../../releases/v0.8.0/S4_VALIDATION.md) 测试已验收原 bit，记录实际时长与现象后完成正式归档发布。 - 踩过的坑：UART BOOT 沿用历史文字，不为版本横幅重建 bit；毫秒差为 0 不代表物理零延迟，日志跨度不能代替长稳结论。用户未单独确认的专项保留未测。中文 UTF-8 写入，未动 best_result、既有 worktree 或历史标签。  ## 历史交接  # 当前交接：S3 local.1 已完成本地验证，待上板（2026-10-09）  - 当前任务：交付 [S3 local.1 固定 bit](../../../../releases/v0.8.0/s3-local.1/demo.bit) 和 [上板步骤](../../../../releases/v0.8.0/s3-local.1/BOARD_VALIDATION.md)，等待用户确认；不进入 S4、不建立 S3 board、不合并 main。 - 已完成：四 bank 生产集成，首图优先/后台填充/命中切换/未命中优先/重扫保图/失败恢复；FAT32 文件取消保留卷信息，显示和音频独立关联，缓存日志已接入。真实 SDRAM 系统测试 57 个显示帧逐像素通过，22 次提交对应 22 次提示音；42 个 FAT32 用例、21 项相关回归、17 帧读写端点故障测试通过。TD attempt1 路由 Setup +0.126 ns、Hold +0.003 ns，覆盖率 99.95%；9341 LUT、5882 寄存器、4 BRAM、2 DSP、1 PLL。约束检查分类计数与 S1 一致。68 个工程输入与构建快照逐字节核对，归档相对开发基线的 8 个变更源码。[候选及证据](../../../../releases/v0.8.0/s3-local.1/README.md)。 - 卡住的问题：仅 S3 用户板测待确认；Flash、冷启动和长稳尚未验证。不能把本地仿真或 TD 结果写成上板通过。 - 下一步计划：用户测试该固定候选并反馈。确认通过后建立 v0.8.0-s3-board.1，推送当前分支及 S3 local/board 标签，再以同一 bit 进入 S4；失败则最小修复并生成递增候选。回退使用 releases/v0.7.0/demo.bit，S1 已验收 bit 也保留。 - 踩过的坑：普通取消不能复位 FAT32 卷扫描器；取消必须等源端停止、活动 burst 完成及 FIFO 清空。system1 测试台把发出请求当作实际开始计数，修正后 system2 通过，RTL 未因此改变。S3 的缓存命中不再符合旧双缓冲“每次切图重读”断言，使用新完整链路测试，保留旧历史测试文件。Git LF 与 Windows CRLF 不能算源码变化；打包时误多带的 57 份未改副本已逐文件移动到诊断目录，未删除文件。生产源码与 bit 未因包装重建。所有中文文档直接 UTF-8 写入并回读；best_result 和既有 worktree 未动。  ## 历史交接  # S2 独立控制器完成，下一阶段 S3（2026-10-09）  - 当前任务：已完成 S2 四 bank 缓存控制器独立实现、仿真和综合；未接生产顶层，无 S2 bit 或 local/board 标签。 - 已完成：S1 用户反馈“功能正常，开始下一阶段”，`v0.8.0-s1-board.1` 及对应分支、local 标签已推送。S2 实现映射、首图优先、前后台调度、重扫保图、失败重试、AUTO 失败回退和超时停止读卡。控制器与真实播放器联合仿真 55 次加载、44 次提交，0 Error/Warning；100 MHz 独立综合 203 LUT、99 时序单元、0 BRAM/DSP/latch。修复交接测试生成器遗漏 S1 输出端口，六组回归重新通过。[接口与证据](../../../../diagnostics/four_bank/CACHE_CONTROL.md)。 - 卡住的问题：无 S2 阻塞；S3 尚未集成及构建，S2 协议驱动不能代替真实 SDRAM 数据链路。Flash、冷启动、长期运行未单独确认。 - 下一步计划：S3 在 sd_card_bmp 接入控制器，增加 loader 结果/取消和 reader 提交的适配，分离面板及音频的显示编号与后台加载编号；接入四区地址，完成真实数据链路、受影响回归、完整 TD，再交付新上板候选。 - 踩过的坑：取消必须同时覆盖尚未接受和已接受的加载；显示在途请求不能被重扫撤销。后台 busy 不能接播放器的前台 busy。AUTO 遇到已失败预载图需自动跳过，否则会反复请求同一目标；手动请求仍允许重试。重扫后显示 bank 保留到新首图确认。TD 独立模块默认 50 MHz，最终综合已显式设为 100 MHz；99 时序单元含 47 内部和 52 输出寄存器。S2 综合不是 S3 路由签核；生产和 bit 仍为 S1。中文直接 UTF-8 写入并回读，不覆盖 best_result、不移动旧标签。  ## 历史交接  # v0.8.0 S1 候选待上板（2026-10-09）  - 当前任务：交付 S1 上板文件，修复 HANDOFF 乱码；生产调度仍为双缓冲。 - 已完成：loader/reader 分离及本地验证，固定候选 [demo.bit](../../../../releases/v0.8.0/s1-local.1/demo.bit)，标签 `v0.8.0-s1-local.1`。TD Setup +0.100 ns、Hold +0.030 ns；验证详情见候选说明。本次补齐 [上板步骤与反馈表](../../../../releases/v0.8.0/s1-local.1/BOARD_VALIDATION.md)，恢复中文及历史交接，未改 RTL 或重建 bit。 - 卡住的问题：尚无该候选的用户板测结果；Flash、冷启动和长期运行未确认。四图驻留、后台预载和缓存命中切换尚未接入生产。 - 下一步计划：用户测试固定候选并反馈，通过后记录 board 标签并按执行规则推送，再进入 S2。后续重新运行交接回归前需核对 prepare_handoff.py 与原测试台端口连接；历史通过结果不代表当前脚本已重新执行。 - 踩过的坑：PowerShell 默认管道将中文传入 Python 时替换为问号，之后保存 UTF-8 无法恢复。本次从正常 Git 历史恢复并直接 UTF-8 写入。课程 128 字 burst 不适用本项目 64 字配置；保留 RGB 高 24 位、BMP 翻转和输出延迟。不得把 S3 验收要求写成 S1 已实现功能，不覆盖 best_result、不移动旧标签、不删除旧目录。  [候选说明](../../../../releases/v0.8.0/s1-local.1/README.md) · [阶段计划](../../../四bank帧缓存分阶段修改计划.md) · [回退 bit](../../../../releases/v0.7.0/demo.bit)  ## 历史交接  # 当前交接：v0.8.0 四 bank 帧缓存 S1 实施中（2026-10-09）  - 当前任务：按已确认计划先完成 S0 和 S1 读写分离，S1 仍使用双缓冲。 - 已完成：核对当前 feature/four-bank-frame-cache、干净工作区、基线 1c68673；生产 RTL 与 v0.7.0 一致。阶段计划已保存至 docs/四bank帧缓存分阶段修改计划.md。 - 卡住的问题：无实施阻塞；S1 本地候选完成后需要用户板测，未通过前不进入 S2。 - 下一步计划：实现独立 loader/reader，验证真实 SDRAM 数据链路、相关回归、TD，再固定候选及标签。 - 踩过的坑：课程默认 128 字不适用当前 64 字刷新方案；必须保留 RGB 高 24 位及垂直翻转；不能用 bmp_ready 代替解析成功。用户 best_result 和现有 worktree 保留；禁止批量删除。  ## 历史交接 # 当前交接：8890 LUT 组成分析（2026-10-08）  - 当前任务：分析 v0.7.0 的 8890 LUT 组成，给出缩减方案。 - 已完成：核对发布报告和 attempt7 源码快照，统一 lut+ripple 口径；完成层级拆分、前版对比及优化方案。详见 [分析文档](../../../LUT_8890_analysis.md)。未改生产 RTL 或重建 bit。 - 主要结论：SD/FAT32/BMP 5493，UART 1136，HDMI 桥 871；优先 UART 字符生成、共享 BMP 头检查，再评估 FAT32 运算共享。 - 卡住的问题：分析无阻塞；净收益需后续 A/B 综合确认。 - 下一步计划：进入实施时先保持日志格式优化 UART，在新输出目录验证资源和时序，再处理 BMP 与 FAT32。 - 踩过的坑：层级 lut 必须加 ripple，父子层不能重复相加；UART 队列已是分布式 RAM；顶层尺寸已为常量；未接运算可能被裁剪。PowerShell 读取需 UTF8，默认管道传中文给 Python 会变问号，已改为直接 UTF8 写入。用户原有六项修改保留，未覆盖 TD 工程、best_result，未删除文件或目录。  --- # 当前交接：v0.7.0 已发布并合并 main  - 当前任务：S4 已完成；v0.7.0、main 及 feature/fat32-filesystem 已成功同步 GitHub。 - 已完成：复用已验收 S3 bit 为 releases/v0.7.0/demo.bit，逐字节一致；生产源码无变化，未重建。计划、交接及验收记录归档至 docs/history/2026-10-08/fat32-filesystem；活动入口更新。 - 卡住的问题：无。未单独确认的板测边界和长期运行继续列为未测，不扩大通过范围。 - 下一步计划：原目录 main 合并完成，文件树与发布分支一致；六个用户本地修改已恢复且逐字节一致。正式标签及两个分支已推送；后续新需求另建功能分支。临时 stash 和本地备份保留，不删除旧 worktree。 - 踩过的坑：禁止覆盖用户 TD 工程、best_result 和个人记录；不新建开发 worktree、不删除旧目录、不重建验收 bit、不移动阶段标签。历史交接见归档。  [正式版](../../../../releases/v0.7.0/README.md) · [归档](../../2026-10-08/fat32-filesystem/README.md)
+
+- 构建完成：subtitle_dandu_build4 通过 TD，Setup +0.119 ns / Hold +0.027 ns；交付 bit：diagnostics/output/subtitle_dandu_build4/subtitle_dandu.bit（629624 字节）。
+
+## 2026-10-12 S3 板测故障与当前处理
+
+- 用户板测 `v0.5.4-s3-local.2` 上电即报告 `INIT_FAIL E=2`，随后 `SCAN_DONE` 无图片/音频，数码管为 `00FF0F 00001F 00002F 00003F`。
+- 故障定位在 SD 初始化/ SPI MISO 返回链路；带 `AL_MAP_LUT1` 的 MISO 保持改动影响了初始化阶段，不能继续使用对应候选 `releases/v0.14.0/s3-local.1/demo.bit`。
+- 已从 `user_source/hdl_source/SD/spi_master.v` 回退该 LUT，恢复原始 MISO 采样行为。SD 扇区协议专项已重新通过。
+- 当前阻塞：无 LUT 时原 Hold 余量尚未闭合；需要寻找只改善时序、且不改变 SD 初始化采样行为的实现。未重建 bit、未更新候选、未打新标签。
+- 下一步：先完成无 LUT 联合仿真，再评估输入 IO 延迟/局部寄存边界等等价方案；每个方案必须先通过 SD 专项和功能回归，Hold/Setup 均非负后才允许打包候选。
+- 踩坑：不能把全程 MISO LUT 当作通用 Hold 修复；它位于初始化、目录、图片和音频共用返回路径，板上表现为 SD 初始化失败。
+## 2026-10-12 S3 MISO 分阶段选择修复
+
+- 为避免 LUT 影响上电初始化，在 `sd_card_top.v` 增加 `spi_miso_sample`：`sd_init_done=0` 时直通 `SD_MISO`，初始化完成后才选择保持 LUT 输出。
+- LUT 只保留在顶层采样选择处，`spi_master.v` 恢复原始采样逻辑，避免重复延迟。
+- `diagnostics/fat32/run_sector.ps1` 已通过：适配器与真实 driver 场景全部 PASS。
+- 尚未完成：联合仿真与完整 TD 尚未运行；该 RTL 不能直接视为板测候选。若综合后 Hold 仍不满足或 mux 扇出引入新违例，需要改用器件 IO 输入延迟或局部布局方案。
+## 2026-10-12 IDELAY 尝试结果
+
+- 分阶段 LUT 方案完整 TD：Setup `+0.105 ns` / Hold `-0.020 ns`；ultra：Setup `+0.100 ns` / Hold `-0.011 ns`，仍未达标，未生成候选。
+- 尝试器件原生 `EG_LOGIC_IDELAY` 后，TD 在布线阶段报 `PHY-8023` 资源/增量布线冲突，无法生成 bit；已回退该尝试，恢复分阶段 LUT RTL，保持工程可构建。
+- 当前仍未到上板阶段；下一步需要在不改变 SD 初始化行为的前提下减少 MISO Hold 违例，优先评估更局部的寄存器边界或物理布局资源方案。
+## 2026-10-12 Hold 路径局部尝试
+
+- 最新 ultra TD 的 Hold 违例已转为普通 `sd_card_clk` RAM 地址/控制短路径，最差约 `-0.011 ns`，不再是 MISO 主路径。
+- 尝试在 `subtitle_uart_controller.index[0]` 增加 LUT 保持，功能接口未改，但布局后 Hold 为 `-0.012 ns`，未改善，改动已保留需后续评估或回退。
+- 目前没有候选 bit；继续修改前必须先针对报告中的实际短路径做局部寄存/保持处理，不能使用约束放宽或无效 `place fix_hold`。
+## 2026-10-12 UART 组合保持尝试
+
+- 对 UART 数据入口增加 16 个 LUT 保持后，TD Setup 恶化至 `-0.919 ns`，立即回退；说明该路径不能用全字节组合延迟处理。
+- 当前源码已恢复到此前 Setup 正、Hold 约 `-0.011 ns` 的版本，未生成候选。
+## 2026-10-12 当前阻塞审计
+
+- 在不改约束、不用 `place fix_hold`、不改变功能的前提下，已验证 high/ultra 时序、post-place ultra、关闭高扇出优化、MISO LUT 分阶段旁路、IODELAY（资源冲突）及局部地址/UART LUT 方案。
+- 可布线方案的 Hold 反复落在约 `-0.011~-0.020 ns`，不同合法策略会转移短路径或损失 Setup；当前没有满足候选门槛的 bit。
+- 工作区保留最后可构建的分阶段 MISO 方案，未打标签、未上板。

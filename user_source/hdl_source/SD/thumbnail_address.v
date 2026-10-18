@@ -1,11 +1,12 @@
 // Address follows issued memory requests, not live HDMI coordinates.
-module thumbnail_address (
+module thumbnail_address #(parameter MENU_ENABLE=0)(
+ input menu,
  input clk,rst,reload,advance, input preview,
  input [7:0] bank_map, input [1:0] fullscreen_bank,
  output [20:0] address
 );
  reg [9:0] x; reg [8:0] y;
- reg active_preview; reg [7:0] banks; reg [1:0] full_bank;
+ reg active_menu; reg active_preview; reg [7:0] banks; reg [1:0] full_bank;
  wire [1:0] image_id={y>=240,x>=320};
  wire [1:0] bank=active_preview ? (banks >> {image_id,1'b0}) : full_bank;
  wire [9:0] local_x=x>=320?x-10'd320:x;
@@ -26,10 +27,17 @@ module thumbnail_address (
    3'b110:base=21'd1382400;default:base=21'd1459200;
   endcase
  end
- assign address=base+offset;
+ wire [9:0] mx=local_x>=32 && local_x<288?local_x-10'd32:10'd0;
+ wire [8:0] my=local_y>=8 && local_y<200?local_y-9'd8:9'd0;
+ reg [20:0] menu_base;
+ always @*case(image_id)
+  0:menu_base=21'd1536000;1:menu_base=21'd1585152;
+  2:menu_base=21'd1634304;3:menu_base=21'd1683456;
+ endcase
+ assign address=MENU_ENABLE && active_menu?menu_base+{my[7:0],8'd0}+mx:base+offset;
  always @(posedge clk or posedge rst) begin
-  if(rst) begin x<=0;y<=0;active_preview<=0;banks<=0;full_bank<=0;end
-  else if(reload) begin x<=0;y<=0;active_preview<=preview;banks<=bank_map;full_bank<=fullscreen_bank;end
+  if(rst) begin x<=0;y<=0;active_menu<=0;active_preview<=0;banks<=0;full_bank<=0;end
+  else if(reload) begin x<=0;y<=0;active_menu<=menu;active_preview<=preview;banks<=bank_map;full_bank<=fullscreen_bank;end
   else if(advance) begin
    if(x==639) begin x<=0;y<=y==479?9'd0:y+1'b1;end
    else x<=x+1'b1;

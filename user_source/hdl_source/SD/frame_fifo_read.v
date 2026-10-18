@@ -3,7 +3,7 @@ module frame_fifo_read
 #
 (
 	parameter MEM_DATA_BITS          = 32,
-    parameter PREVIEW_ENABLE = 0,
+    parameter PREVIEW_ENABLE = 0, MENU_ENABLE=0, DESC_WIDTH=18,
 	parameter ADDR_BITS              = 21,
 	parameter BURST_BITS             = 9,
 	parameter FIFO_DEPTH             = 512,
@@ -30,8 +30,8 @@ module frame_fifo_read
 	
 	input                            read_req,                   // data read module read request,keep '1' until read_req_ack = '1'
     input                            display_commit_request,
-    input preview_request, input [17:0] preview_descriptor,
-    output reg preview_ack, output reg [17:0] frame_descriptor,
+    input preview_request, input [DESC_WIDTH-1:0] preview_descriptor,
+    output reg preview_ack, output reg [DESC_WIDTH-1:0] frame_descriptor,
     output reg                       display_commit_ack,
     output                           refill_priority,
 	output reg                       read_req_ack,               // data read module read request response
@@ -94,9 +94,15 @@ always @(posedge mem_clk or posedge rst) begin
 end
 
 reg [2:0] preview_sync;
-reg [17:0] descriptor_sync0,descriptor_sync1;
-wire [17:0] next_descriptor=(preview_sync[2]!=preview_ack)?descriptor_sync1:frame_descriptor;
+reg [DESC_WIDTH-1:0] descriptor_sync0,descriptor_sync1;
+wire [DESC_WIDTH-1:0] next_descriptor=(preview_sync[2]!=preview_ack)?descriptor_sync1:frame_descriptor;
 wire [20:0] thumbnail_addr;
+wire menu_next,menu_current;
+generate if(MENU_ENABLE)begin:g_menu_flags
+ assign menu_next=next_descriptor[24];assign menu_current=frame_descriptor[24];
+end else begin:g_no_menu_flags
+ assign menu_next=0;assign menu_current=0;
+end endgenerate
 always @(posedge mem_clk or posedge rst) begin
  if(rst)begin preview_sync<=0;descriptor_sync0<=0;descriptor_sync1<=0;preview_ack<=0;frame_descriptor<=0;end
  else if(PREVIEW_ENABLE)begin
@@ -108,12 +114,13 @@ always @(posedge mem_clk or posedge rst) begin
  end
 end
 generate if(PREVIEW_ENABLE)begin:g_preview_address
- thumbnail_address address_gen(.clk(mem_clk),.rst(rst),.reload(state==S_ACK),.advance(App_rd_en),
+ thumbnail_address #(.MENU_ENABLE(MENU_ENABLE)) address_gen(
+ .menu(menu_next),.clk(mem_clk),.rst(rst),.reload(state==S_ACK),.advance(App_rd_en),
  .preview(next_descriptor[17]),.bank_map(next_descriptor[7:0]),.fullscreen_bank(read_addr_index_d1),.address(thumbnail_addr));
 end else begin:g_no_preview_address
  assign thumbnail_addr=0;
 end endgenerate
-assign App_rd_addr = PREVIEW_ENABLE && frame_descriptor[17] ? thumbnail_addr : App_rd_addr_r;
+assign App_rd_addr = PREVIEW_ENABLE && (frame_descriptor[17] || menu_current) ? thumbnail_addr : App_rd_addr_r;
 assign rd_vld = (state == S_READ_BURST && burst_cnt >= BURST_SIZE);
 
 assign O_rd_busy = (state == S_READ_BURST);//读指令期间

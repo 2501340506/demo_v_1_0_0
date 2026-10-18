@@ -35,9 +35,18 @@ module bmp24_decoder #(
  reg [BYTE_BITS-1:0] row_byte;
  reg [ROW_BITS-1:0] row,col;
  reg [COUNT_BITS-1:0] pixel_count;
- reg [31:0] row_payload,row_last;
+ // Valid range-mode rows are at most 1920*4 bytes. Match the
+ // 13-bit byte counter instead of a generic 32-bit payload comparator.
+ reg [BYTE_BITS-1:0] row_payload,row_last;
+ reg [BYTE_BITS-1:0] payload_last;
+ reg payload_active;
  reg header_good;
  reg pixels_started;
+ reg rows_done;
+ reg [ROW_BITS-1:0] row_limit;
+ // Height is fixed before payload acceptance. Test the last row only at a
+ // row boundary, rather than placing a width comparator on every byte CE.
+ always @(posedge clk)row_limit<=height[ROW_BITS-1:0]-1'b1;
  reg [1:0] phase;
  reg [7:0] blue,green,red;
  // Keep the RGB-only port for legacy bmp_read and decoder test callers.
@@ -55,7 +64,7 @@ module bmp24_decoder #(
  // payload starts, row completion bounds it without a wide offset comparator
  // on every pixel/row write-enable path. Fixed legacy mode retains its check.
  wire in_pixel_region=RANGE_DIMENSIONS ?
-    ((pixels_started || file_byte_offset==pixel_offset) && row<height[ROW_BITS-1:0]) :
+    ((pixels_started || file_byte_offset==pixel_offset) && !rows_done) :
     (file_byte_offset>=pixel_offset && {2'b0,file_byte_offset}<pixel_end);
  // Let header_good settle before accepting the first payload byte, even
  // when a generic flow-controlled caller supplies consecutive header bytes.
@@ -64,8 +73,11 @@ module bmp24_decoder #(
  assign image_width = width[15:0];
  assign image_height = height[15:0];
  wire [15:0] actual_width = RANGE_DIMENSIONS ? width[15:0] : tw;
+ wire [17:0] payload_24 = {2'b00,actual_width}+{1'b0,actual_width,1'b0};
+ wire [17:0] payload_bytes = is_32 ? {actual_width,2'b00} : payload_24;
  always @(posedge clk) begin
-  row_payload <= is_32 ? {16'd0,actual_width}*4 : {16'd0,actual_width}*3;
+  row_payload <= payload_bytes;
+  payload_last <= {14'd0,payload_bytes}-1'b1;
   row_last <= row_stride-1'b1;
  end
  bmp_header_check #(.ALLOW_32(ALLOW_32),.RANGE_DIMENSIONS(RANGE_DIMENSIONS)) u_header (
@@ -75,10 +87,21 @@ module bmp24_decoder #(
   .required_end(pixel_end),.header_match(header_ok),.skip_format(),
   .expected_pixels(expected_pixels),.header_complete(header_complete),.is_32(is_32),.row_stride(row_stride)
  );
- wire accepted_header=header_ok && {2'b0,size_reg}>=pixel_end;
+ // Header fields settle before byte 53; split the independent directory-size
+ // bound without changing the header-complete or first-payload handshake.
+ reg size_hi_gt_end,size_hi_eq_end,size_lo_ge_end;
+ always @(posedge clk or posedge rst)begin
+  if(rst)begin size_hi_gt_end<=0;size_hi_eq_end<=0;size_lo_ge_end<=0;end
+  else begin
+   size_hi_gt_end<={2'b0,size_reg[31:16]}>pixel_end[33:16];
+   size_hi_eq_end<={2'b0,size_reg[31:16]}==pixel_end[33:16];
+   size_lo_ge_end<=size_reg[15:0]>=pixel_end[15:0];
+  end
+ end
+ wire accepted_header=header_ok && (size_hi_gt_end || (size_hi_eq_end && size_lo_ge_end));
  always @(posedge clk or posedge rst) begin
   if(rst) begin
-   active<=0;checked<=0;end_pending<=0;size_reg<=0;header_good<=0;pixels_started<=0;
+   active<=0;checked<=0;end_pending<=0;size_reg<=0;header_good<=0;pixels_started<=0;rows_done<=0;payload_active<=1;
    header_accepted<=0;pixel_valid<=0;frame_commit<=0;bmp_done<=0;bmp_error<=0;
    pixel_rgba<=0;pixel_x<=0;pixel_y<=0;row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;
    blue<=0;green<=0;red<=0;
@@ -86,7 +109,7 @@ module bmp24_decoder #(
    header_accepted<=0;frame_commit<=0;bmp_done<=0;
    if(!FLOW_CONTROL || pixel_ready) pixel_valid<=0;
    if(file_start) begin
-    active<=1;checked<=0;end_pending<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;
+    active<=1;checked<=0;end_pending<=0;size_reg<=file_size;bmp_error<=0;header_good<=0;pixels_started<=0;rows_done<=0;payload_active<=1;
     row_byte<=0;row<=0;col<=0;pixel_count<=0;phase<=0;pixel_valid<=0;
    end else if(active) begin
     if(header_complete && !checked) begin
@@ -96,7 +119,11 @@ module bmp24_decoder #(
     end
     if(take_byte && (FLOW_CONTROL?header_good:accepted_header) && in_pixel_region) begin
      pixels_started<=1;
-     if(row_byte < row_payload) begin
+     // Predict the next byte's payload membership while advancing the row.
+     // This holds across stalls and keeps the row comparator off pixel/col CE.
+     // Valid rows have at least one pixel; byte zero is always payload.
+     if(RANGE_DIMENSIONS)payload_active <= (row_byte==row_last) || (row_byte<payload_last);
+     if(RANGE_DIMENSIONS ? payload_active : row_byte < row_payload) begin
       if(phase==0)blue<=file_byte;
       if(phase==1)green<=file_byte;
       if(phase==2)red<=file_byte;
@@ -107,7 +134,7 @@ module bmp24_decoder #(
       end
       if((!is_32 && phase==2)||(is_32 && phase==3))phase<=0;else phase<=phase+1;
      end
-     if(row_byte==row_last)begin row_byte<=0;row<=row+1;col<=0;phase<=0;end
+     if(row_byte==row_last)begin row_byte<=0;row<=row+1;col<=0;phase<=0;rows_done<=row==row_limit;end
      else row_byte<=row_byte+1;
     end
     if(file_end)begin

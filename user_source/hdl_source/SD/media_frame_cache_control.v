@@ -6,7 +6,8 @@
 // reader actually committed at a frame boundary, not merely queued a target.
 // Cancel supersedes an offered/accepted load and is held until cancel_ack;
 // that acknowledgement must mean source stopped, burst finished and FIFO clear.
-module media_frame_cache_control (
+module media_frame_cache_control #(parameter PAUSE_ENABLE=0)(
+ input pause,
     input clk, rst,
     input rescan_event,
     output scan_request,
@@ -68,7 +69,7 @@ module media_frame_cache_control (
     assign scan_busy = phase != RUN;
     assign storage_busy = load_state != LOAD_IDLE;
     assign foreground_busy = foreground_pending || display_request || committed_valid;
-    assign request_ready = phase == RUN && !rescan_event && !communication_fault &&
+    assign request_ready = phase == RUN && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault &&
                            first_image_committed && !foreground_busy &&
                            ({1'b0,request_image} < image_count) &&
                            (!storage_stopped || (request_manual && cache_valid[request_image]));
@@ -85,11 +86,15 @@ module media_frame_cache_control (
     // No eviction during an epoch. The old display bank remains reserved even
     // after rescan invalidates the old directory's cache entries.
     always @* begin
-        occupied = 0;
+        // Decode each physical bank in parallel. The equivalent dynamic
+        // bit writes formed a serial mux chain on TD25's allocation path.
         for (b=0; b<4; b=b+1)
-            if (cache_valid[b]) occupied[bank_map[b]] = 1'b1;
-        if (display_valid) occupied[current_bank] = 1'b1;
-        if (storage_busy) occupied[load_bank] = 1'b1;
+            occupied[b] = (cache_valid[0] && bank_map[0] == b[1:0]) ||
+                          (cache_valid[1] && bank_map[1] == b[1:0]) ||
+                          (cache_valid[2] && bank_map[2] == b[1:0]) ||
+                          (cache_valid[3] && bank_map[3] == b[1:0]) ||
+                          (display_valid && current_bank == b[1:0]) ||
+                          (storage_busy && load_bank == b[1:0]);
         free_found = 0; free_bank = 0;
         candidate_found = 0; candidate_image = 0;
         for (n=0; n<4; n=n+1) begin
@@ -213,7 +218,7 @@ module media_frame_cache_control (
                         end
                         // Do not start background work on the edge accepting a
                         // foreground target. An in-progress file finishes first.
-                        if (load_state == LOAD_IDLE && !storage_stopped && !communication_fault &&
+                        if (!(PAUSE_ENABLE && pause) && load_state == LOAD_IDLE && !storage_stopped && !communication_fault &&
                             !accept_request && free_found) begin
                             if (foreground_pending) begin
                                 if (!cache_valid[foreground_image] && !cache_failed[foreground_image]) begin

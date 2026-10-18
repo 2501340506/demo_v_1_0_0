@@ -40,20 +40,28 @@ module pcm_stream_player #(
  function [ADDR_WIDTH:0] binary;
  input [ADDR_WIDTH:0] g;integer i;begin binary[ADDR_WIDTH]=g[ADDR_WIDTH];
  for(i=ADDR_WIDTH-1;i>=0;i=i-1)binary[i]=binary[i+1]^g[i];end endfunction
- assign write_level=wr_bin-binary(rd_sync2);
+ // Delay only the decoded read pointer. It can only lag consumption, so
+ // occupancy remains conservative for whole-sector admission. The Gray
+ // full comparator still protects every individual write without delay.
+ reg [ADDR_WIDTH:0] rd_binary_wr;
+ assign write_level=wr_bin-rd_binary_wr;
  wire [ADDR_WIDTH:0] level_rd=binary(wr_sync2)-rd_bin;
  assign stopped=!run && !ack2 && stop_guard==3;
- assign file_ready=run && play_enable && write_level<DEPTH;
+ // Standard async FIFO full test: a depth-separated binary pointer has the
+ // two upper Gray bits inverted. Avoid Gray decode/subtraction on BRAM WE.
+ // The writer never advances when full, so occupancy cannot exceed DEPTH.
+ wire full=wr_gray=={~rd_sync2[ADDR_WIDTH:ADDR_WIDTH-1],rd_sync2[ADDR_WIDTH-2:0]};
+ assign file_ready=run && play_enable && !full;
  assign sector_permit=file_ready && write_level<=DEPTH-256 && write_level<HIGH_WATER;
  assign buffer_low=write_level<LOW_WATER;
  always @(posedge wr_clk or negedge wr_rst_n)begin
   if(!wr_rst_n)begin
-   wr_bin<=0;wr_gray<=0;rd_sync1<=0;rd_sync2<=0;
+   wr_bin<=0;wr_gray<=0;rd_sync1<=0;rd_sync2<=0;rd_binary_wr<=0;
    single_latched<=0;total_latched<=0;identity_latched<=0;done_sync<=0;
    run<=0;ack1<=0;ack2<=0;stop_guard<=0;lo_pending<=0;lo_byte<=0;
   end else begin
    done_sync<={done_sync[0],done_rd};
-   rd_sync1<=rd_gray;rd_sync2<=rd_sync1;ack1<=ack;ack2<=ack1;
+   rd_sync1<=rd_gray;rd_sync2<=rd_sync1;rd_binary_wr<=binary(rd_sync2);ack1<=ack;ack2<=ack1;
    if(!run && !ack2)begin
     // Reader has drained its visible output and reset its pointer. Only now
     // can the writer reset; guard also lets the old read pointer leave CDC.
@@ -74,8 +82,16 @@ module pcm_stream_player #(
   end
  end
  // No reset on the memory array or its synchronous read register: infer BRAM.
+ wire [ADDR_WIDTH-1:0] ram_write_address;
+ genvar write_address_bit;
+ generate for(write_address_bit=0;write_address_bit<ADDR_WIDTH;write_address_bit=write_address_bit+1)begin:g_write_hold
+  // Different placements expose different bits of this direct register/RAM
+  // bus (TD27 bits 3/7, TD28 bit 5). Delay every bit without adding a cycle.
+   (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+    u_hold(.o(ram_write_address[write_address_bit]),.a(wr_bin[write_address_bit]));
+ end endgenerate
  always @(posedge wr_clk)
-  if(file_valid && file_ready && lo_pending)mem[wr_bin[ADDR_WIDTH-1:0]]<={file_byte,lo_byte};
+  if(file_valid && file_ready && lo_pending)mem[ram_write_address]<={file_byte,lo_byte};
  reg [15:0] ram_sample;
  reg [15:0] fifo[0:7];
  reg source_tag[0:7];reg [30:0] launched,consumed;
@@ -92,7 +108,15 @@ module pcm_stream_player #(
  wire source_remaining=!single_rd || launched!=total_rd;
  wire read_ram=launch && level_rd!=0 && source_remaining;
  wire push=pending && run2;
- always @(posedge rd_clk)if(read_ram)ram_sample<=mem[rd_bin[ADDR_WIDTH-1:0]];
+ // TD12 measured a short read-address hold path on rd_bin[9].
+ // Kept identity cells add physical delay only; BRAM latency is unchanged.
+ wire [ADDR_WIDTH-1:0] ram_read_address;
+ genvar address_bit;
+ generate for(address_bit=0;address_bit<ADDR_WIDTH;address_bit=address_bit+1)begin:g_read_hold
+   (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+    u_hold(.o(ram_read_address[address_bit]),.a(rd_bin[address_bit]));
+ end endgenerate
+ always @(posedge rd_clk)if(read_ram)ram_sample<=mem[ram_read_address];
  assign sample_valid=count!=0;
  assign sample_left=fifo[rp];assign sample_right=fifo[rp];
  always @(posedge rd_clk or negedge rd_rst_n)begin

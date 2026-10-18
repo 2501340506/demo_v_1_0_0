@@ -1,6 +1,6 @@
 // Stop/drain before changing bundled file selection. ready is held until the
 // requester releases request; only a NEW session's accepted sample completes it.
-module scenario_audio_control #(parameter PUBLICITY_ENABLE=0)(
+module scenario_audio_control #(parameter PUBLICITY_ENABLE=0,PIPELINED_FOUND=0)(
  input clk,rst,request,request_scene,input [1:0] request_stage,
  input request_publicity,output reg selected_publicity,output reg [7:0] session_version,
  input stopped,sample_tick,session_enable,input [7:0] stream_error,
@@ -11,6 +11,12 @@ module scenario_audio_control #(parameter PUBLICITY_ENABLE=0)(
  reg [1:0] state,target_stage;
  reg target_scene,target_publicity,seen;
  reg [2:0] guard;
+ // Metadata is held from selection until stop. START already waits eight
+ // cycles, so this summary is settled before its final availability check.
+ reg found_q;
+ always @(posedge clk or posedge rst)begin
+  if(rst)found_q<=0;else found_q<=selected_found;
+ end
  assign run_enable=state!=STOP;
  always @(posedge clk or posedge rst)begin
   if(rst)begin state<=RUN;selected_scene<=0;selected_stage<=0;target_stage<=0;
@@ -23,7 +29,7 @@ module scenario_audio_control #(parameter PUBLICITY_ENABLE=0)(
     end
     STOP:if(stopped)begin selected_publicity<=target_publicity;session_version<=session_version+1'b1;selected_scene<=target_scene;selected_stage<=target_stage;guard<=0;state<=START;end
     START:if(guard==7)begin
-     if(!selected_found || !session_enable)begin ready<=1;state<=RUN;end
+     if(!(PIPELINED_FOUND?found_q:selected_found) || !session_enable)begin ready<=1;state<=RUN;end
      else state<=FIRST;
     end else guard<=guard+1'b1;
     FIRST:if(sample_tick || stream_error!=0 || !session_enable)begin ready<=1;state<=RUN;end
