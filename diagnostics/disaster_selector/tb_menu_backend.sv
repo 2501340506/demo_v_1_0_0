@@ -8,6 +8,8 @@ module tb_menu_backend;
  wire [31:0] directory,selected;wire pub;wire [2:0] hazard,selectedhazard;
  wire [1:0] index,slot;wire [3:0] valid;
  disaster_menu_backend dut(.clk(clk),.rst(rst),.enter(enter),.confirm(confirm),.cancel(cancel),.focus(focus),
+ .invalidate(1'b0),.native_thumb(1'b0),.application_error(1'b0),.storage_busy(1'b0),.original_app(2'd1),
+ .force_target(),.rejected(),.fallback_thumbnail(),.preview_mode(),
  .parent_valid(1'b1),.parent_cluster(32'd20),.original_directory(32'd80),.original_publicity(1'b1),.original_hazard(3'd0),
  .reader_ready(rdready),.scan_done(sdone),.scan_error(serror),.mapped_valid(mapped),
  .directory_valid(6'b111100),.directory_clusters({32'd70,32'd60,32'd50,32'd40,64'd0}),
@@ -35,7 +37,7 @@ module tb_menu_backend;
    scans++;sdone=0;rdready=0;scan_timer=6;
   end
   if(request)begin
-   if(!menuwrite || discard || mapped!=15 || !owner)$fatal(1,"unsafe writer request");
+   if(!menuwrite || discard || !mapped[0] || !owner)$fatal(1,"unsafe writer request");
    loads++;accept=1;write_timer=8;
   end
   if(direct)begin
@@ -46,16 +48,20 @@ module tb_menu_backend;
  task pulse_enter;@(negedge clk);enter=1;@(negedge clk);enter=0;endtask
  initial begin
   repeat(4)@(negedge clk);rst=0;pulse_enter();wait(ready);#1;
-  if(valid!==4'b1001 || scans!=5 || loads!=3 || verifies!=8)$fatal(1,"validation valid=%b scans=%0d loads=%0d verify=%0d",valid,scans,loads,verifies);
+  if(valid!==4'b1111 || scans!=5 || loads!=4 || verifies!=0)$fatal(1,"validation valid=%b scans=%0d loads=%0d verify=%0d",valid,scans,loads,verifies);
   @(negedge clk);cancel=1;@(negedge clk);cancel=0;
   wait(!visible);if(directory!=80 || !pub || hazard!=0)$fatal(1,"restore metadata");
   repeat(8)@(negedge clk);if(exitdone)$fatal(1,"early exit before display ack");
   off=1;wait(exitdone);if(!resume)$fatal(1,"cancel restart");@(negedge clk);off=0;
-  pulse_enter();wait(ready);focus=3;@(negedge clk);confirm=1;@(negedge clk);confirm=0;
+  pulse_enter();wait(ready);
+  if(loads!=4 || scans!=6)$fatal(1,"menu cache not reused");
+  focus=1;@(negedge clk);confirm=1;@(negedge clk);confirm=0;
+  wait(dut.rejected);wait(ready);if(valid!=13 || !visible)$fatal(1,"later header failure escaped menu");
+  focus=3;@(negedge clk);confirm=1;@(negedge clk);confirm=0;
   wait(force_scene);if(selected!=70 || selectedhazard!=4)$fatal(1,"selection identity");
   appbusy=1;repeat(5)@(negedge clk);commit=1;@(negedge clk);commit=0;appbusy=0;sceneready=1;
   wait(!visible);repeat(5)@(negedge clk);off=1;wait(exitdone);if(resume)$fatal(1,"confirm must not restore old stage");
-  $display("PASS menu backend: directory identity, all 4 stages, missing header/decode failure, cancel restore, confirm, frame ack");$finish;
+  $display("PASS menu backend: four first-image loads only, cache reuse, later header rejection, cancel restore, confirm, frame ack");$finish;
  end
  initial begin #100000;$fatal(1,"watchdog state=%0d",dut.state);end
 endmodule

@@ -19,7 +19,9 @@ def complete_pins(text, module, source):
         start = re.search(r"module\s+\w+\s*\(", head)
     ports = re.sub(r"//[^\n]*", "", head[start.end():])
     names = [re.sub(r"\[[^]]*\]", "", c).split()[-1] for c in ports.split(",")]
-    values = {"map_start": "1'b0", "resource_publicity": "1'b0", "ui_play": "1'b1"}
+    values = {"map_start": "1'b0", "resource_publicity": "1'b0", "ui_play": "1'b1",
+              "pause": "1'b0", "strict_first": "1'b0", "force_target": "2'd2",
+              "native_thumb": "1'b0", "menu_preview": "1'b0", "menu_fallback": "1'b0"}
     if module == "mode_key_control":
         values.update(scene_active="1'b0", application_busy="1'b0", scene_allowed="1'b0")
     def fill(match):
@@ -56,7 +58,9 @@ sources = {n: (ROOT / f"user_source/hdl_source/{p}").read_text(encoding="utf-8")
                         ("scenario_fsm", "scene/scenario_fsm.v"),
                         ("fat32_volume_scanner", "SD/fat32_volume_scanner.v"),
                         ("fat32_bmp_reader", "SD/fat32_bmp_reader.v"),
-                        ("bmp24_decoder", "SD/bmp24_decoder.v")]}
+                        ("bmp24_decoder", "SD/bmp24_decoder.v"),
+                        ("media_frame_cache_control", "SD/media_frame_cache_control.v"),
+                        ("media_player_control", "SD/media_player_control.v")]}
 for name in benches:
     tb = (ROOT / "diagnostics" / name).read_text(encoding="utf-8")
     if name.endswith("tb_m5_loader.sv"):

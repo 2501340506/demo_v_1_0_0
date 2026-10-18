@@ -12,7 +12,7 @@ out=Path(sys.argv[1]);out.mkdir(parents=True,exist_ok=True)
 def u16(b,o,v):struct.pack_into('<H',b,o,v)
 def u32(b,o,v):struct.pack_into('<I',b,o,v)
 
-for case in range(11):
+for case in range(19):
     sectors={}
     def sec(lba):return sectors.setdefault(lba,bytearray(512))
     def fat(c,n):u32(sec(32+c//128),c%128*4,n)
@@ -52,18 +52,29 @@ for case in range(11):
         entries=[]
         for stage in (4,1,3,2):
             c=100+h*8+stage
-            if case==2 and h==2 and stage==3:expected&=~2;continue
+            if (case==2 and h==2 or case==13 and h==1) and stage==3:continue
             bad=case==2 and h==3 and stage==2
-            decode_bad=case==3 and h==2 and stage==3
-            if bad:expected&=~4
-            if decode_bad:expected&=~2
+            decode_bad=(case==3 and h==2 and stage==3) or (case==14 and h==1 and stage==1)
             size=bmp(c,h,stage,bad,decode_bad)
             if h==2 and stage==3 and case in (7,8,9):
-                expected&=~2
                 if case==7:sec(1054+c)[7]=2  # stage name/header role mismatch
                 if case==8:sec(1054+c)[:2]=b'XX'  # corrupt BMP header
                 # case 9 injects transport failure in the controller bench.
             entries.append(entry(f'PIC{stage}    BMP'.encode(),c,size))
+        if case>=11 and not(case==12 and h==1):
+            c=1000+h*320
+            data=bytearray(147510);data[:2]=b'BM';u32(data,2,len(data));u32(data,10,54);u32(data,14,40)
+            u32(data,18,256);u32(data,22,192);u16(data,26,1);u16(data,28,24)
+            for y in range(192):
+                for x in range(256):
+                    p=54+(y*256+x)*3;data[p:p+3]=bytes((x&255,h*32,y&255))
+            if case==12 and h==2:data[:2]=b'XX'
+            if case==12 and h==3:u32(data,18,255)
+            for i in range((len(data)+511)//512):
+                sec(1054+c+i)[:]=data[i*512:(i+1)*512].ljust(512,b'\0')
+                fat(c+i,c+i+1 if i<288 else 0x0fffffff)
+            if case==12 and h==4:fat(c,0x0ffffff7)
+            entries.append(entry(b'THUMB   BMP',c,len(data)))
         if case==10 and h==1:
             for name,c,payload in (
                 (b'SND1    PCM',240,b'\x34\x12'*256),
@@ -77,6 +88,12 @@ for case in range(11):
         c=180+stage;size=bmp(c,0,0)
         if not(case==4 and stage==2):pubs.append(entry(f'EDU{stage}    BMP'.encode(),c,size))
     directory([40],pubs)
+    if case==16:
+        for name,c,payload in ((b'FONT    BIN',245,bytes(416)),(b'TEXT    BIN',246,bytes(44)),
+                               (b'VOI1    PCM',247,b'\x34\x12'*256)):
+            sec(1054+c)[:len(payload)]=payload;fat(c,0x0fffffff)
+            pubs.append(entry(name,c,len(payload)))
+        directory([40],pubs)
     if case in (1,4,5,6):
         for stage in (4,2,1,3):
             c=200+stage;size=bmp(c,0,0);roots.append(entry(f'PIC{stage}    BMP'.encode(),c,size))
@@ -90,4 +107,4 @@ for case in range(11):
     for suffix,values,width in [('lba',lbas,8),('bytes',(v for lba in lbas for v in sectors[lba]),2),
                                 ('meta',[len(lbas),expected,1 if case not in (4,5) else 0],8)]:
         base.with_name(base.name+'_'+suffix+'.hex').write_text(''.join(f'{v:0{width}x}\n' for v in values))
-print('Prepared 11 real sparse FAT32 selector cards')
+print('Prepared 19 real sparse FAT32 selector cards (native, legacy, malformed, body failure, startup BIN/audio)')

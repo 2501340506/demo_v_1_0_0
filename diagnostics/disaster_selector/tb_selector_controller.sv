@@ -8,6 +8,7 @@ module tb_selector_controller;
  wire [1:0] app,wb,db,effective,focus;wire [3:0] valid;
  wire busy,error,wr,we,source_done,cancel,display_req,menu_write,visible;
  wire [5:0] identity;wire [31:0] data;wire [4:0] level;
+ reg permit=1;integer permit_cycle=0;
  reg ack=0,finish=0,cancel_ack=0,display_ack=0,frame=0,commit=0;
  wire normal_req,normal_ack,descriptor_req,display_off;
  wire [17:0] normal_desc;wire [31:0] descriptor;
@@ -16,7 +17,7 @@ module tb_selector_controller;
   .normal_ack(normal_ack),.visible(visible),.focus(focus),.valid(valid),.identity(identity),
   .request(descriptor_req),.descriptor(descriptor),.ack(descriptor_ack),.display_off(display_off));
  sd_card_bmp #(.MENU_ENABLE(1),.CLK_FREQ_HZ(1000),.LOAD_TIMEOUT_MS(10000),.PUBLICITY_ENABLE(1),
-  .SCENE_ENABLE(1),.AUDIO_ENABLE(CASE_ID==10),.PREVIEW_ENABLE(1),.TRANSITION_ENABLE(1),.USE_FRAME_RESULT(1),.SCALE_ENABLE(1)) dut(
+  .SCENE_ENABLE(1),.AUDIO_ENABLE(CASE_ID==10 || CASE_ID==16),.PREVIEW_ENABLE(1),.TRANSITION_ENABLE(1),.USE_FRAME_RESULT(1),.SCALE_ENABLE(1)) dut(
   .clk(clk),.rst(rst),.sdram_ready(1'b1),.key1(k1),.key2(k2),.key4(k4),.mode(mode),.sw3(sw),
   .menu_write_mode(menu_write),.menu_visible(visible),.menu_focus(focus),.menu_valid(valid),.effective_mode(effective),.menu_display_off(display_off),
   .bgm_ready(1'b1),.scenario_muted(1'b1),.application_mode(app),.application_busy(busy),.application_error(error),.display_identity(identity),
@@ -26,10 +27,10 @@ module tb_selector_controller;
   .write_finish_toggle(finish),.display_commit_ack(display_ack),.preview_ack(normal_ack),.preview_request(normal_req),.preview_descriptor(normal_desc),
   .transition_pix_clk(pix),.transition_pix_rst(rst),.transition_frame_start(frame),.transition_commit_done(commit),
   .display_commit_request(display_req),.write_buf_idx(wb),.disp_buf_idx(db),.transition_level(level),
-  .write_req(wr),.write_req_ack(ack),.write_ready(1'b1),.write_en(we),.write_data(data),.SD_MISO(1'b1));
+  .write_req(wr),.write_req_ack(ack),.write_ready(permit),.write_en(we),.write_data(data),.SD_MISO(1'b1));
  reg raw_valid=0,raw_end=0,raw_fail=0;reg [7:0] raw_byte=0;
- reg [31:0] meta[0:2],lbas[0:127];reg [7:0] disk[0:65535];
- integer pos=0,slot=-1,k,reads=0;reg serving=0,released=1;
+ reg [31:0] meta[0:2],lbas[0:2047];reg [7:0] disk[0:1048575];
+ integer pos=0,slot=-1,k,reads=0,commits=0,background_failures=0;reg serving=0,released=1;
  initial begin
   force dut.sd_init_done=1;force dut.sd_init_failed=0;
   force dut.sd_sec_read_data_valid=raw_valid;force dut.sd_sec_read_data=raw_byte;
@@ -43,17 +44,29 @@ module tb_selector_controller;
    if(dut.sd_sec_read && released)begin
     slot=-1;for(k=0;k<meta[0];k++)if(lbas[k]==dut.sd_sec_read_addr)slot=k;
     if(slot<0)$fatal(1,"unexpected sector %d",dut.sd_sec_read_addr);
+    if(dut.menu_owner && dut.menu_preview && dut.sd_sec_read_addr>=1164 && dut.sd_sec_read_addr<=1190 &&
+       (dut.sd_sec_read_addr-1154)%8!=1)$fatal(1,"menu read later-stage pixels/header");
+    if(CASE_ID==16 && dut.sd_sec_read_addr>=1299 && dut.sd_sec_read_addr<=1300 && commits==0)
+     $fatal(1,"optional BIN loaded before real first frame");
     reads++;pos=0;serving=1;released=0;
    end
   end else if(pos<512)begin
    raw_valid=1;raw_byte=disk[slot*512+pos];pos++;
+   // Corrupt only full-file attempts, after the four-header preflight.
+   // A physical SD timeout intentionally stops the transport; malformed
+   // file data is the retryable background error exercised here.
+   if(CASE_ID==18 && !dut.menu_owner && dut.load_busy && lbas[slot]==1164 && pos==1 && background_failures<2)begin
+    raw_byte="X";background_failures++;
+    $display("injected PIC2 malformed body attempt %0d",background_failures);
+   end
    if(pos==512)begin
     raw_end=1;serving=0;
-    if(CASE_ID==9 && lbas[slot]==1173)raw_fail=1;
+    if((CASE_ID==9 && lbas[slot]==1173) || (CASE_ID==17 && lbas[slot]==2374))raw_fail=1;
    end
   end
  end
- integer pixels=0,delay_finish=0,normal_writes=0,menu_writes=0,commits=0;
+ always @(posedge clk)begin permit_cycle<=permit_cycle+1;permit<=(permit_cycle%11)<7;end
+ integer pixels=0,delay_finish=0,normal_writes=0,menu_writes=0;
  integer bank_pixels[0:3];reg [5:0] bank_id[0:3];reg bank_good[0:3];
  reg writing=0,writing_menu=0;reg [1:0] writing_bank;
  always @(negedge clk)begin
@@ -67,14 +80,16 @@ module tb_selector_controller;
     else menu_writes++;
    end
    if(we)begin
+    if(menu_write && dut.menu_native && data!=={8'(pixels/256),8'((dut.g_menu.backend.scene+1)*32),8'(pixels%256),8'hff})
+     $fatal(1,"native thumbnail RGB/order/backpressure pixel=%d got=%h",pixels,data);
     if(!writing || wb!=writing_bank || menu_write!=writing_menu)$fatal(1,"write owner changed");
-    if(menu_write && (pixels%640<160 || pixels%640>=480))begin
+    if(menu_write && !dut.menu_native && (pixels%640<160 || pixels%640>=480))begin
      if(data!==32'h000000ff)$fatal(1,"menu source letterbox");
     end
     pixels++;
    end
    if(source_done && writing)begin
-    if(pixels!=307200)$fatal(1,"incomplete scaled frame %d",pixels);
+    if(pixels!=(menu_write && dut.menu_native?49152:307200))$fatal(1,"incomplete scaled/native frame %d",pixels);
     if(!writing_menu)begin bank_good[wb]=1;bank_pixels[wb]=pixels;end
     delay_finish=13;
    end
@@ -130,6 +145,12 @@ module tb_selector_controller;
   sw=CASE_ID==6;cycles(10);rst=0;
   if(CASE_ID==6)begin menu_ready();sw=0;wait(!dut.menu_active);app_ready(1);end
   else app_ready(meta[2]);
+  if(CASE_ID==16)begin
+   wait(dut.scan_state==0);cycles(100);
+   if(commits<1 || !dut.font_valid || !dut.text_valid)$fatal(1,"deferred resources unavailable");
+   wait(dut.bgm_valid);
+   $display("PASS selector startup: real frame before FONT/TEXT, delayed narration starts");$finish;
+  end
   wait(dut.cache_valid==15);cycles(300);
   if(CASE_ID==10)begin
    sw=1;menu_ready();short4();wait(!dut.menu_active);app_ready(2);
@@ -157,7 +178,10 @@ module tb_selector_controller;
   sw=1;menu_ready();mode=1;cycles(100);
   if(effective!=3 || normal_writes!=before_writes || commits!=before_commits)$fatal(1,"menu changed saved page/caches");
   if(CASE_ID==2)begin
-   next_key();short4();cycles(1000);if(!dut.menu_active || dut.menu_force)$fatal(1,"incomplete scene confirmed");
+   next_key();short4();wait(dut.menu_ready);cycles(100);
+   if(!dut.menu_active || valid!=13)$fatal(1,"incomplete scene not rejected");
+   meta[1]=13;
+   previous_key();
   end
   sw=0;wait(!dut.menu_active);cycles(500);
   if(effective!=3 || dut.effective_auto!=saved_auto || app!=meta[2])$fatal(1,"cancel restore page/AUTO/app page=%d auto=%b saved=%b app=%d wanted=%d",effective,dut.effective_auto,saved_auto,app,meta[2]);
@@ -172,6 +196,38 @@ module tb_selector_controller;
   end
   if(CASE_ID==5)begin
    $display("PASS selector controller case=%d root legacy menu unavailable/cancel",CASE_ID);$finish;
+  end
+  if(CASE_ID==13 || CASE_ID==14 || CASE_ID==15)begin
+   sw=1;menu_ready();short4();
+   if(CASE_ID==15)begin wait(dut.scan_application==2 && wr);sw=0;end
+   else begin
+    wait(dut.menu_rejected);cycles(100);
+    if(!dut.menu_active || valid[0])$fatal(1,"invalid selection escaped menu");
+    sw=0;
+   end
+   wait(!dut.menu_active);app_ready(1);
+   if(dut.resource_directory!=40)$fatal(1,"failed/cancelled selection did not restore publicity");
+   $display("PASS selector failure/cancel case=%0d: menu retained, saved app restored",CASE_ID);$finish;
+  end
+  if(CASE_ID==7 || CASE_ID==8 || CASE_ID==9)begin
+   sw=1;menu_ready();next_key();short4();wait(dut.menu_rejected);cycles(100);
+   if(valid!=13 || !dut.menu_active)$fatal(1,"bad later-stage preflight escaped");
+   meta[1]=13;
+   previous_key();sw=0;wait(!dut.menu_active);app_ready(1);
+  end
+  if(CASE_ID==18)begin
+   sw=1;menu_ready();short4();wait(!dut.menu_active);app_ready(2);sw=0;
+   if(dut.display_kind!=8'h11)$fatal(1,"first frame was not PIC1");
+   wait(dut.cache_failed[1]);$display("PIC2 marked failed cache=%b",dut.cache_valid);
+   wait(dut.cache_valid==13);cycles(200);
+   if(background_failures!=2 || dut.g_scenario.stage!=0 || dut.display_kind!=8'h11)
+    $fatal(1,"background failure changed complete current frame");
+   before_commits=commits;$display("retry PIC2");next_key();
+   wait(dut.load_busy && dut.load_idx==1);
+   if(dut.display_kind!=8'h11 || commits!=before_commits)$fatal(1,"uncached stage switched before completion");
+   wait(dut.g_scenario.stage==1 && !dut.scene_fade);cycles(100);
+   if(dut.display_kind!=8'h12 || dut.cache_failed!=0 || !dut.cache_valid[1])$fatal(1,"manual stage retry failed");
+   $display("PASS selector background: PIC1 entry, two malformed bodies retain frame, other prefetch continues, manual retry commits complete PIC2");$finish;
   end
   for(n=0;n<(CASE_ID==0?4:1);n++)begin
    sw=1;menu_ready();for(q=0;q<n;q++)next_key();
@@ -203,8 +259,9 @@ module tb_selector_controller;
    // Cancel during a real thumbnail transaction from the parameter page.
    // A long menu key must neither change parameters nor rescan on handover.
    short4();if(!dut.scene_auto)$fatal(1,"scene AUTO setup");
-   mode=1;cycles(500);sw=1;
-   wait(menu_write && writing);cycles(100);k2=0;sw=0;
+   mode=1;cycles(500);before_writes=menu_writes;sw=1;menu_ready();
+   if(menu_writes!=before_writes)$fatal(1,"cached menu reloaded pixels");
+   cycles(100);k2=0;sw=0;
    wait(!dut.menu_active);cycles(2200);
    if(!dut.scene_auto || effective!=1 || app!=2 || dut.g_scenario.speed!=saved_speed || !dut.menu_blocked)
     $fatal(1,"loading cancel/parameter page/AUTO/held key");
@@ -216,5 +273,5 @@ module tb_selector_controller;
   end
   $display("PASS selector controller case=%d scenes=%d menuWrites=%d commits=%d reads=%d confirm/cancel/cache/page/AUTO/held keys",CASE_ID,n,menu_writes,commits,reads);$finish;
  end
- initial begin #(64'd3000000000);$display("state scan=%d app=%d backend=%d scene=%d cache=%d load=%d",dut.scan_state,dut.g_application.application.state,dut.g_menu.backend.state,dut.g_scenario.control.state,dut.u_cache_control.phase,dut.u_cache_control.load_state);$fatal(1,"watchdog");end
+ initial begin #(64'd3000000000);$display("state scan=%d app=%d backend=%d scene=%d cache=%d load=%d valid=%b failed=%b paused=%b failures=%d",dut.scan_state,dut.g_application.application.state,dut.g_menu.backend.state,dut.g_scenario.control.state,dut.u_cache_control.phase,dut.u_cache_control.load_state,dut.cache_valid,dut.cache_failed,dut.cache_pause,background_failures);$fatal(1,"watchdog");end
 endmodule

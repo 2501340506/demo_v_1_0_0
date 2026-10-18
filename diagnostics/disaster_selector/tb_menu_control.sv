@@ -2,10 +2,10 @@
 module tb_menu_control;
  reg clk=0,rst=1,sw=1,k1=1,k2=1,k4=1;
  always #5 clk=~clk;
- reg [1:0] mode=3;reg safe=0,ready=1,done=0;reg [3:0] valid=15;
+ reg [1:0] mode=3;reg safe=0,ready=1,done=0,rejected=0;reg [3:0] valid=15;
  wire pending,active,enter,confirm,cancel,blocked;wire [1:0] focus,effective;
  integer entries=0,confirms=0,cancels=0;
- disaster_menu_control #(.CLK_FREQ_HZ(1000)) dut(clk,rst,sw,k1,k2,k4,mode,safe,ready,done,valid,pending,active,enter,confirm,cancel,focus,blocked,effective);
+ disaster_menu_control #(.CLK_FREQ_HZ(1000)) dut(clk,rst,sw,k1,k2,k4,mode,safe,ready,done,rejected,valid,pending,active,enter,confirm,cancel,focus,blocked,effective);
  always @(posedge clk)begin if(enter)entries++;if(confirm)confirms++;if(cancel)cancels++;end
  task cycles(input integer n);repeat(n)@(negedge clk);endtask
  task next_key;begin k2=0;cycles(50);k2=1;cycles(50);end endtask

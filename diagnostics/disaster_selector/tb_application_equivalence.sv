@@ -9,7 +9,7 @@ module tb_application_equivalence;
  genvar g;
  generate for(g=0;g<2;g=g+1)begin:pair
   publicity_app_control #(.MENU_ENABLE(g)) dut(
-   .clk(clk),.rst(rst),.force_request(stimulus[0]),.toggle_request(stimulus[1]),
+   .clk(clk),.rst(rst),.force_target(2'd2),.initial_display(),.force_request(stimulus[0]),.toggle_request(stimulus[1]),
    .retry_request(stimulus[2]),.rescan_request(stimulus[3]),
    .pic_complete(stimulus[4]),.pic_any(stimulus[5]),.edu_complete(stimulus[6]),
    .scan_valid(stimulus[7]),.scan_success(stimulus[8]),.scan_application(stimulus[10:9]),
