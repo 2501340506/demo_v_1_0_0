@@ -19,7 +19,7 @@ def main():
 
 - 当前任务：用户确认方案的本地实现已完成；原目录 feature/thumbnail-fast-start，基线 31de2b0 / v0.22.0-s1-local.1，候选 v0.23.0-s2-local.1。
 - 已完成：四张 THUMB 原生直写、旧卡 PIC1 回退、确认四阶段图头校验、完整 PIC1 先进入、其余后台缓存/手动请求优先/文件失败重试、菜单缓存与取消恢复；EDU1 优先、FONT/TEXT 延后、初次无淡入淡出及音频等待、FAT 卷参数复用，SPI 频率保持。
-- 本地验证：77 份有效 ModelSim 日志、8 项资源工具测试通过；完整 {m['build']}：{timing}，{resources}。134 个源文件逐字节一致，最终物理字模 5796行×21位一致，实际约束未放宽，告警已审阅。[固定候选](releases/v0.23.0/s2-local.1/README.md)。
+- 本地验证：81 份有效 ModelSim 日志、8 项资源工具测试通过；完整 {m['build']}：{timing}，{resources}。134 个源文件逐字节一致，最终物理字模 5796行×21位一致，实际约束未放宽，告警已审阅。[固定候选](releases/v0.23.0/s2-local.1/README.md)。
 - 资源：完整卡包保留原50文件，新增4个 THUMB；增量包仅4图，共590040字节。ZIP成员与源数据逐字节核对，G卡本轮只读、未安装新资源包。当前卡已含前版宋体宣传字幕资源。
 - 当前问题：无本地阻塞；尚未烧录或取得实体屏幕/音频/性能测试。菜单≤1s、确认≤1.5s、上电争取≤2s仅为目标。S0模型周期不含SPI/Flash/显示器，不能换算板上秒数。
 - 下一步：烧录固定 demo.bit，解压增量缩略图到卡根目录，重插卡或KEY3复位；同板同卡同显示器对照各测10次，记录中位数/最大值。核查SW3上电高/快拨/取消、四场景、后台阶段、坏资源及宣传/字幕/音频/AUTO/参数/预警/预览。用户确认具体候选后再建board记录；无正式发布、未合main。
@@ -38,7 +38,7 @@ def main():
 
 SW3四宫格只加载四张256×192缩略图，旧卡回退PIC1；确认检查四阶段图头，完整PIC1显示后进入，其余后台加载。开机优先完整宣传首图，随后准备字幕、字库、声音和后续图片，首次直接出图。
 
-[固定bit及使用](releases/v0.23.0/s2-local.1/README.md) · [验证](releases/v0.23.0/s2-local.1/VALIDATION.md) · [计时与资源](docs/四宫格与开机加速计时及资源说明.md) · [本地归档](docs/history/2026-10-19/thumbnail-fast-start/README.md)。77份有效仿真日志、8项资源测试及完整TD通过：{timing}。新资源包已生成，本轮未写卡。实板速度与视觉/听审待测；1s/1.5s/2s为目标，无board标签、未正式发布或合main。
+[固定bit及使用](releases/v0.23.0/s2-local.1/README.md) · [验证](releases/v0.23.0/s2-local.1/VALIDATION.md) · [计时与资源](docs/四宫格与开机加速计时及资源说明.md) · [本地归档](docs/history/2026-10-19/thumbnail-fast-start/README.md)。81份有效仿真日志、8项资源测试及完整TD通过：{timing}。新资源包已生成，本轮未写卡。实板速度与视觉/听审待测；1s/1.5s/2s为目标，无board标签、未正式发布或合main。
 
 ## 历史开发状态
 
@@ -52,7 +52,7 @@ SW3四宫格只加载四张256×192缩略图，旧卡回退PIC1；确认检查�
 
 - 四宫格新增THUMB.BMP原生256×192路径及自动生成工具；四图共590040字节。旧卡/坏缩略图回退PIC1，确认前不读取PIC2–4完整像素；确认校验四阶段头，首张完整提交后进入，其余后台缓存、请求优先、文件错误保留当前帧并可重试。
 - EDU1首图优先，情景图头按需验证，FONT/TEXT内容首帧后加载，字库就绪才开字幕并从头讲解；首次直接出图、正常转场保留，复用已验证卷参数，SPI频率不改。
-- 77份有效ModelSim日志、资源工具8项测试及完整 {m['build']} 通过；{timing}；{resources}。134源码与最终5796行×21位字模逐字节/逐位核对，约束未放宽，告警已审阅。
+- 81份有效ModelSim日志、资源工具8项测试及完整 {m['build']} 通过；{timing}；{resources}。134源码与最终5796行×21位字模逐字节/逐位核对，约束未放宽，告警已审阅。
 - [固定候选与资源](releases/v0.23.0/s2-local.1/README.md)。完整包原50文件加4图，增量包仅4图，源G卡本轮只读。板测尚未执行，性能目标不是实测结果；无board/正式发布/main合并。[本地归档](docs/history/2026-10-19/thumbnail-fast-start/README.md)。
 
 '''+old, encoding='utf-8')
@@ -60,7 +60,7 @@ SW3四宫格只加载四张256×192缩略图，旧卡回退PIC1；确认检查�
     old = path.read_text(encoding='utf-8')
     assert '状态：实施中' in old
     old = old.replace('状态：实施中；无本轮实板测量。原候选保持可回退，不能用仿真或综合代替板测。',
-        f'状态：S0计时工具/模型基线、S1菜单按需加载、S2宣传首帧加速的本地实现与验证已完成。固定候选 v0.23.0-s2-local.1，{m["build"]}：{timing}；77份有效仿真日志及8项资源测试通过。无本轮实板测量，板级验收待反馈。原候选保持可回退，不能用仿真或综合代替板测。\n\n[固定候选](../releases/v0.23.0/s2-local.1/README.md) · [本地归档](history/2026-10-19/thumbnail-fast-start/README.md)。')
+        f'状态：S0计时工具/模型基线、S1菜单按需加载、S2宣传首帧加速的本地实现与验证已完成。固定候选 v0.23.0-s2-local.1，{m["build"]}：{timing}；81份有效仿真日志及8项资源测试通过。无本轮实板测量，板级验收待反馈。原候选保持可回退，不能用仿真或综合代替板测。\n\n[固定候选](../releases/v0.23.0/s2-local.1/README.md) · [本地归档](history/2026-10-19/thumbnail-fast-start/README.md)。')
     path.write_text(old, encoding='utf-8')
     assert not ARCHIVE.exists()
     ARCHIVE.mkdir(parents=True)

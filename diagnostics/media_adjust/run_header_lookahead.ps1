@@ -1,10 +1,10 @@
-param([string]$RunName='adjust_header_lookahead1')
+param([string]$RunName='adjust_header_lookahead1',[string]$SimRoot='F:/modelsim/win64',[string]$TdRoot='E:/TD')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$RunName"
 if(Test-Path $out){throw 'Choose a new RunName'}
 New-Item -ItemType Directory -Path $out | Out-Null
-$reference=(& git -C $root show '44792e9:user_source/hdl_source/SD/bmp24_decoder.v') -join "`n"
+$reference=(& git -C $root show '31de2b0:user_source/hdl_source/SD/bmp24_decoder.v') -join "`n"
 if($LASTEXITCODE){throw 'Cannot read pre-change decoder'}
 $reference=$reference.Replace('module bmp24_decoder #(','module bmp24_decoder_reference #(')
 [IO.File]::WriteAllText("$out/reference.v",$reference)
@@ -12,7 +12,7 @@ $stream=Get-Content "$root/user_source/hdl_source/SD/bmp_scale_stream.v" -Raw
 $instance=[regex]::Match($stream,'(?s) bmp24_decoder #\(.*?\);').Value
 $instance=$instance.Replace('bmp24_decoder #(','bmp24_decoder_reference #(').Replace(' decoder(',' reference_decoder(')
 $instance=$instance -replace ',\s*\.HEADER_OFFSET_LOOKAHEAD\(1\)',''
-$outputs=@('header_accepted','pixel_valid','pixel_rgb','pixel_x','pixel_y','frame_commit','bmp_done','bmp_error','file_ready','image_width','image_height')
+$outputs=@('header_accepted','pixel_valid','pixel_rgb','pixel_rgba','pixel_x','pixel_y','frame_commit','bmp_done','bmp_error','file_ready','image_width','image_height')
 foreach($port in $outputs){$instance=[regex]::Replace($instance,"\.$port\([^)]*\)",".$port()")}
 $signals=$outputs+@('declared_size','pixel_offset','width','height','pixel_end','header_ok','header_complete','is_32','row_stride','expected_pixels')
 $lhs=($signals | ForEach-Object {"decoder.$_"}) -join ','
@@ -65,7 +65,7 @@ $generic=$generic.Replace('.bmp_done(done),.bmp_error(err));',
  '.bmp_done(done),.bmp_error(err),.pixel_ready(1''b1),.file_ready(),.image_width(),.image_height());')
 # The production replay interface reports end after the final consumed byte.
 # The legacy bench predates that contract; its direct same-cycle end fails
-# identically on 44792e9. Same-cycle upstream end is tested above through buffer.
+# identically on the baseline. Same-cycle upstream end is tested above through buffer.
 $generic=$generic.Replace('ending=(i==send_size-1);','ending=0;')
 $generic=$generic.Replace('repeat(5)@(negedge clk);',
  'ending=1;@(negedge clk);ending=0;repeat(5)@(negedge clk);')
@@ -76,10 +76,10 @@ $genericLhs=($signals | ForEach-Object {"dut.$_"}) -join ','
 $genericCheck="`n$genericReference`n always @(posedge clk) begin #1; if(!rst && {$genericLhs} !== {$rhs}) `$fatal(1,`"generic decoder cycle mismatch`");end`n"
 $generic=$generic.Replace('endmodule',"$genericCheck`nendmodule")
 [IO.File]::WriteAllText("$out/generic_bench.sv",$generic)
-$sim='D:/modelsim/win64';$lib="$out/work".Replace('\','/')
+$sim=$SimRoot;$lib="$out/work".Replace('\','/')
 & "$sim/vlib.exe" $lib *> "$out/library.log"
 $rtl=@('bmp_sector_buffer','bmp_header_check','bmp24_decoder','image_scale_nearest') | ForEach-Object {"$root/user_source/hdl_source/SD/$_.v"}
-& "$sim/vlog.exe" -sv -work $lib D:/TD/anlogic/TD6.2.1/sim_release/common/al_map_lut.v @rtl "$out/reference.v" "$out/stream_checked.v" "$out/stream_bench.sv" "$out/generic_bench.sv" *> "$out/compile.log"
+& "$sim/vlog.exe" -sv -work $lib "$TdRoot/sim_release/common/al_map_lut.v" @rtl "$out/reference.v" "$out/stream_checked.v" "$out/stream_bench.sv" "$out/generic_bench.sv" *> "$out/compile.log"
 if($LASTEXITCODE){throw 'Compile failed'}
 Push-Location $out
 try {

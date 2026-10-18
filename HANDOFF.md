@@ -1,3 +1,15 @@
+# 当前交接：四宫格与开机加速，功能/仿真完成，TD 收敛中（2026-10-19）
+
+- 当前任务：原目录 feature/thumbnail-fast-start，基线31de2b0 / v0.22.0-s1-local.1；13个生产增量文件已实现THUMB直写/旧卡回退/四头预检/PIC1先进入、后台缓存、EDU1优先及可选资源延后。
+- 验证：81份有效ModelSim日志与8项资源工具测试通过；最新缩放10尺寸逐像素、5种字节流、取消及16种解码场景通过。TD09仍Setup−0.302ns/STNS−0.302ns，Hold+0.024ns/HTNS0，不交付。
+- 当前修改：缓存按目标并行计算ready，场景直接使用自己的目标，切断TD09播放器wrap→缓存→scenario握手路径；20万周期×2缓存等价通过，controller21/22共19用例重跑中，并断言新旧场景accept相同。新TD构建待执行，尚无local候选。
+- 资源：full/增量ZIP已生成并逐字节读回；原50文件不变，新增4THUMB共590040字节。G源卡本轮只读。S0最终模型计时current04，实板速度/视觉/声音待测，不将模型周期换算秒数。
+- 下一步：Setup/Hold>0、两TNS=0且资源不超限后，执行audit_s2/check_font_map/review_fast_build，核对134源文件，再冻结s2-local.1、更新归档/提交/标签/推new-origin。不放宽约束，不交付失败bit。
+- 踩坑：TD早期失败/拥塞停止均保留本地；目录/缩放/图头按实测路径分级，恒等LUT修Hold。物理SD超时需菜单重扫/复位，文件坏可重试。诊断磁盘曾满，已NTFS压缩恢复空间；fast_pixels01/selector4.img已还原并逐字节核对，F盘另存备份，无文件丢失。UART默认关，调试需独立构建。
+- 保护：用户TD_project/demo.al、问题小记录.txt、六个旧TD日志、旧候选和G卡不覆盖不提交。不写哈希、不批量删除、无board标签/正式发布/main合并。中文PowerShell管道须显式UTF-8。
+
+## 历史交接
+
 # 当前交接：宣传黑色宋体字幕本地通过、待烧录板测（2026-10-19）
 
 - 当前任务：黑色宋体、字号增大30%、去掉底框。原目录feature/publicity-black-song-font，基线34fce4d / v0.21.0-s1-local.1。

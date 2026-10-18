@@ -521,6 +521,7 @@ always @(posedge clk or posedge rst)begin
  end
 end
 wire ctrl_request_ready,ctrl_request_accept,ctrl_auto_load_request;
+wire [3:0] cache_ready_by_image;
 wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || (PUBLICITY_ENABLE ? (rescan_pending || rescan_raw) : rescan_wait);
 wire ctrl_offer=ctrl_load_request && !controls_blocked && !scene_owns && !transition_block && !preview_intent && !preview_selecting;
@@ -538,7 +539,7 @@ wire cache_offer=!cache_pause && (ctrl_offer || (preview_offer && !scene_preview
 // does not cross the target-dependent cache-ready decode. Scene wins both
 // muxes; on every valid cache offer this selects exactly the old target.
 wire [1:0] cache_target=scene_request?scene_target:preview_target_select?preview_target:ctrl_target_image;
-assign scene_request_accept=scene_request && !cache_pause && ctrl_request_ready && !transition_block;
+assign scene_request_accept=scene_request && !cache_pause && cache_ready_by_image[scene_target] && !transition_block;
 generate if(PREVIEW_ENABLE)begin:g_preview
  media_preview_control control(.clk(clk),.rst(rst),.mode(effective_mode),.scan_busy(scan_busy),
  .first_image_committed(first_image_committed),.transition_busy(transition_busy),.foreground_busy(foreground_busy),
@@ -565,7 +566,7 @@ media_frame_cache_control #(.PAUSE_ENABLE(MENU_ENABLE),.STRICT_FIRST_ENABLE(MENU
  .scan_request(scan_request),.scan_accept(scan_accept),.scan_result_valid(scan_result_valid),
  .scan_success(scan_success),.scan_image_count(img_found_count),.scan_result_ready(scan_result_ready),.scan_busy(scan_busy),
  .request_valid(cache_offer),.request_image(cache_target),
- .request_manual(scene_request || preview_offer || ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.foreground_busy(foreground_busy),
+ .request_manual(scene_request || preview_offer || ctrl_next_pending || ctrl_prev_pending),.request_ready(ctrl_request_ready),.request_ready_by_image(cache_ready_by_image),.foreground_busy(foreground_busy),
  .load_request(load_request),.load_accept(load_accept && !menu_owner),.load_image(load_idx),.load_bank(cache_write_bank),
  .load_result_valid(load_result_valid && !menu_owner),.load_success(load_success),.load_timeout(load_timeout),.load_result_ready(load_result_ready),
  .cancel_request(cancel_request),.cancel_ack(cancel_ack),.communication_fault(1'b0),

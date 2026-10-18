@@ -33,6 +33,9 @@ module tb_selector_controller;
  always @(posedge clk)if(!rst && dut.cache_offer &&
   dut.cache_target!==(dut.scene_request?dut.scene_target:dut.preview_offer?dut.preview_target:dut.ctrl_target_image))
   $fatal(1,"retimed preview selector changed an offered cache target");
+ always @(posedge clk)if(!rst && dut.scene_request &&
+  dut.cache_ready_by_image[dut.scene_target] !== dut.ctrl_request_ready)
+  $fatal(1,"per-image ready changed scenario acceptance");
  reg raw_valid=0,raw_end=0,raw_fail=0;reg [7:0] raw_byte=0;
  reg [31:0] meta[0:2],lbas[0:2047];reg [7:0] disk[0:1048575];
  integer pos=0,slot=-1,k,reads=0,commits=0,background_failures=0;reg serving=0,released=1;

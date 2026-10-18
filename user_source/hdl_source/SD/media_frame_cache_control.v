@@ -21,6 +21,7 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
     input [1:0] request_image,
     input request_manual,
     output request_ready,
+    output [3:0] request_ready_by_image,
     output foreground_busy,
 
     output load_request,
@@ -69,10 +70,17 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
     assign scan_busy = phase != RUN;
     assign storage_busy = load_state != LOAD_IDLE;
     assign foreground_busy = foreground_pending || display_request || committed_valid;
-    assign request_ready = phase == RUN && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault &&
-                           first_image_committed && !foreground_busy &&
-                           ({1'b0,request_image} < image_count) &&
-                           (!storage_stopped || (request_manual && cache_valid[request_image]));
+    wire request_window = phase == RUN && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault &&
+                          first_image_committed && !foreground_busy;
+    // Decode eligibility before selecting the owner target. The scenario
+    // owner can use its own index directly, avoiding the unrelated player
+    // wrap/preview mux in TD09's cache-ready -> scenario sent path.
+    genvar ready_entry;
+    generate for(ready_entry=0;ready_entry<4;ready_entry=ready_entry+1)begin:g_request_ready
+        assign request_ready_by_image[ready_entry] = request_window && (image_count > ready_entry) &&
+                           (!storage_stopped || (request_manual && cache_valid[ready_entry]));
+    end endgenerate
+    assign request_ready = request_ready_by_image[request_image];
     assign load_request = load_state == LOAD_ISSUE;
     assign load_result_ready = load_state == LOAD_WAIT || load_state == LOAD_CANCEL;
     assign cancel_request = load_state == LOAD_CANCEL;

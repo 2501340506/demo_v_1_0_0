@@ -40,6 +40,7 @@ module tb_frame_cache_control;
         .auto_tick(auto_tick),.load_request(player_request),.next_load_request(player_next),
         .previous_load_request(player_previous),.auto_load_request(player_auto),.target_image(player_target)
     );
+    wire [3:0] request_ready_by_image;
     media_frame_cache_control dut (.*);
 
     integer cycles=0, accepted_loads=0, commits=0, completions=0, hits=0, failures=0;
