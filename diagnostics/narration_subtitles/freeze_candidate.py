@@ -64,6 +64,7 @@ def main(name):
     for p in ('tools/publicity/make_narration_subtitles.py','diagnostics/narration_subtitles/run_unit.ps1',
               'diagnostics/narration_subtitles/tb_narration.sv','diagnostics/narration_subtitles/tb_narration_top.sv',
               'diagnostics/narration_subtitles/update_card.py','diagnostics/narration_subtitles/freeze_candidate.py',
+              'diagnostics/narration_subtitles/check_font_map.py','diagnostics/narration_subtitles/review_build.py',
               'diagnostics/bottom_waveform/run_integration.ps1','diagnostics/bottom_waveform/run_td.ps1'):
         copy(ROOT/p,'sources/'+p)
     copy(build/'TD_project/demo.al','reproduce/demo.al')
