@@ -1,0 +1,205 @@
+{
+  "card": "G:\\",
+  "files": [
+    {
+      "file": "宣讲模式/EDU1.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "宣讲模式/EDU2.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "宣讲模式/EDU3.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "宣讲模式/EDU4.BMP",
+      "bytes": 921654
+    },
+    {
+      "file": "宣讲模式/FONT.BIN",
+      "bytes": 1504
+    },
+    {
+      "file": "宣讲模式/TEXT.BIN",
+      "bytes": 102
+    },
+    {
+      "file": "宣讲模式/VOI1.PCM",
+      "bytes": 3782058
+    },
+    {
+      "file": "宣讲模式/VOI2.PCM",
+      "bytes": 3964944
+    },
+    {
+      "file": "宣讲模式/VOI3.PCM",
+      "bytes": 4422354
+    },
+    {
+      "file": "宣讲模式/VOI4.PCM",
+      "bytes": 4591026
+    },
+    {
+      "file": "情景模式/debris_village/FONT.BIN",
+      "bytes": 2112
+    },
+    {
+      "file": "情景模式/debris_village/PIC1.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/debris_village/PIC2.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/debris_village/PIC3.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/debris_village/PIC4.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/debris_village/SND1.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/debris_village/SND2.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/debris_village/SND3.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/debris_village/SND4.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/debris_village/TEXT.BIN",
+      "bytes": 118
+    },
+    {
+      "file": "情景模式/flood_village/FONT.BIN",
+      "bytes": 2080
+    },
+    {
+      "file": "情景模式/flood_village/PIC1.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/flood_village/PIC2.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/flood_village/PIC3.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/flood_village/PIC4.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/flood_village/SND1.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/flood_village/SND2.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/flood_village/SND3.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/flood_village/SND4.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/flood_village/TEXT.BIN",
+      "bytes": 111
+    },
+    {
+      "file": "情景模式/landslide_village/FONT.BIN",
+      "bytes": 1824
+    },
+    {
+      "file": "情景模式/landslide_village/PIC1.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/landslide_village/PIC2.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/landslide_village/PIC3.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/landslide_village/PIC4.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/landslide_village/SND1.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/landslide_village/SND2.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/landslide_village/SND3.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/landslide_village/SND4.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/landslide_village/TEXT.BIN",
+      "bytes": 115
+    },
+    {
+      "file": "情景模式/quake_village/FONT.BIN",
+      "bytes": 2048
+    },
+    {
+      "file": "情景模式/quake_village/PIC1.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/quake_village/PIC2.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/quake_village/PIC3.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/quake_village/PIC4.BMP",
+      "bytes": 1228854
+    },
+    {
+      "file": "情景模式/quake_village/SND1.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/quake_village/SND2.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/quake_village/SND3.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/quake_village/SND4.PCM",
+      "bytes": 768000
+    },
+    {
+      "file": "情景模式/quake_village/TEXT.BIN",
+      "bytes": 115
+    }
+  ]
+}

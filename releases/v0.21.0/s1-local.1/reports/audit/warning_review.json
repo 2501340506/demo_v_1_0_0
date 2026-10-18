@@ -1,0 +1,49 @@
+{
+  "reviewed": true,
+  "font_rom_initialization_verified": true,
+  "comparisons": {
+    "syn_1": {
+      "current_warning_count": 73,
+      "baseline_warning_count": 72,
+      "additions": [
+        "HDL-5314 WARNING: net 'rows' does not have a driver in ../../../user_source/hdl_source/scene/scene_text_overlay.v(LINE)"
+      ],
+      "removed": [],
+      "warning_codes": {
+        "HDL-5370": 11,
+        "HDL-5007": 5,
+        "HDL-5323": 1,
+        "HDL-5317": 3,
+        "HDL-5314": 1,
+        "HDL-5001": 8,
+        "SYN-5013": 10,
+        "SYN-5025": 3,
+        "SYN-5011": 20,
+        "SYN-6577": 1,
+        "SYN-6562": 10
+      }
+    },
+    "phy_1": {
+      "current_warning_count": 7,
+      "baseline_warning_count": 6,
+      "additions": [
+        "PHY-7002 CRITICAL-WARNING: Instance U3/sdram location (164, 288) is not honored. Cell's initial location is not legal at the beginning of ECO placement, and will be moved during placement. Please verify user location constraints through the adc file."
+      ],
+      "removed": [],
+      "warning_codes": {
+        "PHY-7002": 4,
+        "OPT-5011": 1,
+        "OPT-5502": 1,
+        "PHY-5079": 1
+      }
+    }
+  },
+  "review_notes": [
+    "One new synthesis HDL-5314 warning for initialized font ROM array rows; all 4416 rows verified against final physical BRAM INIT/INITP. Existing PHY-7002 at (164,288) repeated three times instead of twice; no other new normalized warnings relative to bottom_wave_td02.",
+    "Existing SDRAM macro placement fallback, device pre-route hold-fix limitation, and one local SDRAM clock remain; final routed setup/hold are positive.",
+    "Existing dangling optimized pins, PLL/clock-buffer warning, asynchronous keys/DDC/segment/UART IO delay omissions and SD input-delay warning retained; no invalid/no-path/ignored constraints or combinational loops.",
+    "SD/HDMI timing exceptions retained; SW3 port/input register each exactly one; optional UART logger absent.",
+    "All 4416 font rows decoded from final physical netlist BRAM INIT/INITP and match generated font exactly. No narration ROM initialization ignored warning.",
+    "Local validation does not cover physical TF/SDRAM data loading, display, or word-level audio alignment; board validation pending."
+  ]
+}

@@ -1,3 +1,11 @@
+# 当前开发阶段：宣讲全文滚动字幕已补卡，固件本地通过
+
+原目录分支 `feature/publicity-narration-subtitles`。新增四页599字完整语音字幕，显示于最大波形上方；仅宣讲显示，随播放滚动，换页/重播从头。G:\宣讲模式\TEXT.BIN 已写入并读回一致，其余49媒体逐字节未变。**需烧录新固件后重插卡/KEY3复位才生效**。
+
+[固定固件与使用](releases/v0.21.0/s1-local.1/README.md) · [验证](releases/v0.21.0/s1-local.1/VALIDATION.md) · [计划](docs/宣讲完整语音字幕计划.md) · [S1归档](docs/history/2026-10-19/publicity-narration-subtitles/README.md)。25项仿真通过；完整TD Setup +0.055ns/Hold +0.024ns、TNS0。实板待反馈，未正式发布或合main；按整段语音时长配速，未做逐字时间戳。
+
+## 历史开发状态
+
 # 当前开发阶段：底部音频波形 S1 本地通过、板测待验收
 
 原目录分支`feature/bottom-audio-waveform`。已将宣讲圆环替换为铺满640像素图片底部的80根紫色音量竖条；宣讲字幕上移，情景/预警/预览/菜单隐藏波形。四张宣讲图去掉来源、版本和圆环占位区。
