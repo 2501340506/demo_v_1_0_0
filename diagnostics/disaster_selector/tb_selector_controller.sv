@@ -28,6 +28,11 @@ module tb_selector_controller;
   .transition_pix_clk(pix),.transition_pix_rst(rst),.transition_frame_start(frame),.transition_commit_done(commit),
   .display_commit_request(display_req),.write_buf_idx(wb),.disp_buf_idx(db),.transition_level(level),
   .write_req(wr),.write_req_ack(ack),.write_ready(permit),.write_en(we),.write_data(data),.SD_MISO(1'b1));
+ // Timing-only mux change must preserve the target on every offered edge,
+ // including offers stalled by the cache. Compare with the previous mux.
+ always @(posedge clk)if(!rst && dut.cache_offer &&
+  dut.cache_target!==(dut.scene_request?dut.scene_target:dut.preview_offer?dut.preview_target:dut.ctrl_target_image))
+  $fatal(1,"retimed preview selector changed an offered cache target");
  reg raw_valid=0,raw_end=0,raw_fail=0;reg [7:0] raw_byte=0;
  reg [31:0] meta[0:2],lbas[0:2047];reg [7:0] disk[0:1048575];
  integer pos=0,slot=-1,k,reads=0,commits=0,background_failures=0;reg serving=0,released=1;

@@ -525,6 +525,7 @@ wire [1:0] ctrl_target_image;
 wire transition_block=transition_busy || (PUBLICITY_ENABLE ? (rescan_pending || rescan_raw) : rescan_wait);
 wire ctrl_offer=ctrl_load_request && !controls_blocked && !scene_owns && !transition_block && !preview_intent && !preview_selecting;
 wire [1:0] preview_target;
+wire preview_target_select;
 wire scene_preview=PUBLICITY_ENABLE && scene_mode;
 wire scene_select_ready;
 wire cache_offer=!cache_pause && (ctrl_offer || (preview_offer && !scene_preview) || (scene_request && !transition_block) || public_offer);
@@ -532,7 +533,11 @@ wire cache_offer=!cache_pause && (ctrl_offer || (preview_offer && !scene_preview
 // manual navigation. The player's default target is already the same next
 // page (including page 4 -> 1). Do not send the AUTO valid/busy decode back
 // through the target mux and the cache's target-dependent ready path.
-wire [1:0] cache_target=scene_request?scene_target:preview_offer?preview_target:ctrl_target_image;
+// rescan_wait inhibits preview, player and publicity offers together. Use
+// the registered preview owner for the target mux so rescan/UI inhibition
+// does not cross the target-dependent cache-ready decode. Scene wins both
+// muxes; on every valid cache offer this selects exactly the old target.
+wire [1:0] cache_target=scene_request?scene_target:preview_target_select?preview_target:ctrl_target_image;
 assign scene_request_accept=scene_request && !cache_pause && ctrl_request_ready && !transition_block;
 generate if(PREVIEW_ENABLE)begin:g_preview
  media_preview_control control(.clk(clk),.rst(rst),.mode(effective_mode),.scan_busy(scan_busy),
@@ -540,11 +545,11 @@ generate if(PREVIEW_ENABLE)begin:g_preview
  .rescan_wait(rescan_wait),.next_event(media_next_request),.previous_event(media_previous_request),.toggle_event(preview_key_toggle),
  .current_image(img_idx),.image_count(image_count),.cache_valid(cache_valid),.cache_banks(cache_banks),
  .request_ready(scene_preview?scene_select_ready:ctrl_request_ready),.request_failed(request_failed),.storage_stopped(timeout_stopped),.display_request(cache_display_request),.display_committed(cache_display_ack),
- .request_valid(preview_offer),.request_image(preview_target),.preview_intent(preview_intent),.selecting(preview_selecting),
+ .request_valid(preview_offer),.request_image(preview_target),.target_select(preview_target_select),.preview_intent(preview_intent),.selecting(preview_selecting),
  .fullscreen_ready(preview_fullscreen_ready),.preview_request(preview_request),.preview_descriptor(preview_descriptor),.preview_ack(preview_ack));
 end else begin:g_no_preview
  assign preview_intent=0;assign preview_selecting=0;assign preview_fullscreen_ready=1;
- assign preview_offer=0;assign preview_target=0;assign preview_request=0;assign preview_descriptor=0;
+ assign preview_offer=0;assign preview_target=0;assign preview_target_select=0;assign preview_request=0;assign preview_descriptor=0;
 end endgenerate
 assign ctrl_request_accept=ctrl_offer && ctrl_request_ready;
 // Capture origin at acceptance, not when queued keys or AUTO state later change.

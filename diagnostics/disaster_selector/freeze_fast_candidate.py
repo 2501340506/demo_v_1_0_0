@@ -9,9 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / 'releases/v0.23.0/s2-local.1'
 BASELINE = '31de2b0'
-RUNS = ('fast_app_equivalence02', 'fast_backend03', 'fast_layer_equivalence01', 'fast_display04',
-        'fast_controller14', 'fast_controller15', 'fast_writer01', 'fast_ui01', 'fast_directories01',
-        'fast_cache_equivalence02', 'fast_m4_01', 'fast_pixels01', 'fast_unit04', 'fast_narration01')
+RUNS = ('fast_app_equivalence02', 'fast_backend03', 'fast_layer_equivalence01', 'fast_display05',
+        'fast_controller16', 'fast_controller17', 'fast_writer01', 'fast_ui01', 'fast_directories01',
+        'fast_cache_equivalence02', 'fast_m4_01', 'fast_pixels01', 'fast_unit04', 'fast_narration01', 'fast_preview05')
 
 
 def read(path):
@@ -49,7 +49,7 @@ def freeze(name):
     assert len(checked) == 134, len(checked)
     changed = subprocess.check_output(['git', 'diff', '--name-only', BASELINE, 'HEAD'], cwd=ROOT, text=True, encoding='utf-8').splitlines()
     production = [p for p in changed if p.startswith('user_source/')]
-    assert len(production) == 11, production
+    assert len(production) == 12, production
     assert not subprocess.check_output(['git', 'diff', 'HEAD', '--', 'user_source'], cwd=ROOT), 'Commit source before freezing'
     area = read(phy/'demo_phy.area')
     resources = {k: int(re.search(r'^#'+k+r'\s+(\d+)', area, re.M)[1]) for k in ('lut', 'reg', 'bram', 'bram32k', 'dsp')}
@@ -63,11 +63,12 @@ def freeze(name):
             if 'PASS ' in log and 'Errors: 0,' in log:
                 assert not re.search(r'\*\* (Fatal|Error):', log)
                 tests.append(source.relative_to(ROOT/'diagnostics/output').as_posix())
-    assert len(tests) == 76, tests
+    assert len(tests) == 77, tests
     copy(phy/'demo.bit', 'demo.bit')
     for path in production:
         copy(ROOT/path, 'sources/'+path)
-    helpers = [p for p in changed if p.startswith(('tools/', 'diagnostics/disaster_selector/', 'diagnostics/publicity_mode/'))]
+    helpers = [p for p in changed if p.startswith(('tools/', 'diagnostics/disaster_selector/', 'diagnostics/publicity_mode/'))
+               or p == 'diagnostics/image_scaling/tb_preview_control.sv']
     for path in helpers:
         copy(ROOT/path, 'sources/'+path)
     copy(build/'TD_project/demo.al', 'reproduce/demo.al')
@@ -91,6 +92,7 @@ def freeze(name):
             source = ROOT/'diagnostics/output'/run/path
             if source.exists():
                 copy(source, 'validation/'+run+'/'+path)
+    copy(ROOT/'diagnostics/output/fast_preview05/mux_proof.txt', 'validation/fast_preview05/mux_proof.txt')
     for run in ('fast_metrics_baseline03', 'fast_metrics_current03'):
         for case in (0, 11, 16):
             copy(ROOT/f'diagnostics/output/{run}/metrics{case}.txt', f'validation/{run}/metrics{case}.txt')

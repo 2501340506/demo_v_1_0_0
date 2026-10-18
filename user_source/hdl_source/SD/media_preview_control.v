@@ -7,7 +7,7 @@ module media_preview_control(
  input [1:0] current_image,input [2:0] image_count,
  input [3:0] cache_valid,input [7:0] cache_banks,
  input request_ready,request_failed,storage_stopped,display_request,display_committed,
- output request_valid,output [1:0] request_image,
+ output request_valid,output [1:0] request_image,output target_select,
  output preview_intent,output selecting,output fullscreen_ready,
  output reg preview_request,output reg [17:0] preview_descriptor,input preview_ack
 );
@@ -18,6 +18,9 @@ module media_preview_control(
  assign preview_intent=entered && !full_view && mode==3 && !scan_busy && !rescan_wait;
  assign selecting=select_pending;
  assign request_valid=offer && !rescan_wait;
+ // Target selection is independent of same-cycle request inhibition. The
+ // owner suppresses every competing non-scene offer during rescan_wait.
+ assign target_select=offer;
  assign request_image=target;
  assign fullscreen_ready=mailbox_idle && !preview_descriptor[17] && !preview_intent;
  wire [17:0] desired={preview_intent,focus,image_count,cache_valid,cache_banks};
