@@ -6,4 +6,4 @@ S1本地实现、仿真和完整TD通过，S2实板反馈待办，不代表正�
 - [固定候选](../../../../releases/v0.22.0/s1-local.1/README.md)
 - [交接](HANDOFF.md) · [验证](VALIDATION.md) · [候选说明](RELEASE.md)
 
-当前分支和本轮plan/local标签按项目流程推送new-origin，结果另行记录，不移动已固定标签。
+Git同步：候选提交4e1b7aa、当前功能分支及v0.22.0-plan.1 / v0.22.0-s1-local.1已成功推送new-origin，并核对远程分支和标签。63个固定交付文件与Git提交逐字节一致；后续文档提交不移动候选标签。未推送无关分支或历史标签。
