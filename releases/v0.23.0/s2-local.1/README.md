@@ -1,0 +1,25 @@
+# 四宫格与开机加速本地候选
+
+候选：`v0.23.0-s2-local.1`；基线 `31de2b0 / v0.22.0-s1-local.1`；首个功能实现提交 `b791d86`，含后续时序修正的冻结源码提交 `b015f1bf53155d7e807d42807548687bad460f1c`。功能分支 `feature/thumbnail-fast-start`。本地仿真和完整 TD 通过，实板显示与耗时待测。
+
+## 使用
+
+1. 烧录本目录固定的 [demo.bit](demo.bit)，不要使用会被覆盖的 TD 运行目录文件。
+2. 现有配套卡只需将 [thumbnail_additions.zip](assets/thumbnail_additions.zip) 解压到 FAT32 卡根目录，增加四个场景的 THUMB.BMP。完整备卡使用 [full_sd_resources.zip](assets/full_sd_resources.zip)，包含原 50 文件和新增四图。两个 ZIP 任选一种；本轮没有写源卡。
+3. 重插卡或 KEY3 复位。SW3=0 检查真实宣传首帧和随后音频/字幕；SW3=1 进入四宫格，KEY1/KEY2 选择、KEY4 确认，拨回 0 取消。确认后完整 PIC1 提交才进入，其余后台缓存。
+
+菜单四图共 590,040 字节。无 THUMB 或其损坏时回退 PIC1，仍不读取 PIC2–4 完整像素。确认会检查四阶段目录与图头；缺阶段/错类型拒绝进入并标为不可用。后台文件失败保持当前完整帧，可手动重试；物理 SD 超时需返回菜单重扫或复位。取消发生在缓存替换后，会重新载入原应用首帧。
+
+开机优先 EDU 图头和完整 EDU1，延后情景图头、FONT/TEXT 内容、后续图及音频，首次直接出图；根目录优先和宣传子目录回退保留，SPI 仍约 16.67 MHz。首帧显示后，字库/字幕就绪才打开覆盖层并从头启动讲解。
+
+## 验证与计时
+
+88 份有效 ModelSim 仿真日志及资源工具 8 项测试通过。完整 `fast_start_td23`：Setup +0.046ns / Hold +0.085ns，STNS/HTNS=0；18176 LUT、12052 寄存器、53 BRAM9k、2 BRAM32k、13 DSP。134 个隔离源文件与工作区逐字节一致，最终物理字模全部 5796 行×21 位核对通过；实际 SDC 与前候选相同。见 [VALIDATION](VALIDATION.md) 和 [MANIFEST](MANIFEST.json)。
+
+菜单 ≤1s、确认 ≤1.5s、开机争取 ≤2s 是实板目标，尚无测量结论。按 [计时与资源说明](board/四宫格与开机加速计时及资源说明.md) 同板同卡同显示器各测 10 次；[空白模板](board/四宫格与开机加速实板计时模板.csv) 未填入任何估测数据。上电总时长包含 Flash 配置和显示器锁定，须与复位后内部耗时分开。UART 默认关闭，分段日志需独立调试构建。
+
+## 复现与回退
+
+从基线恢复未改文件，将 `sources/` 覆盖回原路径；这里只备份相对基线修改的 20 个生产文件和本轮工具/测试。采用 `reproduce/demo.al`，保留用户自己的 GUI 工程；在仓库运行 `diagnostics/bottom_waveform/run_td.ps1 -BuildName <新名称> -Seed 47`，选项以 reports/settings.cfg 为准。构建后运行 audit_s2.ps1、check_font_map.py 和 review_fast_build.py。不能只凭 bitgen 判定验收。
+
+回退烧录 [v0.22.0 固定 bit](../../v0.22.0/s1-local.1/demo.bit)；新增 THUMB 对旧固件无影响，原 PIC/EDU/PCM/FONT/TEXT 内容未改变。当前无 board 标签、未正式发布或合并 main。

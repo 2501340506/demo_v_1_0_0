@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "font_rom_initialization_verified": true,
+  "baseline": "song_td02",
+  "constraints_byte_identical": true,
+  "comparisons": {
+    "syn_1": {
+      "current_warning_count": 73,
+      "baseline_warning_count": 73,
+      "new_signatures": [],
+      "additional_repetitions": [],
+      "removed": []
+    },
+    "phy_1": {
+      "current_warning_count": 7,
+      "baseline_warning_count": 7,
+      "new_signatures": [],
+      "additional_repetitions": [],
+      "removed": []
+    }
+  },
+  "review_notes": [
+    "SDC bytes unchanged from song_td02; no relaxed clocks or new exceptions.",
+    "Existing asynchronous IO delay omissions, SD input delay, local SDRAM clock and placement warnings retained.",
+    "Font INIT/INITP decoded from final physical netlist: 17 BRAMs, 5796 rows x 21 bits match the preceding candidate.",
+    "No new normalized warning signatures; repetition differences listed separately.",
+    "Timing closure is assessed separately with strict positive setup/hold and zero TNS; board performance is pending."
+  ]
+}
