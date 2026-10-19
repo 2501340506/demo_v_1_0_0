@@ -24,7 +24,7 @@ module disaster_menu_backend(
   NEXT=10,HOLD=11,
   RESTORE_ISSUE=12,RESTORE_WAIT=13,RESTORE_DONE=14,
   CONFIRM=15,CONFIRM_WAIT=16,CONFIRM_DONE=17,PREFLIGHT_WAIT=18,EXIT_DISPLAY=19,
-  CONFIRM_SCAN=20,CONFIRM_ISSUE=21,CONFIRM_CHECK=22,RECOVER=23,RECOVER_WAIT=24,ENTRY_CHECK=25;
+  CONFIRM_SCAN=20,CONFIRM_ISSUE=21,CONFIRM_CHECK=22,RECOVER=23,RECOVER_WAIT=24,ENTRY_CHECK=25,CONFIRM_SELECT=26;
  reg [4:0] state,after_clear;
  reg [1:0] scene,saved_app;
  reg [3:0] found;
@@ -123,9 +123,13 @@ module disaster_menu_backend(
      else begin scene<=scene+1'b1;scene_found<=found[scene+2'd1];state<=SCENE_ISSUE;end
     HOLD:if(abort_pending || cancel)state<=chosen?RECOVER:RESTORE_ISSUE;
      else if(confirm && valid[focus])begin
-      selected_directory<=clusters[focus*32+:32];selected_hazard<={1'b0,focus}+3'd1;
-      chosen_focus<=focus;state<=CONFIRM_SCAN;
+      chosen_focus<=focus;state<=CONFIRM_SELECT;
      end
+    // Snapshot the accepted focus before driving the wide selection enables.
+    CONFIRM_SELECT:begin
+     selected_directory<=clusters[chosen_focus*32+:32];selected_hazard<={1'b0,chosen_focus}+3'd1;
+     state<=CONFIRM_SCAN;
+    end
     CONFIRM_SCAN:if(reader_ready)begin
      if(abort_pending)state<=chosen?RECOVER:RESTORE_ISSUE;
      else begin directory<=selected_directory;hazard<=selected_hazard;publicity<=0;state<=CONFIRM_ISSUE;end

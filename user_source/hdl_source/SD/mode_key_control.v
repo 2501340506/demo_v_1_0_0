@@ -100,29 +100,45 @@ module mode_key_control #(
      reg speed_event;
      assign scene_mode=scene_active;
      assign scene_speed=speed_event;
+     // Keep late media/menu readiness out of the wide counter arithmetic.
+     // Tracking and event generation below retain their original clock edges.
+     wire hold_clear=!enable || !playback_armed || press_mode!=mode || rescan_event;
+     always @(posedge clk or posedge rst)begin
+      if(rst)begin hold4<=0;hold1<=0;end
+      else begin
+       if(hold_clear)hold4<=0;
+       else if(mode==0)begin
+        if(s4q && !stable4)hold4<=1;
+        else if(!stable4 && tracking4 && !long4 && hold4<CLK_FREQ_HZ-1)hold4<=hold4+1'b1;
+       end
+       if(hold_clear)hold1<=0;
+       else if(mode==0 && scene_active)begin
+        if(s1q && !stable1)hold1<=1;
+        else if(!stable1 && tracking1 && !long1 && hold1<CLK_FREQ_HZ-1)hold1<=hold1+1'b1;
+       end
+      end
+     end
      always @(posedge clk or posedge rst)begin
       if(rst)begin
        tracking4<=0;long4<=0;s4q<=1;tracking1<=0;long1<=0;s1q<=1;
-       hold4<=0;hold1<=0;application_event<=0;auto_toggle_event<=0;warn_event<=0;speed_event<=0;
+       application_event<=0;auto_toggle_event<=0;warn_event<=0;speed_event<=0;
       end else begin
        s4q<=stable4;s1q<=stable1;application_event<=0;auto_toggle_event<=0;warn_event<=0;speed_event<=0;
        if(!enable || !playback_armed || press_mode!=mode || rescan_event)begin
-        tracking4<=0;tracking1<=0;hold4<=0;hold1<=0;
+        tracking4<=0;tracking1<=0;
        end else begin
         if(mode==0)begin
-         if(s4q && !stable4)begin tracking4<=1;hold4<=1;long4<=0;end
+         if(s4q && !stable4)begin tracking4<=1;long4<=0;end
          else if(!stable4 && tracking4 && !long4)begin
           if(hold4>=CLK_FREQ_HZ-1)begin long4<=1;application_event<=1;end
-          else hold4<=hold4+1'b1;
          end else if(stable4 && tracking4)begin
           if(!long4)auto_toggle_event<=1;
           tracking4<=0;
          end
          if(scene_active)begin
-          if(s1q && !stable1)begin tracking1<=1;hold1<=1;long1<=0;end
+          if(s1q && !stable1)begin tracking1<=1;long1<=0;end
           else if(!stable1 && tracking1 && !long1)begin
            if(hold1>=CLK_FREQ_HZ-1)begin long1<=1;speed_event<=1;end
-           else hold1<=hold1+1'b1;
           end else if(stable1 && tracking1)begin
            if(!long1)warn_event<=1;
            tracking1<=0;
