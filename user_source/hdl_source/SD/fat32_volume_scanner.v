@@ -48,6 +48,13 @@ module fat32_volume_scanner #(
     reg [2:0] cluster_shift;
     reg [31:0] fat_span, current_cluster;
     reg [7:0] dir_sector;
+    // The sector index and cluster size are stable throughout DIR_WAIT.
+    // Prepare its successor decision before the wide LBA mux is enabled.
+    reg dir_more_q;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)dir_more_q<=0;
+        else dir_more_q<=dir_sector+1'b1<sectors_per_cluster;
+    end
     reg [COUNT_BITS-1:0] visited;
     reg dir_end, name_match;
     reg audio_match;
@@ -454,7 +461,7 @@ module fat32_volume_scanner #(
                     // Publicity resources may follow a complete legacy set.
                     // Scan to directory/EOC end even when optional VOI is absent.
                     if(dir_end || (!DIRECTORY_ENABLE && !SCAN_PUBLICITY && resource_valid==4'hf && (!SCAN_AUDIO || (audio_found && snd_valid==4'hf)) && (!SCAN_TEXT || (font_found && text_found))))state<=FINISH;
-                    else if(dir_sector+1'b1<sectors_per_cluster)begin
+                    else if(dir_more_q)begin
                         dir_sector<=dir_sector+1'b1;sector_lba<=sector_lba+1'b1;state<=DIR_REQ;
                     end else begin sector_lba<=fat_start_lba+(current_cluster>>7);state<=FAT_REQ;end
                 end

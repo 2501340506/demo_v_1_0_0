@@ -36,14 +36,13 @@ module image_scale_nearest (
   end else assign ram_input_rgb[data_bit]=in_rgb[data_bit];
  end endgenerate
  wire [10:0] ram_input_x;
- assign ram_input_x[10:6]=in_x[10:6];
- assign ram_input_x[4]=in_x[4];
- assign ram_input_x[2:0]=in_x[2:0];
- // TD10: raw_pipe_x[3] -> line RAM hold was -0.020 ns.
- (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
-  u_line_address3_hold (.o(ram_input_x[3]),.a(in_x[3]));
- (* keep = "true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
-  u_line_address_hold (.o(ram_input_x[5]),.a(in_x[5]));
+ // Direct source-address register/RAM paths have violated hold on bits
+ // 3, 5 and 9 across placements. Pad the whole bus without a clock delay.
+ genvar x_bit;
+ generate for(x_bit=0;x_bit<11;x_bit=x_bit+1)begin:g_line_address_hold
+  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+   u_hold(.o(ram_input_x[x_bit]),.a(in_x[x_bit]));
+ end endgenerate
  reg pixel_black;
  reg row_inside,row_not_top;
  wire col_inside = x>=left && x<right_edge;

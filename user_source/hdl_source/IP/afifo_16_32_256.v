@@ -55,11 +55,10 @@ module wfifo_32_32_512 #(parameter DATA_WIDTH_W = 32,
     // Identity LUTs repair measured BRAM address hold paths without latency.
     wire [ADDR_WIDTH_W-1:0] ram_wr_addr;
     genvar hold_bit;
+    // Different placements expose different bits of the direct address bus.
     generate for(hold_bit=0;hold_bit<ADDR_WIDTH_W;hold_bit=hold_bit+1)begin:g_address_hold
-        if(hold_bit==0 || hold_bit==2 || hold_bit==4 || hold_bit==5 || hold_bit==6 || hold_bit==7)begin:g_delay
-            (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
-                u_hold(.o(ram_wr_addr[hold_bit]),.a(wr_addr[hold_bit]));
-        end else assign ram_wr_addr[hold_bit]=wr_addr[hold_bit];
+        (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+            u_hold(.o(ram_wr_addr[hold_bit]),.a(wr_addr[hold_bit]));
     end endgenerate
     wire wr_en_s ; 
     wire rd_en_s ; 
