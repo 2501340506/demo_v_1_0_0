@@ -66,6 +66,7 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
     reg busy_summary, request_idle;
     reg next_busy_summary, next_first_committed;
     reg free_found, candidate_found;
+    reg [1:0] free_bank, candidate_image;
 
     assign cache_banks = {bank_map[3],bank_map[2],bank_map[1],bank_map[0]};
     assign scan_request = phase == SCAN_ISSUE;
@@ -121,6 +122,13 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
             default: begin end
         endcase
     end
+
+    wire [1:0] allocation_image=foreground_pending?foreground_image:candidate_image;
+    wire allocation_needed=foreground_pending ?
+        (!cache_valid[foreground_image] && !cache_failed[foreground_image]) :
+        (candidate_found && first_image_committed);
+    wire allocation_window=phase==RUN && !rescan_event && !(PAUSE_ENABLE && pause) &&
+        load_state==LOAD_IDLE && !storage_stopped && !communication_fault && !accept_request && free_found;
     always @(posedge clk or posedge rst) begin
         if (rst) begin busy_summary <= 0; request_idle <= 0; end
         else begin
@@ -132,7 +140,12 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
 
     reg [3:0] occupied;
     reg [3:0] cached_reserved, displayed_reserved;
-    reg [1:0] free_bank, candidate_image;
+    wire [3:0] candidate_eligible;
+    genvar candidate_entry;
+    generate for(candidate_entry=0;candidate_entry<4;candidate_entry=candidate_entry+1)begin:g_candidate
+        assign candidate_eligible[candidate_entry] = image_count>candidate_entry &&
+            !cache_valid[candidate_entry] && !cache_failed[candidate_entry];
+    end endgenerate
     integer i, b, n;
     // No eviction during an epoch. The old display bank remains reserved even
     // after rescan invalidates the old directory's cache entries.
@@ -146,12 +159,9 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
         // encoder. Arbitration only needs this bit; do not serialize it
         // through the four bank-selection muxes.
         free_found = !(&occupied); free_bank = 0;
-        candidate_found = 0; candidate_image = 0;
-        for (n=0; n<4; n=n+1) begin
-            if (!candidate_found && n < image_count && !cache_valid[n] && !cache_failed[n]) begin
-                candidate_found = 1; candidate_image = n[1:0];
-            end
-        end
+        candidate_found = |candidate_eligible;
+        candidate_image = candidate_eligible[0]?2'd0:candidate_eligible[1]?2'd1:
+                          candidate_eligible[2]?2'd2:2'd3;
         if (!occupied[0]) free_bank = 0;
         else if (!occupied[1]) free_bank = 1;
         else if (!occupied[2]) free_bank = 2;
@@ -210,6 +220,13 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
             cache_complete_image <= 0; cache_hit_image <= 0; failed_image <= 0;
         end else begin
             cache_complete <= 0; cache_hit <= 0; request_failed <= 0; load_failed <= 0; retry_event <= 0;
+            // Select the target once and share one allocation write path.
+            // LOAD_IDLE makes this mutually exclusive with load completion.
+            if(allocation_window && allocation_needed)begin
+                load_image<=allocation_image;load_bank<=free_bank;
+                bank_map[allocation_image]<=free_bank;
+                retry_used<=0;load_state<=LOAD_ISSUE;
+            end
             if (committed_valid && committed_ready) committed_valid <= 0;
             // Never abort an issued display commit: rescan waits for ownership
             // to transfer before invalidating the directory and allocating banks.
@@ -304,26 +321,11 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
                         end
                         // Do not start background work on the edge accepting a
                         // foreground target. An in-progress file finishes first.
-                        if (!(PAUSE_ENABLE && pause) && load_state == LOAD_IDLE && !storage_stopped && !communication_fault &&
-                            !accept_request && free_found) begin
-                            if (foreground_pending) begin
-                                if (!cache_valid[foreground_image] && !cache_failed[foreground_image]) begin
-                                    load_image <= foreground_image; load_bank <= free_bank;
-                                    bank_map[foreground_image] <= free_bank;
-                                    retry_used <= 0; load_state <= LOAD_ISSUE;
-                                end
-                            end else if (candidate_found) begin
-                                if (!first_image_committed) begin
+                        if (allocation_window && !foreground_pending && candidate_found && !first_image_committed) begin
                                     // A bad first file is retried once, then try
                                     // the next directory entry without losing the old picture.
                                     foreground_pending <= 1; foreground_manual <= 0;
                                     foreground_image <= candidate_image;
-                                end else begin
-                                    load_image <= candidate_image; load_bank <= free_bank;
-                                    bank_map[candidate_image] <= free_bank;
-                                    retry_used <= 0; load_state <= LOAD_ISSUE;
-                                end
-                            end
                         end
                     end
                 end

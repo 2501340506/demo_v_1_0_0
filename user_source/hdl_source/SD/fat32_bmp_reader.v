@@ -122,10 +122,26 @@ module fat32_bmp_reader #(
    (task_cluster[31:1]==0) || task_cluster>max_cluster;
  // The enabled two-table design fans metadata out much further than the
  // legacy reader. Separate the range carry chain from the FSM decision.
- reg selected_bad_q;
+ reg selected_metadata_bad;
+ reg [3:0] selected_gt,selected_eq;
+ wire selected_bad_q=selected_metadata_bad || selected_gt[3] ||
+   (selected_eq[3] && selected_gt[2]) ||
+   (&selected_eq[3:2] && selected_gt[1]) ||
+   (&selected_eq[3:1] && selected_gt[0]);
+ genvar range_byte;
+ generate for(range_byte=0;range_byte<4;range_byte=range_byte+1)begin:g_selected_range
+  always @(posedge clk or posedge rst)begin
+   if(rst)begin selected_gt[range_byte]<=0;selected_eq[range_byte]<=0;end
+   else begin
+    selected_gt[range_byte]<=task_cluster[range_byte*8+:8]>max_cluster[range_byte*8+:8];
+    selected_eq[range_byte]<=task_cluster[range_byte*8+:8]==max_cluster[range_byte*8+:8];
+   end
+  end
+ end endgenerate
  always @(posedge clk or posedge rst)begin
-  if(rst)selected_bad_q<=0;
-  else selected_bad_q<=selected_bad;
+  if(rst)selected_metadata_bad<=0;
+  else selected_metadata_bad<=!mask[candidate[1:0]] ||
+    ((task_size[31:6]==0) && task_size[5:0]<6'd54) || task_cluster[31:1]==0;
  end
  reg [2:0] strict_hazard;
  reg [1:0] found_slot[0:3];   // scanner slot of each accepted image

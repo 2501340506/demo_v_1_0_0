@@ -7,6 +7,7 @@ module tb_stream_equivalence;
  localparam WIDTH=(g<2)?20:32;
  reg rst_n=0,start=0,permit=0;
  reg [31:0] size=0;
+ reg [31:0] first_cluster=2,max_cluster=4096;
  reg [7:0] spc=1;
  reg busy=0,valid=0,done=0;
  reg [7:0] data=0,err=0;
@@ -14,7 +15,7 @@ module tb_stream_equivalence;
  wire [1:0] fb,fd,fv,req;
  wire [7:0] byte_out[0:1],error_out[0:1];
  wire [31:0] offset[0:1],lba[0:1];
- `define PORTS(N) .clk(clk),.rst_n(rst_n),.file_start(start),.data_permit(permit),.first_cluster(32'd2),.file_size(size),.sectors_per_cluster(spc),.fat_start_lba(32'd10),.data_start_lba(32'd100),.max_cluster(32'd4096),.file_busy(fb[N]),.file_done(fd[N]),.file_valid(fv[N]),.file_byte(byte_out[N]),.file_byte_offset(offset[N]),.fs_error(error_out[N]),.sector_req(req[N]),.sector_lba(lba[N]),.sector_busy(busy),.sector_valid(valid),.sector_byte(data),.sector_byte_index(index),.sector_done(done),.sector_error(err)
+ `define PORTS(N) .clk(clk),.rst_n(rst_n),.file_start(start),.data_permit(permit),.first_cluster(first_cluster),.file_size(size),.sectors_per_cluster(spc),.fat_start_lba(32'd10),.data_start_lba(32'd100),.max_cluster(max_cluster),.file_busy(fb[N]),.file_done(fd[N]),.file_valid(fv[N]),.file_byte(byte_out[N]),.file_byte_offset(offset[N]),.fs_error(error_out[N]),.sector_req(req[N]),.sector_lba(lba[N]),.sector_busy(busy),.sector_valid(valid),.sector_byte(data),.sector_byte_index(index),.sector_done(done),.sector_error(err)
  fat32_file_streamer #(.FILE_SIZE_BITS(WIDTH),.DATA_GATE_ENABLE(g%2)) dut(`PORTS(0));
  fat32_file_streamer_reference #(.FILE_SIZE_BITS(WIDTH),.DATA_GATE_ENABLE(g%2)) ref_dut(`PORTS(1));
  `undef PORTS
@@ -68,6 +69,19 @@ module tb_stream_equivalence;
   repeat(3)@(posedge clk);#2;rst_n=1;
   run_file(513,1,0);
   if(files!=101 || bytes<100000 || reads<200)$fatal(1,"stream coverage");
+  // Exercise every comparator byte, equality and carries at the bound.
+  for(k=0;k<128;k++)begin
+   max_cluster=$urandom;
+   case(k%4)
+    0:first_cluster=max_cluster;
+    1:first_cluster=max_cluster+1;
+    2:first_cluster=max_cluster-1;
+    3:first_cluster=$urandom;
+   endcase
+   run_file(1,1,0);
+   if(error_out[0] !== ((first_cluster<2 || first_cluster>max_cluster)?8'h24:8'h00))
+    $fatal(1,"stream range boundary first=%h max=%h error=%h",first_cluster,max_cluster,error_out[0]);
+  end
   $display("PASS stream equivalence width=%0d gate=%0d files=%0d bytes=%0d reads=%0d",WIDTH,g%2,files,bytes,reads);
   complete=1;
  end
