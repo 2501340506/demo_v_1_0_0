@@ -413,6 +413,7 @@ always @(posedge clk or posedge rst)begin
 end
 wire source_done_now,write_finish_now,load_fault,memory_failure;
 wire [2:0] load_fault_code,memory_code;
+wire [7:0] parser_fat_error;
 wire load_busy,foreground_busy,timeout_stopped;
 wire [2:0] image_count;
 wire [3:0] cache_valid,cache_failed;
@@ -705,6 +706,34 @@ media_display_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ),.DIAG_DISPLAY(DIAG_DISPLAY)) u
 reg [2:0] sticky_error;
 reg recovery_active;
 wire diag_commit=cache_display_request && cache_display_ack;
+// Preserve the cause for each logical image: a later background load must not
+// overwrite the diagnostic for the page the user is trying to display.
+// 10..26: sector/FAT error, 40|BMP: decoder/mapping, 80|MEM: writer error.
+reg [7:0] page_error[0:3];
+reg [1:0] diagnostic_target;
+reg [7:0] failed_request_detail;
+integer error_i;
+always @(posedge clk or posedge rst)begin
+ if(rst)begin
+  for(error_i=0;error_i<4;error_i=error_i+1)page_error[error_i]<=0;
+  diagnostic_target<=0;failed_request_detail<=0;
+ end else begin
+  if(scan_accept)begin
+   for(error_i=0;error_i<4;error_i=error_i+1)page_error[error_i]<=0;
+   diagnostic_target<=0;failed_request_detail<=0;
+  end else begin
+   if(cache_offer && ctrl_request_ready)diagnostic_target<=cache_target;
+   if(!menu_owner)begin
+    if(load_result_valid && load_result_ready && load_success)page_error[load_idx]<=0;
+    if(parser_load_error && !menu_discard)
+     page_error[load_idx]<=parser_fat_error!=0?parser_fat_error:{5'b01000,parser_error};
+    if(memory_failure)page_error[load_idx]<={5'b10000,memory_code};
+   end
+   if(request_failed)failed_request_detail<=page_error[diagnostic_target];
+   if(diag_commit)failed_request_detail<=0;
+  end
+ end
+end
 always @(posedge clk or posedge rst) begin
  if(rst) begin sticky_error<=0;recovery_active<=0;end
  else begin
@@ -729,7 +758,9 @@ assign state_code=(scan_state==SC_RESET)?4'd0:
 // error priority/clear behavior; a completed cached switch clears sticky errors.
 assign osd_error_code=(scan_state==SC_RESET)?8'd0:
                       (scan_busy && !sd_init_done)?(sd_init_failed?8'd2:8'd0):
-                      application_error?8'd5:app_rejected?8'd4:{5'd0,sticky_error};
+                      application_error?8'd5:app_rejected?8'd4:
+                      (MENU_ENABLE && sticky_error==3 && failed_request_detail!=0)?failed_request_detail:
+                      {5'd0,sticky_error};
 assign source_frame_done=bmp_load_done && !menu_discard;
 assign source_frame_error=parser_load_error && !menu_discard;
 assign write_en=bmp_data_wr_en && !menu_discard && !parser_cancel && !parser_rst;
@@ -909,7 +940,7 @@ fat32_bmp_reader #(.FAST_START(MENU_ENABLE),.DIRECTORY_ENABLE(MENU_ENABLE),.LOAD
  .scan_start(menu_owner?menu_scan:scan_start_pulse),.scan_done(scan_done),.scan_error(bmp_scan_error),
  .scan_found_valid(scan_found_valid),.scan_found_cluster(scan_found_cluster),.scan_found_size(scan_found_size),.scan_found_total(scan_found_total),
  .load_start(menu_discard?menu_direct:load_start_pulse),.load_cancel(MENU_ENABLE?parser_cancel_q:parser_cancel),.load_cluster(32'd0),.load_size(32'd0),.load_index(menu_owner?menu_load_index:load_idx),
- .loaded_kind(loaded_kind),.load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(),
+ .loaded_kind(loaded_kind),.load_done(bmp_load_done),.load_error(parser_load_error),.bmp_error(parser_error),.fat_error(parser_fat_error),
  .state_code(bmp_state_code),.bmp_width(bmp_width),.bmp_height(bmp_height),.write_req(parser_write_req),.write_req_ack(menu_discard?1'b1:write_req_ack_sync),.write_ready(menu_discard?1'b1:write_ready),
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed),

@@ -16,6 +16,9 @@ module tb_selector_display;
   .SDR_BA(ba),.SDR_ADDR(addr),.SDR_DM(dm),.SDR_DQ(dq));
  sdram_bl4_model memory(.clk(sc),.ras(ras),.cas(cas),.we(we),.ba(ba),.addr(addr),.dm(dm),.dq(dq));
  reg req=1;reg [31:0] desc=32'h15fc00e4;wire ack;
+ reg [1:0] bank=1;reg bank_req=0;wire bank_ack;
+ reg [1:0] shown_bank=1;
+ always @(posedge mem_clk)if(bank_req==bank_ack)shown_bank<=bank;
  wire [31:0] pixel_desc,pixel_data;wire read_req,read_ack,consume,read_finish,underflow;
  wire [2:0] reader_error;wire hs0,vs0,de0,hs,vs,de;wire [9:0] x0,x;wire [23:0] rgb;
  video_timing_data timing(.video_clk(pix_clk),.rst(rst),.read_req(read_req),.read_req_ack(read_ack),
@@ -28,9 +31,9 @@ module tb_selector_display;
   .O_rd_busy(rd_busy),.App_rd_en(rd_en),.App_rd_addr(rd_addr),.refill_priority(),
   .Sdr_rd_en(rd_valid),.Sdr_rd_dout(rd_data),.read_req(read_req),.read_req_ack(read_ack),.read_finish(read_finish),
   .preview_request(req),.preview_descriptor(desc),.preview_ack(ack),.pixel_descriptor(pixel_desc),
-  .display_commit_request(1'b0),.display_commit_ack(),
+  .display_commit_request(bank_req),.display_commit_ack(bank_ack),
   .read_addr_0(21'd0),.read_addr_1(21'd307200),.read_addr_2(21'd614400),.read_addr_3(21'd921600),
-  .read_addr_index(2'd1),.read_len(21'd307200),.read_en(consume),.display_valid(init_done),
+  .read_addr_index(bank),.read_len(21'd307200),.read_en(consume),.display_valid(init_done),
   .read_data(pixel_data),.underflow(underflow),.reader_error(reader_error));
  function [31:0] pattern(input integer kind,tile,col,row);
   pattern={8'(32+kind*64+tile*12),8'(row),8'(col),8'hff};
@@ -60,7 +63,7 @@ module tb_selector_display;
     end
    end else if(pixel_desc[17])begin
     if(rgb!==color(1,t,lx,ly))$fatal(1,"old preview cache n=%d got=%h",n,rgb);
-   end else if(rgb!==color(0,1,n%640,n/640))$fatal(1,"full cache n=%d got=%h",n,rgb);
+   end else if(rgb!==color(0,shown_bank,n%640,n/640))$fatal(1,"full cache bank=%d n=%d got=%h",shown_bank,n,rgb);
    checked++;
    if(n==307199)begin frames++;n=0;end else n++;
   end
@@ -76,9 +79,16 @@ module tb_selector_display;
   wait(frames==1);wait(n==10000);desc=32'h25e400e4;req=~req;
   wait(frames==3);wait(n==10000);desc=32'h300200e4;req=~req;
   wait(frames==5);wait(n==10000);desc=32'h400000e4;req=~req;
-  wait(frames==8);repeat(10)@(negedge pix_clk);
+  wait(frames==8);
+  if(CASE_ID==1)begin
+   for(b=0;b<4;b++)begin
+    wait(n==10000);bank=2'(b);bank_req=~bank_req;
+    wait(bank_req==bank_ack);wait(n==20000);wait(n==0);
+   end
+  end
+  repeat(10)@(negedge pix_clk);
   if(menu_pixels<4*196608 || memory.refresh_count<10)$fatal(1,"coverage");
   $display("PASS selector display: %d pixels, menu=%d, 4 independent slots + old preview/full buffers; frame descriptor stable; refresh=%d",checked,menu_pixels,memory.refresh_count);$finish;
  end
- initial begin #200000000;$fatal(1,"display watchdog");end
+ initial begin #300000000;$fatal(1,"display watchdog");end
 endmodule
