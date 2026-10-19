@@ -15,7 +15,8 @@ module tb_player_equivalence;
  reg  next_event=0;
  reg  previous_event=0;
  reg  auto_toggle_event=0;
-genvar g;generate for(g=0;g<4;g=g+1)begin:pair
+genvar g;generate for(g=0;g<16;g=g+1)begin:pair
+ localparam integer PERIOD = g/4==0 ? 0 : g/4==1 ? 1 : g/4==2 ? 2 : 11;
  wire  auto_play_en[0:1];
  wire  next_pending[0:1];
  wire  previous_pending[0:1];
@@ -25,8 +26,8 @@ genvar g;generate for(g=0;g<4;g=g+1)begin:pair
  wire  previous_load_request[0:1];
  wire  auto_load_request[0:1];
  wire [1:0] target_image[0:1];
-media_player_control #(.AUTO_PLAY_CYCLES(11),.UI_GATE(g%2),.PAUSE_ENABLE(g/2)) dut(.clk(clk),.rst(rst),.enable(enable),.scan_done(scan_done),.display_valid(display_valid),.load_busy(load_busy),.pause(pause),.first_image_committed(first_image_committed),.manual_activity(manual_activity),.request_accept(request_accept),.image_count(image_count),.current_image(current_image),.mode(mode),.next_event(next_event),.previous_event(previous_event),.auto_toggle_event(auto_toggle_event),.auto_play_en(auto_play_en[0]),.next_pending(next_pending[0]),.previous_pending(previous_pending[0]),.auto_tick(auto_tick[0]),.load_request(load_request[0]),.next_load_request(next_load_request[0]),.previous_load_request(previous_load_request[0]),.auto_load_request(auto_load_request[0]),.target_image(target_image[0]));
-media_player_control_reference #(.AUTO_PLAY_CYCLES(11),.UI_GATE(g%2),.PAUSE_ENABLE(g/2)) ref_dut(.clk(clk),.rst(rst),.enable(enable),.scan_done(scan_done),.display_valid(display_valid),.load_busy(load_busy),.pause(pause),.first_image_committed(first_image_committed),.manual_activity(manual_activity),.request_accept(request_accept),.image_count(image_count),.current_image(current_image),.mode(mode),.next_event(next_event),.previous_event(previous_event),.auto_toggle_event(auto_toggle_event),.auto_play_en(auto_play_en[1]),.next_pending(next_pending[1]),.previous_pending(previous_pending[1]),.auto_tick(auto_tick[1]),.load_request(load_request[1]),.next_load_request(next_load_request[1]),.previous_load_request(previous_load_request[1]),.auto_load_request(auto_load_request[1]),.target_image(target_image[1]));
+media_player_control #(.AUTO_PLAY_CYCLES(PERIOD),.UI_GATE(g%2),.PAUSE_ENABLE((g/2)%2)) dut(.clk(clk),.rst(rst),.enable(enable),.scan_done(scan_done),.display_valid(display_valid),.load_busy(load_busy),.pause(pause),.first_image_committed(first_image_committed),.manual_activity(manual_activity),.request_accept(request_accept),.image_count(image_count),.current_image(current_image),.mode(mode),.next_event(next_event),.previous_event(previous_event),.auto_toggle_event(auto_toggle_event),.auto_play_en(auto_play_en[0]),.next_pending(next_pending[0]),.previous_pending(previous_pending[0]),.auto_tick(auto_tick[0]),.load_request(load_request[0]),.next_load_request(next_load_request[0]),.previous_load_request(previous_load_request[0]),.auto_load_request(auto_load_request[0]),.target_image(target_image[0]));
+media_player_control_reference #(.AUTO_PLAY_CYCLES(PERIOD),.UI_GATE(g%2),.PAUSE_ENABLE((g/2)%2)) ref_dut(.clk(clk),.rst(rst),.enable(enable),.scan_done(scan_done),.display_valid(display_valid),.load_busy(load_busy),.pause(pause),.first_image_committed(first_image_committed),.manual_activity(manual_activity),.request_accept(request_accept),.image_count(image_count),.current_image(current_image),.mode(mode),.next_event(next_event),.previous_event(previous_event),.auto_toggle_event(auto_toggle_event),.auto_play_en(auto_play_en[1]),.next_pending(next_pending[1]),.previous_pending(previous_pending[1]),.auto_tick(auto_tick[1]),.load_request(load_request[1]),.next_load_request(next_load_request[1]),.previous_load_request(previous_load_request[1]),.auto_load_request(auto_load_request[1]),.target_image(target_image[1]));
 always @(negedge clk)if(!rst)begin
  if(auto_play_en[0]!==auto_play_en[1])$fatal(1,"config=%d auto_play_en",g);
  if(next_pending[0]!==next_pending[1])$fatal(1,"config=%d next_pending",g);
@@ -65,5 +66,5 @@ end
 rst=1;@(negedge clk);#1;rst=0;enable=1;scan_done=1;display_valid=1;load_busy=0;pause=0;first_image_committed=1;manual_activity=0;image_count=4;current_image=0;mode=0;next_event=0;previous_event=0;auto_toggle_event=1;request_accept=1;
 @(negedge clk);#1;auto_toggle_event=0;repeat(100)@(negedge clk);
 #1;next_event=1;@(negedge clk);#1;next_event=0;repeat(20)@(negedge clk);
-$display("PASS player equivalence 200000 cycles x four UI/PAUSE configurations plus AUTO expiry");$finish;end
+$display("PASS player equivalence 200000 cycles x 16 period/UI/PAUSE configurations plus AUTO expiry");$finish;end
 endmodule

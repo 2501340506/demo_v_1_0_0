@@ -18,7 +18,19 @@ module media_player_control #(parameter integer AUTO_PLAY_CYCLES = 300_000_000, 
  wire auto_allowed = auto_play_en && (image_count > 1) &&
                      !auto_toggle_event && !next_event && !previous_event &&
                      !manual_activity && !next_pending && !previous_pending;
- assign auto_tick = (auto_count == AUTO_PLAY_CYCLES - 1);
+ // Look ahead on the same edge that updates the counter. This removes the
+ // wide terminal-count comparator from the shared request arbitration path.
+ reg auto_tick_reg;
+ assign auto_tick = auto_tick_reg;
+ always @(posedge clk or posedge rst) begin
+   if (rst) auto_tick_reg <= (AUTO_PLAY_CYCLES == 1);
+   else if ((PAUSE_ENABLE && pause) || !enable || mode != mode_seen)
+     auto_tick_reg <= (AUTO_PLAY_CYCLES == 1);
+   else if (available && auto_allowed && (!UI_GATE || mode == 0)) begin
+     if (auto_tick) auto_tick_reg <= (AUTO_PLAY_CYCLES == 1);
+     else auto_tick_reg <= (auto_count == AUTO_PLAY_CYCLES - 2);
+   end else auto_tick_reg <= (AUTO_PLAY_CYCLES == 1);
+ end
  assign next_load_request = available && next_pending;
  assign previous_load_request = available && !next_pending && previous_pending;
  // A mode change restarts the interval; suppress an expiry before acceptance.
