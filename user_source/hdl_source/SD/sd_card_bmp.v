@@ -206,7 +206,15 @@ always @(posedge clk)begin
 end
 wire response_busy=a_busy || a_valid || a_done || response_valid || response_done;
 generate if(SCENE_ENABLE)begin:g_bins
- bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(parser_rst || (MENU_ENABLE && scan_accept)),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
+ // A scan acceptance precedes all BIN starts by directory/header states.
+ // Register its epoch reset locally instead of driving asynchronous resets
+ // through shared-reader/audio/menu arbitration (TD11 recovery path).
+ reg epoch_reset;
+ always @(posedge clk or posedge rst)begin
+  if(rst)epoch_reset<=1;
+  else epoch_reset<=parser_rst || (MENU_ENABLE && scan_accept);
+ end
+ bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(epoch_reset),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
   .font_found(font_found),.text_found(text_found),.font_cluster(font_cluster),.font_size(font_size),
   .text_cluster(text_cluster),.text_size(text_size),.spc(audio_spc),.fat_lba(audio_fat_lba),
   .data_lba(audio_data_lba),.max_cluster(audio_max_cluster),.done(bin_done),
@@ -979,10 +987,21 @@ module publicity_app_control #(parameter MENU_ENABLE=0,FAST_BOOT=0)(
   end else begin
    state<=next_state;app<=next_app;target<=next_target;physical<=next_physical;
    reload<=next_reload;rejected<=next_rejected;settle<=next_settle;
-   if(next_state==RUN || next_state==ERROR)boot_direct<=0;
+   // Decode boundary outputs from the local transition conditions. A full
+   // next_state decode needlessly includes alternate-application arbitration.
+   if(state==RUN || state==ERROR ||
+      ((state==BOOT || state==LOAD) && scan_valid && !scan_success) ||
+      (state==FIRST && (failed || (committed && boot_direct))) ||
+      (state==READY && failed) || (state==FADE_IN && !fade_busy))boot_direct<=0;
    busy<=next_state!=RUN;
-   stop_audio<=next_state!=RUN && next_state!=READY && next_state!=FADE_IN && next_state!=WAIT_IDLE;
-   scene_enable<=next_app==2 && (next_state==RUN || next_state==WAIT_IDLE || next_state==READY || next_state==FADE_IN);
+   case(state)
+    RUN:begin stop_audio<=0;scene_enable<=app==2;end
+    WAIT_IDLE:begin stop_audio<=idle;scene_enable<=app==2 && !idle;end
+    FIRST:begin stop_audio<=failed || !committed;scene_enable<=!failed && committed && target==2;end
+    READY:begin stop_audio<=failed;scene_enable<=app==2 && !failed;end
+    FADE_IN:begin stop_audio<=0;scene_enable<=app==2;end
+    default:begin stop_audio<=1;scene_enable<=0;end
+   endcase
   end
  end
 endmodule

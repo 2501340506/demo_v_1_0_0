@@ -9,8 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / 'releases/v0.23.0/s2-local.1'
 BASELINE = '31de2b0'
-RUNS = ('fast_app_equivalence02', 'fast_backend03', 'fast_layer_equivalence02', 'fast_display07',
-        'fast_controller21', 'fast_controller22', 'fast_writer01', 'fast_ui01', 'fast_directories03',
+RUNS = ('fast_app_equivalence04', 'fast_backend03', 'fast_layer_equivalence02', 'fast_display07',
+        'fast_controller23', 'fast_controller24', 'fast_writer01', 'fast_ui01', 'fast_directories03',
         'fast_cache_equivalence03', 'fast_m4_01', 'fast_pixels01', 'fast_unit05', 'fast_narration01', 'fast_preview05', 'fast_scaler03', 'fast_player_equivalence01', 'fast_header09')
 
 
@@ -98,7 +98,7 @@ def freeze(name):
             if source.exists():
                 copy(source, 'validation/'+run+'/'+path)
     copy(ROOT/'diagnostics/output/fast_preview05/mux_proof.txt', 'validation/fast_preview05/mux_proof.txt')
-    for run in ('fast_metrics_baseline03', 'fast_metrics_current06'):
+    for run in ('fast_metrics_baseline03', 'fast_metrics_current07'):
         for case in (0, 11, 16):
             copy(ROOT/f'diagnostics/output/{run}/metrics{case}.txt', f'validation/{run}/metrics{case}.txt')
     assets = ROOT/'diagnostics/output/fast_resource_pack01'

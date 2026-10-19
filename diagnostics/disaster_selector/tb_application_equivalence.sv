@@ -2,14 +2,14 @@
 module tb_application_equivalence;
  reg clk=0,rst=1;
  always #5 clk=~clk;
- reg [21:0] stimulus=0;
- wire [1:0] app[0:1],target[0:1],ref_app[0:1],ref_target[0:1];
- wire [8:0] outputs[0:1],reference[0:1];
- reg [9:0] visited[0:1];
+ reg [22:0] stimulus=0;
+ wire [1:0] app[0:3],target[0:3],ref_app[0:3],ref_target[0:3];
+ wire [9:0] outputs[0:3],reference[0:3];
+ reg [9:0] visited[0:3];
  genvar g;
- generate for(g=0;g<2;g=g+1)begin:pair
-  publicity_app_control #(.MENU_ENABLE(g)) dut(
-   .clk(clk),.rst(rst),.force_target(2'd2),.initial_display(),.force_request(stimulus[0]),.toggle_request(stimulus[1]),
+ generate for(g=0;g<4;g=g+1)begin:pair
+  publicity_app_control #(.MENU_ENABLE(g%2),.FAST_BOOT(g/2)) dut(
+   .clk(clk),.rst(rst),.force_target(stimulus[22:21]),.initial_display(outputs[g][9]),.force_request(stimulus[0]),.toggle_request(stimulus[1]),
    .retry_request(stimulus[2]),.rescan_request(stimulus[3]),
    .pic_complete(stimulus[4]),.pic_any(stimulus[5]),.edu_complete(stimulus[6]),
    .scan_valid(stimulus[7]),.scan_success(stimulus[8]),.scan_application(stimulus[10:9]),
@@ -20,8 +20,8 @@ module tb_application_equivalence;
    .rejected(outputs[g][2]),.physical(outputs[g][3]),.reload(outputs[g][4]),
    .stop_audio(outputs[g][5]),.scene_enable(outputs[g][6]),
    .fade_request(outputs[g][7]),.release_fade(outputs[g][8]));
-  publicity_app_control_reference #(.MENU_ENABLE(g)) ref_dut(
-   .clk(clk),.rst(rst),.force_request(stimulus[0]),.toggle_request(stimulus[1]),
+  publicity_app_control_reference #(.MENU_ENABLE(g%2),.FAST_BOOT(g/2)) ref_dut(
+   .clk(clk),.rst(rst),.force_target(stimulus[22:21]),.initial_display(reference[g][9]),.force_request(stimulus[0]),.toggle_request(stimulus[1]),
    .retry_request(stimulus[2]),.rescan_request(stimulus[3]),
    .pic_complete(stimulus[4]),.pic_any(stimulus[5]),.edu_complete(stimulus[6]),
    .scan_valid(stimulus[7]),.scan_success(stimulus[8]),.scan_application(stimulus[10:9]),
@@ -41,7 +41,7 @@ module tb_application_equivalence;
  end endgenerate
  integer n;
  initial begin
-  visited[0]=0;visited[1]=0;
+  for(n=0;n<4;n=n+1)visited[n]=0;
   repeat(3)@(negedge clk);
   #1;rst=0;
   for(n=0;n<200000;n=n+1)begin
@@ -50,8 +50,8 @@ module tb_application_equivalence;
    rst=(n%10007)==10006;
   end
   @(negedge clk);
-  if(visited[0]!=10'h3ff || visited[1]!=10'h3ff)$fatal(1,"Missing states %h/%h",visited[0],visited[1]);
-  $display("PASS application equivalence: 200000 cycles x 2 MENU configurations, all 10 states, reset and all boundary outputs");
+  for(n=0;n<4;n=n+1)if(visited[n]!=10'h3ff)$fatal(1,"Missing states config=%d mask=%h",n,visited[n]);
+  $display("PASS application equivalence: 200000 cycles x 4 MENU/FAST_BOOT configurations, all 10 states, reset and all boundary outputs");
   $finish;
  end
 endmodule

@@ -72,11 +72,11 @@ def main():
 
 | 范围 | 日志数 | 内容 |
 |---|---:|---|
-| 控制器 fast_controller21/22 | 19 | 四类16图、PIC1先进入、新/旧/坏THUMB回退、四阶段预检拒绝、确认/取消/失败恢复、可选资源清除、根目录/宣传子目录/旧图回退；case16先提交首帧再FONT/TEXT；case18两次坏PIC2保留PIC1，其他预取继续，手动重试完整提交 |
+| 控制器 fast_controller23/24 | 19 | 四类16图、PIC1先进入、新/旧/坏THUMB回退、四阶段预检拒绝、确认/取消/失败恢复、可选资源清除、根目录/宣传子目录/旧图回退；case16先提交首帧再FONT/TEXT；case18两次坏PIC2保留PIC1，其他预取继续，手动重试完整提交 |
 | 目录 fast_directories03 | 19 | FAT32分区/卷/长目录及资源扫描 |
 | 缓存/参数/预览/字幕/转场等 fast_unit05 | 22 | 原情景、CDC、按键、fade、AUTO、参数、PCM、预览、gap2/5背压 |
 | 音频 fast_m4_01 | 7 | 播放器、metadata、AUTO、stream及共享通路 |
-| 应用/缓存/图层等价 | 3 | fast_app_equivalence02、fast_cache_equivalence03、fast_layer_equivalence02；应用20万周期×两配置 |
+| 应用/缓存/图层等价 | 3 | fast_app_equivalence04、fast_cache_equivalence03、fast_layer_equivalence02；应用20万周期×四个MENU/FAST_BOOT配置 |
 | 播放器逐周期等价 | 1 | fast_player_equivalence01；20万周期×四个UI/PAUSE配置，另含定向AUTO到期，全部状态/输出不变 |
 | 菜单后端/按键 | 2 | fast_backend03、fast_ui01；缓存复用、拒绝重选、取消、上电SW3高/按住确认释放 |
 | 内存/最终像素 | 3 | fast_display07生产SDRAM完整帧、fast_writer01四旧/四原生菜单槽及刷新/取消、fast_pixels01最终菜单RGB/时序 |
@@ -96,7 +96,7 @@ def main():
 
 相对 song_td02：{counts}。现有数组初始化提示、SDRAM放置回退/本地时钟、异步按键/DDC/数码管/UART IO延迟边界、SD输入延迟提示保留。check_timing 无缺失时钟、无效/无路径/被忽略约束及组合环；SW3端口与首级输入寄存器各1，UART默认关闭。SDC逐字节与基线一致；详细计数与重复项见 reports/audit/warning_review.json。
 
-最终物理17个字体BRAM的INIT/INITP逐位解码，276字形×21行共5796行全部21位与v0.22字模相同。依据TD实测路径注册应用scene_enable、菜单退出摘要和宣传目录有效性，缓存标记改为逐项独立更新；预览目标使用已寄存的offer选择，重扫仍门控request_valid，有效请求目标不变；old_rgb[10]、缩放器输入位16及读FIFO本地复位增加恒等LUT，不增加图像流水周期；对应等价/存储专项通过。缩放器宽高比乘积与比较分级寄存，FAT低16位比较拆为8位摘要，宣传图头用sector响应预解码strobe，灾害图层write_slot[4]使用恒等LUT修复Hold；不改变像素流水和输出，缩放初始化增加1周期，逐像素及目录/控制器/显示回归通过。缓存就绪按四目标并行解码，场景使用自身目标判断，避开播放器wrap/预览目标路径；20万周期×2配置缓存等价及19控制器用例的新旧场景握手断言通过。播放器请求接受时的AUTO计数器重复清零已去除，避免缓存/预览仲裁反馈到32位计数器；20万周期×四个UI/PAUSE配置逐周期等价及定向AUTO到期通过。针对TD10实测短路径，缩放行RAM写地址位3和读FIFO写地址位7增加恒等LUT，无额外时钟延迟。
+最终物理17个字体BRAM的INIT/INITP逐位解码，276字形×21行共5796行全部21位与v0.22字模相同。依据TD实测路径注册应用scene_enable、菜单退出摘要和宣传目录有效性，缓存标记改为逐项独立更新；预览目标使用已寄存的offer选择，重扫仍门控request_valid，有效请求目标不变；old_rgb[10]、缩放器输入位16及读FIFO本地复位增加恒等LUT，不增加图像流水周期；对应等价/存储专项通过。缩放器宽高比乘积与比较分级寄存，FAT低16位比较拆为8位摘要，宣传图头用sector响应预解码strobe，灾害图层write_slot[4]使用恒等LUT修复Hold；不改变像素流水和输出，缩放初始化增加1周期，逐像素及目录/控制器/显示回归通过。缓存就绪按四目标并行解码，场景使用自身目标判断，避开播放器wrap/预览目标路径；20万周期×2配置缓存等价及19控制器用例的新旧场景握手断言通过。播放器请求接受时的AUTO计数器重复清零已去除，避免缓存/预览仲裁反馈到32位计数器；20万周期×四个UI/PAUSE配置逐周期等价及定向AUTO到期通过。针对TD10实测短路径，缩放行RAM写地址位3和读FIFO写地址位7增加恒等LUT，无额外时钟延迟。TD11后将BIN加载器epoch复位寄存到本地，扫描接受到BIN加载之间已有目录/图头状态；应用边界输出按当前状态与实际转移条件计算，四配置逐周期等价及全部控制器用例通过。
 
 历史 fast_start_td01：Setup −3.376ns/STNS −109.161ns、Hold −0.020ns/HTNS −0.032ns，失败bit未交付。controller08/09的物理超时注入不符合可重试文件错误模型，之后case18改为两次实际BMP文件内容损坏；10已通过。unit01/02等历史适配器失败保留本地，不计本轮有效通过。
 
@@ -104,7 +104,7 @@ def main():
 
 ## S0 与实板边界
 
-validation/fast_metrics_baseline03 和 fast_metrics_current06 为可重复模型周期基线，case0/11/16。PIC为2×3测试图缩放640×480，THUMB为实际256×192，模型不模拟SPI初始化/Flash/显示器，不能换算卡上秒数。该证据已对最终生产源码重新测量。
+validation/fast_metrics_baseline03 和 fast_metrics_current07 为可重复模型周期基线，case0/11/16。PIC为2×3测试图缩放640×480，THUMB为实际256×192，模型不模拟SPI初始化/Flash/显示器，不能换算卡上秒数。该证据已对最终生产源码重新测量。
 
 实体上电/复位/菜单/确认耗时、屏幕显示、长时运行、声音/字幕听审尚未执行。目标1s/1.5s/2s不是验收结果；实板每项10次，记录中位数/最大值，并核查SW3快速拨动/加载中取消/上电高、四场景/后台未缓存阶段、坏资源与所有原功能。无board标签、无正式发布、不合main。
 ''', encoding='utf-8')
