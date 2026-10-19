@@ -1,0 +1,29 @@
+{
+  "baseline": "8a1dda5",
+  "source_commit": "ae76043130d73b0a604339beb958cc8322b24c9e",
+  "build": "page_error_diag_td01",
+  "metrics_ns": {
+    "SWNS": 0.039,
+    "HWNS": 0.073,
+    "STNS": 0.0,
+    "HTNS": 0.0
+  },
+  "resources": {
+    "lut": 18183,
+    "reg": 12119,
+    "bram": 53,
+    "bram32k": 2,
+    "dsp": 13
+  },
+  "tests": [
+    "page_fix_concurrent01/detail_final.log",
+    "page_fix_concurrent01/diag_final_case0.log",
+    "page_fix_concurrent01/diag_final_case16.log",
+    "page_fix_concurrent01/diag_final_case18.log",
+    "page_fix_concurrent01/diag_final_case19.log",
+    "page_fix_concurrent01/diag_spi_audio19_final.log",
+    "page_fix_concurrent01/case23.log",
+    "page_fix_concurrent01/frame19_retry.log"
+  ],
+  "purpose": "diagnosis only; board root cause and functional repair not confirmed"
+}

@@ -1,0 +1,94 @@
+# vsim -c -quiet -lib work tb_selector_controller glbl -l case23.log -do "run -all; quit -f" -gCASE_ID=23 -gTONE_CLOCK_HZ=25000000 -gBYTE_GAP=48 
+# Start time: 19:30:08 on Oct 19,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2685) [TFMPC] - Too few port connections for 'dut'.  Expected 87, found 57.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'SD_MOSI'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'SD_DCLK'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'SD_nCS'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'transition_wipe'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'transition_active'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'display_valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'osd_error_code'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'auto_play_indicator'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'combo_debug_active'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'combo_event_count'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'diagnostics'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'sd_debug'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'state_code'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_select'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_restore'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_increase'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_decrease'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'menu_native'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_data'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_addr'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_text'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_en'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'text_bytes'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'font_count'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'text_valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'font_valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'publicity_audio_status'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'display_kind'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_meta'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(47): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_state'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(29): (vopt-2685) [TFMPC] - Too few port connections for 'tone'.  Expected 12, found 10.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(29): (vopt-2718) [TFMPC] - Missing connection for port 'blip_active'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(29): (vopt-2718) [TFMPC] - Missing connection for port 'overflow'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# app state= 0 scan= 0 dir=         0 reads=          0 t=              110000
+# app state= 6 scan=13 dir=        40 reads=          8 t=          1964340000
+# cache complete image=0 t=        475484085000
+# app state= 1 scan=13 dir=        40 reads=       1837 t=        475486330000
+# cache complete image=1 t=        993419305000
+# cache complete image=2 t=       1466939055000
+# cache complete image=3 t=       1940458805000
+# all four pages cached t=       1940461790000
+# publicity page=          2 t=       1976596110000
+# publicity page=          3 t=       1978804510000
+# publicity page=          4 t=       1981012920000
+# publicity page=          1 t=       1983221340000
+# backend state=25 scene=0 valid=0000
+# backend state=18 scene=0 valid=0000
+# backend state=18 scene=1 valid=0001
+# backend state=18 scene=2 valid=0011
+# backend state=18 scene=3 valid=0111
+# backend state=11 scene=3 valid=1111
+# backend state=26 scene=3 valid=1111
+# backend state=20 scene=3 valid=1111
+# backend state=21 scene=3 valid=1111
+# backend state=22 scene=3 valid=1111
+# backend state=15 scene=3 valid=1111
+# backend state=16 scene=3 valid=1111
+# app state= 2 scan= 0 dir=        40 reads=       8739 t=       2286348970000
+# app state= 3 scan= 0 dir=        40 reads=       8739 t=       2286348980000
+# app state= 4 scan= 0 dir=        40 reads=       8739 t=       2286370960000
+# app state= 5 scan= 0 dir=        40 reads=       8739 t=       2286370970000
+# app state= 6 scan= 0 dir=        52 reads=       8744 t=       2287598620000
+# cache complete image=0 t=       2916592755000
+# app state= 7 scan= 0 dir=        52 reads=      11182 t=       2916594930000
+# app state= 8 scan= 0 dir=        52 reads=      11183 t=       2916600540000
+# app state= 1 scan= 0 dir=        52 reads=      11183 t=       2916622960000
+# backend state=17 scene=3 valid=1111
+# backend state=19 scene=3 valid=1111
+# cache complete image=1 t=       3545589035000
+# cache complete image=2 t=       4174606215000
+# cache complete image=3 t=       4803623505000
+# PASS selector audio/pages: EDU1-4, PIC1-4 and warning PIC4 actual pixel identity with real mute feedback
+# ** Note: $finish    : ../../disaster_selector/tb_selector_controller.sv(284)
+#    Time: 4803761070 ns  Iteration: 1  Instance: /tb_selector_controller
+# End time: 19:38:06 on Oct 19,2026, Elapsed time: 0:07:58
+# Errors: 0, Warnings: 34

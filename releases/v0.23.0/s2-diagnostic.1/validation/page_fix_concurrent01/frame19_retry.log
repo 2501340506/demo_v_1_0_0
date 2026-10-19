@@ -1,0 +1,149 @@
+# vsim -c -quiet -lib work tb_selector_controller glbl -l frame19_retry.log -do "run -all; quit -f" -gCASE_ID=19 -gFRAME_CYCLES=420000 -gTONE_CLOCK_HZ=25000000 -gHDMI_AUDIO=1 
+# Start time: 19:55:32 on Oct 19,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2685) [TFMPC] - Too few port connections for 'dut'.  Expected 87, found 57.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'SD_MOSI'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'SD_DCLK'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'SD_nCS'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'transition_wipe'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'transition_active'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'display_valid'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'osd_error_code'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'auto_play_indicator'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'combo_debug_active'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'combo_event_count'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'diagnostics'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'sd_debug'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'state_code'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_select'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_restore'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_increase'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_decrease'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'menu_native'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_data'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_addr'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_text'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_en'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'text_bytes'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'font_count'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'text_valid'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'font_valid'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'publicity_audio_status'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'display_kind'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_meta'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_state'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(30): (vopt-2685) [TFMPC] - Too few port connections for 'tone'.  Expected 12, found 10.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(30): (vopt-2718) [TFMPC] - Missing connection for port 'blip_active'.
+# ** Warning: diagnostics/disaster_selector/tb_selector_controller.sv(30): (vopt-2718) [TFMPC] - Missing connection for port 'overflow'.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# app state= 0 scan= 0 dir=         0 reads=          0 t=              110000
+# app state= 6 scan=13 dir=        40 reads=          9 t=            47810000
+# cache complete image=0 t=          6826755000
+# app state= 1 scan=13 dir=        40 reads=         10 t=         33600110000
+# cache complete image=1 t=         40394795000
+# cache complete image=2 t=         47173735000
+# cache complete image=3 t=         53952695000
+# all four pages cached t=         53955680000
+# progress t=        100000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=0 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        200000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        300000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        400000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        500000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# publicity page=          2 t=        588027690000
+# progress t=        600000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=        700000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=        800000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=        900000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=       1000000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=       1100000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# publicity page=          3 t=       1125627690000
+# progress t=       1200000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1300000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1400000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1500000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1600000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# publicity page=          4 t=       1663227690000
+# progress t=       1700000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       1800000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       1900000000000 app= 1 scene=0 audio=0 transition=1 request=1 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2000000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2100000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2200000000000 app= 1 scene=0 audio=0 transition=1 request=0 sent=0 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# publicity page=          1 t=       2200827690000
+# backend state=25 scene=0 valid=0000
+# backend state=18 scene=0 valid=0000
+# backend state=18 scene=1 valid=0001
+# backend state=18 scene=2 valid=0011
+# backend state=18 scene=3 valid=0111
+# backend state=11 scene=3 valid=1111
+# backend state=26 scene=3 valid=1111
+# backend state=20 scene=3 valid=1111
+# backend state=21 scene=3 valid=1111
+# backend state=22 scene=3 valid=1111
+# backend state=15 scene=3 valid=1111
+# backend state=16 scene=3 valid=1111
+# app state= 2 scan= 0 dir=        40 reads=       2344 t=       2218720000000
+# app state= 3 scan= 0 dir=        40 reads=       2344 t=       2218720010000
+# progress t=       2300000000000 app= 3 scene=0 audio=0 transition=0 request=0 sent=0 pause=0 black=0 level=12 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2344
+# progress t=       2400000000000 app= 3 scene=0 audio=0 transition=0 request=0 sent=0 pause=0 black=0 level= 6 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2344
+# app state= 4 scan= 0 dir=        40 reads=       2344 t=       2486400180000
+# app state= 5 scan= 0 dir=        40 reads=       2344 t=       2486400190000
+# app state= 6 scan= 0 dir=        52 reads=       2349 t=       2486426690000
+# cache complete image=0 t=       2493205665000
+# progress t=       2500000000000 app= 6 scene=0 audio=0 transition=0 request=1 sent=0 pause=0 black=1 level= 0 muted=1 fade=1 frame=0 cache=0001 failed=0000 image=0 parser= 0 reads=       2350
+# app state= 7 scan= 0 dir=        52 reads=       2350 t=       2520000110000
+# cache complete image=1 t=       2526779045000
+# cache complete image=2 t=       2560379055000
+# cache complete image=3 t=       2567158005000
+# app state= 8 scan= 0 dir=        52 reads=       2353 t=       2587200130000
+# progress t=       2600000000000 app= 8 scene=1 audio=0 transition=0 request=0 sent=1 pause=0 black=1 level= 0 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       2700000000000 app= 8 scene=1 audio=0 transition=0 request=0 sent=1 pause=0 black=1 level= 6 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       2800000000000 app= 8 scene=1 audio=0 transition=0 request=0 sent=1 pause=0 black=1 level=12 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# app state= 1 scan= 0 dir=        52 reads=       2353 t=       2856000180000
+# backend state=17 scene=3 valid=1111
+# backend state=19 scene=3 valid=1111
+# progress t=       2900000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3000000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3100000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3200000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3300000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3400000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3500000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3600000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3700000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3800000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3900000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4000000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4100000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4200000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4300000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4400000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4500000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4600000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4700000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4800000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4900000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5000000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5100000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5200000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5300000000000 app= 1 scene=2 audio=0 transition=1 request=1 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5400000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5500000000000 app= 1 scene=3 audio=0 transition=1 request=0 sent=1 pause=0 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# PASS selector audio/pages: EDU1-4, PIC1-4 and warning PIC4 actual pixel identity with real mute feedback
+# ** Note: $finish    : E:/form/demo_v_0_0/demo_v_0_0/diagnostics/disaster_selector/tb_selector_controller.sv(308)
+#    Time: 5560801290 ns  Iteration: 1  Instance: /tb_selector_controller
+# End time: 20:01:39 on Oct 19,2026, Elapsed time: 0:06:07
+# Errors: 0, Warnings: 34

@@ -1,0 +1,163 @@
+# vsim -c -quiet -lib work tb_selector_controller glbl -l combined19_retry.log -do "run -all; quit -f" -gREAL_WRITER=1 -gCASE_ID=19 -gTONE_CLOCK_HZ=25000000 -gREAL_READER=1 -gHDMI_AUDIO=1 
+# Start time: 19:38:04 on Oct 19,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(242): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(242): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_16_32_256.v(242): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2685) [TFMPC] - Too few port connections for 'write_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_loader.v(71): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(251): (vopt-2685) [TFMPC] - Too few port connections for 'ram_inst'.  Expected 16, found 14.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(251): (vopt-2718) [TFMPC] - Missing connection for port 'dib'.
+# ** Warning: ../user_source/hdl_source/IP/afifo_32_16_256.v(251): (vopt-2718) [TFMPC] - Missing connection for port 'doa'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2685) [TFMPC] - Too few port connections for 'read_buf'.  Expected 14, found 11.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'aempty'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'afull'.
+# ** Warning: ../user_source/hdl_source/SD/media_frame_reader.v(50): (vopt-2718) [TFMPC] - Missing connection for port 'valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2685) [TFMPC] - Too few port connections for 'dut'.  Expected 87, found 57.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'SD_MOSI'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'SD_DCLK'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'SD_nCS'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'transition_wipe'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'transition_active'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'display_valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'osd_error_code'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'auto_play_indicator'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'combo_debug_active'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'combo_event_count'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'diagnostics'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'sd_debug'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'state_code'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_select'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_restore'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_increase'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'adjust_decrease'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'menu_native'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_data'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_addr'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_text'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'bin_wr_en'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'text_bytes'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'font_count'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'text_valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'font_valid'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'publicity_audio_status'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'display_kind'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_meta'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(59): (vopt-2718) [TFMPC] - Missing connection for port 'scenario_state'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(30): (vopt-2685) [TFMPC] - Too few port connections for 'tone'.  Expected 12, found 10.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(30): (vopt-2718) [TFMPC] - Missing connection for port 'blip_active'.
+# ** Warning: ../../disaster_selector/tb_selector_controller.sv(30): (vopt-2718) [TFMPC] - Missing connection for port 'overflow'.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_init_ref.enc.v(207): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# ** Warning: (vopt-2121) ../user_source/hdl_source/include/sdr_wrrd.enc.v(77): Illegal concatenation of an unsized constant. Will treat it as a 32-bit value.
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# app state= 0 scan= 0 dir=         0 reads=          0 t=              110000
+# app state= 6 scan=13 dir=        40 reads=          9 t=          3325340000
+# cache complete image=0 t=         17086755000
+# app state= 1 scan=13 dir=        40 reads=         10 t=         33889070000
+# cache complete image=1 t=         72297335000
+# progress t=        100000000000 app= 1 black=0 level=16 muted=0 fade=0 frame=0 cache=0011 failed=0000 image=2 parser=10 reads=         15
+# cache complete image=2 t=        113480335000
+# cache complete image=3 t=        152166735000
+# all four pages cached t=        152169720000
+# progress t=        200000000000 app= 1 black=0 level=16 muted=0 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        300000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        400000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        500000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        600000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# progress t=        700000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         16
+# publicity page=          2 t=        705916490000
+# progress t=        800000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=        900000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=       1000000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=       1100000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# progress t=       1200000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         17
+# publicity page=          3 t=       1260316490000
+# progress t=       1300000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1400000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1500000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1600000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1700000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# progress t=       1800000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         18
+# publicity page=          4 t=       1814716490000
+# progress t=       1900000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2000000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2100000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2200000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# progress t=       2300000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=         19
+# publicity page=          1 t=       2369116490000
+# backend state=25 scene=0 valid=0000
+# backend state=18 scene=0 valid=0000
+# backend state=18 scene=1 valid=0001
+# backend state=18 scene=2 valid=0011
+# backend state=18 scene=3 valid=0111
+# backend state=11 scene=3 valid=1111
+# backend state=26 scene=3 valid=1111
+# backend state=20 scene=3 valid=1111
+# backend state=21 scene=3 valid=1111
+# backend state=22 scene=3 valid=1111
+# backend state=15 scene=3 valid=1111
+# backend state=16 scene=3 valid=1111
+# app state= 2 scan= 0 dir=        40 reads=       2344 t=       2392933890000
+# app state= 3 scan= 0 dir=        40 reads=       2344 t=       2392933900000
+# progress t=       2400000000000 app= 3 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2344
+# progress t=       2500000000000 app= 3 black=0 level=10 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2344
+# progress t=       2600000000000 app= 3 black=0 level= 4 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2344
+# app state= 4 scan= 0 dir=        40 reads=       2344 t=       2654688980000
+# app state= 5 scan= 0 dir=        40 reads=       2344 t=       2654688990000
+# app state= 6 scan= 0 dir=        52 reads=       2349 t=       2654715490000
+# cache complete image=0 t=       2693135385000
+# progress t=       2700000000000 app= 6 black=1 level= 0 muted=1 fade=1 frame=0 cache=0001 failed=0000 image=0 parser= 0 reads=       2350
+# app state= 7 scan= 0 dir=        52 reads=       2350 t=       2721889070000
+# cache complete image=1 t=       2760262885000
+# app state= 8 scan= 0 dir=        52 reads=       2352 t=       2789088930000
+# progress t=       2800000000000 app= 8 black=1 level= 0 muted=1 fade=1 frame=0 cache=0011 failed=0000 image=2 parser=10 reads=       2352
+# cache complete image=2 t=       2801448255000
+# cache complete image=3 t=       2840156185000
+# progress t=       2900000000000 app= 8 black=1 level= 6 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3000000000000 app= 8 black=1 level=12 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# app state= 1 scan= 0 dir=        52 reads=       2353 t=       3057888980000
+# backend state=17 scene=3 valid=1111
+# backend state=19 scene=3 valid=1111
+# progress t=       3100000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3200000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3300000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3400000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3500000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3600000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3700000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3800000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       3900000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4000000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4100000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4200000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4300000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4400000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4500000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4600000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4700000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4800000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       4900000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5000000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5100000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5200000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5300000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
+# progress t=       5400000000000 app= 1 black=0 level=16 muted=1 fade=1 frame=0 cache=1111 failed=0000 image=3 parser= 0 reads=       2353
