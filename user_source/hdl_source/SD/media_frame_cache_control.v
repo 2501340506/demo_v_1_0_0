@@ -103,16 +103,20 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
                           (cache_valid[3] && bank_map[3] == b[1:0]) ||
                           (display_valid && current_bank == b[1:0]) ||
                           (storage_busy && load_bank == b[1:0]);
-        free_found = 0; free_bank = 0;
+        // Availability is a parallel reduction, independent of the priority
+        // encoder. Arbitration only needs this bit; do not serialize it
+        // through the four bank-selection muxes.
+        free_found = !(&occupied); free_bank = 0;
         candidate_found = 0; candidate_image = 0;
         for (n=0; n<4; n=n+1) begin
-            if (!free_found && !occupied[n]) begin
-                free_found = 1; free_bank = n[1:0];
-            end
             if (!candidate_found && n < image_count && !cache_valid[n] && !cache_failed[n]) begin
                 candidate_found = 1; candidate_image = n[1:0];
             end
         end
+        if (!occupied[0]) free_bank = 0;
+        else if (!occupied[1]) free_bank = 1;
+        else if (!occupied[2]) free_bank = 2;
+        else if (!occupied[3]) free_bank = 3;
     end
 
     // Decode each entry independently. Dynamic partial vector writes infer

@@ -59,6 +59,7 @@ module fat32_file_streamer #(
     wire next_range_bad = next_invalid || next_hi_gt || (next_hi_eq && next_lo_gt);
     (* keep = "true" *) reg [31:0] fat_value_latched, fat_cluster_snapshot;
     reg [FILE_SIZE_BITS-1:0] remaining_bytes;
+    reg remaining_empty, remaining_one;
     reg [7:0] sector_in_cluster;
     reg [8:0] fat_entry_offset;
     reg [7:0] fat_byte0, fat_byte1, fat_byte2, fat_byte3;
@@ -120,6 +121,7 @@ module fat32_file_streamer #(
             next_cluster <= 32'd0;
             next_eoc<=0;next_invalid<=0;next_hi_gt<=0;next_hi_eq<=0;next_lo_gt<=0;next_self<=0;fat_value_latched<=0;fat_cluster_snapshot<=0;
             remaining_bytes <= 32'd0;
+            remaining_empty <= 1; remaining_one <= 0;
             sector_in_cluster <= 8'd0;
             fat_entry_offset <= 9'd0;
             fat_byte0 <= 8'd0;
@@ -145,6 +147,10 @@ module fat32_file_streamer #(
                 file_byte <= sector_byte;
                 file_byte_offset <= emitted_offset;
                 remaining_bytes <= remaining_bytes - 1'b1;
+                // Predict the post-byte predicates on the same edge as the
+                // decrement, keeping EOF and sector requests cycle identical.
+                remaining_empty <= remaining_bytes == 1;
+                remaining_one <= remaining_bytes == 2;
             end
 
             if (state == ST_FAT_WAIT && sector_valid) begin
@@ -163,6 +169,8 @@ module fat32_file_streamer #(
                     fs_error <= ERR_NONE;
                     file_byte_offset <= 32'd0;
                     remaining_bytes <= file_size;
+                    remaining_empty <= file_size[FILE_SIZE_BITS-1:0] == 0;
+                    remaining_one <= file_size[FILE_SIZE_BITS-1:0] == 1;
                     sector_in_cluster <= 8'd0;
                     chain_count <= 1;
                     size_latched <= file_size;
@@ -198,8 +206,7 @@ module fat32_file_streamer #(
                 ST_DATA_WAIT: if (sector_done) begin
                     if (sector_error != 0) begin
                         finish_with_error(ERR_SECTOR);
-                    end else if (remaining_bytes == 0 ||
-                                 (remaining_bytes == 1 && sector_valid)) begin
+                    end else if (remaining_empty || (remaining_one && sector_valid)) begin
                         // Directory size is authoritative; no extra FAT read at EOF.
                         state <= ST_FINISH;
                     end else if (sector_in_cluster + 1'b1 < sectors_per_cluster) begin
