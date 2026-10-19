@@ -6,8 +6,8 @@
 // reader actually committed at a frame boundary, not merely queued a target.
 // Cancel supersedes an offered/accepted load and is held until cancel_ack;
 // that acknowledgement must mean source stopped, burst finished and FIFO clear.
-module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
- input pause,
+module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=0)(
+ input pause,strict_first,
     input clk, rst,
     input rescan_event,
     output scan_request,
@@ -21,6 +21,7 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
     input [1:0] request_image,
     input request_manual,
     output request_ready,
+    output [3:0] request_ready_by_image,
     output foreground_busy,
 
     output load_request,
@@ -69,10 +70,17 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
     assign scan_busy = phase != RUN;
     assign storage_busy = load_state != LOAD_IDLE;
     assign foreground_busy = foreground_pending || display_request || committed_valid;
-    assign request_ready = phase == RUN && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault &&
-                           first_image_committed && !foreground_busy &&
-                           ({1'b0,request_image} < image_count) &&
-                           (!storage_stopped || (request_manual && cache_valid[request_image]));
+    wire request_window = phase == RUN && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault &&
+                          first_image_committed && !foreground_busy;
+    // Decode eligibility before selecting the owner target. The scenario
+    // owner can use its own index directly, avoiding the unrelated player
+    // wrap/preview mux in TD09's cache-ready -> scenario sent path.
+    genvar ready_entry;
+    generate for(ready_entry=0;ready_entry<4;ready_entry=ready_entry+1)begin:g_request_ready
+        assign request_ready_by_image[ready_entry] = request_window && (image_count > ready_entry) &&
+                           (!storage_stopped || (request_manual && cache_valid[ready_entry]));
+    end endgenerate
+    assign request_ready = request_ready_by_image[request_image];
     assign load_request = load_state == LOAD_ISSUE;
     assign load_result_ready = load_state == LOAD_WAIT || load_state == LOAD_CANCEL;
     assign cancel_request = load_state == LOAD_CANCEL;
@@ -86,27 +94,55 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
     // No eviction during an epoch. The old display bank remains reserved even
     // after rescan invalidates the old directory's cache entries.
     always @* begin
-        occupied = 0;
+        // Decode each physical bank in parallel. The equivalent dynamic
+        // bit writes formed a serial mux chain on TD25's allocation path.
         for (b=0; b<4; b=b+1)
-            if (cache_valid[b]) occupied[bank_map[b]] = 1'b1;
-        if (display_valid) occupied[current_bank] = 1'b1;
-        if (storage_busy) occupied[load_bank] = 1'b1;
-        free_found = 0; free_bank = 0;
+            occupied[b] = (cache_valid[0] && bank_map[0] == b[1:0]) ||
+                          (cache_valid[1] && bank_map[1] == b[1:0]) ||
+                          (cache_valid[2] && bank_map[2] == b[1:0]) ||
+                          (cache_valid[3] && bank_map[3] == b[1:0]) ||
+                          (display_valid && current_bank == b[1:0]) ||
+                          (storage_busy && load_bank == b[1:0]);
+        // Availability is a parallel reduction, independent of the priority
+        // encoder. Arbitration only needs this bit; do not serialize it
+        // through the four bank-selection muxes.
+        free_found = !(&occupied); free_bank = 0;
         candidate_found = 0; candidate_image = 0;
         for (n=0; n<4; n=n+1) begin
-            if (!free_found && !occupied[n]) begin
-                free_found = 1; free_bank = n[1:0];
-            end
             if (!candidate_found && n < image_count && !cache_valid[n] && !cache_failed[n]) begin
                 candidate_found = 1; candidate_image = n[1:0];
             end
         end
+        if (!occupied[0]) free_bank = 0;
+        else if (!occupied[1]) free_bank = 1;
+        else if (!occupied[2]) free_bank = 2;
+        else if (!occupied[3]) free_bank = 3;
     end
+
+    // Decode each entry independently. Dynamic partial vector writes infer
+    // serial priority muxes through request arbitration in the TD mapper.
+    // Preserve the original load -> phase -> manual-clear priority exactly.
+    genvar entry;
+    generate for(entry=0;entry<4;entry=entry+1)begin:g_cache_flags
+        always @(posedge clk or posedge rst)begin
+            if(rst)begin cache_valid[entry]<=0;cache_failed[entry]<=0;end
+            else if(phase==QUIESCE && load_state==LOAD_IDLE && !display_request && !committed_valid)begin
+                cache_valid[entry]<=0;cache_failed[entry]<=0;
+            end else begin
+                if(!stop_load && load_state==LOAD_WAIT && load_result_valid && !load_timeout && load_image==entry)begin
+                    if(load_success)begin cache_valid[entry]<=1;cache_failed[entry]<=0;end
+                    else if(retry_used)cache_failed[entry]<=1;
+                end
+                if(phase==RUN && !rescan_event && accept_request && request_manual && request_image==entry)
+                    cache_failed[entry]<=0;
+            end
+        end
+    end endgenerate
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             phase <= SCAN_ISSUE; load_state <= LOAD_IDLE;
-            image_count <= 0; image_last <= 3'd7; cache_valid <= 0; cache_failed <= 0;
+            image_count <= 0; image_last <= 3'd7;
             for (i=0; i<4; i=i+1) bank_map[i] <= 0;
             foreground_pending <= 0; foreground_manual <= 0; foreground_image <= 0; retry_used <= 0;
             load_image <= 0; load_bank <= 0; storage_stopped <= 0;
@@ -140,8 +176,6 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
                         load_state <= LOAD_IDLE;
                         load_failed <= 1; failed_image <= load_image;
                     end else if (load_success) begin
-                        cache_valid[load_image] <= 1;
-                        cache_failed[load_image] <= 0;
                         cache_complete <= 1; cache_complete_image <= load_image;
                         load_state <= LOAD_IDLE;
                     end else if (!retry_used) begin
@@ -149,7 +183,7 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
                         retry_event <= 1;
                         load_state <= LOAD_ISSUE;
                     end else begin
-                        cache_failed[load_image] <= 1;
+                        if(STRICT_FIRST_ENABLE && strict_first && !first_image_committed)storage_stopped<=1;
                         load_failed <= 1; failed_image <= load_image;
                         load_state <= LOAD_IDLE;
                     end
@@ -172,7 +206,7 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
                     end
                 end
                 QUIESCE: if (load_state == LOAD_IDLE && !display_request && !committed_valid) begin
-                    cache_valid <= 0; cache_failed <= 0; image_count <= 0; image_last <= 3'd7;
+                    image_count <= 0; image_last <= 3'd7;
                     foreground_pending <= 0; first_image_committed <= 0;
                     storage_stopped <= 0;
                     phase <= SCAN_ISSUE;
@@ -185,7 +219,6 @@ module media_frame_cache_control_reference #(parameter PAUSE_ENABLE=0)(
                             foreground_pending <= 1;
                             foreground_manual <= request_manual;
                             foreground_image <= request_image;
-                            if (request_manual) cache_failed[request_image] <= 0;
                             if (cache_valid[request_image]) begin
                                 cache_hit <= 1; cache_hit_image <= request_image;
                             end

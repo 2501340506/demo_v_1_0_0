@@ -63,15 +63,17 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
     reg [1:0] foreground_image;
     reg [2:0] image_last;   // always image_count-1, written on the same edges
     reg retry_used;
+    reg busy_summary, request_idle;
+    reg next_busy_summary, next_first_committed;
+    reg free_found, candidate_found;
 
     assign cache_banks = {bank_map[3],bank_map[2],bank_map[1],bank_map[0]};
     assign scan_request = phase == SCAN_ISSUE;
     assign scan_result_ready = phase == SCAN_WAIT;
     assign scan_busy = phase != RUN;
     assign storage_busy = load_state != LOAD_IDLE;
-    assign foreground_busy = foreground_pending || display_request || committed_valid;
-    wire request_window = phase == RUN && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault &&
-                          first_image_committed && !foreground_busy;
+    assign foreground_busy = busy_summary;
+    wire request_window = request_idle && !(PAUSE_ENABLE && pause) && !rescan_event && !communication_fault;
     // Decode eligibility before selecting the owner target. The scenario
     // owner can use its own index directly, avoiding the unrelated player
     // wrap/preview mux in TD09's cache-ready -> scenario sent path.
@@ -87,8 +89,49 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
     wire accept_request = request_valid && request_ready;
     wire stop_load = phase == QUIESCE || (phase == RUN && rescan_event) || communication_fault;
 
+    // Summarize the next ownership state on its update edge. External pause,
+    // rescan and fault remain immediate gates; availability has no extra cycle.
+    // This keeps the cache state decode out of preview/player request feedback.
+    always @* begin
+        next_busy_summary = foreground_pending || display_request || committed_valid;
+        next_first_committed = first_image_committed;
+        if (committed_valid && committed_ready && !foreground_pending && !display_request)
+            next_busy_summary = 0;
+        if (display_request && display_ack) begin
+            next_busy_summary = 1;
+            next_first_committed = 1;
+        end
+        case (phase)
+            SCAN_WAIT: if (scan_result_valid && scan_success && scan_image_count != 0)
+                next_busy_summary = 1;
+            QUIESCE: if (load_state == LOAD_IDLE && !display_request && !committed_valid) begin
+                next_busy_summary = 0;
+                next_first_committed = 0;
+            end
+            RUN: if (!rescan_event) begin
+                if (accept_request) next_busy_summary = 1;
+                if (foreground_pending && !display_request && !committed_valid && !cache_valid[foreground_image] &&
+                    (storage_stopped || communication_fault ||
+                     (cache_failed[foreground_image] && (foreground_manual || !first_image_committed))))
+                    next_busy_summary = 0;
+                if (!(PAUSE_ENABLE && pause) && load_state == LOAD_IDLE && !storage_stopped && !communication_fault &&
+                    !accept_request && free_found && !foreground_pending && candidate_found && !first_image_committed)
+                    next_busy_summary = 1;
+            end
+            default: begin end
+        endcase
+    end
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin busy_summary <= 0; request_idle <= 0; end
+        else begin
+            busy_summary <= next_busy_summary;
+            request_idle <= ((phase == RUN && !rescan_event) || (phase == SCAN_WAIT && scan_result_valid)) &&
+                            next_first_committed && !next_busy_summary;
+        end
+    end
+
     reg [3:0] occupied;
-    reg free_found, candidate_found;
+    reg [3:0] cached_reserved, displayed_reserved;
     reg [1:0] free_bank, candidate_image;
     integer i, b, n;
     // No eviction during an epoch. The old display bank remains reserved even
@@ -97,11 +140,7 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
         // Decode each physical bank in parallel. The equivalent dynamic
         // bit writes formed a serial mux chain on TD25's allocation path.
         for (b=0; b<4; b=b+1)
-            occupied[b] = (cache_valid[0] && bank_map[0] == b[1:0]) ||
-                          (cache_valid[1] && bank_map[1] == b[1:0]) ||
-                          (cache_valid[2] && bank_map[2] == b[1:0]) ||
-                          (cache_valid[3] && bank_map[3] == b[1:0]) ||
-                          (display_valid && current_bank == b[1:0]) ||
+            occupied[b] = cached_reserved[b] || displayed_reserved[b] ||
                           (storage_busy && load_bank == b[1:0]);
         // Availability is a parallel reduction, independent of the priority
         // encoder. Arbitration only needs this bit; do not serialize it
@@ -118,6 +157,24 @@ module media_frame_cache_control #(parameter PAUSE_ENABLE=0,STRICT_FIRST_ENABLE=
         else if (!occupied[2]) free_bank = 2;
         else if (!occupied[3]) free_bank = 3;
     end
+
+    // Physical reservations change only on a successful load, epoch clear,
+    // or display acknowledgement. Store those decodes on the very same edge,
+    // avoiding bank_map -> occupancy -> bank_map arbitration feedback.
+    genvar physical_bank;
+    generate for(physical_bank=0;physical_bank<4;physical_bank=physical_bank+1)begin:g_reservations
+        always @(posedge clk or posedge rst)begin
+            if(rst)begin cached_reserved[physical_bank]<=0;displayed_reserved[physical_bank]<=0;end
+            else begin
+                if(display_request && display_ack)
+                    displayed_reserved[physical_bank]<=display_bank==physical_bank;
+                if(phase==QUIESCE && load_state==LOAD_IDLE && !display_request && !committed_valid)
+                    cached_reserved[physical_bank]<=0;
+                else if(!stop_load && load_state==LOAD_WAIT && load_result_valid && !load_timeout && load_success && load_bank==physical_bank)
+                    cached_reserved[physical_bank]<=1;
+            end
+        end
+    end endgenerate
 
     // Decode each entry independently. Dynamic partial vector writes infer
     // serial priority muxes through request arbitration in the TD mapper.

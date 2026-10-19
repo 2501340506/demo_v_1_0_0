@@ -124,9 +124,13 @@ module fat32_volume_scanner #(
        end
     end
     reg [31:0] requested_directory;
+    reg requested_root;
     always @(posedge clk or negedge rst_n)begin
-     if(!rst_n)requested_directory<=0;
-     else if(state==IDLE && scan_start)requested_directory<=DIRECTORY_ENABLE?directory_cluster:32'd0;
+     if(!rst_n)begin requested_directory<=0;requested_root<=1;end
+     else if(state==IDLE && scan_start)begin
+      requested_directory<=DIRECTORY_ENABLE?directory_cluster:32'd0;
+      requested_root<=!DIRECTORY_ENABLE || directory_cluster==0;
+     end
     end
     assign scan_busy=(state!=IDLE);
 
@@ -428,7 +432,7 @@ module fat32_volume_scanner #(
                         dir_hi_gt<=requested_directory[31:16]>max_cluster[31:16];
                         dir_hi_eq<=requested_directory[31:16]==max_cluster[31:16];
                         dir_lo_gt<=requested_directory[15:0]>max_cluster[15:0];
-                        dir_small<=requested_directory!=0 && requested_directory<2;
+                        dir_small<=requested_directory==1;
                         capacity_hi_gt<={7'd0,max_cluster[31:23]}>fat_sectors[31:16];
                         capacity_hi_eq<={7'd0,max_cluster[31:23]}==fat_sectors[31:16];
                         capacity_lo_ge<=max_cluster[22:7]>=fat_sectors[15:0];
@@ -449,7 +453,7 @@ module fat32_volume_scanner #(
                 end
                 LAYOUT_ACCEPT:begin
                     if(layout_bad)fail(ERR_BPB);
-                    else begin geometry_valid<=1;current_cluster<=requested_directory==0?root_cluster:requested_directory;visited<=1;dir_sector<=0;state<=ROOT;end
+                    else begin geometry_valid<=1;current_cluster<=requested_root?root_cluster:requested_directory;visited<=1;dir_sector<=0;state<=ROOT;end
                 end
                 ROOT:begin cluster_offset<=current_cluster-2;shift_count<=cluster_shift;state<=ROOT_SHIFT;end
                 ROOT_SHIFT:if(shift_count!=0)begin cluster_offset<={cluster_offset[30:0],1'b0};shift_count<=shift_count-1'b1;end
