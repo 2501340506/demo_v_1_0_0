@@ -34,13 +34,11 @@ function [1:0] next_index_limited;
     input [1:0] cur;
     input [2:0] count;
     begin
-        case (count)
-            3'd0: next_index_limited = 2'd0;
-            3'd1: next_index_limited = 2'd0;
-            3'd2: next_index_limited = (cur == 2'd1) ? 2'd0 : (cur + 2'd1);
-            3'd3: next_index_limited = (cur == 2'd2) ? 2'd0 : (cur + 2'd1);
-            default: next_index_limited = (cur == 2'd3) ? 2'd0 : (cur + 2'd1);
-        endcase
+        // Direct bit equations avoid cascaded count/current-index muxes.
+        // Equivalent for every 3-bit count and 2-bit current index.
+        next_index_limited[0] = (count > 1) && !cur[0] && !(count == 3 && cur[1]);
+        next_index_limited[1] = (count > 1) && (cur[1] ^ cur[0]) &&
+                                !(count == 2 && !cur[1]) && !(count == 3 && cur[1]);
     end
 endfunction
 
@@ -48,13 +46,8 @@ function [1:0] prev_index_limited;
     input [1:0] cur;
     input [2:0] count;
     begin
-        case (count)
-            3'd0: prev_index_limited = 2'd0;
-            3'd1: prev_index_limited = 2'd0;
-            3'd2: prev_index_limited = (cur == 2'd0) ? 2'd1 : (cur - 2'd1);
-            3'd3: prev_index_limited = (cur == 2'd0) ? 2'd2 : (cur - 2'd1);
-            default: prev_index_limited = (cur == 2'd0) ? 2'd3 : (cur - 2'd1);
-        endcase
+        prev_index_limited[0] = (count > 1) && !cur[0] && !(count == 3 && !cur[1]);
+        prev_index_limited[1] = (count > 1) && ((cur == 3) || ((cur == 0) && count != 2));
     end
 endfunction
 

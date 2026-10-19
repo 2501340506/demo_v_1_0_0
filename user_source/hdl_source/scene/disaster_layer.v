@@ -31,10 +31,13 @@ module disaster_layer #(parameter SIDE_WIDTH=1)(
  reg [3:0] fill_count;
  reg old_primed,side_primed;
  reg [9:0] select_delay;
- // Preserve delay on the two measured short legacy BRAM input paths.
+ // Preserve delay on the measured short legacy BRAM input paths.
  wire [23:0] old_ram_input;
  assign old_ram_input[23:16]=old_rgb[23:16];
- assign old_ram_input[14:11]=old_rgb[14:11];
+ assign old_ram_input[14]=old_rgb[14];
+ assign old_ram_input[12:11]=old_rgb[12:11];
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_old_hold13(.o(old_ram_input[13]),.a(old_rgb[13]));
  assign old_ram_input[9:4]=old_rgb[9:4];
  assign old_ram_input[2:0]=old_rgb[2:0];
  (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))

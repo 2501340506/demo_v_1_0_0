@@ -39,7 +39,8 @@ module fat32_volume_scanner #(
         ERR_LOOP=8'h23, ERR_RANGE=8'h24, ERR_LIMIT=8'h26;
     localparam COUNT_BITS=$clog2(MAX_VISITED_CLUSTERS+1);
     reg [4:0] state;
-    reg [15:0] bytes_per_sector, reserved, root_entries, fat16, flags, signature;
+    reg [15:0] bytes_per_sector, reserved, root_entries, fat16, flags;
+    reg signature_low_ok, signature_high_ok;
     reg [7:0] spc, fat_count;
     reg [31:0] total_sectors, fat_sectors, root_cluster;
     reg [31:0] mbr_lba[0:3];
@@ -289,7 +290,7 @@ module fat32_volume_scanner #(
             layout_bad<=0;geometry_valid<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
             fat_hi_gt<=0;fat_hi_eq<=0;fat_lo_gt<=0;fat_too_small<=0;fat_mid_gt<=0;fat_mid_eq<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
-            bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature<=0;
+            bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature_low_ok<=0;signature_high_ok<=0;
             spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
             mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
             overhead<=0;data_sectors<=0;data_borrow<=0;shift_count<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
@@ -312,7 +313,7 @@ module fat32_volume_scanner #(
                     40:flags[7:0]<=sector_byte;41:flags[15:8]<=sector_byte;
                     44:root_cluster[7:0]<=sector_byte;45:root_cluster[15:8]<=sector_byte;
                     46:root_cluster[23:16]<=sector_byte;47:root_cluster[31:24]<={4'b0,sector_byte[3:0]};
-                    510:signature[7:0]<=sector_byte;511:signature[15:8]<=sector_byte;
+                    510:signature_low_ok<=(sector_byte==8'h55);511:signature_high_ok<=(sector_byte==8'haa);
                     default:;
                 endcase
                 if(state==ZERO_WAIT) begin
@@ -373,7 +374,7 @@ module fat32_volume_scanner #(
                 ZERO_REQ:if(!sector_busy)begin sector_req<=1;state<=ZERO_WAIT;end
                 ZERO_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=ZERO_PARSE;end
                 ZERO_PARSE:begin
-                    if(signature!=16'haa55)fail(ERR_SIGNATURE);
+                    if(!signature_low_ok || !signature_high_ok)fail(ERR_SIGNATURE);
                     // An MBR can also begin EB/E9; recognize actual BPB fields.
                     else if(bpb_ok)state<=BOOT_PARSE;
                     else if(mbr_match!=0)begin
@@ -387,7 +388,7 @@ module fat32_volume_scanner #(
                 BOOT_REQ:if(!sector_busy)begin sector_req<=1;state<=BOOT_WAIT;end
                 BOOT_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=BOOT_PARSE;end
                 BOOT_PARSE:begin
-                    if(signature!=16'haa55)fail(ERR_SIGNATURE);
+                    if(!signature_low_ok || !signature_high_ok)fail(ERR_SIGNATURE);
                     else if(!bpb_ok)fail(ERR_BPB);
                     else begin
                         sectors_per_cluster<=spc;cluster_shift<=spc_shift(spc);
