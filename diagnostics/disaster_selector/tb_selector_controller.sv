@@ -28,7 +28,15 @@ module tb_selector_controller;
   .transition_pix_clk(pix),.transition_pix_rst(rst),.transition_frame_start(frame),.transition_commit_done(commit),
   .display_commit_request(display_req),.write_buf_idx(wb),.disp_buf_idx(db),.transition_level(level),
   .write_req(wr),.write_req_ack(ack),.write_ready(permit),.write_en(we),.write_data(data),.SD_MISO(1'b1));
- // Timing-only mux change must preserve the target on every offered edge,
+ // Registered drain summaries must never hand off a live reader/audio job.
+ always @(posedge clk)if(!rst)begin
+  if(dut.scan_accept && (dut.audio_run || !dut.audio_stopped))
+   $fatal(1,"scan accepted before audio drain");
+  if(dut.menu_pending && dut.safe_menu_idle &&
+    (!dut.bmp_ready || dut.load_busy || dut.load_request || dut.audio_run || !dut.audio_stopped || dut.scan_request))
+   $fatal(1,"menu acquired a live transaction");
+ end
+ // Timing-only mux change preserves the target on every offered edge,
  // including offers stalled by the cache. Compare with the previous mux.
  always @(posedge clk)if(!rst && dut.cache_offer &&
   dut.cache_target!==(dut.scene_request?dut.scene_target:dut.preview_offer?dut.preview_target:dut.ctrl_target_image))

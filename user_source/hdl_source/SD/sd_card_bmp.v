@@ -237,7 +237,16 @@ end endgenerate
 // feed the file streamer's same-cycle enable path. A start can coincide with
 // that final enabled edge, so wait for both enable low and the stopped ack.
 wire audio_run=audio_session && scene_stream_run;
-assign scan_accept=scan_request && !menu_owner && scan_state==SC_IDLE && !audio_run && audio_stopped;
+// The reader/player drain acknowledgement includes the shared SD arbiter.
+// Sample it after enable is low, breaking the long arbiter -> scan enable
+// path. A live enable veto prevents reusing a previous session's idle sample;
+// every enabled edge also clears the sample before a subsequent stop.
+reg audio_drained;
+always @(posedge clk or posedge rst)begin
+ if(rst)audio_drained<=0;
+ else audio_drained<=!audio_run && audio_stopped;
+end
+assign scan_accept=scan_request && !menu_owner && scan_state==SC_IDLE && !audio_run && audio_drained;
 always @(posedge clk or posedge rst) begin
  if(rst)audio_session<=0;
  else if(menu_pause || bins_pending || scan_request || (!PUBLICITY_ENABLE && rescan_event) || (PUBLICITY_ENABLE && app_stop_audio))audio_session<=0;
@@ -300,7 +309,7 @@ always @(posedge clk or posedge rst) begin
      map_boot<=0;map_publicity<=app_target==1;scan_application<=app_target;
      if(MENU_ENABLE)begin
       scan_directory_pending<=desired_directory;
-      scan_hazard_pending<=app_target==2 && desired_directory!=0?selected_hazard:3'd0;
+      scan_hazard_pending<=app_target==2 && (!root_pic_complete || menu_resource_active) && selected_directory!=0?selected_hazard:3'd0;
       scan_state<=SC_SELECT_DIRECTORY;
      end else scan_state<=SC_MAP_ISSUE;
     end else begin
@@ -833,15 +842,21 @@ assign desired_directory=app_target==1?(root_edu_complete?32'd0:publicity_direct
 // Pending waits for the extra registered cycle and any offered file request
 // before acquiring the shared reader, so a transaction is never stolen.
 reg menu_quiesce;
+reg menu_reader_idle;
 always @(posedge clk or posedge rst)begin
- if(rst)menu_quiesce<=0;
- else menu_quiesce<=MENU_ENABLE && menu_pending && !application_busy && !scene_fade && !foreground_busy;
+ if(rst)begin menu_quiesce<=0;menu_reader_idle<=0;end
+ else begin
+  menu_quiesce<=MENU_ENABLE && menu_pending && !application_busy && !scene_fade && !foreground_busy;
+  // Quiescing blocks new cache offers. Keep the live request/scan vetoes
+  // below so this one-cycle reader snapshot cannot steal a just-issued job.
+  menu_reader_idle<=MENU_ENABLE && menu_quiesce && scan_state==SC_IDLE && bmp_ready && !load_busy && !load_request;
+ end
 end
 assign cache_pause=MENU_ENABLE && (menu_owner || menu_quiesce);
 assign menu_pause=MENU_ENABLE && (menu_pending || menu_active);
-assign safe_menu_idle=scan_state==SC_IDLE && bmp_ready && !load_busy && !load_request && !foreground_busy &&
+assign safe_menu_idle=scan_state==SC_IDLE && menu_reader_idle && !scan_request && !load_request && !foreground_busy &&
  (!menu_pending || menu_quiesce) &&
- !transition_busy && !scene_fade && audio_stopped && !audio_run &&
+ !transition_busy && !scene_fade && audio_drained && !audio_run &&
  (!application_busy || application_error);
 generate if(MENU_ENABLE)begin:g_menu
  disaster_menu_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) ui(

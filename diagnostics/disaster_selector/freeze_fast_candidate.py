@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / 'releases/v0.23.0/s2-local.1'
 BASELINE = '31de2b0'
 RUNS = ('fast_app_equivalence05', 'fast_backend05', 'fast_layer_equivalence04', 'fast_display10',
-        'fast_controller45', 'fast_controller46', 'fast_writer01', 'fast_ui01', 'fast_directories08',
-        'fast_cache_equivalence07', 'fast_m4_03', 'fast_pixels01', 'fast_unit05', 'fast_narration01', 'fast_preview05', 'fast_scaler04', 'fast_player_equivalence03', 'fast_header09', 'fast_scenario_equivalence02', 'fast_key_equivalence02', 'fast_stream_equivalence01')
+        'fast_controller47', 'fast_controller48', 'fast_writer01', 'fast_ui01', 'fast_directories08',
+        'fast_cache_equivalence07', 'fast_m4_03', 'fast_pixels01', 'fast_unit05', 'fast_narration01', 'fast_preview05', 'fast_scaler04', 'fast_player_equivalence03', 'fast_header09', 'fast_scenario_equivalence02', 'fast_key_equivalence02', 'fast_stream_equivalence01', 'fast_video_equivalence02')
 
 
 def read(path):
@@ -49,7 +49,7 @@ def freeze(name):
     assert len(checked) == 134, len(checked)
     changed = subprocess.check_output(['git', 'diff', '--name-only', BASELINE, 'HEAD'], cwd=ROOT, text=True, encoding='utf-8').splitlines()
     production = [p for p in changed if p.startswith('user_source/')]
-    assert len(production) == 19, production
+    assert len(production) == 20, production
     assert not subprocess.check_output(['git', 'diff', 'HEAD', '--', 'user_source'], cwd=ROOT), 'Commit source before freezing'
     area = read(phy/'demo_phy.area')
     resources = {k: int(re.search(r'^#'+k+r'\s+(\d+)', area, re.M)[1]) for k in ('lut', 'reg', 'bram', 'bram32k', 'dsp')}
@@ -63,7 +63,7 @@ def freeze(name):
             if 'PASS ' in log and 'Errors: 0,' in log:
                 assert not re.search(r'\*\* (Fatal|Error):', log)
                 tests.append(source.relative_to(ROOT/'diagnostics/output').as_posix())
-    assert len(tests) == 87, tests
+    assert len(tests) == 88, tests
     copy(phy/'demo.bit', 'demo.bit')
     for path in production:
         copy(ROOT/path, 'sources/'+path)
@@ -79,7 +79,8 @@ def freeze(name):
                  'diagnostics/disaster_selector/audit_s2.ps1', 'diagnostics/publicity_mode/run_m4_audit.ps1',
                  'diagnostics/narration_subtitles/check_font_map.py',
                  'diagnostics/media_adjust/run_scaler.ps1', 'diagnostics/image_scaling/tb_scaler.sv',
-                 'diagnostics/stability/tb_bmp24_decoder.sv'):
+                 'diagnostics/stability/tb_bmp24_decoder.sv',
+                 'diagnostics/lut_reduction/video_delay_ref.v'):
         copy(ROOT/path, 'reproduce/'+path)
     for path in ('final_timing.rpt', 'demo_phy.area', 'settings.cfg', f'build_{name}.log'):
         copy(phy/path, 'reports/'+path)
@@ -98,7 +99,7 @@ def freeze(name):
             if source.exists():
                 copy(source, 'validation/'+run+'/'+path)
     copy(ROOT/'diagnostics/output/fast_preview05/mux_proof.txt', 'validation/fast_preview05/mux_proof.txt')
-    for run in ('fast_metrics_baseline03', 'fast_metrics_current18'):
+    for run in ('fast_metrics_baseline03', 'fast_metrics_current20'):
         for case in (0, 11, 16):
             copy(ROOT/f'diagnostics/output/{run}/metrics{case}.txt', f'validation/{run}/metrics{case}.txt')
     assets = ROOT/'diagnostics/output/fast_resource_pack01'
