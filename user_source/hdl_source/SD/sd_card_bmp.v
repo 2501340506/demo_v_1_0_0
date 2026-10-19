@@ -993,7 +993,12 @@ module publicity_app_control #(parameter MENU_ENABLE=0,FAST_BOOT=0)(
       ((state==BOOT || state==LOAD) && scan_valid && !scan_success) ||
       (state==FIRST && (failed || (committed && boot_direct))) ||
       (state==READY && failed) || (state==FADE_IN && !fade_busy))boot_direct<=0;
-   busy<=next_state!=RUN;
+   case(state)
+    RUN:busy<=(MENU_ENABLE && force_request) || rescan_request || (toggle_request && alternate_available);
+    FIRST:busy<=failed || !committed || !boot_direct;
+    FADE_IN:busy<=fade_busy;
+    default:busy<=1;
+   endcase
    case(state)
     RUN:begin stop_audio<=0;scene_enable<=app==2;end
     WAIT_IDLE:begin stop_audio<=idle;scene_enable<=app==2 && !idle;end

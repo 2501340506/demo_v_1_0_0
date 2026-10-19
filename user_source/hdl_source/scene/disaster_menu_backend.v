@@ -24,10 +24,11 @@ module disaster_menu_backend(
   NEXT=10,HOLD=11,
   RESTORE_ISSUE=12,RESTORE_WAIT=13,RESTORE_DONE=14,
   CONFIRM=15,CONFIRM_WAIT=16,CONFIRM_DONE=17,PREFLIGHT_WAIT=18,EXIT_DISPLAY=19,
-  CONFIRM_SCAN=20,CONFIRM_ISSUE=21,CONFIRM_CHECK=22,RECOVER=23,RECOVER_WAIT=24;
+  CONFIRM_SCAN=20,CONFIRM_ISSUE=21,CONFIRM_CHECK=22,RECOVER=23,RECOVER_WAIT=24,ENTRY_CHECK=25;
  reg [4:0] state,after_clear;
  reg [1:0] scene,saved_app;
  reg [3:0] found;
+ reg scene_found,entry_cache_hit,entry_parent_valid;
  reg [127:0] clusters;
  reg [31:0] saved_directory;
  reg saved_publicity,abort_pending,chosen,seen_busy,seen_commit;
@@ -66,7 +67,7 @@ module disaster_menu_backend(
    scan_start<=0;directory<=0;publicity<=0;hazard<=0;direct_load<=0;
    valid<=0;visible<=0;force_scene<=0;exit_done<=0;resume<=0;
    selected_directory<=0;selected_hazard<=0;
-   cache_complete<=0;cached_parent<=0;chosen_focus<=0;fallback_thumbnail<=0;rejected<=0;
+   cache_complete<=0;cached_parent<=0;chosen_focus<=0;scene_found<=0;entry_cache_hit<=0;entry_parent_valid<=0;fallback_thumbnail<=0;rejected<=0;
   end else begin
    scan_start<=0;direct_load<=0;force_scene<=0;exit_done<=0;resume<=0;rejected<=0;
    if(invalidate)begin cache_complete<=0;valid<=0;end
@@ -80,17 +81,23 @@ module disaster_menu_backend(
      saved_app<=original_app;force_target<=2;
      abort_pending<=0;chosen<=0;visible<=1;scene<=0;fallback_thumbnail<=0;
      directory<=parent_cluster;publicity<=0;hazard<=0;
-     if(cache_complete && cached_parent==parent_cluster && parent_valid)state<=HOLD;
-     else begin valid<=0;cache_complete<=0;cached_parent<=parent_cluster;state<=parent_valid?PARENT_ISSUE:HOLD;end
+     // Latch the entry decision before driving state and wide register enables.
+     entry_cache_hit<=cache_complete && cached_parent==parent_cluster && parent_valid;
+     entry_parent_valid<=parent_valid;state<=ENTRY_CHECK;
+    end
+    ENTRY_CHECK:begin
+     if(entry_cache_hit)state<=HOLD;
+     else begin valid<=0;cache_complete<=0;cached_parent<=directory;state<=entry_parent_valid?PARENT_ISSUE:HOLD;end
     end
     PARENT_ISSUE:if(reader_ready)begin scan_start<=1;after_clear<=PARENT_WAIT;state<=SCAN_CLEAR;end
     SCAN_CLEAR:if(!scan_done && !scan_start)state<=after_clear;
     PARENT_WAIT:if(scan_done)begin
+     scene_found<=!scan_fault && !scan_error && directory_valid[2];
      found<=(scan_fault || scan_error)?4'd0:directory_valid[5:2];clusters<=directory_clusters[191:64];state<=SCENE_ISSUE;
     end
     SCENE_ISSUE:begin
      if(abort_pending)state<=RESTORE_ISSUE;
-     else if(!found[scene])state<=NEXT;
+     else if(!scene_found)state<=NEXT;
      else if(reader_ready)begin
       fallback_thumbnail<=0;
       directory<=clusters[scene*32+:32];hazard<={1'b0,scene}+3'd1;
@@ -113,7 +120,7 @@ module disaster_menu_backend(
     end
     NEXT:if(abort_pending)state<=RESTORE_ISSUE;
      else if(scene==3)begin cache_complete<=1;state<=HOLD;end
-     else begin scene<=scene+1'b1;state<=SCENE_ISSUE;end
+     else begin scene<=scene+1'b1;scene_found<=found[scene+2'd1];state<=SCENE_ISSUE;end
     HOLD:if(abort_pending || cancel)state<=chosen?RECOVER:RESTORE_ISSUE;
      else if(confirm && valid[focus])begin
       selected_directory<=clusters[focus*32+:32];selected_hazard<={1'b0,focus}+3'd1;

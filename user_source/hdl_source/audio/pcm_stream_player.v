@@ -35,6 +35,12 @@ module pcm_stream_player #(
  assign playback_done=SINGLE_SUPPORT && run && ack2 && done_sync[1];
  assign done_session=identity_latched;
  reg lo_pending;reg [7:0] lo_byte;
+ // Measured low-byte register -> sample RAM hold path; no extra clock cycle.
+ wire [7:0] ram_low_byte;
+ assign ram_low_byte[7:3]=lo_byte[7:3];
+ assign ram_low_byte[1:0]=lo_byte[1:0];
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_sample_hold2(.o(ram_low_byte[2]),.a(lo_byte[2]));
  function [ADDR_WIDTH:0] gray;
  input [ADDR_WIDTH:0] b;begin gray=b^(b>>1);end endfunction
  function [ADDR_WIDTH:0] binary;
@@ -91,7 +97,7 @@ module pcm_stream_player #(
     u_hold(.o(ram_write_address[write_address_bit]),.a(wr_bin[write_address_bit]));
  end endgenerate
  always @(posedge wr_clk)
-  if(file_valid && file_ready && lo_pending)mem[ram_write_address]<={file_byte,lo_byte};
+  if(file_valid && file_ready && lo_pending)mem[ram_write_address]<={file_byte,ram_low_byte};
  reg [15:0] ram_sample;
  reg [15:0] fifo[0:7];
  reg source_tag[0:7];reg [30:0] launched,consumed;

@@ -9,9 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / 'releases/v0.23.0/s2-local.1'
 BASELINE = '31de2b0'
-RUNS = ('fast_app_equivalence04', 'fast_backend03', 'fast_layer_equivalence03', 'fast_display08',
-        'fast_controller27', 'fast_controller28', 'fast_writer01', 'fast_ui01', 'fast_directories04',
-        'fast_cache_equivalence03', 'fast_m4_01', 'fast_pixels01', 'fast_unit05', 'fast_narration01', 'fast_preview05', 'fast_scaler03', 'fast_player_equivalence03', 'fast_header09')
+RUNS = ('fast_app_equivalence05', 'fast_backend04', 'fast_layer_equivalence03', 'fast_display08',
+        'fast_controller29', 'fast_controller30', 'fast_writer01', 'fast_ui01', 'fast_directories04',
+        'fast_cache_equivalence03', 'fast_m4_02', 'fast_pixels01', 'fast_unit05', 'fast_narration01', 'fast_preview05', 'fast_scaler03', 'fast_player_equivalence03', 'fast_header09')
 
 
 def read(path):
@@ -49,7 +49,7 @@ def freeze(name):
     assert len(checked) == 134, len(checked)
     changed = subprocess.check_output(['git', 'diff', '--name-only', BASELINE, 'HEAD'], cwd=ROOT, text=True, encoding='utf-8').splitlines()
     production = [p for p in changed if p.startswith('user_source/')]
-    assert len(production) == 15, production
+    assert len(production) == 16, production
     assert not subprocess.check_output(['git', 'diff', 'HEAD', '--', 'user_source'], cwd=ROOT), 'Commit source before freezing'
     area = read(phy/'demo_phy.area')
     resources = {k: int(re.search(r'^#'+k+r'\s+(\d+)', area, re.M)[1]) for k in ('lut', 'reg', 'bram', 'bram32k', 'dsp')}
@@ -98,7 +98,7 @@ def freeze(name):
             if source.exists():
                 copy(source, 'validation/'+run+'/'+path)
     copy(ROOT/'diagnostics/output/fast_preview05/mux_proof.txt', 'validation/fast_preview05/mux_proof.txt')
-    for run in ('fast_metrics_baseline03', 'fast_metrics_current09'):
+    for run in ('fast_metrics_baseline03', 'fast_metrics_current10'):
         for case in (0, 11, 16):
             copy(ROOT/f'diagnostics/output/{run}/metrics{case}.txt', f'validation/{run}/metrics{case}.txt')
     assets = ROOT/'diagnostics/output/fast_resource_pack01'
