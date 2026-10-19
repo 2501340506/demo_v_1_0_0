@@ -210,11 +210,15 @@ generate if(SCENE_ENABLE)begin:g_bins
  // Register its epoch reset locally instead of driving asynchronous resets
  // through shared-reader/audio/menu arbitration (TD11 recovery path).
  reg epoch_reset;
+ wire loader_epoch_reset;
+ // TD17: local reset release -> BIN registers removal was -0.052 ns.
+ (* keep="true" *) AL_MAP_LUT1 #(.INIT(2'b10),.EQN("A"))
+  u_epoch_reset_hold(.o(loader_epoch_reset),.a(epoch_reset));
  always @(posedge clk or posedge rst)begin
   if(rst)epoch_reset<=1;
   else epoch_reset<=parser_rst || (MENU_ENABLE && scan_accept);
  end
- bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(epoch_reset),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
+ bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(loader_epoch_reset),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
   .font_found(font_found),.text_found(text_found),.font_cluster(font_cluster),.font_size(font_size),
   .text_cluster(text_cluster),.text_size(text_size),.spc(audio_spc),.fat_lba(audio_fat_lba),
   .data_lba(audio_data_lba),.max_cluster(audio_max_cluster),.done(bin_done),
