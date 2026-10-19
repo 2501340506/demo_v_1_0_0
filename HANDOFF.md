@@ -1,4 +1,14 @@
-# 当前交接：用户反馈后续图片问题已解决（2026-10-19）
+# 当前交接：正常/异常 bit 差异已核对（2026-10-19）
+
+- 最新更正：用户确认最新 bit 正常、`releases/v0.23.0/s2-local.1/demo.bit` 异常；最新按前文交付关联 `s2-diagnostic.1`，沿用既有 `v0.23.0-s2-diagnostic-board.1`。旧版失败结论保留，不移动任何标签。
+- 已完成：两份实际构建134文件逐字节比较，133相同，仅 `sd_card_bmp.v` 为诊断改动；工程/源列表/Seed47/约束/bitgen参数一致（路径和运行时间归一化）。两个发布bit分别与各自构建bit逐字节一致，排除错包。未改生产RTL、旧release或用户脏项。
+- 物理证据：+7 LUT/+67寄存器；读取两份原布局布线数据库，新版MISO Setup 4.765→6.000ns，Hold 1.827→0.963ns；采样寄存器位置与布线变化，MOSI/nCS/SCLK输出裕量相同。全局Setup 0.046→0.039ns、Hold 0.085→0.073ns、TNS均0，不能说整体时序改善。共同SDRAM局部时钟告警均为U3/u2_ram/SDRAM_CLK。
+- 当前结论/边界：唯一源码变化是诊断，但生成的物理电路变化超出显示区域；尚未证明物理时序或其他条件是旧故障根因。03/0D只表示目标请求失败；真实SDRAM联合仿真未完成缺口仍保留。没有新bit，也无需重跑完整TD。
+- 复查/下一步：[差异报告](docs/正常与异常加速候选差异核对.md)、[比较归档](docs/history/2026-10-19/page-candidate-comparison/README.md)、docs/evidence/page-candidate-comparison内固定证据；比较脚本为diagnostics/disaster_selector/compare_page_candidates.py与compare_page_timing.ps1。继续使用用户确认正常的诊断固定bit。若继续根因定位，需旧版失败事务底层状态与同条件重复A/B，不能凭相关性盲改bank3或约束。
+
+## 历史交接
+
+# 用户反馈后续图片问题已解决（2026-10-19）
 
 - 用户收到诊断候选后反馈“现在问题解决”，按当前交付上下文关联 `v0.23.0-s2-diagnostic-local.1`；未提供逐项结果或测试次数。已记录 [板测反馈](docs/后续图片诊断候选板测反馈.md)，沿用固定 bit，建立 `v0.23.0-s2-diagnostic-board.1`，不重建、不修改旧标签。
 - 本轮生产改动仅为 `sd_card_bmp.v` 的错误采集/保存/OSD显示；不能将现象恢复归因为已经查明并修复读图或切页逻辑。原根因仍未确定，真实SDRAM联合仿真缺口保留。若复发，记录细分 errors 后继续定位。
