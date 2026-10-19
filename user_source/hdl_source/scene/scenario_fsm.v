@@ -28,15 +28,36 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, M
  assign audio_request=state==AUDIO || state==EXIT_AUDIO;
  assign audio_scene=state!=EXIT_AUDIO;
  assign audio_stage=stage;
+ // Decode the sample counter independently of the stage/output mux tree.
+ // Pause holds the counter; navigation paths leave it unchanged until the
+ // following non-RUN cycle resets it, exactly as the original controller.
+ wire sample_navigation = (select_ready && select_request) || key_mode ||
+      (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start)));
+ wire sample_window = enable && scene_ready && !sample_navigation;
+ wire sample_time_window = !warn_mode && t_now < 239;
+ wire sample_changed = audio_running != running_q;
+ wire sample_clear = state != RUN ||
+      (sample_window && (key_speed || (sample_time_window &&
+       (sample_changed || !audio_running || (sample_tick && samples >= limit)))));
+ wire sample_increment = sample_window && !key_speed && sample_time_window &&
+                         !sample_changed && audio_running && sample_tick;
+ always @(posedge clk or posedge rst)begin
+  if(rst)samples<=0;
+  else if(MENU_ENABLE && restart && state==RUN)samples<=0;
+  else if(!(MENU_ENABLE && pause && state==RUN))begin
+   if(sample_clear)samples<=0;
+   else if(sample_increment)samples<=samples+1'b1;
+  end
+ end
  always @(posedge clk or posedge rst)begin
   if(rst)begin
    state<=OFF;stage<=0;speed<=0;warn_mode<=0;t_now<=0;target<=0;
-   target_warn<=0;sent<=0;committed<=0;half_frame<=0;samples<=0;running_q<=0;terminal_frame<=0;
+   target_warn<=0;sent<=0;committed<=0;half_frame<=0;running_q<=0;terminal_frame<=0;
   end else if(MENU_ENABLE && restart && state==RUN)begin
-   target<=stage;target_warn<=warn_mode;sent<=0;t_now<=0;samples<=0;half_frame<=0;terminal_frame<=0;state<=PICTURE;
+   target<=stage;target_warn<=warn_mode;sent<=0;t_now<=0;half_frame<=0;terminal_frame<=0;state<=PICTURE;
   end else if(!(MENU_ENABLE && pause && state==RUN))begin
    running_q<=audio_running;
-   if(state!=RUN)begin samples<=0;half_frame<=0;terminal_frame<=0;end
+   if(state!=RUN)begin half_frame<=0;terminal_frame<=0;end
    if(UI_GATE && !ui_play)terminal_frame<=0;
    if(!scene_ready && state!=OFF && state!=EXIT_FADE && state!=EXIT_AUDIO)state<=EXIT_FADE;
    else case(state)
@@ -51,18 +72,16 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, M
      end else if(key_mode || (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start))))begin
       target<=key_mode?(warn_mode?2'd0:2'd3):stage+2'd1;
       target_warn<=key_mode?!warn_mode:warn_mode;sent<=0;state<=PICTURE;
-     end else if(key_speed)begin speed<=speed==2?2'd0:speed+2'd1;samples<=0;half_frame<=0;end
+     end else if(key_speed)begin speed<=speed==2?2'd0:speed+2'd1;half_frame<=0;end
      else if(warn_mode)t_now<=239;
      else if(t_now<239)begin
-      if(audio_running!=running_q)begin samples<=0;half_frame<=0;end
+      if(audio_running!=running_q)begin half_frame<=0;end
       else if(audio_running)begin
        half_frame<=0;
        if(sample_tick)begin
-        if(samples>=limit)begin samples<=0;t_now<=t_now+1'b1;end
-        else samples<=samples+1'b1;
+        if(samples>=limit)begin t_now<=t_now+1'b1;end
        end
       end else begin
-       samples<=0;
        if(frame_start)begin half_frame<=!half_frame;if(half_frame)t_now<=t_now+1'b1;end
       end
      end

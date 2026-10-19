@@ -271,6 +271,14 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .frame_commit(),.bmp_done(decode_done),.bmp_error(decode_error),
  .pixel_ready(1'b1),.file_ready(),.image_width(),.image_height());
  end endgenerate
+ // Header metadata bytes precede sector completion by hundreds of cycles.
+ // Register their comparison before HEADER_CHECK drives the mapping registers.
+ reg header_metadata_ok;
+ always @(posedge clk or posedge rst)begin
+  if(rst)header_metadata_ok<=0;
+  else header_metadata_ok<=strict_hazard==0 ||
+       (header_hazard=={5'd0,strict_hazard} && header_role=={5'd0,candidate}+8'd1);
+ end
  localparam integer WAIT_CYCLES=(CLK_FREQ_HZ/1000)*TIMEOUT_MS;
  reg [31:0] ack_wait;
  always @(posedge clk or posedge rst)begin
@@ -345,7 +353,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  end
  HEADER_CHECK:begin
  if(header_match && (native_thumb ? (header_width==256 && header_height==192 && !header_32) :
-    (strict_hazard==0 || (header_hazard=={5'd0,strict_hazard} && header_role=={5'd0,candidate}+8'd1))) && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
+    (SCAN_PUBLICITY ? header_metadata_ok : (strict_hazard==0 || (header_hazard=={5'd0,strict_hazard} && header_role=={5'd0,candidate}+8'd1)))) && (SCAN_PUBLICITY ? header_size_ok : required_end<={2'b0,task_size}))begin
  mapped_valid[candidate[1:0]]<=1;scan_found_slot<=candidate[1:0];
  scan_found_cluster<=task_cluster;scan_found_size<=task_size;scan_found_valid<=1;scan_found_total<=scan_found_total+1'b1;
  if(!scan_found_total[2])found_slot[scan_found_total[1:0]]<=candidate[1:0];
