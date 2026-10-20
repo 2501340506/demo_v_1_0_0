@@ -1,0 +1,5 @@
+Generated 42 sparse FAT32 cases in D:\My_Program\anlogic_program\demo_v_1_0_0\diagnostics\output\lut24_s3_reader_scale_compare2\fixtures
+SAME case 24 gap 2 : ** Fatal: bad image succeeded
+SAME case 24 gap 0 : ** Fatal: bad image succeeded
+PASS scaled reader identical to HEAD (82 passing runs)
+exit=0
