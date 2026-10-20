@@ -7,7 +7,12 @@ $d=Join-Path $PSScriptRoot '..'
 function Step([string]$label,[string]$script,[string[]]$arguments){
  Write-Output "== $label"
  & powershell -NoProfile -ExecutionPolicy Bypass -File $legacy -Script (Join-Path $d $script) @arguments
- if($LASTEXITCODE){throw "FAILED $label"}
+ $code=$LASTEXITCODE
+ # Selector card images are regenerated per run (~4.9 GB); keep logs only.
+ if($script -like '*run_s2.ps1' -or $script -like '*run_fast_metrics.ps1'){
+  & powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot/remove_selector_fixtures.ps1" -RunName $arguments[1]
+ }
+ if($code){throw "FAILED $label"}
 }
 Write-Output '== fat32 reader cases'
 & powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot/run_reader_cases.ps1" -RunName "${Prefix}_reader"

@@ -1,4 +1,4 @@
-param([string]$RunName='lut24_reader1',[int[]]$Gaps=@(2,0))
+param([string]$RunName='lut24_reader1',[int[]]$Gaps=@(2,0),[int]$ScaleTest=0)
 # fat32/run_reader.ps1 cases with the same RTL list, fixtures and PASS text.
 # The bench predates newer reader ports, so vopt reports unconnected-port
 # (TFMPC vopt-2685/2718) warnings; any other warning or error still fails.
@@ -23,14 +23,14 @@ try{
  foreach($gap in $Gaps){
   foreach($case in $manifest){
    $id=$case.id
-   $log="$out/reader${id}_gap${gap}.log"
-   & "$sim/vsim.exe" -c -quiet -lib $lib tb_fat32_reader "-gCASE_ID=$id" "-gBYTE_GAP=$gap" '-gTEST_MODE=0' '-gSCALE_TEST=0' "-gFIXTURE_DIR=$($out.Replace('\','/'))/fixtures" -l $log -do 'run -all; quit -f' *> "$out/case${id}_gap${gap}_console.log"
+   $log="$out/reader${id}_gap${gap}_scale${ScaleTest}.log"
+   & "$sim/vsim.exe" -c -quiet -lib $lib tb_fat32_reader "-gCASE_ID=$id" "-gBYTE_GAP=$gap" '-gTEST_MODE=0' "-gSCALE_TEST=$ScaleTest" "-gFIXTURE_DIR=$($out.Replace('\','/'))/fixtures" -l $log -do 'run -all; quit -f' *> "$out/case${id}_gap${gap}_console.log"
    $text=Get-Content $log -Raw
    $warnings=@([regex]::Matches($text,'\*\* Warning:[^\r\n]*') | ForEach-Object {$_.Value})
    $other=@($warnings | Where-Object {$_ -notmatch 'vopt-(2685|2718)\) \[TFMPC\]'})
    if($LASTEXITCODE -or $text -match '\*\* (Fatal|Error)' -or $text -notmatch 'PASS FAT32 reader' -or $other.Count){throw "reader case $id gap $gap failed: $log"}
    $port+=$warnings.Count
-   Write-Output "PASS reader $id $($case.name) gap=$gap"
+   Write-Output "PASS reader $id $($case.name) gap=$gap scale=$ScaleTest"
   }
  }
  Write-Output "PASS reader cases; only legacy unconnected-port warnings ($port total)"

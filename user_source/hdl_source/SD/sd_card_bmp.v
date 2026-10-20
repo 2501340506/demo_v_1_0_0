@@ -205,6 +205,29 @@ always @(posedge clk)begin
  response_byte<=a_byte;response_index<=a_index;response_error<=a_error;
 end
 wire response_busy=a_busy || a_valid || a_done || response_valid || response_done;
+// BIN and PCM file sources (fat32_source_streamer buses). With both enabled
+// they share one streamer: BIN loads only while bin_owner, when audio_session
+// is held low and the PCM source is in reset (outside START/READ).
+wire [66:0] bin_source_request,pcm_source_request;
+wire [50:0] bin_source_response,pcm_source_response;
+generate if(SCENE_ENABLE && AUDIO_ENABLE)begin:g_shared_source
+ wire [50:0] source_response;
+ wire source_req;wire [31:0] source_lba;
+ // Ownership is the registered response_bin, so no scan-state decode reaches
+ // the streamer's asynchronous reset. BIN file_start follows SC_BIN_START by
+ // at least two cycles and both sources are idle at each ownership change.
+ // Owners see busy/done/valid only in their own window, as from an idle
+ // (BIN) or reset (PCM) private streamer; responses already carry the tag.
+ assign bin_source_response={response_bin ? source_response[50:48] : 3'd0,source_response[47:0]};
+ assign pcm_source_response={response_bin ? 3'd0 : source_response[50:48],source_response[47:0]};
+ fat32_source_streamer #(.MAX_VISITED_CLUSTERS(8388608),.DATA_GATE_ENABLE(1)) source(
+  .clk(clk),.request(response_bin ? bin_source_request : pcm_source_request),.response(source_response),
+  .sectors_per_cluster(audio_spc),.fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
+  .sector_req(source_req),.sector_lba(source_lba),.sector_busy(response_busy),
+  .sector_valid(response_valid),.sector_done(response_done),
+  .sector_byte(response_byte),.sector_error(response_error),.sector_index(response_index));
+ assign bin_req=source_req;assign bin_lba=source_lba;assign a_req=source_req;assign a_lba=source_lba;
+end endgenerate
 generate if(SCENE_ENABLE)begin:g_bins
  // A scan acceptance precedes all BIN starts by directory/header states.
  // Register its epoch reset locally instead of driving asynchronous resets
@@ -218,16 +241,21 @@ generate if(SCENE_ENABLE)begin:g_bins
   if(rst)epoch_reset<=1;
   else epoch_reset<=parser_rst || (MENU_ENABLE && scan_accept);
  end
- bin_to_bram_loader #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(loader_epoch_reset),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
+ bin_to_bram_loader_core #(.PIPELINED_METADATA(PUBLICITY_ENABLE)) loader(.clk(clk),.rst(loader_epoch_reset),.start((scan_state==SC_BIN_START && !(MENU_ENABLE && scan_application==1)) || scan_state==SC_BG_BIN_START),
   .font_found(font_found),.text_found(text_found),.font_cluster(font_cluster),.font_size(font_size),
-  .text_cluster(text_cluster),.text_size(text_size),.spc(audio_spc),.fat_lba(audio_fat_lba),
-  .data_lba(audio_data_lba),.max_cluster(audio_max_cluster),.done(bin_done),
+  .text_cluster(text_cluster),.text_size(text_size),.done(bin_done),
   .font_valid(font_valid),.text_valid(text_valid),.font_count(font_count),.text_bytes(text_bytes),
   .wr_en(bin_wr_en),.wr_text(bin_wr_text),.wr_addr(bin_wr_addr),.wr_data(bin_wr_data),
-  .sector_req(bin_req),.sector_lba(bin_lba),.sector_busy(response_busy),.sector_valid(response_valid && response_bin),
-  .sector_done(response_done && response_bin),.sector_byte(response_byte),.sector_error(response_error),.sector_index(response_index));
+  .source_request(bin_source_request),.source_response(bin_source_response));
+ if(!AUDIO_ENABLE)begin:g_bin_source
+  fat32_source_streamer #(.MAX_VISITED_CLUSTERS(8),.FILE_SIZE_BITS(13)) stream(
+   .clk(clk),.request(bin_source_request),.response(bin_source_response),
+   .sectors_per_cluster(audio_spc),.fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
+   .sector_req(bin_req),.sector_lba(bin_lba),.sector_busy(response_busy),.sector_valid(response_valid && response_bin),
+   .sector_done(response_done && response_bin),.sector_byte(response_byte),.sector_error(response_error),.sector_index(response_index));
+ end
 end else begin:g_no_bins
- assign bin_done=1;assign bin_req=0;assign bin_lba=0;
+ assign bin_done=1;assign bin_req=0;assign bin_lba=0;assign bin_source_request=0;assign bin_source_response=0;
  assign font_valid=0;assign text_valid=0;assign font_count=0;assign text_bytes=0;
  assign bin_wr_en=0;assign bin_wr_text=0;assign bin_wr_addr=0;assign bin_wr_data=0;
 end endgenerate
@@ -266,15 +294,21 @@ generate if(AUDIO_ENABLE)begin: g_audio
   if(rst)urgent_latched<=1;else urgent_latched<=player_low;
  end
  assign a_urgent=urgent_latched;
- fat32_pcm_stream #(.SINGLE_SUPPORT(PUBLICITY_ENABLE)) u_stream(
+ fat32_pcm_stream_core #(.SINGLE_SUPPORT(PUBLICITY_ENABLE)) u_stream(
  .clk(clk),.rst_n(!rst),.enable(audio_run),.audio_found(selected_audio_found),.single_play(selected_publicity),
  .first_cluster(selected_audio_cluster),.file_size(selected_audio_size),.sectors_per_cluster(audio_spc),
- .fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
+ .max_cluster(audio_max_cluster),
  .sector_permit(sector_permit),.player_stopped(player_stopped),.player_ready(file_ready),
  .player_enable(player_enable),.file_valid(file_valid),.file_byte(file_byte),
- .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),
- .sector_req(a_req),.sector_lba(a_lba),.sector_busy(response_busy),.sector_valid(response_valid && !response_bin),
- .sector_done(response_done && !response_bin),.sector_byte(response_byte),.sector_error(response_error),.sector_index(response_index));
+ .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),.sector_busy(response_busy),
+ .source_request(pcm_source_request),.source_response(pcm_source_response));
+ if(!SCENE_ENABLE)begin:g_pcm_source
+  fat32_source_streamer #(.MAX_VISITED_CLUSTERS(8388608),.DATA_GATE_ENABLE(1)) source(
+   .clk(clk),.request(pcm_source_request),.response(pcm_source_response),
+   .sectors_per_cluster(audio_spc),.fat_start_lba(audio_fat_lba),.data_start_lba(audio_data_lba),.max_cluster(audio_max_cluster),
+   .sector_req(a_req),.sector_lba(a_lba),.sector_busy(response_busy),.sector_valid(response_valid && !response_bin),
+   .sector_done(response_done && !response_bin),.sector_byte(response_byte),.sector_error(response_error),.sector_index(response_index));
+ end
  pcm_stream_player #(.SINGLE_SUPPORT(PUBLICITY_ENABLE)) u_player(
  .wr_clk(clk),.wr_rst_n(!rst),.play_enable(player_enable),
  .single_play(selected_publicity),.sample_total(selected_audio_size[31:1]),.session_id(audio_identity),
@@ -286,6 +320,7 @@ generate if(AUDIO_ENABLE)begin: g_audio
  .active(bgm_active),.underflow_count(),.output_overrun());
 end else begin: g_no_audio
  assign audio_stopped=1'b1;assign a_req=1'b0;assign a_lba=0;assign a_urgent=0;
+ assign pcm_source_request=0;assign pcm_source_response=0;
  assign bgm_valid=0;assign bgm_active=0;assign bgm_left=0;assign bgm_right=0;
  assign audio_stream_error=0;assign voice_done=0;assign voice_done_id=0;
 end endgenerate

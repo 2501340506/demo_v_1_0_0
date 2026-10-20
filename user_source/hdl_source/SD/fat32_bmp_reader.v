@@ -264,18 +264,33 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));
  wire [31:0] header_width,header_height;wire header_32;
- bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(SCALE_ENABLE)) preflight(
+ generate if(SCALE_ENABLE)begin:g_scale
+ // One header parser serves preflight (HEADER_WAIT sector bytes) and the
+ // decoder (file bytes after file_go). The decoder parses only while
+ // active, after its file_start reset; preflight results are consumed at
+ // HEADER_CHECK, before any load. Parameters match both former parsers.
+ wire [41:0] decoder_feed;
+ wire [196:0] shared_result;
+ wire [41:0] shared_feed={decoder_feed[41] || state==HEADER_RESET,header_valid || decoder_feed[40],
+  header_valid ? {header_byte,23'd0,header_index} : decoder_feed[39:0]};
+ bmp_header_result_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(1)) shared_header(
+ .clk(clk),.feed(shared_feed),.bmp_width(bmp_width),.bmp_height(bmp_height),
+ .result(shared_result),.file_len(header_file_len));
+ assign {header_32,required_end}={shared_result[196],shared_result[193:160]};
+ assign header_match=shared_result[194];
+ assign header_height=shared_result[95:64];assign header_width=shared_result[63:32];
+ bmp_scale_stream #(.NATIVE_THUMB_ENABLE(FAST_START),.SHARED_HEADER(1)) scaled(
+ .clk(clk),.rst(decoder_reset),.file_start(file_go),.file_size(task_size),.native_thumb(native_thumb),
+ .file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),.file_byte_offset(stream_offset),
+ .file_end(stream_done),.upstream_error(stream_error),.data_permit(data_permit),
+ .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error),
+ .header_feed(decoder_feed),.header_result(shared_result));
+ end else begin:g_fixed
+ bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(0)) preflight(
  .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(header_valid),
  .file_byte(header_byte),.file_byte_offset({23'd0,header_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
  .file_len(header_file_len),.pixel_offset(),.width(header_width),.height(header_height),.required_end(required_end),.header_match(header_match),
  .skip_format(),.header_complete(),.is_32(header_32),.row_stride(),.expected_pixels());
- generate if(SCALE_ENABLE)begin:g_scale
- bmp_scale_stream #(.NATIVE_THUMB_ENABLE(FAST_START)) scaled(
- .clk(clk),.rst(decoder_reset),.file_start(file_go),.file_size(task_size),.native_thumb(native_thumb),
- .file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),.file_byte_offset(stream_offset),
- .file_end(stream_done),.upstream_error(stream_error),.data_permit(data_permit),
- .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error));
- end else begin:g_fixed
  assign data_permit=1'b1;
  bmp24_decoder #(.RUNTIME_DIMENSIONS(1),.ALLOW_32(1)) decoder(
  .clk(clk),.rst(decoder_reset),.expected_width(bmp_width),.expected_height(bmp_height),
