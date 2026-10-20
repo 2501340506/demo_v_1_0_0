@@ -1,3 +1,13 @@
+# 当前交接：LUT 裁减 v0.24 S1 已验证、并入 S2（2026-10-20）
+
+- 当前任务：原目录 `feature/lut-reduction`，[计划](docs/LUT资源裁减v0.24分阶段修改计划.md)，基线 `v0.24.0-plan.1`。目标物理 LUT ≤16500，功能不变。
+- 已完成：S1 RTL（扫描器 MBR/版图/BPB、数码管选页跨域、菜单后端、旁带 47 位）及等价测试、回归全部通过，见 [S1 记录](docs/LUT资源裁减v0.24-S1记录.md)。
+- 卡住的问题：S1 两次 TD 均未达门槛（td01 Hold −0.011 在 scaler reg→BRAM；td02 Setup −2.455），且 LUT 18162/18194 未下降；寄存器 −510 但逻辑 LUT 不变。用户选择方案一：S1 不建 local 标签，与 S2 合并构建判定。
+- 下一步：S2 扫描器文件表搬入 RAM 并改按索引读取，减少宽 mux；完成后完整 TD，形成 `v0.24.0-s2-local.1`。
+- 踩坑：本会话工具在 `d:/`，旧脚本经 `diagnostics/lut24/invoke_legacy.ps1` 运行；Git Bash 的 `sed -i` 会把 CRLF 文件改成 LF（内容不变，autocrlf 提交一致）；旧 reader/m5 bench 有既有未接端口告警。
+
+## 历史交接
+
 # 当前交接：正常/异常 bit 差异已核对（2026-10-19）
 
 - Git同步：本轮差异核对提交 `a0cbdf0` 已本地保存；推送当前分支遇到GitHub 443连接失败，之前只读远端核对也连接重置，本轮新提交尚未确认远程同步。网络恢复后只推当前 `feature/fix-fast-start-pages` 分支，既有标签不移动、不重建。
