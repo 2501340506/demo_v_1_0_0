@@ -3,10 +3,11 @@ module tb_m5_ui;
  reg clk=0;always #5 clk=~clk;reg rst=1,vs=1,de=0,en=1,warn=0;
  reg [9:0] x=0;reg [1:0] stage=0,speed=0;reg [3:0] state=1;
  wire [5:0] sel;wire [7:0] seg;wire [23:0] rgb;integer digits=0,pixels=0;
+ wire [63:0] debug_bus=64'h123456789abcdef0;wire [1:0] debug_page;
  seg7_panel #(.CLK_FREQ(1200),.SCAN_FREQ(20),.SCENE_ENABLE(1)) panel(
   .clk(clk),.rst_n(!rst),.mode(2'd0),.scene_enable(en),.scene_warn(warn),.scene_stage(stage),
-  .state_code(state),.sd_debug(64'h123456789abcdef0),.combo_event_count(8'd0),.combo_debug_active(1'b0),
-  .auto_play_indicator(1'b1),.seg_sel(sel),.seg_data(seg));
+  .state_code(state),.debug_word(debug_bus[16*debug_page+:16]),.combo_event_count(8'd0),.combo_debug_active(1'b0),
+  .auto_play_indicator(1'b1),.seg_sel(sel),.seg_data(seg),.debug_page(debug_page));
  adjust_osd_overlay #(.SCENE_ENABLE(1)) osd(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(24'h204060),
   .mode(2'd0),.selected(2'd0),.brightness(8'd128),.contrast(8'd128),.volume_level(4'd10),
   .scene_enable(en),.scene_speed(speed),.rgb_out(rgb),.active());
