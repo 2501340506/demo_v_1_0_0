@@ -38,6 +38,8 @@ text += '''
   prefix=$sformatf("selector%0d_",CASE_ID);
   $readmemh({prefix,"meta.hex"},meta,0,2);$readmemh({prefix,"lba.hex"},lbas,0,meta[0]-1);
   $readmemh({prefix,"bytes.hex"},disk,0,meta[0]*512-1);
+  // The controller bench's sector lookup (added in ae76043) must be filled too.
+  for(q=0;q<meta[0];q++)sector_slot[lbas[q]]=q;
   for(q=0;q<4;q++)begin bank_good[q]=0;bank_id[q]=0;bank_pixels[q]=0;end
   cycles(10);rst=0;app_ready(1);
   wait(dut.cache_valid==15);cycles(500);sw=1;wait(dut.menu_ready);cycles(10);

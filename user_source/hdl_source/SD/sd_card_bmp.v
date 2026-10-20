@@ -143,14 +143,14 @@ reg [1:0] scan_application;
 wire [3:0] mapped_valid;
 wire reader_publicity;
 wire [3:0] pic_valid,edu_valid,voi_valid,voi_invalid;
-wire [127:0] pic_clusters,pic_sizes,edu_clusters,edu_sizes,voi_clusters,voi_sizes;
 wire parser_rst=rst || scan_state==SC_RESET;
 wire sd_local_rst=parser_rst;
 wire audio_stopped;
 reg audio_session;
 wire audio_found;
 wire [3:0] snd_valid;
-wire [127:0] snd_clusters,snd_sizes;
+// Reader audio table row: 0 BGM, 4..7 SND1..4, 8..11 VOI1..4.
+wire [3:0] selected_audio_index;
 wire selected_audio_found,scene_stream_run;
 wire [31:0] selected_audio_cluster,selected_audio_size;
 wire [7:0] audio_stream_error;
@@ -181,7 +181,7 @@ wire app_controls_blocked=PUBLICITY_ENABLE && application_busy;
 wire controls_blocked=app_controls_blocked || (MENU_ENABLE && menu_blocked);
 assign scenario_fade=scene_fade || (PUBLICITY_ENABLE && application_busy) || public_fade || menu_pause;
 assign publicity_audio_status={public_auto,public_voice_status};
-wire [31:0] audio_cluster,audio_size,audio_fat_lba,audio_data_lba,audio_max_cluster;
+wire [31:0] audio_fat_lba,audio_data_lba,audio_max_cluster;
 wire [7:0] audio_spc;
 wire a_req,a_busy,a_valid,a_done,a_urgent;
 wire [31:0] a_lba;
@@ -668,14 +668,13 @@ generate if(SCENE_ENABLE)begin:g_scenario
  assign audio_ready=common_audio_ready && !public_audio_request;
  wire use_snd=selected_scene && snd_valid[selected_stage];
  assign selected_audio_found=selected_publicity?voi_valid[selected_stage]:(use_snd || audio_found);
- assign selected_audio_cluster=selected_publicity?voi_clusters[selected_stage*32+:32]:use_snd?snd_clusters[selected_stage*32+:32]:audio_cluster;
- assign selected_audio_size=selected_publicity?voi_sizes[selected_stage*32+:32]:use_snd?snd_sizes[selected_stage*32+:32]:audio_size;
+ assign selected_audio_index=selected_publicity?{2'b10,selected_stage}:use_snd?{2'b01,selected_stage}:4'd0;
  assign scenario_state={layer_enable,alert_level,stage,t_now};
 end else begin:g_no_scenario
  assign scene_request=0;assign scene_target=0;assign scenario_state=0;assign scenario_meta=0;assign scene_fade=0;assign scene_select_ready=0;
  assign scene_muted_sd=0;assign scene_audio_running=0;assign scene_stream_run=1;
  assign selected_publicity=0;assign selected_audio_scene=0;assign selected_audio_stage=0;assign audio_version=0;assign common_audio_ready=1;
- assign selected_audio_found=audio_found;assign selected_audio_cluster=audio_cluster;assign selected_audio_size=audio_size;
+ assign selected_audio_found=audio_found;assign selected_audio_index=4'd0;
 end endgenerate
 generate if(PUBLICITY_ENABLE)begin:g_publicity
  wire frame_tick;
@@ -925,13 +924,11 @@ end endgenerate
 fat32_bmp_reader #(.FAST_START(MENU_ENABLE),.DIRECTORY_ENABLE(MENU_ENABLE),.LOAD_BY_INDEX(1),.SCALE_ENABLE(SCALE_ENABLE),.SCAN_AUDIO(AUDIO_ENABLE),.SCAN_TEXT(SCENE_ENABLE),.SCAN_PUBLICITY(PUBLICITY_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ),.TIMEOUT_MS(LOAD_TIMEOUT_MS)) bmp_read_m0(
  .clk(clk),.rst(parser_rst),.sd_init_done(sd_init_done),.ready(bmp_ready),
  .menu_preview(menu_owner && menu_preview),.menu_fallback(menu_fallback),.native_thumb(menu_native),
- .audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),
+ .audio_found(audio_found),.snd_valid(snd_valid),
+ .audio_index(selected_audio_index),.audio_entry_cluster(selected_audio_cluster),.audio_entry_size(selected_audio_size),
  .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
- .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
  .map_start(map_start_pulse && !menu_owner),.resource_publicity(menu_owner?menu_publicity:map_publicity),.active_publicity(reader_publicity),.mapped_valid(mapped_valid),.scan_found_slot(),
- .pic_valid(pic_valid),.pic_clusters(pic_clusters),.pic_sizes(pic_sizes),
- .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),
- .voi_valid(voi_valid),.voi_invalid(voi_invalid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
+ .pic_valid(pic_valid),.edu_valid(edu_valid),.voi_valid(voi_valid),.voi_invalid(voi_invalid),
  .audio_spc(audio_spc),.audio_fat_lba(audio_fat_lba),.audio_data_lba(audio_data_lba),.audio_max_cluster(audio_max_cluster),
  .a_req(bin_owner?bin_req:a_req),.a_lba(bin_owner?bin_lba:a_lba),.a_cancel(!bin_owner && !audio_run),.a_urgent(bin_owner?1'b1:a_urgent),
  .a_busy(a_busy),.a_valid(a_valid),.a_done(a_done),.a_error(a_error),.a_byte(a_byte),.a_index(a_index),

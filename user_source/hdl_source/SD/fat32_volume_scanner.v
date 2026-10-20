@@ -13,18 +13,22 @@ module fat32_volume_scanner #(
     output reg [31:0] partition_lba,
     output reg [7:0] sectors_per_cluster,
     output reg [31:0] fat_start_lba, data_start_lba, max_cluster,
+    // File tables are read by index (no read latency). Entries are only
+    // meaningful while their valid/found bit is set.
+    // Image table: 0..3 PIC1..4, 4..7 EDU1..4, 8 THUMB.
+    // Audio table: 0 BGM, 4..7 SND1..4, 8..11 VOI1..4.
     output reg [3:0] resource_valid,
-    output reg [31:0] resource0_cluster, resource1_cluster, resource2_cluster, resource3_cluster,
-    output reg [31:0] resource0_size, resource1_size, resource2_size, resource3_size,
-    output reg thumb_found,output reg [31:0] thumb_cluster,thumb_size,
-    output reg audio_found, output reg [31:0] audio_cluster, audio_size,
+    output reg thumb_found,
+    input wire [3:0] image_index,
+    output wire [31:0] image_cluster, image_size,
+    output reg audio_found,
     output reg [3:0] snd_valid,
-    output reg [127:0] snd_clusters,snd_sizes,
+    input wire [3:0] audio_index,
+    output wire [31:0] audio_entry_cluster, audio_entry_size,
     output reg font_found,text_found,
     output reg [31:0] font_cluster,font_size,text_cluster,text_size,
     output reg [3:0] edu_valid,voi_valid,
     output reg [3:0] voi_invalid,
-    output reg [127:0] edu_clusters,edu_sizes,voi_clusters,voi_sizes,
     output reg sector_req, output reg [31:0] sector_lba,
     input wire sector_busy, sector_valid, input wire [7:0] sector_byte,
     input wire [8:0] sector_byte_index,
@@ -187,19 +191,27 @@ module fat32_volume_scanner #(
     end
     // Delay the byte-31 commit enable and final size byte together. Entry
     // cluster/low size remain stable until byte 20 of the next directory entry.
-    // This removes the sector-index decode from the wide output register CE.
-    (* keep = "true" *) reg [18:0] entry_commit;
+    // Names are mutually exclusive, so one entry commits to at most one table
+    // row; the commit carries that row's kind and index.
+    reg image_commit,audio_commit,font_commit,text_commit;
+    reg commit_edu,commit_snd,commit_voi;
+    reg [1:0] commit_index;
     reg [7:0] entry_size_high;
     reg publicity_bmp_size_ok,publicity_pcm_size_ok;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
-            entry_commit<=0;entry_size_high<=0;
+            image_commit<=0;audio_commit<=0;font_commit<=0;text_commit<=0;
+            commit_edu<=0;commit_snd<=0;commit_voi<=0;commit_index<=0;entry_size_high<=0;
             publicity_bmp_size_ok<=0;publicity_pcm_size_ok<=0;
         end
         else begin
-            entry_commit<=0;
+            image_commit<=0;audio_commit<=0;font_commit<=0;text_commit<=0;
             if(state==DIR_WAIT && sector_valid && sector_byte_index[4:0]==31)begin
-                entry_commit<=entry_accept;entry_size_high<=sector_byte;
+                image_commit<=|{entry_accept[14:11],entry_accept[3:0]};
+                audio_commit<=|{entry_accept[18:15],entry_accept[8:4]};
+                font_commit<=entry_accept[9];text_commit<=entry_accept[10];
+                commit_edu<=|entry_accept[14:11];commit_snd<=|entry_accept[8:5];commit_voi<=|entry_accept[18:15];
+                commit_index<=resource_index;entry_size_high<=sector_byte;
                 // Size low bytes are already stable. Qualify the final byte
                 // alongside commit, so the wide metadata CEs use one bit.
                 publicity_bmp_size_ok<=sector_byte!=0 || entry_size[23:0]>=54;
@@ -210,14 +222,13 @@ module fat32_volume_scanner #(
     wire [31:0] committed_size={entry_size_high,entry_size[23:0]};
     // THUMB   BMP is an independent 8.3 entry, never a PIC stage alias.
     reg thumb_commit;
+    wire thumb_write=thumb_commit && DIRECTORY_ENABLE && !thumb_found;
     always @(posedge clk or negedge rst_n)begin
-     if(!rst_n)begin thumb_match<=0;thumb_commit<=0;thumb_found<=0;thumb_cluster<=0;thumb_size<=0;end
+     if(!rst_n)begin thumb_match<=0;thumb_commit<=0;thumb_found<=0;end
      else begin
       thumb_commit<=state==DIR_WAIT && sector_valid && !dir_end && sector_byte_index[4:0]==31 && thumb_match;
-      if(state==IDLE && scan_start)begin thumb_found<=0;thumb_cluster<=0;thumb_size<=0;thumb_match<=0;end
-      else if(thumb_commit && DIRECTORY_ENABLE && !thumb_found)begin
-       thumb_found<=1;thumb_cluster<=entry_cluster;thumb_size<=committed_size;
-      end
+      if(state==IDLE && scan_start)begin thumb_found<=0;thumb_match<=0;end
+      else if(thumb_write)thumb_found<=1;
       if(state==DIR_WAIT && sector_valid && !dir_end)case(sector_byte_index[4:0])
        0:thumb_match<=DIRECTORY_ENABLE && sector_byte=="T";
        1:thumb_match<=thumb_match && sector_byte=="H";
@@ -251,58 +262,49 @@ module fat32_volume_scanner #(
                 (publicity_hi_lt || (publicity_hi_eq && publicity_lo_le));
         end
     end
-    integer publicity_slot;
+    // Only new publicity resources get these basic metadata checks. BMP format
+    // is checked by reader preflight; PCM content is checked downstream.
+    wire edu_ok=SCAN_PUBLICITY && publicity_cluster_ok && publicity_bmp_size_ok;
+    wire voi_ok=SCAN_PUBLICITY && publicity_cluster_ok && publicity_pcm_size_ok;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
-            edu_valid<=0;voi_valid<=0;voi_invalid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
-        end else if(state==IDLE && scan_start) begin
-            edu_valid<=0;voi_valid<=0;voi_invalid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
-        end else if(SCAN_PUBLICITY) begin
-            // Only new resources get these basic metadata checks. BMP format
-            // is checked by reader preflight; PCM content is checked downstream.
-            for(publicity_slot=0;publicity_slot<4;publicity_slot=publicity_slot+1) begin
-                if(entry_commit[11+publicity_slot] && publicity_cluster_ok && publicity_bmp_size_ok) begin
-                    edu_valid[publicity_slot]<=1;
-                    edu_clusters[32*publicity_slot+:32]<=entry_cluster;
-                    edu_sizes[32*publicity_slot+:32]<=committed_size;
-                end
-                if(entry_commit[15+publicity_slot] && (!publicity_cluster_ok || !publicity_pcm_size_ok))
-                    voi_invalid[publicity_slot]<=1;
-                if(entry_commit[15+publicity_slot] && publicity_cluster_ok && publicity_pcm_size_ok) begin
-                    voi_valid[publicity_slot]<=1;voi_invalid[publicity_slot]<=0;
-                    voi_clusters[32*publicity_slot+:32]<=entry_cluster;
-                    voi_sizes[32*publicity_slot+:32]<=committed_size;
-                end
-            end
-        end
-    end
-    always @(posedge clk or negedge rst_n) begin
-        if(!rst_n) begin
-            resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;
-            snd_valid<=0;snd_clusters<=0;snd_sizes<=0;
+            resource_valid<=0;edu_valid<=0;audio_found<=0;snd_valid<=0;voi_valid<=0;voi_invalid<=0;
             font_found<=0;text_found<=0;font_cluster<=0;font_size<=0;text_cluster<=0;text_size<=0;
-            resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
-            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
         end else if(state==IDLE && scan_start) begin
-            resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;
-            snd_valid<=0;snd_clusters<=0;snd_sizes<=0;
+            resource_valid<=0;edu_valid<=0;audio_found<=0;snd_valid<=0;voi_valid<=0;voi_invalid<=0;
             font_found<=0;text_found<=0;font_cluster<=0;font_size<=0;text_cluster<=0;text_size<=0;
-            resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
-            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
         end else begin
-            if(entry_commit[0])begin resource_valid[0]<=1;resource0_cluster<=entry_cluster;resource0_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[1])begin resource_valid[1]<=1;resource1_cluster<=entry_cluster;resource1_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[2])begin resource_valid[2]<=1;resource2_cluster<=entry_cluster;resource2_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[3])begin resource_valid[3]<=1;resource3_cluster<=entry_cluster;resource3_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[4])begin audio_found<=1;audio_cluster<=entry_cluster;audio_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[5])begin snd_valid[0]<=1;snd_clusters[31:0]<=entry_cluster;snd_sizes[31:0]<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[6])begin snd_valid[1]<=1;snd_clusters[63:32]<=entry_cluster;snd_sizes[63:32]<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[7])begin snd_valid[2]<=1;snd_clusters[95:64]<=entry_cluster;snd_sizes[95:64]<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[9])begin font_found<=1;font_cluster<=entry_cluster;font_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[10])begin text_found<=1;text_cluster<=entry_cluster;text_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[8])begin snd_valid[3]<=1;snd_clusters[127:96]<=entry_cluster;snd_sizes[127:96]<={entry_size_high,entry_size[23:0]};end
+            if(image_commit && !commit_edu)resource_valid[commit_index]<=1;
+            if(image_commit && commit_edu && edu_ok)edu_valid[commit_index]<=1;
+            if(audio_commit && !commit_snd && !commit_voi)audio_found<=1;
+            if(audio_commit && commit_snd)snd_valid[commit_index]<=1;
+            if(SCAN_PUBLICITY && audio_commit && commit_voi)begin
+                voi_valid[commit_index]<=voi_ok;voi_invalid[commit_index]<=!voi_ok;
+            end
+            if(font_commit)begin font_found<=1;font_cluster<=entry_cluster;font_size<=committed_size;end
+            if(text_commit)begin text_found<=1;text_cluster<=entry_cluster;text_size<=committed_size;end
         end
     end
+    // Distributed RAM rows: cluster[27:0] (bits 31..28 are always zero) and size.
+    wire [59:0] table_entry={entry_cluster[27:0],committed_size};
+    wire image_write=(image_commit && (!commit_edu || edu_ok)) || thumb_write;
+    wire [3:0] image_slot=thumb_commit ? 4'd8 : {1'b0,commit_edu,commit_index};
+    wire audio_write=audio_commit && (!commit_voi || voi_ok);
+    wire [3:0] audio_slot={commit_voi,commit_snd,(commit_voi || commit_snd) ? commit_index : 2'd0};
+    reg [59:0] image_table[0:15];
+    reg [59:0] audio_table[0:15];
+    integer table_row;
+    initial for(table_row=0;table_row<16;table_row=table_row+1)begin
+        image_table[table_row]=0;audio_table[table_row]=0;
+    end
+    always @(posedge clk)begin
+        if(image_write)image_table[image_slot]<=table_entry;
+        if(audio_write)audio_table[audio_slot]<=table_entry;
+    end
+    wire [59:0] image_row=image_table[image_index];
+    wire [59:0] audio_row=audio_table[audio_index];
+    assign image_cluster={4'd0,image_row[59:32]};assign image_size=image_row[31:0];
+    assign audio_entry_cluster={4'd0,audio_row[59:32]};assign audio_entry_size=audio_row[31:0];
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;

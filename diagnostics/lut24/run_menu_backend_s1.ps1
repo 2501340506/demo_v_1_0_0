@@ -30,8 +30,8 @@ Run-Case 'contract_violation' $backend $false 5 0
 $mut=Join-Path $out 'mutant_src'; New-Item -ItemType Directory -Path $mut | Out-Null
 $text=Get-Content $backend -Raw
 $mutants=@(
- @('confirm_source','else begin directory_source<=DIR_SELECTED;','else begin directory_source<=DIR_SAVED;'),
- @('scene_source','directory_source<=DIR_SCENE;hazard<=','directory_source<=DIR_PARENT;hazard<='),
+ @('confirm_source','else begin directory<=selected_directory;','else begin directory<=saved_directory;'),
+ @('scene_source','directory<=clusters[scene*32+:32];hazard<=','directory<=parent_cluster;hazard<='),
  @('invalidate_keep','if(invalidate)begin cache_complete<=0;valid<=0;end','if(invalidate)begin valid<=0;end')
 )
 foreach($m in $mutants){

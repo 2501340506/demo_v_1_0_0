@@ -31,7 +31,7 @@ module tb_fat32_reader;
     reg write_ready=1;integer ready_cycles=0;
     always @(negedge clk)begin ready_cycles=ready_cycles+1;write_ready=!SCALE_TEST || ready_cycles%23<13;end
     fat32_bmp_reader #(.SCALE_ENABLE(SCALE_TEST),.CLK_FREQ_HZ(1000),.TIMEOUT_MS(500),.MAX_VISITED_CLUSTERS(4)) dut(
-      .audio_found(),.audio_cluster(),.audio_size(),.audio_spc(),.audio_fat_lba(),.audio_data_lba(),.audio_max_cluster(),
+      .audio_found(),.audio_index(4'd0),.audio_entry_cluster(),.audio_entry_size(),.audio_spc(),.audio_fat_lba(),.audio_data_lba(),.audio_max_cluster(),
       .a_req(1'b0),.a_lba(32'd0),.a_cancel(1'b0),.a_urgent(1'b0),
       .a_busy(),.a_valid(),.a_done(),.a_error(),.a_byte(),.a_index(),
       .clk(clk),.rst(rst),.sd_init_done(1'b1),.scan_start(scan_start),.load_cancel(1'b0),.load_start(file_start),

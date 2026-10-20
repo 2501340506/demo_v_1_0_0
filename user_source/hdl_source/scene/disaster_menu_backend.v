@@ -11,7 +11,7 @@ module disaster_menu_backend(
  input application_busy,scene_ready,display_committed,display_off,
  output reg owner,output ready,discard,menu_write,
  output preview_mode,output reg fallback_thumbnail,rejected,
- output reg scan_start,output [31:0] directory,
+ output reg scan_start,output reg [31:0] directory,
  output reg publicity,output reg [2:0] hazard,
  output load_request,load_result_ready,output reg direct_load,
  output [1:0] load_index,write_slot,
@@ -38,13 +38,8 @@ module disaster_menu_backend(
  // cache; menu entry requires an idle scanner, so no parent compare is needed.
  reg cache_complete;
  reg [1:0] chosen_focus;
- // The reader latches directory at scan start. Each source is stable from
- // its selection through that scan's completion.
- localparam DIR_PARENT=0,DIR_SCENE=1,DIR_SELECTED=2,DIR_SAVED=3;
- reg [1:0] directory_source;
- assign directory=directory_source==DIR_PARENT ? parent_cluster :
-  directory_source==DIR_SCENE ? clusters[scene*32+:32] :
-  directory_source==DIR_SELECTED ? selected_directory : saved_directory;
+ // directory stays registered: a combinational source select put the
+ // reader-ready decode in front of the scanner's directory latch (S2 TD02).
  // Only consume settled exit summaries while the application owns the
  // reader. One extra control cycle breaks reader/cache -> menu -> shared
  // resource enables; no transaction can be issued in these wait states.
@@ -73,7 +68,7 @@ module disaster_menu_backend(
    state<=IDLE;owner<=0;after_clear<=IDLE;scene<=0;saved_app<=0;force_target<=2;found<=0;clusters<=0;
    saved_directory<=0;saved_publicity<=0;saved_hazard<=0;abort_pending<=0;
    chosen<=0;seen_busy<=0;seen_commit<=0;scan_fault<=0;
-   scan_start<=0;directory_source<=DIR_PARENT;publicity<=0;hazard<=0;direct_load<=0;
+   scan_start<=0;directory<=0;publicity<=0;hazard<=0;direct_load<=0;
    valid<=0;visible<=0;force_scene<=0;exit_done<=0;resume<=0;
    selected_directory<=0;selected_hazard<=0;
    cache_complete<=0;chosen_focus<=0;scene_found<=0;entry_cache_hit<=0;entry_parent_valid<=0;fallback_thumbnail<=0;rejected<=0;
@@ -89,7 +84,7 @@ module disaster_menu_backend(
      saved_directory<=original_directory;saved_publicity<=original_publicity;saved_hazard<=original_hazard;
      saved_app<=original_app;force_target<=2;
      abort_pending<=0;chosen<=0;visible<=1;scene<=0;fallback_thumbnail<=0;
-     directory_source<=DIR_PARENT;publicity<=0;hazard<=0;
+     directory<=parent_cluster;publicity<=0;hazard<=0;
      // Latch the entry decision before driving state and wide register enables.
      entry_cache_hit<=cache_complete && parent_valid;
      entry_parent_valid<=parent_valid;state<=ENTRY_CHECK;
@@ -109,7 +104,7 @@ module disaster_menu_backend(
      else if(!scene_found)state<=NEXT;
      else if(reader_ready)begin
       fallback_thumbnail<=0;
-      directory_source<=DIR_SCENE;hazard<={1'b0,scene}+3'd1;
+      directory<=clusters[scene*32+:32];hazard<={1'b0,scene}+3'd1;
       state<=SCENE_WAIT;
      end
     end
@@ -141,7 +136,7 @@ module disaster_menu_backend(
     end
     CONFIRM_SCAN:if(reader_ready)begin
      if(abort_pending)state<=chosen?RECOVER:RESTORE_ISSUE;
-     else begin directory_source<=DIR_SELECTED;hazard<=selected_hazard;publicity<=0;state<=CONFIRM_ISSUE;end
+     else begin directory<=selected_directory;hazard<=selected_hazard;publicity<=0;state<=CONFIRM_ISSUE;end
     end
     CONFIRM_ISSUE:if(reader_ready)begin scan_start<=1;after_clear<=CONFIRM_CHECK;state<=SCAN_CLEAR;end
     CONFIRM_CHECK:if(scan_done)begin
@@ -150,7 +145,7 @@ module disaster_menu_backend(
      else begin chosen<=1;state<=CONFIRM;end
     end
     RESTORE_ISSUE:if(reader_ready)begin
-     directory_source<=DIR_SAVED;publicity<=saved_publicity;hazard<=saved_hazard;
+     directory<=saved_directory;publicity<=saved_publicity;hazard<=saved_hazard;
      state<=RESTORE_WAIT;
     end
     RESTORE_WAIT:if(reader_ready)begin scan_start<=1;after_clear<=RESTORE_DONE;state<=SCAN_CLEAR;end
