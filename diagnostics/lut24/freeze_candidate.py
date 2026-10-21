@@ -36,10 +36,10 @@ def git(*args):
     return subprocess.check_output(['git', *args], cwd=ROOT, text=True, encoding='utf-8')
 
 
-def freeze(name, stage, number):
+def freeze(name, stage, number, kind='local'):
     build = OUTPUT / name
     phy = build / 'TD_project/demo_Runs/phy_1'
-    target = ROOT / f'releases/v0.24.0/{stage}-local.{number}'
+    target = ROOT / f'releases/v0.24.0/{stage}-{kind}.{number}'
     assert not target.exists(), 'Choose a new candidate; never overwrite a release'
     metrics = {k: float(re.search(k + r':\s*([-\d.]+)ns', read(phy / 'final_timing.rpt'))[1])
                for k in ('SWNS', 'HWNS', 'STNS', 'HTNS')}
@@ -115,5 +115,6 @@ if __name__ == '__main__':
     parser.add_argument('--build', required=True)
     parser.add_argument('--stage', required=True)
     parser.add_argument('--number', type=int, default=1)
+    parser.add_argument('--kind', default='local', choices=('local', 'diagnostic'))
     a = parser.parse_args()
-    freeze(a.build, a.stage, a.number)
+    freeze(a.build, a.stage, a.number, a.kind)

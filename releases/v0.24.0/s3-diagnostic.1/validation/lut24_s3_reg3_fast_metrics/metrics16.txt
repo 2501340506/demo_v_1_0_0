@@ -1,0 +1,23 @@
+﻿# METRIC scan_start cycle=14 reads=0
+# METRIC scan_start cycle=2132 reads=4
+# METRIC scan_ready cycle=4770 reads=9
+# METRIC source_done cycle=682649 reads=10
+# METRIC writer_done cycle=682663 reads=10
+# METRIC first_commit cycle=682923 reads=10
+# METRIC source_done cycle=1362374 reads=14
+# METRIC writer_done cycle=1362388 reads=14
+# METRIC source_done cycle=2040267 reads=15
+# METRIC writer_done cycle=2040281 reads=15
+# METRIC source_done cycle=2718162 reads=16
+# METRIC writer_done cycle=2718176 reads=16
+# METRIC menu_enter cycle=2718713 reads=16
+# METRIC source_done cycle=3166390 reads=598
+# METRIC writer_done cycle=3166404 reads=598
+# METRIC source_done cycle=3612500 reads=1177
+# METRIC writer_done cycle=3612514 reads=1177
+# METRIC source_done cycle=4058611 reads=1756
+# METRIC writer_done cycle=4058625 reads=1756
+# METRIC source_done cycle=4504721 reads=2335
+# METRIC writer_done cycle=4504735 reads=2335
+# METRIC menu_ready cycle=4504738 reads=2335
+# PASS selector metrics case=16 reads=2335 menuWrites=4
