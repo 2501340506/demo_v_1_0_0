@@ -32,7 +32,16 @@ module sd_card_top
 );
 wire block_read_error;
 wire sd_init_recovery;
-wire protocol_rst = rst || sd_init_failed || sd_init_recovery;
+// Drive the SPI/command asynchronous reset from one register. A LUT decode
+// of the init state (S_RECOVER) on the reset pin can glitch on multi-bit
+// state changes; the board then hung at CMD59 (v0.24 s3-local.1, Seed47).
+// The decode is sampled on the timed D input instead; recovery lasts 1024
+// cycles, so the one-cycle delay does not change the protocol sequence.
+reg protocol_rst;
+always @(posedge clk or posedge rst) begin
+    if(rst) protocol_rst <= 1'b1;
+    else protocol_rst <= sd_init_failed || sd_init_recovery;
+end
 wire[15:0]           spi_clk_div;               //SPI module clock division parameter
 wire                 cmd_req;                   //SD card command request
 wire                 cmd_req_ack;               //SD card command request response

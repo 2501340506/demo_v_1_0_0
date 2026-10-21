@@ -13,7 +13,7 @@ module tb_directories;
  fat32_volume_scanner #(.DIRECTORY_ENABLE(1),.SCAN_PUBLICITY(1)) dut(
  .clk(clk),.rst_n(!rst),.scan_start(start),.directory_cluster(meta[0]),
  .directory_valid(dirs),.directory_clusters(clusters),.scan_busy(),.scan_done(done),.fs_error(fs_error),
- .thumb_found(),.thumb_cluster(),.thumb_size(),.resource_valid(pics),.voi_sizes(),.voi_clusters(),.edu_sizes(),.edu_clusters(),.voi_invalid(),.voi_valid(),.edu_valid(),.text_size(),.text_cluster(),.font_size(),.font_cluster(),.text_found(),.font_found(),.snd_sizes(),.snd_clusters(),.snd_valid(),.audio_size(),.audio_cluster(),.audio_found(),.resource3_size(),.resource2_size(),.resource1_size(),.resource0_size(),.resource3_cluster(),.resource2_cluster(),.resource1_cluster(),.resource0_cluster(),.max_cluster(),.data_start_lba(),.fat_start_lba(),.sectors_per_cluster(),.partition_lba(),.sector_req(req),.sector_lba(lba),.sector_busy(serving),
+ .thumb_found(),.image_index(4'd0),.image_cluster(),.image_size(),.audio_index(4'd0),.audio_entry_cluster(),.audio_entry_size(),.resource_valid(pics),.voi_invalid(),.voi_valid(),.edu_valid(),.text_size(),.text_cluster(),.font_size(),.font_cluster(),.text_found(),.font_found(),.snd_valid(),.audio_found(),.max_cluster(),.data_start_lba(),.fat_start_lba(),.sectors_per_cluster(),.partition_lba(),.sector_req(req),.sector_lba(lba),.sector_busy(serving),
  .sector_valid(valid),.sector_byte(data),.sector_byte_index(index),.sector_done(sdone),.sector_error(error));
  always @(negedge clk)begin
   valid=0;sdone=0;error=0;

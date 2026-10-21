@@ -1,0 +1,38 @@
+{
+  "reviewed": true,
+  "font_rom_initialization_verified": true,
+  "baseline": "v0.23.0/s2-diagnostic.1 reports",
+  "constraints_byte_identical": true,
+  "comparisons": {
+    "syn_1": {
+      "current_warning_count": 73,
+      "baseline_warning_count": 73,
+      "new_signatures": [
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_hazard/modern/mux157_syn_1\" in ../../../user_source/hdl_source/scene/hazard_layer_v3.v(LINE) / pin \"addrb[0]\"",
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_hazard/modern/mux157_syn_1\" in ../../../user_source/hdl_source/scene/hazard_layer_v3.v(LINE) / pin \"bea[0]\""
+      ],
+      "additional_repetitions": [
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_hazard/modern/mux157_syn_1\" in ../../../user_source/hdl_source/scene/hazard_layer_v3.v(LINE) / pin \"addrb[0]\"",
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_hazard/modern/mux157_syn_1\" in ../../../user_source/hdl_source/scene/hazard_layer_v3.v(LINE) / pin \"bea[0]\""
+      ],
+      "removed": [
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_hazard/ramread1_syn_4\" in ../../../user_source/hdl_source/scene/disaster_layer.v(LINE) / pin \"bea[0]\"",
+        "SYN-5011 WARNING: Undriven pin: model \"top\" / inst \"u_hazard/ramread1_syn_4\" in ../../../user_source/hdl_source/scene/disaster_layer.v(LINE) / pin \"beb[0]\""
+      ]
+    },
+    "phy_1": {
+      "current_warning_count": 7,
+      "baseline_warning_count": 7,
+      "new_signatures": [],
+      "additional_repetitions": [],
+      "removed": []
+    }
+  },
+  "review_notes": [
+    "timing.sdc byte-identical to repository and v0.23.0/s2-diagnostic.1; pin.adc byte-identical to repository; no relaxed clocks or new exceptions.",
+    "check_timing: no clock / invalid constraint / combinational loops / no path constraints / shadowed exceptions all 0.",
+    "Font INIT/INITP decoded from final physical netlist: 17 BRAMs, 5796 rows x 21 bits match releases/v0.22.0/s1-local.1/font_rows.hex.",
+    "syn_1 73=73, phy_1 7=7 warnings. Two SYN-5011 undriven-pin signatures moved: removed on u_hazard/ramread1 (disaster_layer sideband BRAM, S1 narrowed 62->47 bits), added on pins addrb[0]/bea[0] of the unchanged hazard_layer_v3 table BRAM (mux157). Same unused-BRAM-port warning class; reviewed, not new logic.",
+    "Timing closure assessed separately: strict positive setup/hold and zero TNS; board performance pending."
+  ]
+}

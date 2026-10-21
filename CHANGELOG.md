@@ -1,3 +1,31 @@
+# v0.24.0（2026-10-21）
+
+## v0.24.0 正式版
+
+- 复用板测通过的 s3-local.2 bit（源码 `ef0eaaf`），逐字节一致，不重新构建。16926 LUT（基线 18183，−1257）、10081 寄存器、53/2 BRAM、12 DSP；Setup +0.130ns、Hold +0.030ns。
+- 目标 ≤16500 未达到，用户确认按实测修订。S4 后备项评估均无物理 LUT 收益，未交付。[正式版说明](releases/v0.24.0/README.md)、[归档](docs/history/2026-10-21/lut-reduction-v0.24/README.md)。
+
+
+## v0.24.0-s3-board.2 / s3-board.3
+
+- 用户确认 s3-local.2（Seed47）与 s3-local.3（Seed43）上板均正常；未提供逐项结果或次数。根因确认为 LUT 状态译码驱动的异步复位毛刺。未正式发布、未合并 main。
+
+## v0.24.0-s3-local.2 / s3-local.3
+
+- s3-local.1 与 Seed43 对照上板分别卡 SD 初始化（CMD59）和扫描 0 张图；两次网表中 SD 命令模块与读卡器的异步复位均由 LUT 状态译码驱动（v0.23 已有），多位状态翻转时可能毛刺。修复：`protocol_rst`、`parser_rst`、共用图头解析器复位改为寄存器驱动。
+- S3 回归全集、快速启动指标（与 v0.23 逐行一致）、引脚级 SD 启动仿真通过。local.2：Seed47，Setup +0.130ns、Hold +0.030ns，16926 LUT；local.3：Seed43，+0.121/+0.019ns，16956 LUT；均 53/2 BRAM、12 DSP，审计通过。待板测；s3-local.1 不建 board。
+
+## v0.24.0-s3-diagnostic-local.1（仅定位）
+
+- s3-local.1 板测失败：每次上电 6–8 秒后 ERR:05、数码管第 0 页 3b00，SD 初始化在 CMD59 附近未完成；同卡同板 v0.23 诊断 bit 正常。SD 驱动与约束未改，引脚级启动仿真两版一致，根因未查明。
+- 同源码 `9c87a41`、Seed43 构建 lut24_s3_td04 固定为对照：Setup +0.191ns、Hold +0.024ns，17107 LUT，审计通过。[对照说明](releases/v0.24.0/s3-diagnostic.1/README.md)、[板测反馈](docs/LUT资源裁减v0.24-S3板测反馈.md)。
+
+## v0.24.0-s3-local.1
+
+- LUT 资源裁减 S1–S3，功能不变：扫描器 MBR/版图/BPB 寄存器清理、数码管先选页再跨域、菜单后端删除冗余父目录比较、图层旁带 62→47 位；扫描器文件表搬入两块分布式 RAM 按行号读取；缩放读卡器预检与解码共用 BMP 头校验，PCM 与 BIN 共用文件流读取器。
+- 完整 lut24_s3_td03：Setup +0.120ns、Hold +0.057ns，STNS/HTNS=0；17097 LUT（基线 18183）、10035 寄存器、53 BRAM9k、2 BRAM32k、12 DSP。等价测试、回归、控制器 case0–23、快速启动指标（与 v0.23 逐行一致）、字库 ROM、约束及告警审计通过。
+- 目标 ≤16500 LUT 尚未达到；S1、S2 单独构建未达时序，未形成候选。[固定候选](releases/v0.24.0/s3-local.1/README.md)；板测待执行，无 board/正式发布/main 合并。
+
 # v0.23.0 开发中（2026-10-19，未发布）
 
 ## v0.23.0-s2-diagnostic-local.1（仅定位）

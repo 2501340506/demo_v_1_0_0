@@ -17,11 +17,11 @@ module fat32_bmp_reader #(
  output [5:0] directory_valid,output [191:0] directory_clusters,
  output reg active_publicity,
  output [3:0] pic_valid,edu_valid,voi_valid,voi_invalid,
- output [127:0] pic_clusters,pic_sizes,edu_clusters,edu_sizes,voi_clusters,voi_sizes,
  output reg [3:0] mapped_valid,
  output reg [1:0] scan_found_slot,
- output audio_found,output [31:0] audio_cluster,audio_size,
- output [3:0] snd_valid,output [127:0] snd_clusters,snd_sizes,
+ // Scanner audio table (0 BGM, 4..7 SND1..4, 8..11 VOI1..4), read by index.
+ output audio_found,output [3:0] snd_valid,
+ input [3:0] audio_index,output [31:0] audio_entry_cluster,audio_entry_size,
  output font_found,text_found,output [31:0] font_cluster,font_size,text_cluster,text_size,
  output [7:0] audio_spc,output [31:0] audio_fat_lba,audio_data_lba,audio_max_cluster,
  input a_req,input [31:0] a_lba,input a_urgent,a_cancel,
@@ -55,10 +55,9 @@ module fat32_bmp_reader #(
  wire [7:0] volume_error,stream_error,stream_byte,spc;
  wire [31:0] fat_lba,data_lba,max_cluster,stream_offset;
  reg preview_scan,thumb_selected;
- wire thumb_found;wire [31:0] thumb_cluster,thumb_size;
+ wire thumb_found;
  assign native_thumb=FAST_START && thumb_selected;
  wire [3:0] mask=native_thumb?{3'd0,thumb_found}:active_publicity ? edu_valid : pic_valid;
- wire [31:0] clusters[0:3],sizes[0:3];
  wire scan_req,file_req;wire [31:0] scan_lba,file_lba;
  wire sector_busy,sector_valid,sector_done;
  wire [7:0] sector_byte,sector_error;wire [8:0] sector_index;
@@ -78,6 +77,14 @@ module fat32_bmp_reader #(
   end
  end
  wire decoder_reset=rst || (SCAN_PUBLICITY?decoder_reset_q:(state==WRITE_WAIT || load_cancel));
+ // Header parser reset from a register, not a LUT decode of the 5-bit state:
+ // the parser also serves the decoder, so a decode glitch would clear a live
+ // header. Asserted in HEADER_REQ, long before the header sector's bytes.
+ reg header_reset_q;
+ always @(posedge clk or posedge rst)begin
+  if(rst)header_reset_q<=1'b1;
+  else header_reset_q<=state==HEADER_RESET;
+ end
  wire [2:0] decode_error;wire decode_done;
  wire request_allowed=(state==READ_FILE && decode_error==0 && !load_cancel);
  wire header_match;wire [33:0] required_end;
@@ -148,8 +155,10 @@ module fat32_bmp_reader #(
  // Resolve logical-to-physical mapping before selecting the wide metadata.
  // Both scanning and loading use the same registered physical table index.
  wire [1:0] select_slot=candidate[1:0];
- wire [31:0] selected_cluster=native_thumb?thumb_cluster:active_publicity ? edu_clusters[32*select_slot+:32] : clusters[select_slot];
- wire [31:0] selected_size=native_thumb?thumb_size:active_publicity ? edu_sizes[32*select_slot+:32] : sizes[select_slot];
+ // Image table rows: 0..3 PIC, 4..7 EDU, 8 THUMB. candidate/native_thumb are
+ // registered before SELECT and LOAD_SELECT latch the row.
+ wire [3:0] image_index=native_thumb ? 4'd8 : {1'b0,active_publicity,select_slot};
+ wire [31:0] selected_cluster,selected_size;
 
  reg [7:0] header_hazard,header_role;
  wire header_valid;
@@ -176,8 +185,6 @@ module fat32_bmp_reader #(
  end
  reg metadata_ready,mapping_ready,cancelled;
  wire indexed_load_valid=mapping_ready && (active_publicity || strict_hazard!=0 ? mapped_valid[load_index] : {1'b0,load_index}<scan_found_total);
- assign pic_clusters={clusters[3],clusters[2],clusters[1],clusters[0]};
- assign pic_sizes={sizes[3],sizes[2],sizes[1],sizes[0]};
  function [2:0] spc_shift;
  input [7:0] v;
  begin case(v) 2:spc_shift=1;4:spc_shift=2;8:spc_shift=3;16:spc_shift=4;
@@ -215,12 +222,11 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .clk(clk),.rst_n(!rst && !(SCAN_PUBLICITY && scan_cancel_q)),.scan_start(scan_go),.scan_busy(volume_busy),.scan_done(volume_done),.fs_error(volume_error),
  .directory_cluster(directory_cluster),.directory_valid(directory_valid),.directory_clusters(directory_clusters),
  .partition_lba(),.sectors_per_cluster(spc),.fat_start_lba(fat_lba),.data_start_lba(data_lba),.max_cluster(max_cluster),
- .resource_valid(pic_valid),.audio_found(audio_found),.audio_cluster(audio_cluster),.audio_size(audio_size),.resource0_cluster(clusters[0]),.resource1_cluster(clusters[1]),.resource2_cluster(clusters[2]),.resource3_cluster(clusters[3]),
- .edu_valid(edu_valid),.edu_clusters(edu_clusters),.edu_sizes(edu_sizes),.voi_valid(voi_valid),.voi_invalid(voi_invalid),.voi_clusters(voi_clusters),.voi_sizes(voi_sizes),
+ .resource_valid(pic_valid),.thumb_found(thumb_found),.edu_valid(edu_valid),
+ .image_index(image_index),.image_cluster(selected_cluster),.image_size(selected_size),
+ .audio_found(audio_found),.snd_valid(snd_valid),.voi_valid(voi_valid),.voi_invalid(voi_invalid),
+ .audio_index(audio_index),.audio_entry_cluster(audio_entry_cluster),.audio_entry_size(audio_entry_size),
  .font_found(font_found),.font_cluster(font_cluster),.font_size(font_size),.text_found(text_found),.text_cluster(text_cluster),.text_size(text_size),
- .snd_valid(snd_valid),.snd_clusters(snd_clusters),.snd_sizes(snd_sizes),
- .resource0_size(sizes[0]),.resource1_size(sizes[1]),.resource2_size(sizes[2]),.resource3_size(sizes[3]),
- .thumb_found(thumb_found),.thumb_cluster(thumb_cluster),.thumb_size(thumb_size),
  .sector_req(scan_req),.sector_lba(scan_lba),.sector_busy(sector_busy),.sector_valid(scan_sector_valid),
  .sector_byte(scan_sector_byte),.sector_byte_index(scan_sector_index),.sector_done(scan_sector_done),.sector_error(scan_sector_error));
  // Keep the file response in one pipeline bundle: the last byte may arrive
@@ -266,18 +272,33 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .sd_sec_read(sd_sec_read),.sd_sec_read_addr(sd_sec_read_addr),.sd_sec_read_data(sd_sec_read_data),
  .sd_sec_read_data_valid(sd_sec_read_data_valid),.sd_sec_read_end(sd_sec_read_end),.sd_sec_read_failed(sd_sec_read_failed));
  wire [31:0] header_width,header_height;wire header_32;
- bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(SCALE_ENABLE)) preflight(
- .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(header_valid),
- .file_byte(header_byte),.file_byte_offset({23'd0,header_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
- .file_len(header_file_len),.pixel_offset(),.width(header_width),.height(header_height),.required_end(required_end),.header_match(header_match),
- .skip_format(),.header_complete(),.is_32(header_32),.row_stride(),.expected_pixels());
  generate if(SCALE_ENABLE)begin:g_scale
- bmp_scale_stream #(.NATIVE_THUMB_ENABLE(FAST_START)) scaled(
+ // One header parser serves preflight (HEADER_WAIT sector bytes) and the
+ // decoder (file bytes after file_go). The decoder parses only while
+ // active, after its file_start reset; preflight results are consumed at
+ // HEADER_CHECK, before any load. Parameters match both former parsers.
+ wire [41:0] decoder_feed;
+ wire [196:0] shared_result;
+ wire [41:0] shared_feed={decoder_feed[41] || header_reset_q,header_valid || decoder_feed[40],
+  header_valid ? {header_byte,23'd0,header_index} : decoder_feed[39:0]};
+ bmp_header_result_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(1)) shared_header(
+ .clk(clk),.feed(shared_feed),.bmp_width(bmp_width),.bmp_height(bmp_height),
+ .result(shared_result),.file_len(header_file_len));
+ assign {header_32,required_end}={shared_result[196],shared_result[193:160]};
+ assign header_match=shared_result[194];
+ assign header_height=shared_result[95:64];assign header_width=shared_result[63:32];
+ bmp_scale_stream #(.NATIVE_THUMB_ENABLE(FAST_START),.SHARED_HEADER(1)) scaled(
  .clk(clk),.rst(decoder_reset),.file_start(file_go),.file_size(task_size),.native_thumb(native_thumb),
  .file_valid(stream_valid && state==READ_FILE),.file_byte(stream_byte),.file_byte_offset(stream_offset),
  .file_end(stream_done),.upstream_error(stream_error),.data_permit(data_permit),
- .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error));
+ .pixel_valid(pixel_valid),.pixel_ready(pixel_ready),.pixel_rgb(bmp_data),.done(decode_done),.error(decode_error),
+ .header_feed(decoder_feed),.header_result(shared_result));
  end else begin:g_fixed
+ bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(0)) preflight(
+ .clk(clk),.rst(rst || header_reset_q),.file_valid(header_valid),
+ .file_byte(header_byte),.file_byte_offset({23'd0,header_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
+ .file_len(header_file_len),.pixel_offset(),.width(header_width),.height(header_height),.required_end(required_end),.header_match(header_match),
+ .skip_format(),.header_complete(),.is_32(header_32),.row_stride(),.expected_pixels());
  assign data_permit=1'b1;
  bmp24_decoder #(.RUNTIME_DIMENSIONS(1),.ALLOW_32(1)) decoder(
  .clk(clk),.rst(decoder_reset),.expected_width(bmp_width),.expected_height(bmp_height),

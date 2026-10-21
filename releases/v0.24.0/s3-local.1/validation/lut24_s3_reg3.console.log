@@ -1,0 +1,105 @@
+== controller case0
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 0
+removed 96 selector fixture files from lut24_s3_reg3_ctrl0
+== controller case1
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 1
+removed 96 selector fixture files from lut24_s3_reg3_ctrl1
+== controller case2
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 2
+removed 96 selector fixture files from lut24_s3_reg3_ctrl2
+== controller case3
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 3
+removed 96 selector fixture files from lut24_s3_reg3_ctrl3
+== controller case4
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 4
+removed 96 selector fixture files from lut24_s3_reg3_ctrl4
+== controller case5
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 5
+removed 96 selector fixture files from lut24_s3_reg3_ctrl5
+== controller case6
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 6
+removed 96 selector fixture files from lut24_s3_reg3_ctrl6
+== controller case7
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 7
+removed 96 selector fixture files from lut24_s3_reg3_ctrl7
+== controller case8
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 8
+removed 96 selector fixture files from lut24_s3_reg3_ctrl8
+== controller case9
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 9
+removed 96 selector fixture files from lut24_s3_reg3_ctrl9
+== controller case10
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 10
+removed 96 selector fixture files from lut24_s3_reg3_ctrl10
+== controller case11
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 11
+removed 96 selector fixture files from lut24_s3_reg3_ctrl11
+== controller case12
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 12
+removed 96 selector fixture files from lut24_s3_reg3_ctrl12
+== controller case13
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 13
+removed 96 selector fixture files from lut24_s3_reg3_ctrl13
+== controller case14
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 14
+removed 96 selector fixture files from lut24_s3_reg3_ctrl14
+== controller case15
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 15
+removed 96 selector fixture files from lut24_s3_reg3_ctrl15
+== controller case16
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 16
+removed 96 selector fixture files from lut24_s3_reg3_ctrl16
+== controller case17
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 17
+removed 96 selector fixture files from lut24_s3_reg3_ctrl17
+== controller case18
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 18
+removed 96 selector fixture files from lut24_s3_reg3_ctrl18
+== controller case19
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 19
+removed 96 selector fixture files from lut24_s3_reg3_ctrl19
+== controller case20
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 20
+removed 96 selector fixture files from lut24_s3_reg3_ctrl20
+== controller case21
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 21
+removed 96 selector fixture files from lut24_s3_reg3_ctrl21
+== controller case22
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 22
+removed 96 selector fixture files from lut24_s3_reg3_ctrl22
+== controller case23
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 23
+removed 96 selector fixture files from lut24_s3_reg3_ctrl23
+== fast metrics
+Prepared current production metrics
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS metrics case 0 baseline=False
+PASS metrics case 11 baseline=False
+PASS metrics case 16 baseline=False
+removed 96 selector fixture files from lut24_s3_reg3_fast_metrics
+PASS S3 regression batch
+exit=0

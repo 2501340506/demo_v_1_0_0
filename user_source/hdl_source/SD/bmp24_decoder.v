@@ -1,4 +1,8 @@
-module bmp24_decoder #(
+// Decoder datapath without its BMP header parser. header_feed carries the
+// parser input {reset,valid,byte,offset[31:0]}; header_result returns
+// {is_32,complete,match,pixel_end[33:0],expected_pixels,row_stride,height,
+// width,pixel_offset}. bmp24_decoder below pairs it with its own parser.
+module bmp24_decoder_core #(
     parameter integer EXPECTED_WIDTH = 640,
     parameter integer EXPECTED_HEIGHT = 480,
     parameter integer RUNTIME_DIMENSIONS = 0,
@@ -20,13 +24,15 @@ module bmp24_decoder #(
     output reg frame_commit, output reg bmp_done, output reg [2:0] bmp_error,
     input wire pixel_ready, output wire file_ready,
     output wire [15:0] image_width, image_height,
-    output reg [31:0] pixel_rgba
+    output reg [31:0] pixel_rgba,
+    output wire [41:0] header_feed, input wire [196:0] header_result
 );
  wire [15:0] tw=RUNTIME_DIMENSIONS?expected_width:EXPECTED_WIDTH;
  wire [15:0] th=RUNTIME_DIMENSIONS?expected_height:EXPECTED_HEIGHT;
- wire [31:0] declared_size,pixel_offset,width,height,row_stride,expected_pixels;
+ wire [31:0] pixel_offset,width,height,row_stride,expected_pixels;
  wire [33:0] pixel_end;
  wire header_ok,header_complete,is_32;
+ assign {is_32,header_complete,header_ok,pixel_end,expected_pixels,row_stride,height,width,pixel_offset}=header_result;
  reg active,checked,end_pending;
  localparam ROW_BITS=RANGE_DIMENSIONS?11:32;
  localparam BYTE_BITS=RANGE_DIMENSIONS?13:32;
@@ -80,13 +86,7 @@ module bmp24_decoder #(
   payload_last <= {14'd0,payload_bytes}-1'b1;
   row_last <= row_stride-1'b1;
  end
- bmp_header_check #(.ALLOW_32(ALLOW_32),.RANGE_DIMENSIONS(RANGE_DIMENSIONS)) u_header (
-  .clk(clk),.rst(rst || file_start),.file_valid(active && take_byte),
-  .file_byte(file_byte),.file_byte_offset(header_byte_offset),.bmp_width(tw),.bmp_height(th),
-  .file_len(declared_size),.pixel_offset(pixel_offset),.width(width),.height(height),
-  .required_end(pixel_end),.header_match(header_ok),.skip_format(),
-  .expected_pixels(expected_pixels),.header_complete(header_complete),.is_32(is_32),.row_stride(row_stride)
- );
+ assign header_feed={rst || file_start,active && take_byte,file_byte,header_byte_offset};
  // Header fields settle before byte 53; split the independent directory-size
  // bound without changing the header-complete or first-payload handshake.
  reg size_hi_gt_end,size_hi_eq_end,size_lo_ge_end;
@@ -152,4 +152,46 @@ module bmp24_decoder #(
    end
   end
  end
+endmodule
+
+// Stand-alone decoder: the core with its own header parser.
+module bmp24_decoder #(
+    parameter integer EXPECTED_WIDTH = 640,
+    parameter integer EXPECTED_HEIGHT = 480,
+    parameter integer RUNTIME_DIMENSIONS = 0,
+    parameter integer ALLOW_32 = 1,
+    parameter integer RANGE_DIMENSIONS = 0,
+    parameter integer FLOW_CONTROL = 0,
+    parameter integer HEADER_OFFSET_LOOKAHEAD = 0
+) (
+    input wire clk, input wire rst,
+    input wire [15:0] expected_width, expected_height,
+    input wire file_start, input wire [31:0] file_size,
+    input wire file_valid, input wire [7:0] file_byte,
+    input wire [31:0] file_byte_offset, input wire file_end,
+    input wire [7:0] upstream_error,
+    output wire header_accepted, output wire pixel_valid,
+    output wire [23:0] pixel_rgb, output wire [15:0] pixel_x, pixel_y,
+    output wire frame_commit, output wire bmp_done, output wire [2:0] bmp_error,
+    input wire pixel_ready, output wire file_ready,
+    output wire [15:0] image_width, image_height,
+    output wire [31:0] pixel_rgba
+);
+ wire [15:0] tw=RUNTIME_DIMENSIONS?expected_width:EXPECTED_WIDTH;
+ wire [15:0] th=RUNTIME_DIMENSIONS?expected_height:EXPECTED_HEIGHT;
+ wire [41:0] header_feed;
+ wire [196:0] header_result;
+ bmp24_decoder_core #(.EXPECTED_WIDTH(EXPECTED_WIDTH),.EXPECTED_HEIGHT(EXPECTED_HEIGHT),
+  .RUNTIME_DIMENSIONS(RUNTIME_DIMENSIONS),.ALLOW_32(ALLOW_32),.RANGE_DIMENSIONS(RANGE_DIMENSIONS),
+  .FLOW_CONTROL(FLOW_CONTROL),.HEADER_OFFSET_LOOKAHEAD(HEADER_OFFSET_LOOKAHEAD)) core(
+  .clk(clk),.rst(rst),.expected_width(expected_width),.expected_height(expected_height),
+  .file_start(file_start),.file_size(file_size),.file_valid(file_valid),.file_byte(file_byte),
+  .file_byte_offset(file_byte_offset),.file_end(file_end),.upstream_error(upstream_error),
+  .header_accepted(header_accepted),.pixel_valid(pixel_valid),.pixel_rgb(pixel_rgb),
+  .pixel_x(pixel_x),.pixel_y(pixel_y),.frame_commit(frame_commit),.bmp_done(bmp_done),
+  .bmp_error(bmp_error),.pixel_ready(pixel_ready),.file_ready(file_ready),
+  .image_width(image_width),.image_height(image_height),.pixel_rgba(pixel_rgba),
+  .header_feed(header_feed),.header_result(header_result));
+ bmp_header_result_check #(.ALLOW_32(ALLOW_32),.RANGE_DIMENSIONS(RANGE_DIMENSIONS)) u_header(
+  .clk(clk),.feed(header_feed),.bmp_width(tw),.bmp_height(th),.result(header_result),.file_len());
 endmodule

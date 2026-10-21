@@ -1,0 +1,205 @@
+== header equivalence
+PASS header equivalence
+== decoder equivalence
+PASS decoder equivalence
+== stream equivalence
+PASS stream equivalence
+== audio control equivalence
+PASS audio control equivalence
+== voice equivalence
+PASS voice equivalence
+== narration unit
+PASS PS1: 1242 bytes, 276 glyphs, 599 characters
+# PASS narration: 1773418 pixel/timing checks, 50227 black Song 21px ink pixels; all 599 characters/276 glyphs; transparent background/no band, four full-duration scrolls, pause/replay/commit, 9 invalid resources, hidden/invalid bypass, wave gap
+== fat32 reader cases scale=0
+Generated 42 sparse FAT32 cases in D:\My_Program\anlogic_program\demo_v_1_0_0\diagnostics\output\lut24_s3fix_reg1_reader_scale0\fixtures
+PASS reader 0 super_fragmented gap=2 scale=0
+PASS reader 1 mbr_first_large_lba gap=2 scale=0
+PASS reader 2 mbr_second_jump_opcode gap=2 scale=0
+PASS reader 3 mbr_third gap=2 scale=0
+PASS reader 4 mbr_fourth_active_fat gap=2 scale=0
+PASS reader 5 root_multisector_multicluster gap=2 scale=0
+PASS reader 6 missing_readonly_and_attributes gap=2 scale=0
+PASS reader 7 empty_directory gap=2 scale=0
+PASS reader 8 directory_eoc gap=2 scale=0
+PASS reader 9 spc_2 gap=2 scale=0
+PASS reader 10 spc_4 gap=2 scale=0
+PASS reader 11 spc_8 gap=2 scale=0
+PASS reader 12 spc_16 gap=2 scale=0
+PASS reader 13 spc_32 gap=2 scale=0
+PASS reader 14 spc_64 gap=2 scale=0
+PASS reader 15 spc_128 gap=2 scale=0
+PASS reader 16 bad_signature gap=2 scale=0
+PASS reader 17 unsupported_bpb gap=2 scale=0
+PASS reader 18 bad_active_fat gap=2 scale=0
+PASS reader 19 boot_io_failure gap=2 scale=0
+PASS reader 20 directory_io_failure gap=2 scale=0
+PASS reader 21 file_early_eoc gap=2 scale=0
+PASS reader 22 file_free_cluster gap=2 scale=0
+PASS reader 23 file_self_loop gap=2 scale=0
+PASS reader 24 file_long_loop_limit gap=2 scale=0
+PASS reader 25 file_data_io_failure gap=2 scale=0
+PASS reader 26 file_fat_io_failure gap=2 scale=0
+PASS reader 27 true_directory_size_truncation gap=2 scale=0
+PASS reader 28 file_size_zero gap=2 scale=0
+PASS reader 29 file_first_cluster_invalid gap=2 scale=0
+PASS reader 30 root_self_loop gap=2 scale=0
+PASS reader 31 root_long_loop_limit gap=2 scale=0
+PASS reader 32 root_cluster_range gap=2 scale=0
+PASS reader 33 root_fat_io_failure gap=2 scale=0
+PASS reader 34 final_sector_io_failure gap=2 scale=0
+PASS reader 35 size_ignores_extra_allocated_cluster gap=2 scale=0
+PASS reader 36 first_matching_partition_selected gap=2 scale=0
+PASS reader 37 contiguous_file gap=2 scale=0
+PASS reader 38 rescan_clears_results gap=2 scale=0
+PASS reader 39 single_fat gap=2 scale=0
+PASS reader 40 exact_sector_eof gap=2 scale=0
+PASS reader 41 exact_cluster_eof gap=2 scale=0
+PASS reader 0 super_fragmented gap=0 scale=0
+PASS reader 1 mbr_first_large_lba gap=0 scale=0
+PASS reader 2 mbr_second_jump_opcode gap=0 scale=0
+PASS reader 3 mbr_third gap=0 scale=0
+PASS reader 4 mbr_fourth_active_fat gap=0 scale=0
+PASS reader 5 root_multisector_multicluster gap=0 scale=0
+PASS reader 6 missing_readonly_and_attributes gap=0 scale=0
+PASS reader 7 empty_directory gap=0 scale=0
+PASS reader 8 directory_eoc gap=0 scale=0
+PASS reader 9 spc_2 gap=0 scale=0
+PASS reader 10 spc_4 gap=0 scale=0
+PASS reader 11 spc_8 gap=0 scale=0
+PASS reader 12 spc_16 gap=0 scale=0
+PASS reader 13 spc_32 gap=0 scale=0
+PASS reader 14 spc_64 gap=0 scale=0
+PASS reader 15 spc_128 gap=0 scale=0
+PASS reader 16 bad_signature gap=0 scale=0
+PASS reader 17 unsupported_bpb gap=0 scale=0
+PASS reader 18 bad_active_fat gap=0 scale=0
+PASS reader 19 boot_io_failure gap=0 scale=0
+PASS reader 20 directory_io_failure gap=0 scale=0
+PASS reader 21 file_early_eoc gap=0 scale=0
+PASS reader 22 file_free_cluster gap=0 scale=0
+PASS reader 23 file_self_loop gap=0 scale=0
+PASS reader 24 file_long_loop_limit gap=0 scale=0
+PASS reader 25 file_data_io_failure gap=0 scale=0
+PASS reader 26 file_fat_io_failure gap=0 scale=0
+PASS reader 27 true_directory_size_truncation gap=0 scale=0
+PASS reader 28 file_size_zero gap=0 scale=0
+PASS reader 29 file_first_cluster_invalid gap=0 scale=0
+PASS reader 30 root_self_loop gap=0 scale=0
+PASS reader 31 root_long_loop_limit gap=0 scale=0
+PASS reader 32 root_cluster_range gap=0 scale=0
+PASS reader 33 root_fat_io_failure gap=0 scale=0
+PASS reader 34 final_sector_io_failure gap=0 scale=0
+PASS reader 35 size_ignores_extra_allocated_cluster gap=0 scale=0
+PASS reader 36 first_matching_partition_selected gap=0 scale=0
+PASS reader 37 contiguous_file gap=0 scale=0
+PASS reader 38 rescan_clears_results gap=0 scale=0
+PASS reader 39 single_fat gap=0 scale=0
+PASS reader 40 exact_sector_eof gap=0 scale=0
+PASS reader 41 exact_cluster_eof gap=0 scale=0
+PASS reader cases; only legacy unconnected-port warnings (2100 total)
+== controller case0
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 0
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl0
+== controller case1
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 1
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl1
+== controller case2
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 2
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl2
+== controller case3
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 3
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl3
+== controller case4
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 4
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl4
+== controller case5
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 5
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl5
+== controller case6
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 6
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl6
+== controller case7
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 7
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl7
+== controller case8
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 8
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl8
+== controller case9
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 9
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl9
+== controller case10
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 10
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl10
+== controller case11
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 11
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl11
+== controller case12
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 12
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl12
+== controller case13
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 13
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl13
+== controller case14
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 14
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl14
+== controller case15
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 15
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl15
+== controller case16
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 16
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl16
+== controller case17
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 17
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl17
+== controller case18
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 18
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl18
+== controller case19
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 19
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl19
+== controller case20
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 20
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl20
+== controller case21
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 21
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl21
+== controller case22
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 22
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl22
+== controller case23
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS selector controller case 23
+removed 96 selector fixture files from lut24_s3fix_reg1_ctrl23
+== fast metrics
+Prepared current production metrics
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+PASS metrics case 0 baseline=False
+PASS metrics case 11 baseline=False
+PASS metrics case 16 baseline=False
+removed 96 selector fixture files from lut24_s3fix_reg1_fast_metrics
+PASS S3 regression batch
+exit=0

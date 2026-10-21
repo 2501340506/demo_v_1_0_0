@@ -191,3 +191,22 @@ always @(posedge clk or posedge rst) begin
 end
 
 endmodule
+
+// Packed-bus form used by bmp24_decoder_core: feed {reset,valid,byte,offset}
+// and result {is_32,complete,match,required_end,expected_pixels,row_stride,
+// height,width,pixel_offset}.
+module bmp_header_result_check #(parameter ALLOW_32=0, parameter RANGE_DIMENSIONS=0) (
+ input clk,input [41:0] feed,input [15:0] bmp_width,bmp_height,
+ output [196:0] result,output [31:0] file_len
+);
+ wire [31:0] pixel_offset,width,height,row_stride,expected_pixels;
+ wire [33:0] required_end;
+ wire header_match,header_complete,is_32;
+ bmp_header_check #(.ALLOW_32(ALLOW_32),.RANGE_DIMENSIONS(RANGE_DIMENSIONS)) check(
+  .clk(clk),.rst(feed[41]),.file_valid(feed[40]),.file_byte(feed[39:32]),.file_byte_offset(feed[31:0]),
+  .bmp_width(bmp_width),.bmp_height(bmp_height),
+  .file_len(file_len),.pixel_offset(pixel_offset),.width(width),.height(height),
+  .required_end(required_end),.header_match(header_match),.skip_format(),
+  .header_complete(header_complete),.is_32(is_32),.row_stride(row_stride),.expected_pixels(expected_pixels));
+ assign result={is_32,header_complete,header_match,required_end,expected_pixels,row_stride,height,width,pixel_offset};
+endmodule

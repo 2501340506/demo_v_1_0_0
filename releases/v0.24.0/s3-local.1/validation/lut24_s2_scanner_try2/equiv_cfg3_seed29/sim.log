@@ -1,0 +1,23 @@
+# vsim -c -quiet -lib D:/My_Program/anlogic_program/demo_v_1_0_0/diagnostics/output/lut24_s2_scanner_try2/equiv_cfg3_seed29/work tb_scanner_s2_equivalence -l D:\My_Program\anlogic_program\demo_v_1_0_0\diagnostics\output\lut24_s2_scanner_try2\equiv_cfg3_seed29/sim.log -do "run -all; quit -f" -gSCANS=300 -gSEED=29 -gSCAN_PUBLICITY=0 -gSCAN_TEXT=0 -gSCAN_AUDIO=0 -gREUSE_GEOMETRY=0 -gDIRECTORY_ENABLE=0 
+# Start time: 23:43:36 on Oct 20,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# COVERAGE cycles=1180550 requests=1516 ok=134 bpb=110 sig=3 range=18 loop=6 limit=0 other=18 mbr=89 mbr_late=180 reuse=0 mirror=44 resources=128 publicity=0 image_rows=170974 audio_rows=0 thumb_rows=0 voi_rows=0
+# PASS scanner S2 equivalence
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_1_0_0/diagnostics/lut24/tb_scanner_s2_equivalence.sv(274)
+#    Time: 11805505 ns  Iteration: 1  Instance: /tb_scanner_s2_equivalence
+# End time: 23:43:38 on Oct 20,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0

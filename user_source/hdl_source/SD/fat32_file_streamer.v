@@ -286,3 +286,29 @@ module fat32_file_streamer #(
         end
     end
 endmodule
+
+// File source bus (fat32_file_streamer): request {rst_n,file_start,
+// data_permit,first_cluster[31:0],file_size[31:0]}, response {file_busy,
+// file_done,file_valid,file_byte[7:0],file_byte_offset[31:0],fs_error[7:0]}.
+module fat32_source_streamer #(
+    parameter integer MAX_VISITED_CLUSTERS = 8192,
+    parameter integer DATA_GATE_ENABLE = 0,
+    parameter integer FILE_SIZE_BITS = 32
+)(
+ input wire clk,input wire [66:0] request,output wire [50:0] response,
+ input wire [7:0] sectors_per_cluster,input wire [31:0] fat_start_lba,data_start_lba,max_cluster,
+ output wire sector_req,output wire [31:0] sector_lba,
+ input wire sector_busy,sector_valid,sector_done,
+ input wire [7:0] sector_byte,sector_error,input wire [8:0] sector_index
+);
+ wire busy,done,valid;wire [7:0] data,error;wire [31:0] offset;
+ fat32_file_streamer #(.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS),.DATA_GATE_ENABLE(DATA_GATE_ENABLE),
+  .FILE_SIZE_BITS(FILE_SIZE_BITS)) streamer(
+  .clk(clk),.rst_n(request[66]),.file_start(request[65]),.data_permit(request[64]),
+  .first_cluster(request[63:32]),.file_size(request[31:0]),
+  .sectors_per_cluster(sectors_per_cluster),.fat_start_lba(fat_start_lba),.data_start_lba(data_start_lba),.max_cluster(max_cluster),
+  .file_busy(busy),.file_done(done),.file_valid(valid),.file_byte(data),.file_byte_offset(offset),.fs_error(error),
+  .sector_req(sector_req),.sector_lba(sector_lba),.sector_busy(sector_busy),.sector_valid(sector_valid),
+  .sector_byte(sector_byte),.sector_byte_index(sector_index),.sector_done(sector_done),.sector_error(sector_error));
+ assign response={busy,done,valid,data,offset,error};
+endmodule

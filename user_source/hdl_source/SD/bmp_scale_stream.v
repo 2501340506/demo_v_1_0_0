@@ -1,10 +1,13 @@
-module bmp_scale_stream #(parameter NATIVE_THUMB_ENABLE=0)(
+// SHARED_HEADER=1: the decoder's header parser is outside (bmp24_decoder_core
+// header_feed/header_result buses); otherwise the decoder keeps its own.
+module bmp_scale_stream #(parameter NATIVE_THUMB_ENABLE=0, SHARED_HEADER=0)(
  input clk,rst,file_start,input [31:0] file_size,
  input native_thumb,
  input file_valid,input [7:0] file_byte,input [31:0] file_byte_offset,
  input file_end,input [7:0] upstream_error,
  output data_permit,output pixel_valid,input pixel_ready,output [31:0] pixel_rgb,
- output reg done,output [2:0] error
+ output reg done,output [2:0] error,
+ output [41:0] header_feed,input [196:0] header_result
 );
  wire bytes_valid,bytes_ready,bytes_done,header_valid,raw_valid,raw_ready;
  wire [7:0] bytes_data;wire [31:0] bytes_offset;
@@ -59,7 +62,16 @@ module bmp_scale_stream #(parameter NATIVE_THUMB_ENABLE=0)(
   .out_offset(bytes_offset),.out_done(bytes_done));
  // FETCH registers data one clock before PRESENT. The decoder can capture
  // the header address on that same FETCH edge without delaying consumption.
- bmp24_decoder #(.ALLOW_32(1),.RANGE_DIMENSIONS(1),.FLOW_CONTROL(1),
+ wire [196:0] decoder_header_result;
+ generate if(SHARED_HEADER)begin:g_shared_header
+  assign decoder_header_result=header_result;
+ end else begin:g_own_header
+  // Fixed 640x480 dimensions are unused in range mode, as in bmp24_decoder.
+  bmp_header_result_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(1)) u_header(
+   .clk(clk),.feed(header_feed),.bmp_width(16'd640),.bmp_height(16'd480),
+   .result(decoder_header_result),.file_len());
+ end endgenerate
+ bmp24_decoder_core #(.ALLOW_32(1),.RANGE_DIMENSIONS(1),.FLOW_CONTROL(1),
                  .HEADER_OFFSET_LOOKAHEAD(1)) decoder(
   .clk(clk),.rst(rst),.expected_width(16'd0),.expected_height(16'd0),
   .file_start(file_start),.file_size(file_size),.file_valid(bytes_valid),
@@ -67,7 +79,7 @@ module bmp_scale_stream #(parameter NATIVE_THUMB_ENABLE=0)(
   .upstream_error(upstream_error),.header_accepted(header_valid),.pixel_valid(raw_valid),
   .pixel_ready(raw_ready),.pixel_rgb(),.pixel_rgba(raw_rgb),.pixel_x(px),.pixel_y(py),
   .frame_commit(),.bmp_done(decoder_done),.bmp_error(error),.file_ready(bytes_ready),
-  .image_width(w),.image_height(h));
+  .image_width(w),.image_height(h),.header_feed(header_feed),.header_result(decoder_header_result));
  // Final TD03 measured raw_pipe_rgb[16] -> line BRAM at -0.020 ns.
  // Delay only that data bit, retaining both native and scaled cycle timing.
  wire [31:0] scale_input_rgb;

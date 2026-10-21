@@ -92,8 +92,12 @@ wire committed_valid, committed_ready, audio_update, audio_enable;
 
 wire [3:0]  state_code;
 wire [63:0] sd_debug;
-reg [63:0] sd_debug_panel0, sd_debug_panel1;
-reg [63:0] sd_debug_half;
+// The panel shows one 16-bit page at a time; select it before the crossing.
+wire [1:0] debug_page_panel;
+(* ASYNC_REG="TRUE" *) reg [1:0] debug_page_sd0, debug_page_sd1;
+reg [15:0] sd_debug_word;
+reg [15:0] sd_debug_panel0, sd_debug_panel1;
+reg [15:0] sd_debug_half;
 wire [7:0]  combo_event_count;
 wire        combo_debug_active;
 wire        auto_play_indicator;
@@ -169,9 +173,18 @@ wire reset_request = ~rst_n | ~sys_pll_lock;
 wire rst_panel, rst_sd, rst_mem, rst_video, rst_serial;
 // Half-cycle staging gives the observed bus margin at the 50 MHz capture edge.
 // This path remains timed; no diagnostic CDC timing exception is introduced.
+// The page changes every two seconds; one stale word for a few clocks is
+// invisible on the display.
+always @(posedge sd_card_clk or posedge rst_sd) begin
+    if(rst_sd) begin debug_page_sd0 <= 0; debug_page_sd1 <= 0; sd_debug_word <= 0; end
+    else begin
+        debug_page_sd0 <= debug_page_panel; debug_page_sd1 <= debug_page_sd0;
+        sd_debug_word <= sd_debug[16*debug_page_sd1+:16];
+    end
+end
 always @(negedge sd_card_clk or posedge rst_sd) begin
     if(rst_sd) sd_debug_half <= 0;
-    else sd_debug_half <= sd_debug;
+    else sd_debug_half <= sd_debug_word;
 end
 // Debug value settles before F; the panel consumes the retained result.
 always @(posedge clk or posedge rst_panel) begin
@@ -428,7 +441,7 @@ sd_card_bmp #(
 
 seg7_panel #(.SCENE_ENABLE(SCENE_DEMO_ENABLE)) seg7_panel_m0(
     .scene_enable(scene_panel[3]),.scene_warn(scene_panel[2]),.scene_stage(scene_panel[1:0]),
-    .sd_debug(sd_debug_panel1),
+    .debug_word(sd_debug_panel1), .debug_page(debug_page_panel),
     .clk               (clk),
     .rst_n             (~rst_panel),
     .mode              (mode_panel_sync1),
@@ -474,15 +487,19 @@ assign vout_data = display_valid ? vout_data_raw : 24'd0;
 wire adjust_hs,adjust_vs,adjust_de,adjust_wipe,adjust_valid,adjust_audio;
 wire [9:0] adjust_x;wire [8:0] adjust_y;wire [31:0] adjust_descriptor;
 wire [4:0] adjust_level;wire [23:0] adjusted_rgb_raw;
-wire [61:0] adjust_side;
-assign {adjust_hs,adjust_vs,adjust_de,adjust_x,adjust_y,adjust_descriptor,adjust_level,adjust_wipe,adjust_valid,adjust_audio}=adjust_side;
+// Only descriptor bits 24..8 are consumed after the layer. Unused sideband
+// bits would still keep one identity hold LUT each inside disaster_layer.
+wire [46:0] adjust_side;
+wire [16:0] adjust_descriptor_used;
+assign {adjust_hs,adjust_vs,adjust_de,adjust_x,adjust_y,adjust_descriptor_used,adjust_level,adjust_wipe,adjust_valid,adjust_audio}=adjust_side;
+assign adjust_descriptor={7'd0,adjust_descriptor_used,8'd0};
 wire adjust_preview=adjust_descriptor[17] || adjust_descriptor[24];
 wire [23:0] adjusted_rgb=(adjust_valid && adjust_de)?adjusted_rgb_raw:24'd0;
 wire [1:0] scene_stage;
 wire [7:0] scene_time;
 wire scene_fast,scene_slow,scene_enable;
 wire [23:0] hazard_rgb;
-wire [61:0] hazard_side;
+wire [46:0] hazard_side;
 generate if(SCENE_DEMO_ENABLE)begin:g_scenario
  wire [23:0] scenario_pixel_state;
  media_adjust_cdc state_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),.src_state({6'd0,scenario_meta_src,scenario_state_src}),
@@ -499,14 +516,14 @@ always @(posedge video_clk or posedge rst_video)begin
  if(rst_video)hazard_frame_count<=0;
  else if(sub_frame_start)hazard_frame_count<=hazard_frame_count+1'b1;
 end
-disaster_layer #(.SIDE_WIDTH(62)) u_hazard(
+disaster_layer #(.SIDE_WIDTH(47)) u_hazard(
  .clk(video_clk),.rst(rst_video),.rgb_in(pixel_descriptor[24]?vout_data_raw:vout_data),.arrival(vout_rgba_raw[7:0]),
  .kind(pixel_kind),.de(de),.frame_start(sub_frame_start),.frame_cnt(hazard_frame_count),
  .stage(scene_stage),.t_now(scene_time),.enable(scene_enable && de && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.thumbnail(preview_pixel),
  .blink_fast(scene_fast),.blink_slow(scene_slow),
- .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor,transition_level,transition_wipe,display_valid,audio_enable}),
+ .side_in({hs,vs,de,video_x,ring_y,pixel_descriptor[24:8],transition_level,transition_wipe,display_valid,audio_enable}),
  .rgb_out(hazard_rgb),.side_out(hazard_side));
-brightness_contrast_adjust #(.SIDE_WIDTH(62)) u_picture_adjust(
+brightness_contrast_adjust #(.SIDE_WIDTH(47)) u_picture_adjust(
  .clk(video_clk),.rst(rst_video),.rgb_in(hazard_rgb),.brightness(brightness_frame),.contrast(contrast_frame),
  .side_in(hazard_side),
  .rgb_out(adjusted_rgb_raw),.side_out(adjust_side));

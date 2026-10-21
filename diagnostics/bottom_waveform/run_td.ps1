@@ -1,4 +1,4 @@
-﻿param([string]$BuildName='bottom_wave_td01',[int]$Seed=43)
+﻿param([string]$BuildName='bottom_wave_td01',[int]$Seed=43,[string]$TdRoot='E:/TD')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $out=Join-Path $root "diagnostics/output/$BuildName"
@@ -9,7 +9,7 @@ Copy-Item "$root/user_source" "$out/user_source" -Recurse
 $project=git -C $root show HEAD:TD_project/demo.al
 [IO.File]::WriteAllText("$out/TD_project/demo.al",($project -join "`n"),[Text.UTF8Encoding]::new($false))
 Copy-Item "$root/diagnostics/run_td_build.ps1" "$out/diagnostics/run_td_build.ps1"
-& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -TdRoot E:/TD -HighAreaOptimization -PackMode more_lut_pair -PlacementSeed $Seed -HighFanoutOptimization -PlaceHoldFix -PostRouteOptimization -HighPlaceEffort -HighRouteEffort -TimingOptimization ultra -PostPlaceOptimization high
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$out/diagnostics/run_td_build.ps1" -BuildName $BuildName -TdRoot $TdRoot -HighAreaOptimization -PackMode more_lut_pair -PlacementSeed $Seed -HighFanoutOptimization -PlaceHoldFix -PostRouteOptimization -HighPlaceEffort -HighRouteEffort -TimingOptimization ultra -PostPlaceOptimization high
 if($LASTEXITCODE){throw 'TD build failed'}
 $report=Get-Content "$out/TD_project/demo_Runs/phy_1/final_timing.rpt" -Raw
 foreach($metric in @('SWNS','HWNS','STNS','HTNS')){

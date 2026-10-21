@@ -34,8 +34,12 @@ module disaster_menu_backend(
  reg saved_publicity,abort_pending,chosen,seen_busy,seen_commit;
  reg [2:0] saved_hazard;
  reg scan_fault;
- reg cache_complete;reg [31:0] cached_parent;
+ // parent_cluster changes only with a physical scan, which invalidates the
+ // cache; menu entry requires an idle scanner, so no parent compare is needed.
+ reg cache_complete;
  reg [1:0] chosen_focus;
+ // directory stays registered: a combinational source select put the
+ // reader-ready decode in front of the scanner's directory latch (S2 TD02).
  // Only consume settled exit summaries while the application owns the
  // reader. One extra control cycle breaks reader/cache -> menu -> shared
  // resource enables; no transaction can be issued in these wait states.
@@ -67,7 +71,7 @@ module disaster_menu_backend(
    scan_start<=0;directory<=0;publicity<=0;hazard<=0;direct_load<=0;
    valid<=0;visible<=0;force_scene<=0;exit_done<=0;resume<=0;
    selected_directory<=0;selected_hazard<=0;
-   cache_complete<=0;cached_parent<=0;chosen_focus<=0;scene_found<=0;entry_cache_hit<=0;entry_parent_valid<=0;fallback_thumbnail<=0;rejected<=0;
+   cache_complete<=0;chosen_focus<=0;scene_found<=0;entry_cache_hit<=0;entry_parent_valid<=0;fallback_thumbnail<=0;rejected<=0;
   end else begin
    scan_start<=0;direct_load<=0;force_scene<=0;exit_done<=0;resume<=0;rejected<=0;
    if(invalidate)begin cache_complete<=0;valid<=0;end
@@ -82,12 +86,12 @@ module disaster_menu_backend(
      abort_pending<=0;chosen<=0;visible<=1;scene<=0;fallback_thumbnail<=0;
      directory<=parent_cluster;publicity<=0;hazard<=0;
      // Latch the entry decision before driving state and wide register enables.
-     entry_cache_hit<=cache_complete && cached_parent==parent_cluster && parent_valid;
+     entry_cache_hit<=cache_complete && parent_valid;
      entry_parent_valid<=parent_valid;state<=ENTRY_CHECK;
     end
     ENTRY_CHECK:begin
      if(entry_cache_hit)state<=HOLD;
-     else begin valid<=0;cache_complete<=0;cached_parent<=directory;state<=entry_parent_valid?PARENT_ISSUE:HOLD;end
+     else begin valid<=0;cache_complete<=0;state<=entry_parent_valid?PARENT_ISSUE:HOLD;end
     end
     PARENT_ISSUE:if(reader_ready)begin scan_start<=1;after_clear<=PARENT_WAIT;state<=SCAN_CLEAR;end
     SCAN_CLEAR:if(!scan_done && !scan_start)state<=after_clear;

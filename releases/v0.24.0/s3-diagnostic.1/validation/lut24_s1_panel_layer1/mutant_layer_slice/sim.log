@@ -1,0 +1,28 @@
+# vsim -c -quiet -lib D:/My_Program/anlogic_program/demo_v_1_0_0/diagnostics/output/lut24_s1_panel_layer1/mutant_layer_slice/work tb_layer_side_s1 -l D:\My_Program\anlogic_program\demo_v_1_0_0\diagnostics\output\lut24_s1_panel_layer1\mutant_layer_slice/sim.log -do "run -all; quit -f" -gSEED=7 -gDESC_LSB=7 
+# Start time: 23:08:51 on Oct 20,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# MISMATCH t=180000 rgb 076200/076200 side 7d70f75771fd/7d70f6aee2fd
+# MISMATCH t=190000 rgb de9003/de9003 side 10e5e53b8069/10e5e4770069
+# MISMATCH t=200000 rgb 64b34c/64b34c side 7ad411a4a29e/7ad41149449e
+# MISMATCH t=210000 rgb 2b9fb4/2b9fb4 side 0e8b421983cd/0e8b423306cd
+# MISMATCH t=220000 rgb 79c960/79c960 side 48447c3ab5b2/48447c756bb2
+# COVERAGE cycles=400000 typed=184487 legacy=109727
+# FAIL layer side mismatches=399980
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_1_0_0/diagnostics/lut24/tb_layer_side_s1.sv(56)
+#    Time: 4000025 ns  Iteration: 1  Instance: /tb_layer_side_s1
+# End time: 23:08:57 on Oct 20,2026, Elapsed time: 0:00:06
+# Errors: 0, Warnings: 0

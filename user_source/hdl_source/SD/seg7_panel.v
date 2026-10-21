@@ -9,22 +9,20 @@ module seg7_panel #(
     input  [1:0] mode,
     input scene_enable,scene_warn,input [1:0] scene_stage,
     input  [3:0] state_code,
-    input [63:0] sd_debug,
+    // The source domain selects 16-bit page debug_page of its debug bus.
+    input [15:0] debug_word,
     input  [7:0] combo_event_count,
     input        combo_debug_active,
     input        auto_play_indicator,
     output [5:0] seg_sel,
-    output [7:0] seg_data
+    output [7:0] seg_data,
+    output reg [1:0] debug_page
 );
     wire [7:0] blank_digit = 8'hff;
     wire show_sd_failure = state_code == 4'hf;
     // debug_timer never passes 2*CLK_FREQ-1.
     localparam integer DEBUG_BITS = $clog2(2*CLK_FREQ);
     reg [DEBUG_BITS-1:0] debug_timer;
-    reg [1:0] debug_page;
-    wire [15:0] debug_word = (debug_page==0) ? sd_debug[15:0] :
-                            (debug_page==1) ? sd_debug[31:16] :
-                            (debug_page==2) ? sd_debug[47:32] : sd_debug[63:48];
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin debug_timer<=0;debug_page<=0;end
         else if(!show_sd_failure) begin debug_timer<=0;debug_page<=0;end

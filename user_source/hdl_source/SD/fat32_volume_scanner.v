@@ -13,18 +13,22 @@ module fat32_volume_scanner #(
     output reg [31:0] partition_lba,
     output reg [7:0] sectors_per_cluster,
     output reg [31:0] fat_start_lba, data_start_lba, max_cluster,
+    // File tables are read by index (no read latency). Entries are only
+    // meaningful while their valid/found bit is set.
+    // Image table: 0..3 PIC1..4, 4..7 EDU1..4, 8 THUMB.
+    // Audio table: 0 BGM, 4..7 SND1..4, 8..11 VOI1..4.
     output reg [3:0] resource_valid,
-    output reg [31:0] resource0_cluster, resource1_cluster, resource2_cluster, resource3_cluster,
-    output reg [31:0] resource0_size, resource1_size, resource2_size, resource3_size,
-    output reg thumb_found,output reg [31:0] thumb_cluster,thumb_size,
-    output reg audio_found, output reg [31:0] audio_cluster, audio_size,
+    output reg thumb_found,
+    input wire [3:0] image_index,
+    output wire [31:0] image_cluster, image_size,
+    output reg audio_found,
     output reg [3:0] snd_valid,
-    output reg [127:0] snd_clusters,snd_sizes,
+    input wire [3:0] audio_index,
+    output wire [31:0] audio_entry_cluster, audio_entry_size,
     output reg font_found,text_found,
     output reg [31:0] font_cluster,font_size,text_cluster,text_size,
     output reg [3:0] edu_valid,voi_valid,
     output reg [3:0] voi_invalid,
-    output reg [127:0] edu_clusters,edu_sizes,voi_clusters,voi_sizes,
     output reg sector_req, output reg [31:0] sector_lba,
     input wire sector_busy, sector_valid, input wire [7:0] sector_byte,
     input wire [8:0] sector_byte_index,
@@ -39,14 +43,20 @@ module fat32_volume_scanner #(
         ERR_LOOP=8'h23, ERR_RANGE=8'h24, ERR_LIMIT=8'h26;
     localparam COUNT_BITS=$clog2(MAX_VISITED_CLUSTERS+1);
     reg [4:0] state;
-    reg [15:0] bytes_per_sector, reserved, root_entries, fat16, flags;
+    reg [15:0] reserved;
     reg signature_low_ok, signature_high_ok;
-    reg [7:0] spc, fat_count;
+    // Check-only BPB fields keep one flag per byte; the sector supplies byte
+    // 16 (FAT count) before byte 40 (mirror flags) on every read.
+    reg bps_low_ok, bps_high_ok, root_low_zero, root_high_zero;
+    reg fat16_low_zero, fat16_high_zero, fat_count_ok, fat_two;
+    reg mirror_ok, active_fat1;
+    reg [7:0] spc;
     reg [31:0] total_sectors, fat_sectors, root_cluster;
-    reg [31:0] mbr_lba[0:3];
-    reg [3:0] mbr_match;
+    // Partition types precede their LBA bytes: capture the first match only.
+    reg [31:0] mbr_lba;
+    reg mbr_found, mbr_take;
     reg [2:0] cluster_shift;
-    reg [31:0] fat_span, current_cluster;
+    reg [31:0] current_cluster;
     reg [7:0] dir_sector;
     // The sector index and cluster size are stable throughout DIR_WAIT.
     // Prepare its successor decision before the wide LBA mux is enabled.
@@ -65,7 +75,10 @@ module fat32_volume_scanner #(
     reg [31:0] entry_cluster, entry_size, fat_entry;
     wire [31:0] next_cluster={4'b0,fat_entry[27:0]};
     wire [8:0] fat_offset={current_cluster[6:0],2'b00};
-    reg [31:0] overhead,data_sectors,cluster_count,partition_reserved,cluster_offset;
+    // overhead first holds the FAT span and later the root cluster offset;
+    // cluster_count first holds partition_lba+reserved. Neither temporary is
+    // read by the REUSE_GEOMETRY path, which resumes at LAYOUT_CHECK.
+    reg [31:0] overhead,cluster_count;
     reg data_borrow;   // total_sectors<overhead, from the LAYOUT_SUB subtraction
     reg [2:0] shift_count;   // layout and root shifts move one bit per cycle
     reg layout_bad,fat_end,fat_bad,fat_loop,fat_limit;
@@ -73,10 +86,10 @@ module fat32_volume_scanner #(
     reg fat_mid_gt,fat_mid_eq;
     reg root_hi_gt,root_hi_eq,root_lo_gt,dir_hi_gt,dir_hi_eq,dir_lo_gt;
     reg capacity_hi_gt,capacity_hi_eq,capacity_lo_ge,layout_fields_bad,dir_small;
-    wire bpb_fields_ok=(bytes_per_sector==512) && spc!=0 && ((spc & (spc-1'b1))==0) &&
-        reserved!=0 && (fat_count==1 || fat_count==2) && root_entries==0 && fat16==0 &&
-        total_sectors!=0 && fat_sectors!=0 && root_cluster>=2 &&
-        (!flags[7] || {4'd0,flags[3:0]}<fat_count);
+    wire bpb_fields_ok=bps_low_ok && bps_high_ok && spc!=0 && ((spc & (spc-1'b1))==0) &&
+        reserved!=0 && fat_count_ok && root_low_zero && root_high_zero &&
+        fat16_low_zero && fat16_high_zero &&
+        total_sectors!=0 && fat_sectors!=0 && root_cluster>=2 && mirror_ok;
     // BPB fields finish at byte 47, well before the sector-end parse states.
     // Register their joint test so it is not in the MBR address enable cone.
     // Signature (bytes 510/511) and sector_error retain their original checks.
@@ -178,19 +191,27 @@ module fat32_volume_scanner #(
     end
     // Delay the byte-31 commit enable and final size byte together. Entry
     // cluster/low size remain stable until byte 20 of the next directory entry.
-    // This removes the sector-index decode from the wide output register CE.
-    (* keep = "true" *) reg [18:0] entry_commit;
+    // Names are mutually exclusive, so one entry commits to at most one table
+    // row; the commit carries that row's kind and index.
+    reg image_commit,audio_commit,font_commit,text_commit;
+    reg commit_edu,commit_snd,commit_voi;
+    reg [1:0] commit_index;
     reg [7:0] entry_size_high;
     reg publicity_bmp_size_ok,publicity_pcm_size_ok;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
-            entry_commit<=0;entry_size_high<=0;
+            image_commit<=0;audio_commit<=0;font_commit<=0;text_commit<=0;
+            commit_edu<=0;commit_snd<=0;commit_voi<=0;commit_index<=0;entry_size_high<=0;
             publicity_bmp_size_ok<=0;publicity_pcm_size_ok<=0;
         end
         else begin
-            entry_commit<=0;
+            image_commit<=0;audio_commit<=0;font_commit<=0;text_commit<=0;
             if(state==DIR_WAIT && sector_valid && sector_byte_index[4:0]==31)begin
-                entry_commit<=entry_accept;entry_size_high<=sector_byte;
+                image_commit<=|{entry_accept[14:11],entry_accept[3:0]};
+                audio_commit<=|{entry_accept[18:15],entry_accept[8:4]};
+                font_commit<=entry_accept[9];text_commit<=entry_accept[10];
+                commit_edu<=|entry_accept[14:11];commit_snd<=|entry_accept[8:5];commit_voi<=|entry_accept[18:15];
+                commit_index<=resource_index;entry_size_high<=sector_byte;
                 // Size low bytes are already stable. Qualify the final byte
                 // alongside commit, so the wide metadata CEs use one bit.
                 publicity_bmp_size_ok<=sector_byte!=0 || entry_size[23:0]>=54;
@@ -201,14 +222,13 @@ module fat32_volume_scanner #(
     wire [31:0] committed_size={entry_size_high,entry_size[23:0]};
     // THUMB   BMP is an independent 8.3 entry, never a PIC stage alias.
     reg thumb_commit;
+    wire thumb_write=thumb_commit && DIRECTORY_ENABLE && !thumb_found;
     always @(posedge clk or negedge rst_n)begin
-     if(!rst_n)begin thumb_match<=0;thumb_commit<=0;thumb_found<=0;thumb_cluster<=0;thumb_size<=0;end
+     if(!rst_n)begin thumb_match<=0;thumb_commit<=0;thumb_found<=0;end
      else begin
       thumb_commit<=state==DIR_WAIT && sector_valid && !dir_end && sector_byte_index[4:0]==31 && thumb_match;
-      if(state==IDLE && scan_start)begin thumb_found<=0;thumb_cluster<=0;thumb_size<=0;thumb_match<=0;end
-      else if(thumb_commit && DIRECTORY_ENABLE && !thumb_found)begin
-       thumb_found<=1;thumb_cluster<=entry_cluster;thumb_size<=committed_size;
-      end
+      if(state==IDLE && scan_start)begin thumb_found<=0;thumb_match<=0;end
+      else if(thumb_write)thumb_found<=1;
       if(state==DIR_WAIT && sector_valid && !dir_end)case(sector_byte_index[4:0])
        0:thumb_match<=DIRECTORY_ENABLE && sector_byte=="T";
        1:thumb_match<=thumb_match && sector_byte=="H";
@@ -242,100 +262,97 @@ module fat32_volume_scanner #(
                 (publicity_hi_lt || (publicity_hi_eq && publicity_lo_le));
         end
     end
-    integer publicity_slot;
+    // Only new publicity resources get these basic metadata checks. BMP format
+    // is checked by reader preflight; PCM content is checked downstream.
+    wire edu_ok=SCAN_PUBLICITY && publicity_cluster_ok && publicity_bmp_size_ok;
+    wire voi_ok=SCAN_PUBLICITY && publicity_cluster_ok && publicity_pcm_size_ok;
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
-            edu_valid<=0;voi_valid<=0;voi_invalid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
-        end else if(state==IDLE && scan_start) begin
-            edu_valid<=0;voi_valid<=0;voi_invalid<=0;edu_clusters<=0;edu_sizes<=0;voi_clusters<=0;voi_sizes<=0;
-        end else if(SCAN_PUBLICITY) begin
-            // Only new resources get these basic metadata checks. BMP format
-            // is checked by reader preflight; PCM content is checked downstream.
-            for(publicity_slot=0;publicity_slot<4;publicity_slot=publicity_slot+1) begin
-                if(entry_commit[11+publicity_slot] && publicity_cluster_ok && publicity_bmp_size_ok) begin
-                    edu_valid[publicity_slot]<=1;
-                    edu_clusters[32*publicity_slot+:32]<=entry_cluster;
-                    edu_sizes[32*publicity_slot+:32]<=committed_size;
-                end
-                if(entry_commit[15+publicity_slot] && (!publicity_cluster_ok || !publicity_pcm_size_ok))
-                    voi_invalid[publicity_slot]<=1;
-                if(entry_commit[15+publicity_slot] && publicity_cluster_ok && publicity_pcm_size_ok) begin
-                    voi_valid[publicity_slot]<=1;voi_invalid[publicity_slot]<=0;
-                    voi_clusters[32*publicity_slot+:32]<=entry_cluster;
-                    voi_sizes[32*publicity_slot+:32]<=committed_size;
-                end
-            end
-        end
-    end
-    always @(posedge clk or negedge rst_n) begin
-        if(!rst_n) begin
-            resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;
-            snd_valid<=0;snd_clusters<=0;snd_sizes<=0;
+            resource_valid<=0;edu_valid<=0;audio_found<=0;snd_valid<=0;voi_valid<=0;voi_invalid<=0;
             font_found<=0;text_found<=0;font_cluster<=0;font_size<=0;text_cluster<=0;text_size<=0;
-            resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
-            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
         end else if(state==IDLE && scan_start) begin
-            resource_valid<=0;audio_found<=0;audio_cluster<=0;audio_size<=0;
-            snd_valid<=0;snd_clusters<=0;snd_sizes<=0;
+            resource_valid<=0;edu_valid<=0;audio_found<=0;snd_valid<=0;voi_valid<=0;voi_invalid<=0;
             font_found<=0;text_found<=0;font_cluster<=0;font_size<=0;text_cluster<=0;text_size<=0;
-            resource0_cluster<=0;resource1_cluster<=0;resource2_cluster<=0;resource3_cluster<=0;
-            resource0_size<=0;resource1_size<=0;resource2_size<=0;resource3_size<=0;
         end else begin
-            if(entry_commit[0])begin resource_valid[0]<=1;resource0_cluster<=entry_cluster;resource0_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[1])begin resource_valid[1]<=1;resource1_cluster<=entry_cluster;resource1_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[2])begin resource_valid[2]<=1;resource2_cluster<=entry_cluster;resource2_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[3])begin resource_valid[3]<=1;resource3_cluster<=entry_cluster;resource3_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[4])begin audio_found<=1;audio_cluster<=entry_cluster;audio_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[5])begin snd_valid[0]<=1;snd_clusters[31:0]<=entry_cluster;snd_sizes[31:0]<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[6])begin snd_valid[1]<=1;snd_clusters[63:32]<=entry_cluster;snd_sizes[63:32]<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[7])begin snd_valid[2]<=1;snd_clusters[95:64]<=entry_cluster;snd_sizes[95:64]<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[9])begin font_found<=1;font_cluster<=entry_cluster;font_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[10])begin text_found<=1;text_cluster<=entry_cluster;text_size<={entry_size_high,entry_size[23:0]};end
-            if(entry_commit[8])begin snd_valid[3]<=1;snd_clusters[127:96]<=entry_cluster;snd_sizes[127:96]<={entry_size_high,entry_size[23:0]};end
+            if(image_commit && !commit_edu)resource_valid[commit_index]<=1;
+            if(image_commit && commit_edu && edu_ok)edu_valid[commit_index]<=1;
+            if(audio_commit && !commit_snd && !commit_voi)audio_found<=1;
+            if(audio_commit && commit_snd)snd_valid[commit_index]<=1;
+            if(SCAN_PUBLICITY && audio_commit && commit_voi)begin
+                voi_valid[commit_index]<=voi_ok;voi_invalid[commit_index]<=!voi_ok;
+            end
+            if(font_commit)begin font_found<=1;font_cluster<=entry_cluster;font_size<=committed_size;end
+            if(text_commit)begin text_found<=1;text_cluster<=entry_cluster;text_size<=committed_size;end
         end
     end
-    integer j;
+    // Distributed RAM rows: cluster[27:0] (bits 31..28 are always zero) and size.
+    wire [59:0] table_entry={entry_cluster[27:0],committed_size};
+    wire image_write=(image_commit && (!commit_edu || edu_ok)) || thumb_write;
+    wire [3:0] image_slot=thumb_commit ? 4'd8 : {1'b0,commit_edu,commit_index};
+    wire audio_write=audio_commit && (!commit_voi || voi_ok);
+    wire [3:0] audio_slot={commit_voi,commit_snd,(commit_voi || commit_snd) ? commit_index : 2'd0};
+    reg [59:0] image_table[0:15];
+    reg [59:0] audio_table[0:15];
+    integer table_row;
+    initial for(table_row=0;table_row<16;table_row=table_row+1)begin
+        image_table[table_row]=0;audio_table[table_row]=0;
+    end
+    always @(posedge clk)begin
+        if(image_write)image_table[image_slot]<=table_entry;
+        if(audio_write)audio_table[audio_slot]<=table_entry;
+    end
+    wire [59:0] image_row=image_table[image_index];
+    wire [59:0] audio_row=audio_table[audio_index];
+    assign image_cluster={4'd0,image_row[59:32]};assign image_size=image_row[31:0];
+    assign audio_entry_cluster={4'd0,audio_row[59:32]};assign audio_entry_size=audio_row[31:0];
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             state<=IDLE;scan_done<=0;fs_error<=0;sector_req<=0;sector_lba<=0;
             layout_bad<=0;geometry_valid<=0;fat_end<=0;fat_bad<=0;fat_loop<=0;fat_limit<=0;
             fat_hi_gt<=0;fat_hi_eq<=0;fat_lo_gt<=0;fat_too_small<=0;fat_mid_gt<=0;fat_mid_eq<=0;
             partition_lba<=0;sectors_per_cluster<=0;fat_start_lba<=0;data_start_lba<=0;max_cluster<=0;
-            bytes_per_sector<=0;reserved<=0;root_entries<=0;fat16<=0;flags<=0;signature_low_ok<=0;signature_high_ok<=0;
-            spc<=0;fat_count<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
-            mbr_match<=0;for(j=0;j<4;j=j+1)mbr_lba[j]<=0;
-            overhead<=0;data_sectors<=0;data_borrow<=0;shift_count<=0;cluster_count<=0;partition_reserved<=0;cluster_offset<=0;cluster_shift<=0;fat_span<=0;current_cluster<=0;dir_sector<=0;visited<=0;
+            reserved<=0;signature_low_ok<=0;signature_high_ok<=0;
+            bps_low_ok<=0;bps_high_ok<=0;root_low_zero<=0;root_high_zero<=0;
+            fat16_low_zero<=0;fat16_high_zero<=0;fat_count_ok<=0;fat_two<=0;mirror_ok<=0;active_fat1<=0;
+            spc<=0;total_sectors<=0;fat_sectors<=0;root_cluster<=0;
+            mbr_lba<=0;mbr_found<=0;mbr_take<=0;
+            overhead<=0;data_borrow<=0;shift_count<=0;cluster_count<=0;cluster_shift<=0;current_cluster<=0;dir_sector<=0;visited<=0;
             dir_end<=0;name_match<=0;resource_index<=0;entry_cluster<=0;entry_size<=0;fat_entry<=0;
             audio_match<=0;snd_match<=0;font_match<=0;text_match<=0;edu_match<=0;voi_match<=0;
         end else begin
             scan_done<=0;sector_req<=0;
             if(sector_valid && (state==ZERO_WAIT || state==BOOT_WAIT)) begin
                 case(sector_byte_index)
-                    11:bytes_per_sector[7:0]<=sector_byte;12:bytes_per_sector[15:8]<=sector_byte;
+                    11:bps_low_ok<=sector_byte==8'h00;12:bps_high_ok<=sector_byte==8'h02;
                     13:spc<=sector_byte;
                     14:reserved[7:0]<=sector_byte;15:reserved[15:8]<=sector_byte;
-                    16:fat_count<=sector_byte;
-                    17:root_entries[7:0]<=sector_byte;18:root_entries[15:8]<=sector_byte;
-                    22:fat16[7:0]<=sector_byte;23:fat16[15:8]<=sector_byte;
+                    16:begin fat_count_ok<=sector_byte==1 || sector_byte==2;fat_two<=sector_byte==2;end
+                    17:root_low_zero<=sector_byte==0;18:root_high_zero<=sector_byte==0;
+                    22:fat16_low_zero<=sector_byte==0;23:fat16_high_zero<=sector_byte==0;
                     32:total_sectors[7:0]<=sector_byte;33:total_sectors[15:8]<=sector_byte;
                     34:total_sectors[23:16]<=sector_byte;35:total_sectors[31:24]<=sector_byte;
                     36:fat_sectors[7:0]<=sector_byte;37:fat_sectors[15:8]<=sector_byte;
                     38:fat_sectors[23:16]<=sector_byte;39:fat_sectors[31:24]<=sector_byte;
-                    40:flags[7:0]<=sector_byte;41:flags[15:8]<=sector_byte;
+                    // Mirroring disabled requires active FAT < FAT count (1 or 2).
+                    40:begin
+                        mirror_ok<=!sector_byte[7] || (sector_byte[3:1]==0 && (fat_two || !sector_byte[0]));
+                        active_fat1<=sector_byte[7] && sector_byte[0];
+                    end
                     44:root_cluster[7:0]<=sector_byte;45:root_cluster[15:8]<=sector_byte;
                     46:root_cluster[23:16]<=sector_byte;47:root_cluster[31:24]<={4'b0,sector_byte[3:0]};
                     510:signature_low_ok<=(sector_byte==8'h55);511:signature_high_ok<=(sector_byte==8'haa);
                     default:;
                 endcase
-                if(state==ZERO_WAIT) begin
-                    for(j=0;j<4;j=j+1) begin
-                        if(sector_byte_index==450+16*j) mbr_match[j]<=(sector_byte==8'h0b || sector_byte==8'h0c);
-                        if(sector_byte_index==454+16*j)mbr_lba[j][7:0]<=sector_byte;
-                        if(sector_byte_index==455+16*j)mbr_lba[j][15:8]<=sector_byte;
-                        if(sector_byte_index==456+16*j)mbr_lba[j][23:16]<=sector_byte;
-                        if(sector_byte_index==457+16*j)mbr_lba[j][31:24]<=sector_byte;
-                    end
-                end
+                // Partition entries: type at 450+16j, LBA at 454..457+16j.
+                if(state==ZERO_WAIT && sector_byte_index[8:6]==3'b111)
+                    case(sector_byte_index[3:0])
+                        2:mbr_take<=!mbr_found && (sector_byte==8'h0b || sector_byte==8'h0c);
+                        6:if(mbr_take)mbr_lba[7:0]<=sector_byte;
+                        7:if(mbr_take)mbr_lba[15:8]<=sector_byte;
+                        8:if(mbr_take)mbr_lba[23:16]<=sector_byte;
+                        9:if(mbr_take)begin mbr_lba[31:24]<=sector_byte;mbr_found<=1;end
+                        default:;
+                    endcase
             end
             if(state==DIR_WAIT && sector_valid && !dir_end) begin
                 case(sector_byte_index[4:0])
@@ -378,7 +395,7 @@ module fat32_volume_scanner #(
             end
             case(state)
                 IDLE:if(scan_start) begin
-                    fs_error<=0;mbr_match<=0;dir_end<=0;
+                    fs_error<=0;mbr_found<=0;mbr_take<=0;dir_end<=0;
                     if(REUSE_GEOMETRY && geometry_valid)state<=LAYOUT_CHECK;
                     else begin partition_lba<=0;sector_lba<=0;state<=ZERO_REQ;end
                 end
@@ -388,12 +405,8 @@ module fat32_volume_scanner #(
                     if(!signature_low_ok || !signature_high_ok)fail(ERR_SIGNATURE);
                     // An MBR can also begin EB/E9; recognize actual BPB fields.
                     else if(bpb_ok)state<=BOOT_PARSE;
-                    else if(mbr_match!=0)begin
-                        if(mbr_match[0])begin partition_lba<=mbr_lba[0];sector_lba<=mbr_lba[0];end
-                        else if(mbr_match[1])begin partition_lba<=mbr_lba[1];sector_lba<=mbr_lba[1];end
-                        else if(mbr_match[2])begin partition_lba<=mbr_lba[2];sector_lba<=mbr_lba[2];end
-                        else begin partition_lba<=mbr_lba[3];sector_lba<=mbr_lba[3];end
-                        state<=BOOT_REQ;
+                    else if(mbr_found)begin
+                        partition_lba<=mbr_lba;sector_lba<=mbr_lba;state<=BOOT_REQ;
                     end else fail(ERR_BPB);
                 end
                 BOOT_REQ:if(!sector_busy)begin sector_req<=1;state<=BOOT_WAIT;end
@@ -403,22 +416,22 @@ module fat32_volume_scanner #(
                     else if(!bpb_ok)fail(ERR_BPB);
                     else begin
                         sectors_per_cluster<=spc;cluster_shift<=spc_shift(spc);
-                        fat_span<=fat_count==2 ? fat_sectors<<1 : fat_sectors;
-                        partition_reserved<=partition_lba+{16'd0,reserved};
+                        overhead<=fat_two ? fat_sectors<<1 : fat_sectors;
+                        cluster_count<=partition_lba+{16'd0,reserved};
                         state<=LAYOUT;
                     end
                 end
                 LAYOUT:begin
-                    overhead<={16'd0,reserved}+fat_span;
-                    fat_start_lba<=partition_reserved+((flags[7] && flags[0])?fat_sectors:32'd0);
+                    overhead<={16'd0,reserved}+overhead;
+                    fat_start_lba<=cluster_count+(active_fat1?fat_sectors:32'd0);
                     state<=LAYOUT_SUB;
                 end
                 LAYOUT_SUB:begin
-                    {data_borrow,data_sectors}<={1'b0,total_sectors}-{1'b0,overhead};
+                    {data_borrow,cluster_count}<={1'b0,total_sectors}-{1'b0,overhead};
                     data_start_lba<=partition_lba+overhead;
                     state<=LAYOUT_LOAD;
                 end
-                LAYOUT_LOAD:begin cluster_count<=data_sectors;shift_count<=cluster_shift;state<=LAYOUT_SHIFT;end
+                LAYOUT_LOAD:begin shift_count<=cluster_shift;state<=LAYOUT_SHIFT;end
                 LAYOUT_SHIFT:if(shift_count!=0)begin cluster_count<={1'b0,cluster_count[31:1]};shift_count<=shift_count-1'b1;end
                 else state<=LAYOUT_MAX;
                 LAYOUT_MAX:begin max_cluster<=cluster_count+1;state<=LAYOUT_CHECK;end
@@ -436,10 +449,11 @@ module fat32_volume_scanner #(
                         capacity_hi_gt<={7'd0,max_cluster[31:23]}>fat_sectors[31:16];
                         capacity_hi_eq<={7'd0,max_cluster[31:23]}==fat_sectors[31:16];
                         capacity_lo_ge<=max_cluster[22:7]>=fat_sectors[15:0];
-                        layout_fields_bad<=data_borrow || data_sectors==0 || cluster_count==0 || cluster_count>32'h0fffffee;
+                        // Zero data sectors always shift to zero clusters.
+                        layout_fields_bad<=data_borrow || cluster_count==0 || cluster_count>32'h0fffffee;
                         state<=LAYOUT_COMPARE;
                     end else begin
-                     layout_bad<=data_borrow || data_sectors==0 || cluster_count==0 ||
+                     layout_bad<=data_borrow || cluster_count==0 ||
                        (requested_directory!=0 && (requested_directory<2 || requested_directory>max_cluster)) || root_cluster>max_cluster || cluster_count>32'h0fffffee ||
                        (max_cluster>>7)>=fat_sectors;
                      state<=LAYOUT_ACCEPT;
@@ -455,10 +469,10 @@ module fat32_volume_scanner #(
                     if(layout_bad)fail(ERR_BPB);
                     else begin geometry_valid<=1;current_cluster<=requested_root?root_cluster:requested_directory;visited<=1;dir_sector<=0;state<=ROOT;end
                 end
-                ROOT:begin cluster_offset<=current_cluster-2;shift_count<=cluster_shift;state<=ROOT_SHIFT;end
-                ROOT_SHIFT:if(shift_count!=0)begin cluster_offset<={cluster_offset[30:0],1'b0};shift_count<=shift_count-1'b1;end
+                ROOT:begin overhead<=current_cluster-2;shift_count<=cluster_shift;state<=ROOT_SHIFT;end
+                ROOT_SHIFT:if(shift_count!=0)begin overhead<={overhead[30:0],1'b0};shift_count<=shift_count-1'b1;end
                 else state<=ROOT_ADD;
-                ROOT_ADD:begin sector_lba<=data_start_lba+cluster_offset;state<=DIR_REQ;end
+                ROOT_ADD:begin sector_lba<=data_start_lba+overhead;state<=DIR_REQ;end
                 DIR_REQ:if(!sector_busy)begin sector_req<=1;name_match<=0;state<=DIR_WAIT;end
                 DIR_WAIT:if(sector_done)begin if(sector_error!=0)fail(ERR_SECTOR);else state<=DIR_NEXT;end
                 DIR_NEXT:begin
