@@ -1,0 +1,28 @@
+# vsim -c -quiet -lib D:/My_Program/anlogic_program/demo_v_1_0_0/diagnostics/output/lut24_s2_backend1/contract_violation/work tb_menu_backend_s1_equivalence -l D:\My_Program\anlogic_program\demo_v_1_0_0\diagnostics\output\lut24_s2_backend1\contract_violation/sim.log -do "run -all; quit -f" -gSEED=5 -gPARENT_CONTRACT=0 -gCYCLES=2000000 
+# Start time: 00:05:46 on Oct 21,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# //  ModelSim SE-64 10.6e Jun 23 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# run -all
+# MISMATCH t=11660000 state=1 diff=00000000000000004000000000000000
+# MISMATCH t=11670000 state=1 diff=00000000000000004000000000000000
+# MISMATCH t=11680000 state=2 diff=00000000000000004100000000000000
+# MISMATCH t=11690000 state=2 diff=00000000000000004000000000000000
+# MISMATCH t=11700000 state=3 diff=00000000000000004000000000000000
+# COVERAGE cycles=2000000 dir_checks=283326 entries=10135 cache_hits=3691 confirms=335 recovers=75 restores=9804 scene_scans=6253
+# FAIL backend mismatches=1804499
+# ** Note: $finish    : D:/My_Program/anlogic_program/demo_v_1_0_0/diagnostics/lut24/tb_menu_backend_s1_equivalence.sv(134)
+#    Time: 20000035 ns  Iteration: 1  Instance: /tb_menu_backend_s1_equivalence
+# End time: 00:05:49 on Oct 21,2026, Elapsed time: 0:00:03
+# Errors: 0, Warnings: 0

@@ -25,6 +25,20 @@
 
 结论：逻辑与静态时序均不能解释板上失败，表现与 v0.23 期间“同源码不同布局、板上结果不同”同类；根因尚未查明，不凭相关性改约束。
 
+## Seed43 对照结果（s3-diagnostic.1）
+
+不能正常启动；屏幕 ERR:05，数码管开机即只显示 `0E`（`sticky_error==1`：扫描成功但找到 0 张图），多次复位稳定复现。同一源码两个布局失败在不同位置，说明是布局依赖、静态时序和仿真都不覆盖的设计问题。
+
+## 根因候选与修复
+
+td04 最终网表复位审计（`diagnostics/lut24/reset_drivers.py`、`reset_of_module.py`）：
+
+- SD 命令模块/SPI 主机的复位 `protocol_rst = rst || sd_init_failed || (state==S_RECOVER)` 由 LUT 驱动。初始化 CMD41(00100)→CMD16(10010) 中间态 10100 即 S_RECOVER(20)，译码毛刺会部分复位命令模块，之后 CMD59 不再得到应答，2 秒×4 次后初始化失败——对应 td03 的 6–8 秒、`3b00`。
+- 读卡器/扫描器复位 `parser_rst = rst || scan_state==SC_RESET` 由 LUT 驱动。SC_SCAN(0011)→SC_DECIDE(1001) 中间态 0001 即 SC_RESET，毛刺清除扫描器有效位——对应 td04 的 0 张图 `0E`。
+- 两处译码 v0.23 已有；v0.23“同源码不同布局、板上结果不同”的历史现象与此机制一致。
+
+修复 `ef0eaaf`：三处异步复位改为寄存器直接驱动（含 S3 共用图头解析器复位）。修复后两个种子均时序通过，网表复核 SD 命令模块/SPI 主机复位全部来自寄存器。分别固定为 `s3-local.2`（Seed47）、`s3-local.3`（Seed43）。根因待两者板测确认。
+
 ## 下一步
 
 用户同意烧录同源码、Seed43 的 `releases/v0.24.0/s3-diagnostic.1/demo.bit` 做 A/B。`s3-local.1` 不建 board 标签，保留原样。

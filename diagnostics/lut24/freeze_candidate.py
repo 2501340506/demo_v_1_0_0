@@ -25,6 +25,16 @@ VALIDATION = (
     'lut24_s3_reg1_reader_scale0', 'lut24_s3_reader_scale_compare2',
 ) + tuple(f'lut24_s3_reg3_ctrl{i}' for i in range(24)) + ('lut24_s3_reg3_fast_metrics',)
 CONSOLES = ('lut24_s1_units1.console.log', 'lut24_s3_reg3.console.log', 'lut24_s3_scale_compare2.console.log')
+# Reset fix (local.2+): full S3 regression rerun on the fixed RTL plus the
+# pin-level SD boot comparison with v0.23.
+FIX_VALIDATION = (
+    'lut24_s1_scanner1', 'lut24_s1_panel_layer1', 'lut24_s2_scanner_try2', 'lut24_s2_backend1',
+    'lut24_s2_reg1_directories', 'lut24_s2_reg1_lfn', 'lut24_s3_reader_scale_compare2',
+    'lut24_s3fix_reg1_header', 'lut24_s3fix_reg1_decoder', 'lut24_s3fix_reg1_stream',
+    'lut24_s3fix_reg1_audio_control', 'lut24_s3fix_reg1_voice', 'lut24_s3fix_reg1_narration',
+    'lut24_s3fix_reg1_reader_scale0', 'lut24_sd_pin_boot3',
+) + tuple(f'lut24_s3fix_reg1_ctrl{i}' for i in range(24)) + ('lut24_s3fix_reg1_fast_metrics',)
+FIX_CONSOLES = ('lut24_s1_units1.console.log', 'lut24_s3fix_reg1.console.log', 'lut24_s3_scale_compare2.console.log')
 
 
 def read(path):
@@ -36,7 +46,8 @@ def git(*args):
     return subprocess.check_output(['git', *args], cwd=ROOT, text=True, encoding='utf-8')
 
 
-def freeze(name, stage, number, kind='local'):
+def freeze(name, stage, number, kind='local', fix=False):
+    validation, consoles = (FIX_VALIDATION, FIX_CONSOLES) if fix else (VALIDATION, CONSOLES)
     build = OUTPUT / name
     phy = build / 'TD_project/demo_Runs/phy_1'
     target = ROOT / f'releases/v0.24.0/{stage}-{kind}.{number}'
@@ -92,7 +103,7 @@ def freeze(name, stage, number, kind='local'):
     (target / 'reports/source_check.json').write_text(
         json.dumps(dict(method='full byte comparison with committed tree', files=checked), indent=2) + '\n', encoding='utf-8')
     copied = 0
-    for run in VALIDATION:
+    for run in validation:
         directory = OUTPUT / run
         assert directory.is_dir(), run
         for log in sorted(directory.rglob('*')):
@@ -100,12 +111,12 @@ def freeze(name, stage, number, kind='local'):
             if log.is_file() and log.suffix in ('.log', '.txt') and not any(p == 'work' or p.endswith('_work') for p in parts):
                 copy(log, f'validation/{run}/' + '/'.join(parts))
                 copied += 1
-    for console in CONSOLES:
+    for console in consoles:
         copy(OUTPUT / console, 'validation/' + console)
     manifest = dict(baseline=BASELINE_TAG, source_commit=git('rev-parse', 'HEAD').strip(), build=name,
                     metrics_ns=metrics, resources=resources, baseline_resources=BASELINE_RESOURCES,
                     bit_bytes=(target / 'demo.bit').stat().st_size, production_files=production,
-                    validation_runs=list(VALIDATION), validation_files=copied)
+                    validation_runs=list(validation), validation_files=copied)
     (target / 'manifest.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     print('Frozen', target, json.dumps(dict(metrics=metrics, resources=resources, files=copied)))
 
@@ -116,5 +127,6 @@ if __name__ == '__main__':
     parser.add_argument('--stage', required=True)
     parser.add_argument('--number', type=int, default=1)
     parser.add_argument('--kind', default='local', choices=('local', 'diagnostic'))
+    parser.add_argument('--fix-validation', action='store_true')
     a = parser.parse_args()
-    freeze(a.build, a.stage, a.number, a.kind)
+    freeze(a.build, a.stage, a.number, a.kind, a.fix_validation)

@@ -1,0 +1,26 @@
+PASS equiv_cfg0_seed11 COVERAGE cycles=1403040 requests=1807 ok=80 bpb=240 sig=7 range=17 loop=4 limit=0 other=36 mbr=42 mbr_late=78 reuse=111 mirror=8 resources=77 publicity=78
+PASS equiv_cfg0_seed29 COVERAGE cycles=1598017 requests=2053 ok=95 bpb=216 sig=8 range=24 loop=8 limit=1 other=35 mbr=48 mbr_late=89 reuse=132 mirror=25 resources=88 publicity=89
+PASS equiv_cfg1_seed11 COVERAGE cycles=1580701 requests=2035 ok=71 bpb=229 sig=8 range=20 loop=12 limit=0 other=41 mbr=43 mbr_late=143 reuse=0 mirror=21 resources=69 publicity=70
+PASS equiv_cfg1_seed29 COVERAGE cycles=2134162 requests=2745 ok=126 bpb=168 sig=9 range=20 loop=13 limit=1 other=47 mbr=73 mbr_late=183 reuse=0 mirror=51 resources=119 publicity=121
+PASS equiv_cfg2_seed11 COVERAGE cycles=2342802 requests=3024 ok=131 bpb=156 sig=3 range=29 loop=12 limit=1 other=52 mbr=87 mbr_late=158 reuse=0 mirror=91 resources=122 publicity=0
+PASS equiv_cfg2_seed29 COVERAGE cycles=1961755 requests=2525 ok=107 bpb=159 sig=15 range=43 loop=14 limit=0 other=47 mbr=62 mbr_late=134 reuse=0 mirror=40 resources=103 publicity=0
+PASS equiv_cfg3_seed11 COVERAGE cycles=1241057 requests=1594 ok=115 bpb=194 sig=17 range=23 loop=10 limit=1 other=28 mbr=54 mbr_late=121 reuse=0 mirror=27 resources=113 publicity=0
+PASS equiv_cfg3_seed29 COVERAGE cycles=1403227 requests=1800 ok=147 bpb=179 sig=8 range=23 loop=7 limit=0 other=21 mbr=98 mbr_late=171 reuse=0 mirror=55 resources=141 publicity=0
+PASS equiv_cfg4_seed11 COVERAGE cycles=1697169 requests=2184 ok=105 bpb=207 sig=8 range=19 loop=11 limit=0 other=34 mbr=60 mbr_late=70 reuse=112 mirror=13 resources=98 publicity=102
+PASS equiv_cfg4_seed29 COVERAGE cycles=2032514 requests=2617 ok=105 bpb=184 sig=7 range=40 loop=9 limit=1 other=39 mbr=58 mbr_late=88 reuse=137 mirror=24 resources=102 publicity=97
+DETECTED mutant_mbr_last
+DETECTED mutant_mirror_count
+DETECTED mutant_root_offset
+PASS equiv_seed5 COVERAGE cycles=2000000 dir_checks=184645 entries=9859 cache_hits=6358 confirms=212 recovers=43 restores=9647 scene_scans=2206
+PASS equiv_seed17 COVERAGE cycles=2000000 dir_checks=183665 entries=9787 cache_hits=6198 confirms=160 recovers=37 restores=9627 scene_scans=2199
+PASS equiv_seed23 COVERAGE cycles=2000000 dir_checks=181704 entries=9865 cache_hits=6497 confirms=174 recovers=44 restores=9690 scene_scans=2134
+DETECTED contract_violation
+DETECTED mutant_confirm_source
+DETECTED mutant_scene_source
+DETECTED mutant_invalidate_keep
+PASS seg_page_seed3 COVERAGE cycles=600000 failure_cycles=313197 page_changes=131 settle_mismatches=288
+PASS seg_page_seed19 COVERAGE cycles=600000 failure_cycles=531874 page_changes=220 settle_mismatches=473
+DETECTED mutant_panel_page
+PASS layer_side_seed7 COVERAGE cycles=400000 typed=184487 legacy=109727
+PASS layer_side_seed31 COVERAGE cycles=400000 typed=198963 legacy=92214
+DETECTED mutant_layer_slice
