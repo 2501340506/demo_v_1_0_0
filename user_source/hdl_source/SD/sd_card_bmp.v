@@ -143,7 +143,16 @@ reg [1:0] scan_application;
 wire [3:0] mapped_valid;
 wire reader_publicity;
 wire [3:0] pic_valid,edu_valid,voi_valid,voi_invalid;
-wire parser_rst=rst || scan_state==SC_RESET;
+// Asynchronous parser/SD reset comes straight from a register. A LUT decode
+// of scan_state==SC_RESET glitches when SC_SCAN(3)->SC_DECIDE(9) changes two
+// bits, resetting the reader and scanner tables (v0.24 s3-diagnostic, 0E).
+// SC_RESET lasts eight cycles; the reset now covers the following eight.
+reg parser_rst_q;
+always @(posedge clk or posedge rst) begin
+ if(rst) parser_rst_q<=1'b1;
+ else parser_rst_q<=scan_state==SC_RESET;
+end
+wire parser_rst=parser_rst_q;
 wire sd_local_rst=parser_rst;
 wire audio_stopped;
 reg audio_session;

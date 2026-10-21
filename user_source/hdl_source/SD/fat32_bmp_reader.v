@@ -77,6 +77,14 @@ module fat32_bmp_reader #(
   end
  end
  wire decoder_reset=rst || (SCAN_PUBLICITY?decoder_reset_q:(state==WRITE_WAIT || load_cancel));
+ // Header parser reset from a register, not a LUT decode of the 5-bit state:
+ // the parser also serves the decoder, so a decode glitch would clear a live
+ // header. Asserted in HEADER_REQ, long before the header sector's bytes.
+ reg header_reset_q;
+ always @(posedge clk or posedge rst)begin
+  if(rst)header_reset_q<=1'b1;
+  else header_reset_q<=state==HEADER_RESET;
+ end
  wire [2:0] decode_error;wire decode_done;
  wire request_allowed=(state==READ_FILE && decode_error==0 && !load_cancel);
  wire header_match;wire [33:0] required_end;
@@ -271,7 +279,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  // HEADER_CHECK, before any load. Parameters match both former parsers.
  wire [41:0] decoder_feed;
  wire [196:0] shared_result;
- wire [41:0] shared_feed={decoder_feed[41] || state==HEADER_RESET,header_valid || decoder_feed[40],
+ wire [41:0] shared_feed={decoder_feed[41] || header_reset_q,header_valid || decoder_feed[40],
   header_valid ? {header_byte,23'd0,header_index} : decoder_feed[39:0]};
  bmp_header_result_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(1)) shared_header(
  .clk(clk),.feed(shared_feed),.bmp_width(bmp_width),.bmp_height(bmp_height),
@@ -287,7 +295,7 @@ reg [2:0] header_shift_count;   // header_lba is shifted one bit per cycle
  .header_feed(decoder_feed),.header_result(shared_result));
  end else begin:g_fixed
  bmp_header_check #(.ALLOW_32(1),.RANGE_DIMENSIONS(0)) preflight(
- .clk(clk),.rst(rst || state==HEADER_RESET),.file_valid(header_valid),
+ .clk(clk),.rst(rst || header_reset_q),.file_valid(header_valid),
  .file_byte(header_byte),.file_byte_offset({23'd0,header_index}),.bmp_width(bmp_width),.bmp_height(bmp_height),
  .file_len(header_file_len),.pixel_offset(),.width(header_width),.height(header_height),.required_end(required_end),.header_match(header_match),
  .skip_format(),.header_complete(),.is_32(header_32),.row_stride(),.expected_pixels());
