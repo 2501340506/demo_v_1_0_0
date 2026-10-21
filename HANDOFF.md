@@ -1,4 +1,13 @@
-# 当前交接：v0.24 s3-local.2/.3 上板通过（2026-10-21）
+# 当前交接：v0.24.0 正式版完成并合并 main（2026-10-21）
+
+- 当前状态：LUT 资源裁减结项。[v0.24.0 正式版](releases/v0.24.0/README.md) 复用板测通过的 s3-local.2 bit（逐字节一致），16926 LUT（86.36%），Setup +0.130ns / Hold +0.030ns。目标 ≤16500 按用户确认修订为实测值。
+- 已完成：S1–S3、异步复位毛刺修复、两种子板测通过；S4 三项评估均不交付（[S4 记录](docs/LUT资源裁减v0.24-S4记录.md)）。功能分支 `feature/lut-reduction` 合并 main，推送 main、功能分支和 `v0.24.0` 标签。
+- 卡住的问题：无。遗留：`four_bank/run_system.ps1` 缺原语库；7 个旧单元台架未改写；真实 SDRAM 联合场景（v0.23 遗留）未补。
+- 下一步：后续任务以 v0.24.0 为基线。新候选建议固定执行 `diagnostics/lut24/run_sd_pin_boot.ps1` 和 `reset_of_module.py` 复位审计。
+- 踩坑：异步复位不要接组合译码；寄存器减少不等于物理 LUT 减少，以完整 TD 物理报告为准；控制器/快速指标运行每次生成约 4.9 GB 卡镜像，回归脚本运行后自动删除；常数乘法改写会被映射到 DSP。[归档](docs/history/2026-10-21/lut-reduction-v0.24/README.md)。
+
+## 历史交接
+
 
 - 板测：用户确认 [s3-local.2](releases/v0.24.0/s3-local.2/README.md)（Seed47，16926 LUT）与 [s3-local.3](releases/v0.24.0/s3-local.3/README.md)（Seed43，16956 LUT）都正常工作；未提供逐项结果或次数。已建 `v0.24.0-s3-board.2`、`v0.24.0-s3-board.3`，推送当前分支与本轮标签。[板测记录](docs/LUT资源裁减v0.24-S3板测反馈.md)。
 - 结论：两个布局此前分别失败、加寄存器驱动复位后都正常，确认根因是 LUT 状态译码驱动的异步复位毛刺（v0.23 已存在）。推荐交付 s3-local.2（LUT 更少、时序余量略大）。

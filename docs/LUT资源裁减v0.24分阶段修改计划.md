@@ -5,6 +5,7 @@
 - 基线：`v0.23.0-s2-diagnostic-board.1`（`6c8e294`，固定 bit `releases/v0.23.0/s2-diagnostic.1/demo.bit`）。分支 `feature/lut-reduction` 从 `main`（`cc0ea05`）建立，`main` 相对基线标签只多了文档和诊断提交，`user_source` 与 `TD_project` 逐行无差异。
 - 基线资源（page_error_diag_td01，Seed47）：18183 / 19600 LUT（92.77%），12119 寄存器，53/64 BRAM9k，2/16 BRAM32k，13/29 DSP。sd_card_clk Setup +0.039ns（Fmax 100.392 MHz），Hold +0.073ns，STNS/HTNS=0。
 - 目标：物理 LUT ≤16500（约 84%），**不删除、不改变任何用户可见功能**。
+- 目标修订（2026-10-21，用户确认）：按实测交付 16926 LUT（86.36%，−1257），余下约 430 LUT 不再引入计划外改动。
 - 不改 SDC，不新增 false_path/multicycle，不合并流水级。已有恒等 LUT 和 keep 寄存器均针对实测 Hold/Removal 失败加入，保留；只删除已证实无用的。
 
 ## 资源热点（基线 demo_phy.area）
@@ -85,3 +86,6 @@
 - S2：完成并验证；四次 TD 均 Setup 失败（路径随种子变化），LUT 17534–17625；第 4 项（后端 clusters 副本）不适用（[记录](LUT资源裁减v0.24-S2记录.md)）。
 - S3：两项均完成；td03 时序通过，17097 LUT，形成 `v0.24.0-s3-local.1`（[记录](LUT资源裁减v0.24-S3记录.md)）。BIN 无需单独写地址计数器。
 - 目标 ≤16500 尚差约 600；上板确认后再决定 S4 或调整目标。
+- s3-local.1 板测失败，定位为组合译码驱动异步复位的毛刺，修复后 s3-local.2/.3 板测通过（[板测反馈](LUT资源裁减v0.24-S3板测反馈.md)）。
+- S4：三项评估后均未交付（[记录](LUT资源裁减v0.24-S4记录.md)）。
+- 结项：v0.24.0 复用 s3-local.2 的 bit，目标按实测修订。[正式版](../releases/v0.24.0/README.md) · [归档](history/2026-10-21/lut-reduction-v0.24/README.md)。
