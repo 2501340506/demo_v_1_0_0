@@ -1,5 +1,7 @@
 # v0.25.0 S5 候选 2：HUD 移到右上角，关闭累计时间（Seed 47）
 
+> **已被 [s5-local.4](../s5-local.4/README.md) 和 [s5-local.5](../s5-local.5/README.md) 取代**：场景 OSD 照参考项目的版式重做，页码标签隐藏。本候选（进度条在右上角、页码标签还在）保留作回退。
+
 候选 `v0.25.0-s5-local.3`，源码提交 `2120bfd`，构建 `lut25_hud2_td_s47`。取代 [s5-local.1](../s5-local.1/README.md)（HUD 在左上角、累计时间还在）。与 [s5-local.2](../s5-local.2/README.md) 源码相同、只差布局种子，**先上板其中一个**。Hold 余量只有 +0.003 ns，s5-local.2 有问题时再用。
 
 ## 相对 s5-local.1 的改动
