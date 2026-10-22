@@ -11,6 +11,10 @@ are first copied to <output>/backup/<folder>/ (restore by copying them back);
 written files are read back, and every other file under the card's
 情景模式 and 宣讲模式 folders must stay byte-identical.
 
+With --legends the stage's `legend: [[swatch, text], ...]` is written as well (TEXT.BIN with
+14 segments, one 16 px legend line per stage, at most 31 cells): this needs the v0.25 S5
+firmware, which also reads the 10-segment files; older firmware rejects the 14-segment one.
+
 Display limits (scene_text_overlay, 32 px cells, 624 px wide): titles, the
 village name and the warning are static, so at most 19 characters; the
 subtitle scrolls in at 1 px per frame, so at most 15 characters appear
@@ -32,12 +36,12 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 sys.path.insert(0, str(HERE))
-from scene_text import encode_text, ESCAPES, FULLWIDTH  # noqa: E402
+from scene_text import encode_text, legend_string, ESCAPES, FULLWIDTH, SWATCH_CHARS  # noqa: E402
 import scene_audio  # noqa: E402
 
 FOLDERS = {'landslide_village': 1, 'debris_village': 2, 'flood_village': 3, 'quake_village': 4}
 NAMES = ['FONT.BIN', 'TEXT.BIN'] + [f'SND{i}.PCM' for i in range(1, 5)]
-STATIC_CELLS, SUBTITLE_CELLS = 19, 15
+STATIC_CELLS, SUBTITLE_CELLS, LEGEND_CELLS = 19, 15, 31
 MIN_SAMPLES = scene_audio.T_END * scene_audio.SAMPLES_PER_T + scene_audio.SAMPLE_HZ // 2
 
 
@@ -53,11 +57,17 @@ def normal(s):
     return ''.join(FULLWIDTH.get(c, c) for c in str(s))
 
 
-def text_spec(cfg, where):
+def text_spec(cfg, where, legends=False):
     stages = cfg['stages']
     assert len(stages) == 4, f'{where}: four stages'
     spec = {'titles': [normal(s['title']) for s in stages], 'subtitles': [normal(s['subtitle']) for s in stages],
             'warning': normal(cfg['warning']), 'village': normal(cfg['village'])}
+    if legends:
+        spec['legends'] = [legend_string(s.get('legend'), f'{where}: stage {n + 1} legend') for n, s in enumerate(stages)]
+        for v in spec['legends']:
+            assert len(v) <= LEGEND_CELLS, f'{where}: legend {v!r} has {len(v)} cells (at most {LEGEND_CELLS})'
+        if not any(spec['legends']):
+            del spec['legends']
     for label, values, limit in (('title', spec['titles'], STATIC_CELLS), ('subtitle', spec['subtitles'], SUBTITLE_CELLS),
                                  ('warning', [spec['warning']], STATIC_CELLS), ('village', [spec['village']], STATIC_CELLS)):
         for v in values:
@@ -67,16 +77,18 @@ def text_spec(cfg, where):
 
 def validate_text(font, text, meta, spec):
     assert 416 <= len(font) <= 4096 and len(font) % 32 == 0 and len(font) // 32 <= 128
-    assert text[:4] == b'TX\x01\x0a' and len(text) <= 4096
     wanted = [v for pair in zip(spec['titles'], spec['subtitles']) for v in pair] + [spec['warning'], spec['village']]
+    wanted += spec.get('legends', [])
+    assert text[:3] == b'TX\x01' and text[3] == len(wanted) and len(text) <= 4096
     assert meta['segments'] == wanted
     slots = {v: k for k, v in meta['slots'].items()}
-    cursor = 44
+    cursor = 4 + 4 * len(wanted)
     for i, segment in enumerate(wanted):
         at, count, kind = struct.unpack_from('<HBB', text, 4 + 4 * i)
-        assert (at, count, kind) == (cursor, len(segment), i % 2 if i < 8 else i - 6)
+        assert (at, count, kind) == (cursor, len(segment), i % 2 if i < 8 else i - 6 if i < 10 else 4)
         codes = text[at:at + count]
-        assert ''.join(slots[c] if c < 128 else ESCAPES[c - 240] for c in codes) == segment
+        assert ''.join(slots[c] if c < 128 else SWATCH_CHARS[c - 0xe0] if 0xe0 <= c < 0xe8 else ESCAPES[c - 240]
+                       for c in codes) == segment
         assert all(any(font[c * 32:(c + 1) * 32]) for c in codes if c < 128), f'empty glyph in {segment!r}'
         cursor += count
     assert cursor == len(text)
@@ -89,13 +101,13 @@ def check_card_pictures(folder_path, hazard):
         assert struct.unpack_from('<iiHHI', data, 18) == (640, 480, 1, 32, 0) and len(data) == 1228854
 
 
-def prepare(out):
+def prepare(out, legends=False):
     assert not out.exists(), 'Choose a fresh output directory'
     bundles, records = {}, {}
     for folder in FOLDERS:
         base_dir = HERE / 'scenes' / folder
         cfg = yaml.safe_load((base_dir / 'scene.yaml').read_text(encoding='utf-8'))
-        spec = text_spec(cfg, folder)
+        spec = text_spec(cfg, folder, legends)
         font, text, meta = encode_text(spec, cfg['stages'])
         validate_text(font, text, meta, spec)
         tracks = scene_audio.stage_tracks(cfg, base_dir, tts=False)
@@ -179,9 +191,10 @@ if __name__ == '__main__':
     p.add_argument('action', choices=('prepare', 'install'))
     p.add_argument('--card', type=Path, help='install: the card\'s 情景模式 folder')
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--legends', action='store_true', help='prepare: also write the stage legends (v0.25 S5 firmware)')
     args = p.parse_args()
     if args.action == 'prepare':
-        prepare(args.output)
+        prepare(args.output, args.legends)
     else:
         if not args.card:
             p.error('install needs --card')

@@ -37,14 +37,14 @@ class CardTextStatus(unittest.TestCase):
     def test_complete_text_is_ok(self):
         state, why = tool.card_text_status(load_cfg())
         self.assertEqual(state, 'ok', why)
-        self.assertIn('67/128', why)
+        self.assertRegex(why, r'字形 \d+/128')      # the legends are part of the check
 
     def test_no_text_is_none(self):
         cfg = load_cfg()
         for k in ('village', 'warning'):
             cfg.pop(k)
         for st in cfg['stages']:
-            st.pop('title'), st.pop('subtitle')
+            st.pop('title'), st.pop('subtitle'), st.pop('legend', None)
         self.assertEqual(tool.card_text_status(cfg)[0], 'none')
 
     def test_partial_and_bad_text(self):
@@ -72,6 +72,43 @@ class CardTextStatus(unittest.TestCase):
         cfg['warning'] = ''.join(chr(0x6100 + i) for i in range(19))
         state, why = tool.card_text_status(cfg)
         self.assertEqual((state, 'FONT' in why), ('bad', True), why)
+
+
+class Legends(unittest.TestCase):
+    def test_parse_and_format_round_trip(self):
+        items = tool.parse_legend('danger 危险区; route 撤离路线；Refuge 避险点 ')
+        self.assertEqual(items, [['danger', '危险区'], ['route', '撤离路线'], ['refuge', '避险点']])
+        self.assertEqual(tool.parse_legend(tool.format_legend(items)), items)
+        self.assertEqual(tool.parse_legend(''), [])
+        with self.assertRaises(ValueError):
+            tool.parse_legend('危险区')                                    # no swatch name
+
+    def test_unknown_swatch_and_long_legend_are_bad(self):
+        cfg = load_cfg()
+        cfg['stages'][0]['legend'] = [['purple', '紫色']]
+        state, why = tool.card_text_status(cfg)
+        self.assertEqual(state, 'bad')
+        self.assertIn('purple', why)
+        cfg = load_cfg()
+        cfg['stages'][3]['legend'] = [['danger', '危' * 16], ['route', '路' * 12]]       # 18 + 14 + 2 cells
+        state, why = tool.card_text_status(cfg)
+        self.assertEqual(state, 'bad')
+        self.assertIn('31', why)
+
+    def test_legends_make_a_fourteen_segment_text(self):
+        cfg = load_cfg()
+        spec = tool.mcn.text_spec(cfg, 'scene.yaml', legends=True)
+        font, text, meta = tool.scene_text.encode_text(spec, cfg['stages'])
+        self.assertEqual((text[3], len(meta['segments'])), (14, 14))
+        self.assertTrue(all(0xe0 <= c < 0xe8 for c in text[text[4 + 4 * 10]:text[4 + 4 * 10] + 1]))   # a swatch leads
+        tool.mcn.validate_text(font, text, meta, spec)
+        plain = tool.mcn.text_spec(cfg, 'scene.yaml')                      # without --legends: 10 segments as in S2
+        self.assertEqual(tool.scene_text.encode_text(plain, cfg['stages'])[1][3], 10)
+        cfg2 = load_cfg()
+        for st in cfg2['stages']:
+            st.pop('legend', None)
+        spec2 = tool.mcn.text_spec(cfg2, 'scene.yaml', legends=True)       # no legend anywhere: still 10 segments
+        self.assertNotIn('legends', spec2)
 
 
 class CardInstall(unittest.TestCase):
@@ -184,20 +221,24 @@ class Windows(unittest.TestCase):
 
     def test_dialog_shows_and_applies_the_text(self):
         top, entries, button, label = self.dialog()
-        self.assertEqual(len(entries), 10)
+        self.assertEqual(len(entries), 14)
         self.assertEqual(entries[0].get(), '青石坡村')
         self.assertEqual(entries[2].get(), '阶段1 致因：强降雨')
+        self.assertEqual(entries[4].get(), 'zone 滑坡隐患区; rain 强降雨')
         self.assertTrue(any(l.cget('text').startswith('可以生成') for l in label))
         entries[1].delete(0, 'end')
         entries[1].insert(0, '红色预警！立即撤离滑坡区！')
-        entries[4].delete(0, 'end')                                  # PIC2 标题 cleared: incomplete
+        entries[5].delete(0, 'end')                                  # PIC2 标题 cleared: incomplete
         self.root.update()
         self.assertTrue(any(l.cget('foreground') in ('#b00', '#b00000') or str(l.cget('foreground')) == '#b00' for l in widgets(top)
                             if l.winfo_class() == 'TLabel'))
-        entries[4].insert(0, '阶段2 发生：坡体下滑')
+        entries[5].insert(0, '阶段2 发生：坡体下滑')
+        entries[4].delete(0, 'end')
+        entries[4].insert(0, 'mud 滑坡体; rock 落石')
         self.root.update()
         button('确定').invoke()
         self.assertEqual(self.app.cfg['warning'], '红色预警！立即撤离滑坡区！')
+        self.assertEqual(self.app.cfg['stages'][0]['legend'], [['mud', '滑坡体'], ['rock', '落石']])
         self.assertTrue(self.app.dirty)
         self.assertEqual(tool.card_text_status(self.app.cfg)[0], 'ok')
 
@@ -209,7 +250,7 @@ class Windows(unittest.TestCase):
         button('确定').invoke()
         cfg = self.app.cfg
         self.assertNotIn('village', cfg)
-        self.assertTrue(all('title' not in s and 'subtitle' not in s for s in cfg['stages']))
+        self.assertTrue(all('title' not in s and 'subtitle' not in s and 'legend' not in s for s in cfg['stages']))
         self.assertTrue(all(s.get('narration') for s in cfg['stages']))      # narration is untouched
 
     def test_save_keeps_narration_and_text(self):
@@ -242,7 +283,8 @@ class Windows(unittest.TestCase):
             sd = self.scene / 'out/sd'
             self.assertTrue(sd.is_dir(), log)
             self.assertEqual(sorted(p.name for p in sd.iterdir()), sorted(tool.CARD_FILES))
-            for f in ('FONT.BIN', 'TEXT.BIN', 'SND1.PCM', 'SND4.PCM'):
+            self.assertEqual(sd.joinpath('TEXT.BIN').read_bytes()[3], 14)                        # legends are on
+            for f in ('SND1.PCM', 'SND4.PCM'):
                 self.assertEqual((sd / f).read_bytes(), (GENERATED / f).read_bytes(), f)
         finally:
             shutil.rmtree(self.scene, ignore_errors=True)

@@ -681,7 +681,7 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  scene_text_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
   .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21] && !publicity_selected),
   .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),
-  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),
+  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),.t_now(scene_time),
   .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
   .font_available(font_available),.scene_text_active(scene_text_active),
   .font_addr(font_addr),.font_data(font_data),.text_addr(scene_addr),.text_data(text_data),

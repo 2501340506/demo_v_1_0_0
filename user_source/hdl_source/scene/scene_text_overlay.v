@@ -1,9 +1,14 @@
 // Synchronous TEXT -> FONT -> RGB pipeline. All video fields travel together.
 // Resource metadata is an acknowledged mailbox, held stable after loading.
-module scene_text_overlay(
+// v0.25 S5: scene HUD. With scene_enable, a progress bar (x32-271, y44-51, one
+// pixel per t, in the stage's alert colour) and an alert block (x8-23, y40-55)
+// sit top left; they need no TEXT. TEXT.BIN with 14 segments adds one legend
+// line per stage (segments 10-13, type 4, x8.., y384-399, 16 px cells, black
+// glyphs; codes E0-E7 draw a colour swatch). 10-segment files are unchanged.
+module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input font_valid,text_valid,input [7:0] font_count,input [12:0] text_bytes,
- input scene_enable,warn_mode,input [1:0] stage,
+ input scene_enable,warn_mode,input [1:0] stage,input [7:0] t_now,
  input legacy_region,input [7:0] legacy_char,input [3:0] legacy_row,legacy_col,
  output font_available,scene_text_active,
  output [10:0] text_addr,input [15:0] text_data,
@@ -15,8 +20,9 @@ module scene_text_overlay(
   .frame_start(frame_start),.first_active(first_active));
  // Cache only the three displayed descriptors. Re-parse on a stage/mode
  // change in blanking; this avoids a ten-way offset/length register mux.
- reg [11:0] title_offset,subtitle_offset,village_offset;
- reg [4:0] title_length,subtitle_length,village_length,descriptor_length;
+ reg [11:0] title_offset,subtitle_offset,village_offset,legend_offset;
+ reg [4:0] title_length,subtitle_length,village_length,legend_length,descriptor_length;
+ reg wide;       // TEXT.BIN has 14 segments (legends)
  reg [1:0] parse_stage;reg parse_warning;
  localparam IDLE=0,REQ=1,BYTE=2,CHECK=3,READY=4,BAD=5;
  reg [2:0] parser;
@@ -31,21 +37,21 @@ module scene_text_overlay(
  // A bad TEXT file does not disable a successfully loaded FONT for UART OSD.
  always @(posedge clk or posedge rst)begin
   if(rst)begin parser<=IDLE;cursor<=0;bad<=0;low_offset<=0;high_offset<=0;
-   parse_stage<=0;parse_warning<=0;title_offset<=0;subtitle_offset<=0;village_offset<=0;
-   title_length<=0;subtitle_length<=0;village_length<=0;descriptor_length<=0;end
+   parse_stage<=0;parse_warning<=0;title_offset<=0;subtitle_offset<=0;village_offset<=0;legend_offset<=0;
+   title_length<=0;subtitle_length<=0;village_length<=0;legend_length<=0;descriptor_length<=0;wide<=0;end
   else if(!font_available || !text_valid)begin parser<=IDLE;cursor<=0;bad<=0;end
   else if(parser!=IDLE && (stage!=parse_stage || warn_mode!=parse_warning))parser<=IDLE;
   else case(parser)
-   IDLE:begin cursor<=0;bad<=text_bytes<44 || text_bytes>4096;parse_stage<=stage;parse_warning<=warn_mode;parser<=REQ;end
+   IDLE:begin cursor<=0;bad<=text_bytes<44 || text_bytes>4096;parse_stage<=stage;parse_warning<=warn_mode;legend_length<=0;parser<=REQ;end
    REQ:parser<=BYTE;
    BYTE:begin
     case(cursor)
      0:if(parse_byte!="T")bad<=1;
      1:if(parse_byte!="X")bad<=1;
      2:if(parse_byte!=1)bad<=1;
-     3:if(parse_byte!=10)bad<=1;
+     3:begin wide<=LEGEND_ENABLE && parse_byte==14;if(parse_byte!=10 && !(LEGEND_ENABLE && parse_byte==14))bad<=1;end
      default:begin
-      if(cursor<44)case(descriptor_byte[1:0])
+      if(cursor<(wide?12'd60:12'd44))case(descriptor_byte[1:0])
        0:low_offset<=parse_byte;
        1:high_offset<=parse_byte;
        2:begin
@@ -53,13 +59,14 @@ module scene_text_overlay(
         if(high_offset[7:4]!=0 || parse_byte>31)bad<=1;
        end
        3:begin
-        if(parse_byte!=(descriptor<8?{7'd0,descriptor[0]}:descriptor==8?8'd2:8'd3) || descriptor_offset<44 || segment_end>text_bytes)bad<=1;
+        if(parse_byte!=(descriptor<8?{7'd0,descriptor[0]}:descriptor==8?8'd2:descriptor==9?8'd3:8'd4) || descriptor_offset<(wide?12'd60:12'd44) || segment_end>text_bytes)bad<=1;
         if(descriptor=={1'b0,parse_stage,1'b0})begin title_offset<=descriptor_offset;title_length<=descriptor_length;end
         if(descriptor==(parse_warning?4'd8:{1'b0,parse_stage,1'b1}))begin subtitle_offset<=descriptor_offset;subtitle_length<=descriptor_length;end
         if(descriptor==9)begin village_offset<=descriptor_offset;village_length<=descriptor_length;end
+        if(descriptor==4'd10+{2'd0,parse_stage})begin legend_offset<=descriptor_offset;legend_length<=descriptor_length;end
        end
       endcase
-      else if(parse_byte<128 ? {1'b0,parse_byte}>= {1'b0,font_count} : parse_byte<240)bad<=1;
+      else if(parse_byte<128 ? {1'b0,parse_byte}>= {1'b0,font_count} : parse_byte<240 && !(LEGEND_ENABLE && parse_byte[7:3]==5'b11100))bad<=1;
      end
     endcase
     if({1'b0,cursor}+13'd1>=text_bytes)parser<=CHECK;
@@ -114,9 +121,19 @@ module scene_text_overlay(
     segment_offset=subtitle_offset;segment_length=subtitle_length;row=(y-416)>>1;
     local_x=subtitle_x[11:1];region=subtitle_x>=0;
    end
+   else if(LEGEND_ENABLE && y>=384 && y<400 && legend_length!=0)begin
+    segment_offset=legend_offset;segment_length=legend_length;row=y[3:0];
+    local_x={1'b0,pixel_x}-11'd8;region=1;
+   end
    region=region && pixel_x>=8 && pixel_x<632 && local_x<{2'd0,segment_length,4'd0};
   end
  end
+ // HUD: 0 none, 1 bar track, 2 bar fill, 3 alert block. Registered with the video.
+ wire [11:0] bar_x={2'b00,pixel_x}-12'd32;
+ wire in_block=pixel_x>=8 && pixel_x<24 && y>=40 && y<56;
+ wire in_track=pixel_x>=32 && pixel_x<272 && y>=44 && y<52;
+ wire fill=bar_x<={4'd0,t_now};
+ wire [1:0] hud=!(BAR_ENABLE && enabled && de)?2'd0:in_block?2'd3:in_track?(fill?2'd2:2'd1):2'd0;
  wire border=enabled && warning && frames[4] && de &&
    (pixel_x<8 || pixel_x>=632 || y<8 || y>=472);
  wire [11:0] render_addr=segment_offset+{5'd0,local_x[10:4]};
@@ -125,6 +142,7 @@ module scene_text_overlay(
  reg [9:0] x1,x2;
  reg text_lane1,region1,legacy1,border1,region2,cn2,ascii2,border2;
  reg scene1,scene2,red1,red2;
+ reg [1:0] hud1,hud2;reg sw2;reg [2:0] swc2;
  reg [3:0] row1,col1,col2;
  reg [7:0] legacy1_char;
  wire [7:0] code=text_lane1?text_data[15:8]:text_data[7:0];
@@ -151,6 +169,17 @@ module scene_text_overlay(
   endcase
  end
  wire [2:0] ascii_column=3'd4-col1[3:1];
+ // Swatch and alert colours (the hazard layer's palette, and the stage's alert level).
+ reg [23:0] swatch_rgb,alert_rgb;
+ always @*begin
+  case(swc2)
+   3'd0:swatch_rgb=24'hd82020;3'd1:swatch_rgb=24'h20c848;3'd2:swatch_rgb=24'h00ff00;3'd3:swatch_rgb=24'h8c6a3c;
+   3'd4:swatch_rgb=24'hffd000;3'd5:swatch_rgb=24'he83020;3'd6:swatch_rgb=24'h8e8a84;default:swatch_rgb=24'hc8d2dc;
+  endcase
+  case(warn_q?2'd3:stage_q)
+   2'd0:alert_rgb=24'h2080ff;2'd1:alert_rgb=24'hffd000;2'd2:alert_rgb=24'hff8000;default:alert_rgb=24'hff2020;
+  endcase
+ end
  assign font_addr={legacy1?legacy1_char[6:0]:code[6:0],row1};
  // Original UART IDs 80..8c map to font slots 0..12.
  wire [15:0] font_row={font_data[7:0],font_data[15:8]};
@@ -159,7 +188,11 @@ module scene_text_overlay(
    video1<=0;video2<=0;x1<=0;x2<=0;text_lane1<=0;region1<=0;legacy1<=0;
    row1<=0;col1<=0;legacy1_char<=0;border1<=0;region2<=0;cn2<=0;ascii2<=0;border2<=0;col2<=0;
    hs_out<=0;vs_out<=0;de_out<=0;x_out<=0;rgb_out<=0;scene1<=0;scene2<=0;red1<=0;red2<=0;
+   hud1<=0;hud2<=0;sw2<=0;swc2<=0;
   end else begin
+   hud1<=hud;hud2<=hud1;
+   sw2<=LEGEND_ENABLE && region1 && code[7:3]==5'b11100 && col1>=2 && col1<14 && row1>=2 && row1<14 && (code[2:0]!=3'd2 || frames[5]);
+   swc2<=code[2:0];
    video1<={hs,vs,de,rgb_in};x1<=pixel_x;text_lane1<=render_addr[0];region1<=region;
    scene1<=region;red1<=warning;scene2<=scene1;red2<=red1;
    legacy1<=!region && legacy_region && font_available;
@@ -169,7 +202,8 @@ module scene_text_overlay(
    region2<=region1 || legacy1;cn2<=legacy1 || code<128;
    ascii2<=region1 && code>=240 && col1[3:1]<5 && row1[3:1]<7 && ascii_pixels[ascii_column];
    {hs_out,vs_out,de_out}<=video2[26:24];x_out<=x2;
-   rgb_out<=border2?24'hff0000:region2 && ((cn2 && font_row[~col2]) || ascii2)?
+   rgb_out<=border2?24'hff0000:hud2[1]?alert_rgb:(hud2==2'd1)?24'h303030:sw2?swatch_rgb:
+     region2 && ((cn2 && font_row[~col2]) || ascii2)?
      (scene2?(red2?24'hff0000:24'h000000):24'hffffff):video2[23:0];
   end
  end

@@ -30,7 +30,7 @@ PyYAML drops comments on save, so an existing file is first copied to
 scene.yaml.bak; reasons go into each stage's `note` (make_scene_pack ignores it).
 """
 from pathlib import Path
-import copy, os, shutil, subprocess, sys, tempfile, threading
+import copy, os, re, shutil, subprocess, sys, tempfile, threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import numpy as np
@@ -134,16 +134,33 @@ def line_points(line):
     return line['points'] if isinstance(line, dict) else line
 
 
+def parse_legend(text):
+    """'danger 危险区; route 撤离路线' -> [['danger', '危险区'], ['route', '撤离路线']]."""
+    items = []
+    for part in re.split('[;；]', text):
+        bits = part.strip().split(None, 1)
+        if not bits:
+            continue
+        if len(bits) != 2:
+            raise ValueError(f'图例“{part.strip()}”要写成 色块名 文字，色块名是 {" ".join(scene_text.SWATCHES)}')
+        items.append([bits[0].lower(), bits[1].strip()])
+    return items
+
+
+def format_legend(items):
+    return '; '.join(f'{s} {label}' for s, label in items or [])
+
+
 def card_text_status(cfg):
     """('none' | 'ok' | 'bad', message) for the card text of a scene config.
     Uses the same checks as make_card_narration, so what passes here is what
     make_scene_pack --text writes."""
     stages = cfg.get('stages') or []
-    values = [cfg.get('village'), cfg.get('warning')] + [s.get(k) for s in stages for k in ('title', 'subtitle')]
+    values = [cfg.get('village'), cfg.get('warning')] + [s.get(k) for s in stages for k in ('title', 'subtitle', 'legend')]
     if not any(values):
         return 'none', '没有填卡文字：生成时不写 FONT.BIN / TEXT.BIN'
     try:
-        spec = mcn.text_spec(cfg, 'scene.yaml')
+        spec = mcn.text_spec(cfg, 'scene.yaml', legends=True)
         font, text, meta = scene_text.encode_text(spec, stages)
         mcn.validate_text(font, text, meta, spec)
     except KeyError as e:
@@ -527,6 +544,8 @@ class App:
             rows.append((f'PIC{n + 1} 标题', f'title{n}', st.get('title', ''), f'画面上方，≤{mcn.STATIC_CELLS} 字'))
             rows.append((f'PIC{n + 1} 字幕', f'subtitle{n}', st.get('subtitle', ''),
                          f'画面下方滚动，≤{mcn.SUBTITLE_CELLS} 字（8 秒内能完整滚入）'))
+            rows.append((f'PIC{n + 1} 图例', f'legend{n}', format_legend(st.get('legend')),
+                         '左下一行：色块名 文字; 色块名 文字'))
         status = ttk.Label(f, text='', anchor='w')
 
         def collect():
@@ -535,13 +554,16 @@ class App:
                 v = var.get().strip()
                 tgt, k = (cfg, key) if key in ('village', 'warning') else (cfg['stages'][int(key[-1])], key[:-1])
                 if v:
-                    tgt[k] = v
+                    tgt[k] = parse_legend(v) if k == 'legend' else v
                 else:
                     tgt.pop(k, None)
             return cfg
 
         def check(*_):
-            state, why = card_text_status(collect())
+            try:
+                state, why = card_text_status(collect())
+            except ValueError as e:
+                state, why = 'bad', str(e)
             status.config(text=why, foreground={'ok': '#070', 'bad': '#b00', 'none': '#555'}[state])
 
         for r, (label, key, init, hint) in enumerate(rows):
@@ -559,11 +581,17 @@ class App:
             ttk.Label(f, text=f'{len(lines)} 句，其中 {have} 句有录音文件' + ('；背景声 ' + str(st['sound']) if st.get('sound') else '') +
                       '（旁白在 scene.yaml 里写，见使用说明第 9.3 节）', foreground='#555').grid(
                 row=r + n, column=1, columnspan=2, sticky='w')
-        status.grid(row=r + 4, column=0, columnspan=3, sticky='we', pady=4)
+        ttk.Label(f, text='色块名：' + ' '.join(scene_text.SWATCHES) + '（图例需要 v0.25 S5 及以后的固件）',
+                  foreground='#555').grid(row=r + 4, column=0, columnspan=3, sticky='w')
+        status.grid(row=r + 5, column=0, columnspan=3, sticky='we', pady=4)
         check()
 
         def ok():
-            cfg = collect()
+            try:
+                cfg = collect()
+            except ValueError as e:
+                messagebox.showerror('图例写法不对', str(e))
+                return
             state, why = card_text_status(cfg)
             if state == 'bad' and not messagebox.askyesno('文字有问题', f'{why}\n\n仍然保存吗？（有问题时生成不会写 FONT.BIN / TEXT.BIN）'):
                 return
@@ -572,7 +600,7 @@ class App:
                 if k not in cfg:
                     self.cfg.pop(k, None)
             for n, st in enumerate(cfg['stages']):
-                for k in ('title', 'subtitle'):
+                for k in ('title', 'subtitle', 'legend'):
                     if k in st:
                         self.cfg['stages'][n][k] = st[k]
                     else:
@@ -581,7 +609,7 @@ class App:
             self.log('卡文字已改（保存后写入 scene.yaml）：' + why)
             top.destroy()
         bar = ttk.Frame(f)
-        bar.grid(row=r + 5, column=0, columnspan=3, sticky='e')
+        bar.grid(row=r + 6, column=0, columnspan=3, sticky='e')
         ttk.Button(bar, text='确定', command=ok).pack(side='left', padx=4)
         ttk.Button(bar, text='取消', command=top.destroy).pack(side='left')
         top.grab_set()
@@ -1498,7 +1526,7 @@ class App:
         flags = ['--gif']
         state, why = card_text_status(self.cfg)
         if state == 'ok':
-            flags.append('--text')
+            flags += ['--text', '--legends']
         elif state == 'bad':
             self.log(f'卡文字有问题，这次不生成 FONT.BIN / TEXT.BIN：{why}')
         else:

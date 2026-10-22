@@ -2,7 +2,7 @@
 module tb_m6_text;
  reg clk=0,wr_clk=0;always #5 clk=~clk;always #7 wr_clk=~wr_clk;
  reg rst=1,hs=1,vs=1,de=0,wen=0,kind=0,fv=0,tv=0,en=0,warn=0;
- reg [1:0] stage=0;reg [9:0] x=0;reg [11:0] wa=0;reg [7:0] wd=0;
+ reg [1:0] stage=0;reg [7:0] tnow=0;reg slow=0;reg [9:0] x=0;reg [11:0] wa=0;reg [7:0] wd=0;
  reg [7:0] fm[0:4095],tm[0:4095];integer fbytes,tbytes,checks=0;
  wire [10:0] fa,ta;wire [15:0] fd,td;wire ho,vo,deo,available,active;
  wire [9:0] xo;wire [23:0] rgb;
@@ -18,7 +18,7 @@ module tb_m6_text;
  scene_bram32k fr(.wr_clk(wr_clk),.wr_en(wen && !kind),.wr_addr(wa),.wr_data(wd),.rd_clk(clk),.rd_addr(fa),.rd_data(fd));
  scene_bram32k tr(.wr_clk(wr_clk),.wr_en(wen && kind),.wr_addr(wa),.wr_data(wd),.rd_clk(clk),.rd_addr(ta),.rd_data(td));
  scene_text_overlay dut(.clk(clk),.rst(rst),.hs(hs),.vs(vs),.de(de),.pixel_x(x),.rgb_in(24'h123456),
-  .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.scene_enable(en),.warn_mode(warn),.stage(stage),
+  .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.scene_enable(en),.warn_mode(warn),.stage(stage),.t_now(tnow),
   .legacy_region(legacy),.legacy_char(lc),.legacy_row(4'(y-200)),.legacy_col(4'(x-8)),
   .font_available(available),.scene_text_active(active),.text_addr(ta),.text_data(td),.font_addr(fa),.font_data(fd),
   .hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb));
@@ -27,13 +27,26 @@ module tb_m6_text;
    @(negedge wr_clk);wen=0;end
  endtask
  reg [36:0] expected[0:2];integer step=0,blink=0;
- function automatic [23:0] reference(input integer px,py);
-  integer segment,tx,row,offset,code,at;bit hit;
+ function automatic [23:0] alert_color(input bit w,input [1:0] s);
   begin
-   reference=24'h123456;segment=-1;tx=px-8;row=py%16;hit=0;
+   alert_color=w?24'hff2020:s==0?24'h2080ff:s==1?24'hffd000:s==2?24'hff8000:24'hff2020;
+  end
+ endfunction
+ function automatic [23:0] swatch_color(input integer c);
+  begin
+   case(c)0:swatch_color=24'hd82020;1:swatch_color=24'h20c848;2:swatch_color=24'h00ff00;3:swatch_color=24'h8c6a3c;
+    4:swatch_color=24'hffd000;5:swatch_color=24'he83020;6:swatch_color=24'h8e8a84;default:swatch_color=24'hc8d2dc;endcase
+  end
+ endfunction
+ function automatic [23:0] reference(input integer px,py);
+  integer segment,tx,row,offset,code,at;bit hit,swatch;
+  begin
+   reference=24'h123456;segment=-1;tx=px-8;row=py%16;hit=0;swatch=0;
    if(en && !warn && py>=64 && py<96)begin segment=stage*2;row=(py-64)/2;tx=(px-8)/2;end
    if(en && !warn && py>=112 && py<144)begin segment=9;row=(py-112)/2;tx=(px-8)/2;end
    if(en && !warn && py>=416 && py<448)begin segment=stage*2+1;row=(py-416)/2;tx=(px+step-632)/2;if(px+step<632)tx=-1;end
+   // Legend (14-segment TEXT.BIN only): 16 px cells, one line per stage.
+   if(en && !warn && tm[3]==14 && py>=384 && py<400 && tm[6+(10+stage)*4]!=0)begin segment=10+stage;row=py-384;tx=px-8;end
    if(en && warn)begin
     segment=8;
     // 4x while blinking only for at most 9 characters; above 19, 1x.
@@ -47,9 +60,15 @@ module tb_m6_text;
     if(code<128)begin at=code*32+row*2+(tx%16)/8;hit=(fm[at]>>(7-tx%8))&1;end
     // Escapes F0-FF: 5x7 glyph doubled in the left 10x14 of the cell.
     else if(code>=240 && tx%16<10 && row<14)hit=escape_rows[code-240][row/2][4-(tx%16)/2];
+    // E0-E7: a 12x12 colour swatch in the cell; the refuge swatch (E2) blinks slowly.
+    else if(code>=224 && code<232 && tx%16>=2 && tx%16<14 && row>=2 && row<14 && (code!=226 || slow))swatch=1;
    end
    if(legacy)begin at=((px-8)/16)*32+(py-200)*2+((px-8)%16)/8;hit=(fm[at]>>(7-(px-8)%8))&1;end
    if(hit)reference=legacy?24'hffffff:warn?24'hff0000:24'h000000;
+   if(swatch)reference=swatch_color(code-224);
+   // HUD: alert block and progress bar (track dark, fill in the alert colour, one pixel per t).
+   if(en && px>=8 && px<24 && py>=40 && py<56)reference=alert_color(warn,stage);
+   else if(en && px>=32 && px<272 && py>=44 && py<52)reference=(px-32<=tnow)?alert_color(warn,stage):24'h303030;
    if(en && warn && blink && de && (px<8 || px>=632 || py<8 || py>=472))reference=24'hff0000;
   end
  endfunction
@@ -102,13 +121,17 @@ module tb_m6_text;
   #2000;load(0,fbytes);load(1,tbytes);rst=0;fv=1;tv=1;
   repeat(9000)@(negedge clk);if(!available || dut.parser!=4)$fatal(1,"valid parser %d bad=%d",dut.parser,dut.bad);
   force dut.frames=0;en=1;
-  for(integer s=0;s<4;s++)begin stage=s;frame(0);frame(1);force dut.scroll=400;frame(400);release dut.scroll;end
-  warn=1;frame(0);
+  for(integer s=0;s<4;s++)begin stage=s;tnow=s==0?8'd0:s==1?8'd1:s==2?8'd100:8'd239;frame(0);frame(1);force dut.scroll=400;frame(400);release dut.scroll;end
+  // Slow blink on (frames[5]=1, frames[4]=0): the refuge swatch of a legend shows.
+  force dut.frames=32;force dut.scroll=0;slow=1;tnow=8'd239;frame(0);slow=0;release dut.scroll;force dut.frames=0;
+  warn=1;tnow=8'd239;frame(0);
   blink=1;force dut.frames=16;frame(0);
   force dut.frames=0;
   en=0;warn=0;blink=0;frame(0);
   invalid_file(0,0);invalid_file(2,2);invalid_file(3,9);invalid_file(6,32);
   invalid_file(4,0);invalid_file(5,16);invalid_file(7,3);invalid_file(tbytes-2,8'h80);
+  // Codes E0-E7 are legend swatches and may appear in any segment; E8-EF are not valid.
+  invalid_file(tbytes-2,8'he8);invalid_file(3,11);
   load(1,tbytes);tv=1;repeat(9000)@(negedge clk);if(dut.parser!=4)$fatal(1,"reload failed");
   fv=0;repeat(5)@(negedge clk);if(available || active)$fatal(1,"absent font fallback");
   $display("PASS M6 text: %0d pixel/bundle comparisons, four stage titles, village, scrolling, warning, 13 legacy glyphs, malformed/reload/missing resources; actual EG4 BRAM32k",checks);$finish;

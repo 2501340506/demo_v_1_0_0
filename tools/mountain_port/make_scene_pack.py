@@ -18,7 +18,8 @@ source types: polygon (filled), outline (polygon border), mask, all at t0.
 --audio also writes SND1-4.PCM from each stage's sound/narration
 (tools/mountain_port/scene_audio.py); --no-tts replaces unrecorded speech by
 timing beeps. --text also writes FONT.BIN and TEXT.BIN v1 from village,
-warning and each stage's title/subtitle (tools/scene_text.py).
+warning and each stage's title/subtitle (tools/scene_text.py); --legends adds
+each stage's `legend` (14-segment TEXT.BIN, v0.25 S5 firmware).
 """
 from pathlib import Path
 import argparse, heapq, math, struct, sys
@@ -609,6 +610,7 @@ def main():
     ap.add_argument('--audio', action='store_true', help='also write SND1-4.PCM from stage sound/narration')
     ap.add_argument('--no-tts', action='store_true', help='with --audio: beeps instead of SAPI speech')
     ap.add_argument('--text', action='store_true', help='also write FONT.BIN and TEXT.BIN (scene OSD text)')
+    ap.add_argument('--legends', action='store_true', help='with --text: add the stage legends (needs v0.25 S5 firmware)')
     a = ap.parse_args()
     scene_path = Path(a.scene)
     base_dir = scene_path.parent
@@ -679,7 +681,7 @@ def main():
     if a.text:
         from make_card_narration import text_spec, validate_text
         from scene_text import encode_text
-        spec = text_spec(cfg, str(scene_path))
+        spec = text_spec(cfg, str(scene_path), a.legends)
         font, text, meta = encode_text(spec, stages)
         validate_text(font, text, meta, spec)
         (out / 'sd' / 'FONT.BIN').write_bytes(font)
