@@ -170,6 +170,10 @@ module tb_panel_frame;
   focus=1;item=6;
   repeat(2)begin wait(vc==481);wait(vc==0);end
   dump("panel_edit.bmp");
+  focus=0;item=4;repeat(2)begin wait(vc==481);wait(vc==0);end dump("panel_wave.bmp");
+  item=8;repeat(2)begin wait(vc==481);wait(vc==0);end dump("panel_feature.bmp");
+  item=10;repeat(2)begin wait(vc==481);wait(vc==0);end dump("panel_reset.bmp");
+  item=0;repeat(2)begin wait(vc==481);wait(vc==0);end dump("panel_picture.bmp");
   $display("PASS tb_panel_frame");$finish;
  end
 endmodule
