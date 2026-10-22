@@ -1,0 +1,12 @@
+exact_legacy: PASS keys tick F=1000 PUB=0 SCENE=0: 200 gestures, edges next 66 rescan 22 prev 90 auto 50 dec 30 inc 54 restore 42 select 12 activity 394 scene 0 snext 0 warn 0 speed 0 app 0
+exact_pub: PASS keys tick F=1000 PUB=1 SCENE=1: 200 gestures, edges next 42 rescan 22 prev 56 auto 28 dec 28 inc 50 restore 40 select 12 activity 394 scene 33 snext 18 warn 12 speed 8 app 10
+exact_scene: PASS keys tick F=1000 PUB=0 SCENE=1: 200 gestures, edges next 64 rescan 22 prev 84 auto 34 dec 30 inc 54 restore 42 select 12 activity 394 scene 10 snext 2 warn 2 speed 2 app 0
+tick_legacy_seed25: PASS keys tick F=20000 PUB=0 SCENE=0: 300 gestures, edges next 100 rescan 42 prev 134 auto 80 dec 46 inc 72 restore 56 select 18 activity 592 scene 0 snext 0 warn 0 speed 0 app 0
+tick_legacy_seed3: PASS keys tick F=20000 PUB=0 SCENE=0: 300 gestures, edges next 114 rescan 36 prev 160 auto 62 dec 30 inc 62 restore 42 select 12 activity 584 scene 0 snext 0 warn 0 speed 0 app 0
+tick_legacy_seed7: PASS keys tick F=20000 PUB=0 SCENE=0: 300 gestures, edges next 126 rescan 32 prev 164 auto 66 dec 36 inc 54 restore 38 select 14 activity 600 scene 0 snext 0 warn 0 speed 0 app 0
+tick_pub_seed25: PASS keys tick F=20000 PUB=1 SCENE=1: 300 gestures, edges next 66 rescan 42 prev 86 auto 48 dec 40 inc 66 restore 52 select 12 activity 592 scene 55 snext 28 warn 16 speed 14 app 14
+tick_pub_seed3: PASS keys tick F=20000 PUB=1 SCENE=1: 300 gestures, edges next 64 rescan 32 prev 108 auto 26 dec 26 inc 56 restore 34 select 12 activity 584 scene 43 snext 38 warn 16 speed 14 app 16
+tick_pub_seed7: PASS keys tick F=20000 PUB=1 SCENE=1: 300 gestures, edges next 82 rescan 30 prev 98 auto 40 dec 32 inc 50 restore 34 select 12 activity 600 scene 47 snext 40 warn 32 speed 18 app 14
+tick_scene_seed25: PASS keys tick F=20000 PUB=0 SCENE=1: 300 gestures, edges next 98 rescan 42 prev 128 auto 56 dec 46 inc 72 restore 56 select 18 activity 592 scene 10 snext 2 warn 2 speed 2 app 0
+tick_scene_seed3: PASS keys tick F=20000 PUB=0 SCENE=1: 300 gestures, edges next 114 rescan 36 prev 158 auto 38 dec 30 inc 62 restore 42 select 12 activity 584 scene 12 snext 0 warn 2 speed 0 app 0
+tick_scene_seed7: PASS keys tick F=20000 PUB=0 SCENE=1: 300 gestures, edges next 102 rescan 32 prev 142 auto 44 dec 36 inc 54 restore 38 select 14 activity 600 scene 12 snext 24 warn 14 speed 8 app 0

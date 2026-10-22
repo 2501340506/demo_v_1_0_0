@@ -1,6 +1,10 @@
+# v0.27.0（开发中）
+
+- s1-local.1：新增 SW4（C5）独立调节面板，右侧滑出，可调亮度、对比度、音量、波形开关/高度/渐变、OSD/滚动字幕/换图淡入开关，长按 KEY4 全部重置；17560 LUT，Setup +0.111 ns / Hold +0.075 ns（Seed 13），待板测。[候选说明](releases/v0.27.0/s1-local.1/README.md)。
+
 # v0.26.0（开发中）
 
-- s1-local.1：宣讲模式底部波形改为白色、中线对称、cos² 包络、圆头和静音小点，下面加蓝色渐变；16730 LUT，Setup +0.145 ns / Hold +0.003 ns（Seed 7），待板测。[候选说明](releases/v0.26.0/s1-local.1/README.md)。
+- s1-local.1：宣讲模式底部波形改为白色、中线对称、cos² 包络、圆头和静音小点，下面加蓝色渐变；16730 LUT，Setup +0.145 ns / Hold +0.003 ns（Seed 7），板测通过（2026-10-23，已合入 main）。[候选说明](releases/v0.26.0/s1-local.1/README.md)。
 
 # v0.25.0（2026-10-22）
 

@@ -1,0 +1,20 @@
+== u_audio_ring
+    53 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/add2_syn_65
+== g_audio_vis
+    48 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/add2_syn_65
+     1 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$g_narration$overlay/region_syn_35
+== u_adjust_panel
+    79 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/add2_syn_65
+     1 sr  \u_reset_panel/release_pipe [2]  <- .? of ?
+== u_adjust_control
+    14 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$g_narration$overlay/region_syn_35
+== u_adjust_cdc
+    30 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/add2_syn_65
+    19 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$g_narration$overlay/region_syn_35
+== sd_card_bmp_m0/u_panel_keys
+    25 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$g_narration$overlay/region_syn_35
+     1 sr  mux3_syn_26  <- .f of sd_card_bmp_m0/u_panel_keys/gestures/mode_q_reg[0]_syn_4
+     1 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/add2_syn_65
+== u_panel_switch
+    13 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$g_narration$overlay/region_syn_35
+     1 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/add2_syn_65

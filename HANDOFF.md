@@ -1,4 +1,14 @@
-# 当前交接：v0.26.0 对称音频波形 S1 候选待板测（2026-10-22）
+# 当前交接：v0.27.0 SW4 独立调节面板 S1 候选待板测（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`（从 main 39167c2 拉出，v0.26.0-s1-local.1 板测通过后合入 main）。[s1-local.1](releases/v0.27.0/s1-local.1/README.md) 已固定：SW4（C5）拨上滑出两栏调节面板，10 个条目。17560 LUT（89.59%），Setup +0.111 ns / Hold +0.075 ns。卡不用换。[计划](docs/独立调节面板v0.27分阶段计划.md)。
+- 已完成：引脚和顶层端口；面板按键（独立去抖+手势，KEY4 长按 1 s）；控制和 38 位邮箱；面板显示；波形高度/渐变、OSD/滚动/淡入的运行时门控；新增 `diagnostics/adjust_panel/run_unit.ps1`（含 RTL 渲染 BMP 预览）；回归和 sd_pin_boot、复位审计；5 个种子构建（13、21 通过）。
+- 卡住的问题：无。等用户上板。备选 Seed 21（+0.112 / +0.011），产物在 `diagnostics/output/adj27_td2_s21`。
+- 下一步：用户板测通过后记录 board、打标签；正式版和合并 main 等用户确认。LUT 已到 89.6%，再加功能前先考虑裁减面板（去掉滑入动画、数值条乘法、字符串多路选择）。
+- 踩坑：`media_adjust_control`、`audio_ring_overlay` 很多测试台按位置连端口，新端口只能加在末尾；`sd_card_bmp` 的测试台大多不接新输入，`panel_owns` 写成“panel 为 1 才置位”，悬空的 z/x 会一直保持复位值 0；runner 里 `-notmatch Warning` 会把未接端口的告警判失败，不用的输出要显式写 `.hold_select()`；task 的 `inout` 参数要到返回时才写回，不能用来在 task 里发脉冲；本机没有 `python3`/`py`，用 `/c/Users/熊俊逸/AppData/Local/Programs/Python/Python313/python.exe`；复位审计按 slice 宏名归类，会把同一 slice 里别的模块的寄存器算进来，要看寄存器 `.q` 和 `SRMODE` 再下结论。
+
+## 历史交接
+
+### v0.26.0 对称音频波形 S1 候选，板测通过并合入 main（2026-10-23）
 
 - 当前状态：分支 `feature/symmetric-waveform`。[s1-local.1](releases/v0.26.0/s1-local.1/README.md) 已固定：宣讲底部波形改为白色、中线对称、中间高两边低，下面加蓝色渐变。16730 LUT，Setup +0.145 ns / Hold +0.003 ns。卡不用换。[计划](docs/对称音频波形v0.26分阶段计划.md)。
 - 已完成：overlay RTL；电平模块历史改为 40 条、左右共用；单元测试和 top 集成逐像素测试；4 个种子构建（7、43 通过）；sd_pin_boot 和复位审计，两项都和 v0.25 一致。
