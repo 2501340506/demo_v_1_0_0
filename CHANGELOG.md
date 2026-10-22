@@ -1,6 +1,7 @@
 # v0.27.0（开发中）
 
-- s1-local.2：按板测反馈修复：OSD/SCROLL 开关在情景、宣讲画面也生效；去掉 SW1/SW2 的 01、10 调节模式（当作 00）；音量最大 200%。17464 LUT，Setup +0.136 ns / Hold +0.003 ns（Seed 47），待板测。[候选说明](releases/v0.27.0/s1-local.2/README.md)。
+- s1-local.3：场景播放速度加进面板（场景 → 速度，1X/2X/4X）；面板全部改中文，标题“参数调节”居中、去掉 SW4，底部“K1↑ K2↓ K4编辑/返回”；61 个字模（宋体 16×16）放在 2 块 BRAM9K。17594 LUT，Setup +0.113 ns / Hold +0.012 ns（Seed 11），待板测。[候选说明](releases/v0.27.0/s1-local.3/README.md)。
+- s1-local.2：按板测反馈修复：OSD/SCROLL 开关在情景、宣讲画面也生效；去掉 SW1/SW2 的 01、10 调节模式（当作 00）；音量最大 200%。17464 LUT，Setup +0.136 ns / Hold +0.003 ns（Seed 47），未收到板测反馈，由 s1-local.3 接续。[候选说明](releases/v0.27.0/s1-local.2/README.md)。
 - s1-local.1：新增 SW4（C5）独立调节面板，右侧滑出，可调亮度、对比度、音量、波形开关/高度/渐变、OSD/滚动字幕/换图淡入开关，长按 KEY4 全部重置；17560 LUT，Setup +0.111 ns / Hold +0.075 ns（Seed 13）；板测：OSD/SCROLL 在情景、宣讲画面无效。[候选说明](releases/v0.27.0/s1-local.1/README.md)。
 
 # v0.26.0（开发中）

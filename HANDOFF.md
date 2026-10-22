@@ -1,4 +1,14 @@
-# 当前交接：v0.27.0 调节面板 s1-local.2 待板测（2026-10-23）
+# 当前交接：v0.27.0 调节面板 s1-local.3 待板测（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。[s1-local.3](releases/v0.27.0/s1-local.3/README.md)（源码 `edcb6c0`，Seed 11）：面板加“场景 → 速度”，全部文字改中文（标题“参数调节”居中、去 SW4，底部“K1↑ K2↓ K4编辑/返回”）。17594 LUT（89.77%），Setup +0.113 / Hold +0.012 ns。s1-local.2 没收到板测反馈。
+- 已完成：`media_adjust_control` 加速度条目（6）并重新编号（共 11 项），只发 up/down/default 脉冲；`scene_speed_request`（同文件）按 `scenario_fsm` 的当前速度闭环发它原有的换档键，最多 3 次；面板字模由 `tools/make_panel_font.py` 生成 `panel_font_rom.v`（1024×16，2 块 BRAM9K）并把字符串写进 `adjust_osd_overlay.v` 标记块，8 px 半格排版。`TD_project/demo.al` 加了 `panel_font_rom.v`。
+- 卡住的问题：无。7 个种子只有 11 过。
+- 下一步：等 s1-local.3 板测。若要再省 LUT：字符串表也放进 BRAM（报表里 `font` 下 325 LUT 实际是取字选择逻辑）。
+- 踩坑：改面板文字要跑 `make_panel_font.py`（需带 Pillow 的 `~/scoop/apps/python/current/python.exe`，`Python313` 那个没有 Pillow），新增 .v 文件要加进 `demo.al` 并提交，`run_td.ps1` 用的是已提交的工程文件；Git Bash 里含中文的长 heredoc 会被解析坏，长文件用 Write 工具写；`$display` 里的 `%` 要写成 `%%`；`v>19'sd32767?` 这类写法 `?` 紧贴十进制常数会被当成 Z 位，要加空格。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.2（2026-10-23）
 
 - 当前状态：分支 `feature/adjust-panel`。s1-local.1 板测：OSD/SCROLL 在情景、宣讲画面无效；用户要求去掉 SW1/SW2 的 01/10 调节模式、音量到 200%。[s1-local.2](releases/v0.27.0/s1-local.2/README.md)（源码 `3fc0e2a`，Seed 47）已全部改好：17464 LUT，Setup +0.136 ns / **Hold +0.003 ns**。卡不用换。
 - 已完成：`scene_text_overlay` 加 `hud_enable`/`subtitle_enable`，宣讲旁白 enable 接 SCROLL；`switch_mode` 把 01/10 映射为 00，`media_adjust_control` 去掉模式调节分支，参数 OSD 只剩 SPEED；`pcm_master_volume` 21 档 + 削顶，邮箱 39 位（音量高位在 bit 38）。新增 `run_scene_gates.ps1`；`tb_osd_render` 加 `+HUD`/`+SUB`；`run_s5_overlay.ps1` 一个变异的匹配串跟着源码改了。

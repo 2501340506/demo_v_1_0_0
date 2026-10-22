@@ -1,0 +1,17 @@
+== u_adjust_panel
+    97 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_menu$backend/mux85_syn_662
+== u_adjust_control
+    20 sr  \u_reset_sd/release_pipe [2]  <- .q of u_reset_sd/release_pipe_reg[1]_syn_4
+== u_adjust_cdc
+    26 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_menu$backend/mux85_syn_662
+    14 sr  \u_reset_sd/release_pipe [2]  <- .q of u_reset_sd/release_pipe_reg[1]_syn_4
+== u_master_volume
+    41 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_menu$backend/mux85_syn_662
+== sd_card_bmp_m0/u_panel_keys
+    31 sr  \u_reset_sd/release_pipe [2]  <- .q of u_reset_sd/release_pipe_reg[1]_syn_4
+     7 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_menu$backend/mux85_syn_662
+== sd_card_bmp_m0/g_scenario$panel_speed
+     6 sr  \u_reset_sd/release_pipe [2]  <- .q of u_reset_sd/release_pipe_reg[1]_syn_4
+== u_panel_switch
+    11 sr  \u_reset_sd/release_pipe [2]  <- .q of u_reset_sd/release_pipe_reg[1]_syn_4
+     1 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_menu$backend/mux85_syn_662
