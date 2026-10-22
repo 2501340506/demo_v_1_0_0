@@ -43,6 +43,7 @@ module sd_card_bmp #(
     output adjust_decrease,adjust_increase,adjust_restore,adjust_select,
     input panel,                // v0.27 SW4, debounced
     output reg panel_owns,output panel_hold,
+    input panel_speed_up,panel_speed_down,panel_speed_default, // v0.27 panel SCENE SPEED
     output     [3:0]            state_code,
     output [63:0]               sd_debug,
     output reg [57:0]          diagnostics,
@@ -713,11 +714,14 @@ generate if(SCENE_ENABLE)begin:g_scenario
   .clk(clk),.rst(rst),.sample_tick(sample_tick),.frame_tick(frame_tick));
  // AUTO waits while this stage's SND narration has not been read through once.
  wire narration_hold;
+ wire panel_speed_step;
+ scene_speed_request panel_speed(.clk(clk),.rst(rst),.up(panel_speed_up),.down(panel_speed_down),
+  .restore(panel_speed_default),.speed(speed),.step(panel_speed_step));
  scenario_fsm #(.PRESERVE_SPEED(PUBLICITY_ENABLE),.UI_GATE(PUBLICITY_ENABLE),.PREVIEW_SELECT(PUBLICITY_ENABLE),.MENU_ENABLE(MENU_ENABLE),.NARRATION_GATE(1)) control(.narration_hold(narration_hold),.pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto && (!PUBLICITY_ENABLE || !controls_blocked)),
   .ui_play(effective_mode==0 && !controls_blocked),
   .select_request(preview_offer && scene_preview && !controls_blocked),.select_stage(preview_target),.select_ready(scene_select_ready),
   .scene_ready(first_image_committed && image_count==4 && !scan_busy),
-  .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed),
+  .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed || panel_speed_step),
   .sample_tick(sample_tick),.audio_running(scene_audio_running),.frame_start(frame_tick),.muted(scene_muted_sd),
   .request_ready(scene_request_accept),.picture_done(cache_display_ack),.picture_failed(request_failed),
   .transition_idle(!transition_busy),.audio_ready(audio_ready),.stage(stage),.speed(speed),.warn_mode(warn_mode),

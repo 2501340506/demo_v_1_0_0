@@ -33,10 +33,12 @@ endmodule
 module tb_panel_state;
  reg clk=0,rst=1,dec=0,inc=0,res=0,sel=0,panel=0,hold=0;reg [1:0] mode=0;
  wire [7:0] b,c;wire [4:0] v;wire [3:0] item;wire [1:0] selected,height,wash;
- wire focus,wave,osd,scroll,fade;
+ wire focus,wave,osd,scroll,fade,sp_up,sp_down,sp_def;
+ integer n_up=0,n_down=0,n_def=0;
+ always @(posedge clk)begin n_up+=sp_up;n_down+=sp_down;n_def+=sp_def;end
  always #5 clk=~clk;
  media_adjust_control dut(clk,rst,mode,dec,inc,res,sel,b,c,v,selected,panel,hold,
-  focus,item,wave,height,wash,osd,scroll,fade);
+  focus,item,wave,height,wash,osd,scroll,fade,sp_up,sp_down,sp_def);
  localparam DEC=0,INC=1,RES=2,SEL=3,HOLD=4;
  task pulse(input integer w);begin
   @(negedge clk);case(w)DEC:dec=1;INC:inc=1;RES:res=1;SEL:sel=1;default:hold=1;endcase
@@ -46,13 +48,12 @@ module tb_panel_state;
  initial begin
   repeat(3)@(negedge clk);rst=0;@(negedge clk);
   check(item==0 && !focus && wave && height==3 && wash==2 && osd && scroll && fade,"defaults");
-  // Without SW4 the v0.26 mode behaviour is unchanged.
   // Without SW4 nothing adjusts, whatever SW1/SW2 say (v0.27 removed modes 1/2).
   mode=1;@(negedge clk);@(negedge clk);pulse(INC);check(b==128,"mode1 no longer adjusts");
   pulse(SEL);check(selected==0 && item==0 && !focus,"mode1 select ignored");
   mode=0;@(negedge clk);@(negedge clk);pulse(INC);check(b==128 && v==10,"mode0 ignores adjust");
   panel=1;@(negedge clk);@(negedge clk);
-  pulse(DEC);check(item==9,"cursor wraps down");
+  pulse(DEC);check(item==10,"cursor wraps down");
   pulse(INC);check(item==0,"cursor wraps up");
   pulse(INC);check(item==1 && c==128,"cursor moves without editing");
   pulse(SEL);check(focus,"enter edit");
@@ -62,12 +63,15 @@ module tb_panel_state;
   pulse(INC);pulse(INC);pulse(SEL);pulse(DEC);check(item==3 && !wave,"wave off");
   pulse(SEL);pulse(INC);pulse(SEL);pulse(DEC);pulse(DEC);pulse(DEC);pulse(DEC);check(height==0,"height floor");
   pulse(SEL);pulse(INC);pulse(SEL);pulse(INC);pulse(INC);check(wash==3,"wash ceiling");
-  pulse(SEL);pulse(INC);pulse(SEL);pulse(DEC);check(item==6 && !osd,"osd off");
+  pulse(SEL);pulse(INC);check(item==6 && n_up==0,"speed item");pulse(SEL);
+  pulse(INC);pulse(INC);pulse(DEC);check(n_up==2 && n_down==1,"speed requests");
+  pulse(RES);check(n_def==1 && b==128,"speed restore request");
+  pulse(SEL);pulse(INC);pulse(SEL);pulse(DEC);check(item==7 && !osd,"osd off");
   pulse(SEL);pulse(INC);pulse(SEL);pulse(DEC);check(!scroll,"scroll off");
   pulse(SEL);pulse(INC);pulse(SEL);pulse(DEC);check(!fade,"fade off");
   pulse(HOLD);check(!osd,"hold away from reset item does nothing");
-  pulse(SEL);pulse(INC);check(item==9,"reset item");
-  pulse(HOLD);check(b==128 && v==10 && wave && height==3 && wash==2 && osd && scroll && fade,"reset all");
+  pulse(SEL);pulse(INC);check(item==10,"reset item");
+  pulse(HOLD);check(b==128 && v==10 && wave && height==3 && wash==2 && osd && scroll && fade && n_def==2,"reset all");
   pulse(INC);pulse(INC);pulse(INC);check(item==2,"volume item");pulse(SEL);
   repeat(15)pulse(INC);check(v==20,"volume ceiling 200%");
   pulse(DEC);check(v==19,"volume down from 200%");pulse(RES);check(v==10,"volume restore 100%");
@@ -92,7 +96,7 @@ module tb_panel_pixels;
  adjust_panel_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb_in),
   .panel(panel),.focus(1'b0),.item(4'd2),.brightness(8'd128),.contrast(8'd128),.volume_level(5'd10),
   .wave_on(1'b1),.wave_height(2'd3),.wash_level(2'd2),.osd_on(1'b1),.scroll_on(1'b1),.fade_on(1'b1),
-  .bright_bcd(12'h128),.contrast_bcd(12'h128),.volume_bcd(12'h100),.rgb_out(out));
+  .bright_bcd(12'h128),.contrast_bcd(12'h128),.volume_bcd(12'h100),.scene_on(1'b0),.scene_speed(2'd0),.rgb_out(out));
  always @(posedge clk)if(!rst)begin
   if(hc==H-1)begin hc<=0;vc<=vc==V-1?0:vc+1;end else hc<=hc+1;
  end
@@ -124,7 +128,7 @@ module tb_panel_pixels;
 endmodule
 
 // Preview: dumps the RTL panel over a gradient as 640x480 BMPs, once with
-// the cursor on VOLUME and once editing WAVE HEIGHT.
+// the cursor on VOLUME and once editing SCENE SPEED (2X).
 module tb_panel_frame;
  reg clk=0,rst=1,focus=0;reg [3:0] item=2;
  always #5 clk=~clk;
@@ -138,7 +142,7 @@ module tb_panel_frame;
  adjust_panel_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb_in),
   .panel(1'b1),.focus(focus),.item(item),.brightness(8'd160),.contrast(8'd128),.volume_level(5'd20),
   .wave_on(1'b1),.wave_height(2'd2),.wash_level(2'd1),.osd_on(1'b1),.scroll_on(1'b0),.fade_on(1'b1),
-  .bright_bcd(12'h160),.contrast_bcd(12'h128),.volume_bcd(12'h200),.rgb_out(out));
+  .bright_bcd(12'h160),.contrast_bcd(12'h128),.volume_bcd(12'h200),.scene_on(1'b1),.scene_speed(2'd1),.rgb_out(out));
  always @(posedge clk)if(!rst)begin
   if(hc==H-1)begin hc<=0;vc<=vc==V-1?0:vc+1;end else hc<=hc+1;
  end
@@ -163,9 +167,40 @@ module tb_panel_frame;
   repeat(4)@(negedge clk);rst=0;
   repeat(11)begin wait(vc==481);wait(vc==0);end
   dump("panel_cursor.bmp");
-  focus=1;item=4;
+  focus=1;item=6;
   repeat(2)begin wait(vc==481);wait(vc==0);end
   dump("panel_edit.bmp");
   $display("PASS tb_panel_frame");$finish;
+ end
+endmodule
+
+// Panel SCENE SPEED against a model of scenario_fsm's speed key: each accepted
+// step cycles 0->1->2->0, and the model can refuse steps (scene not running).
+module tb_speed_request;
+ reg clk=0,rst=1,up=0,down=0,restore=0,accept=1;reg [1:0] speed=0;
+ wire step;integer steps=0;
+ always #5 clk=~clk;
+ scene_speed_request dut(clk,rst,up,down,restore,speed,step);
+ always @(posedge clk)if(step)begin steps++;if(accept)speed<=speed==2?2'd0:speed+2'd1;end
+ task req(input integer w);begin
+  @(negedge clk);if(w==0)up=1;else if(w==1)down=1;else restore=1;
+  @(negedge clk);up=0;down=0;restore=0;repeat(120)@(negedge clk);
+ end endtask
+ task check(input ok,input [255:0] what);if(!ok)begin $display("FAIL %0s speed=%0d steps=%0d",what,speed,steps);$finish;end endtask
+ initial begin
+  repeat(3)@(negedge clk);rst=0;
+  req(0);check(speed==1 && steps==1,"1X up to 2X");
+  req(0);check(speed==2 && steps==2,"2X up to 4X");
+  req(0);check(speed==2 && steps==2,"4X up saturates");
+  req(1);check(speed==1 && steps==4,"4X down to 2X wraps through 1X");
+  req(1);check(speed==0 && steps==6,"2X down to 1X");
+  req(1);check(speed==0 && steps==6,"1X down saturates");
+  req(0);req(0);req(2);check(speed==0,"restore to 1X");
+  // FSM keeps changing speed on its own (KEY1 long press) between requests.
+  speed=2;@(negedge clk);req(1);check(speed==1,"down follows the FSM's current speed");
+  // Refused steps are tried at most three times, then dropped.
+  accept=0;steps=0;req(0);check(speed==1 && steps==3,"refused steps give up");
+  accept=1;steps=0;repeat(200)@(negedge clk);check(steps==0,"no steps after giving up");
+  $display("PASS tb_speed_request");$finish;
  end
 endmodule

@@ -93,6 +93,7 @@ module adjust_panel_overlay #(parameter ENABLE=1)(
  input [7:0] brightness,contrast,input [4:0] volume_level,
  input wave_on,input [1:0] wave_height,wash_level,input osd_on,scroll_on,fade_on,
  input [11:0] bright_bcd,contrast_bcd,volume_bcd,
+ input scene_on,input [1:0] scene_speed,   // scenario_fsm speed (0 1X, 1 2X, 2 4X)
  output [23:0] rgb_out
 );
  localparam [9:0] X0=10'd296;
@@ -113,9 +114,10 @@ module adjust_panel_overlay #(parameter ENABLE=1)(
  // Category layout of the item list.
  reg [2:0] cat;reg [3:0] first;reg [1:0] count;
  always @*begin
-  case(item)0,1:cat=0;2:cat=1;3,4,5:cat=2;6,7,8:cat=3;default:cat=4;endcase
+  case(item)0,1:cat=0;2:cat=1;3,4,5:cat=2;6:cat=3;7,8,9:cat=4;default:cat=5;endcase
   case(cat)0:begin first=0;count=2;end 1:begin first=2;count=1;end
-   2:begin first=3;count=3;end 3:begin first=6;count=3;end default:begin first=9;count=1;end
+   2:begin first=3;count=3;end 3:begin first=6;count=1;end 4:begin first=7;count=3;end
+   default:begin first=10;count=1;end
   endcase
  end
  function [7:0] digit(input [3:0] d);digit={4'h3,d};endfunction
@@ -134,7 +136,7 @@ module adjust_panel_overlay #(parameter ENABLE=1)(
   n_cat=0;n_row=0;n_grow=0;t=0;s=0;
   if(ly>=4 && ly<18)begin n_title=1;t=ly-9'd4;n_grow=t[3:1];end
   if(ly>=180 && ly<194)begin n_hint=1;t=ly-9'd180;n_grow=t[3:1];end
-  for(i=0;i<5;i=i+1)begin
+  for(i=0;i<6;i=i+1)begin
    s=9'd32+9'd24*i;
    if(ly+9'd4>=s && ly<s+9'd18)begin n_cat_hl=1;n_cat=i;end
    if(ly>=s && ly<s+9'd14)begin n_cat_text=1;t=ly-s;n_grow=t[3:1];end
@@ -161,9 +163,10 @@ module adjust_panel_overlay #(parameter ENABLE=1)(
    3:n_value=onoff(wave_on);
    4:begin n_value={"   ",digit({2'd0,wave_height})};n_has_bar=1;n_fill=level_fill(wave_height);end
    5:begin n_value={"   ",digit({2'd0,wash_level})};n_has_bar=1;n_fill=level_fill(wash_level);end
-   6:n_value=onoff(osd_on);
-   7:n_value=onoff(scroll_on);
-   8:n_value=onoff(fade_on);
+   6:n_value=scene_on?{"  ",scene_speed==0?"1":scene_speed==1?"2":"4","X"}:"  --";
+   7:n_value=onoff(osd_on);
+   8:n_value=onoff(scroll_on);
+   9:n_value=onoff(fade_on);
   endcase
  end
  reg v_body,v_in,v_frame,v_title_band,v_title,v_hint,v_cat_text,v_cat_hl,v_item_text,v_item_hl,v_bar,v_valid,v_has_bar,v_cur_cat,v_cur_item;
@@ -185,14 +188,15 @@ module adjust_panel_overlay #(parameter ENABLE=1)(
  always @*begin
   case(v_cat)
    0:cat_str="PICTURE            ";1:cat_str="AUDIO              ";2:cat_str="WAVE               ";
-   3:cat_str="FEATURE            ";default:cat_str="RESET              ";
+   3:cat_str="SCENE              ";4:cat_str="FEATURE            ";default:cat_str="RESET              ";
   endcase
   case(v_item)
    0:item_str={"BRIGHT  ",v_value,"       "};1:item_str={"CONTRAST",v_value,"       "};
    2:item_str={"VOLUME  ",v_value,"       "};3:item_str={"WAVE    ",v_value,"       "};
    4:item_str={"HEIGHT  ",v_value,"       "};5:item_str={"WASH    ",v_value,"       "};
-   6:item_str={"OSD     ",v_value,"       "};7:item_str={"SCROLL  ",v_value,"       "};
-   8:item_str={"FADE    ",v_value,"       "};default:item_str={"HOLD K4 ",v_value,"       "};
+   6:item_str={"SPEED   ",v_value,"       "};
+   7:item_str={"OSD     ",v_value,"       "};8:item_str={"SCROLL  ",v_value,"       "};
+   9:item_str={"FADE    ",v_value,"       "};default:item_str={"HOLD K4 ",v_value,"       "};
   endcase
  end
  wire [9:0] lx=pixel_x-x0;

@@ -285,6 +285,7 @@ wire [4:0] volume_src;
 wire [1:0] selected_src;
 // v0.27 panel state rides above the original 24 bits of the same mailbox.
 wire panel_owns_sd,panel_hold_sd,panel_focus_src,wave_on_src,osd_on_src,scroll_on_src,fade_on_src;
+wire panel_speed_up,panel_speed_down,panel_speed_default;
 wire [3:0] panel_item_src;wire [1:0] wave_height_src,wash_level_src;
 wire [38:0] adjust_frame;
 wire [1:0] adjust_mode=adjust_frame[23:22],adjust_selected=adjust_frame[21:20];
@@ -300,7 +301,8 @@ media_adjust_control u_adjust_control(.clk(sd_card_clk),.rst(rst_sd),.mode(effec
  .panel(panel_owns_sd),.hold_select(panel_hold_sd),
  .brightness(brightness_src),.contrast(contrast_src),.volume_level(volume_src),.selected(selected_src),
  .focus(panel_focus_src),.item(panel_item_src),.wave_on(wave_on_src),.wave_height(wave_height_src),
- .wash_level(wash_level_src),.osd_on(osd_on_src),.scroll_on(scroll_on_src),.fade_on(fade_on_src));
+ .wash_level(wash_level_src),.osd_on(osd_on_src),.scroll_on(scroll_on_src),.fade_on(fade_on_src),
+ .speed_up(panel_speed_up),.speed_down(panel_speed_down),.speed_default(panel_speed_default));
 media_adjust_cdc #(.WIDTH(39),.DEFAULT_STATE({1'b0,1'b0,1'b0,4'd0,1'b1,2'd3,2'd2,3'b111,2'd0,2'd0,8'd128,8'd128,4'd10})) u_adjust_cdc(
  .src_clk(sd_card_clk),.src_rst(rst_sd),
  .src_state({volume_src[4],panel_owns_sd,panel_focus_src,panel_item_src,wave_on_src,wave_height_src,wash_level_src,
@@ -423,6 +425,7 @@ sd_card_bmp #(
     .adjust_decrease(adjust_decrease),.adjust_increase(adjust_increase),
     .adjust_restore(adjust_restore),.adjust_select(adjust_select),
     .panel(panel_enable_sd),.panel_owns(panel_owns_sd),.panel_hold(panel_hold_sd),
+    .panel_speed_up(panel_speed_up),.panel_speed_down(panel_speed_down),.panel_speed_default(panel_speed_default),
     .state_code        (state_code),
     .sd_debug(sd_debug), .diagnostics(uart_diagnostics),
     .combo_event_count (combo_event_count),
@@ -789,7 +792,8 @@ adjust_panel_overlay #(.ENABLE(OSD_ENABLE)) u_adjust_panel(.clk(video_clk),.rst(
  .brightness(brightness_frame),.contrast(contrast_frame),.volume_level(volume_frame),
  .wave_on(wave_on_frame),.wave_height(wave_height_frame),.wash_level(wash_level_frame),
  .osd_on(osd_on_frame),.scroll_on(scroll_on_frame),.fade_on(fade_on_frame),
- .bright_bcd(bright_bcd),.contrast_bcd(contrast_bcd),.volume_bcd(volume_bcd),.rgb_out(panel_final_rgb));
+ .bright_bcd(bright_bcd),.contrast_bcd(contrast_bcd),.volume_bcd(volume_bcd),
+ .scene_on(scene_enable),.scene_speed(scene_meta_pixel[15:14]),.rgb_out(panel_final_rgb));
 assign final_rgb=menu_flag[4]?menu_delay[4]:panel_final_rgb;
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;

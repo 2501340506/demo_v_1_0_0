@@ -11,7 +11,7 @@ $rtl=Get-ChildItem "$root/user_source/hdl_source/adjust/*.v" | ForEach-Object {$
 if($LASTEXITCODE){throw "Compile failed: $out/compile.log"}
 Push-Location $out
 try{
- foreach($test in @('tb_panel_keys','tb_panel_state','tb_panel_pixels','tb_panel_frame')){
+ foreach($test in @('tb_panel_keys','tb_panel_state','tb_panel_pixels','tb_panel_frame','tb_speed_request')){
   & "$sim/vsim.exe" -c -quiet -lib $lib $test -l "$out/$test.log" -do 'run -all; quit -f' *> "$out/$test.console.log"
   $log=Get-Content "$out/$test.log" -Raw
   if($LASTEXITCODE -or $log -notmatch 'PASS ' -or $log -match '\*\* (Fatal|Error):'){throw "Test failed: $out/$test.log"}
