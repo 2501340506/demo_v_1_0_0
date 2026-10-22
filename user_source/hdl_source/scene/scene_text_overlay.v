@@ -23,7 +23,9 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  output font_available,scene_text_active,
  output [10:0] text_addr,input [15:0] text_data,
  output [10:0] font_addr,input [15:0] font_data,
- output reg hs_out,vs_out,de_out,output reg [9:0] x_out,output reg [23:0] rgb_out
+ output reg hs_out,vs_out,de_out,output reg [9:0] x_out,output reg [23:0] rgb_out,
+ // v0.27 panel: OSD = top-right panel and legend, SCROLL = bottom subtitle line.
+ input hud_enable,subtitle_enable
 );
  wire [8:0] y;wire frame_start,first_active;
  osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),
@@ -112,13 +114,13 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  always @*begin
   segment_offset=title_offset;segment_length=title_length;local_x=0;row=0;region=0;
   if(scene_text_active && de)begin
-   if(y>=32 && y<48)begin               // panel title; the village name while warning
+   if(hud_enable && y>=32 && y<48)begin               // panel title; the village name while warning
     segment_offset=warning?village_offset:title_offset;segment_length=warning?village_length:title_length;
     row=y[3:0];local_x={2'b0,pixel_x}-12'd376;region=pixel_x>=376;
-   end else if(LEGEND_ENABLE && y>=416 && y<432 && legend_length!=0)begin
+   end else if(LEGEND_ENABLE && hud_enable && y>=416 && y<432 && legend_length!=0)begin
     segment_offset=legend_offset;segment_length=legend_length;row=y[3:0];
     local_x={2'b0,pixel_x}-12'd8;region=1;
-   end else if(y>=444 && y<460)begin   // subtitle; the warning text while warning (parser)
+   end else if(subtitle_enable && y>=444 && y<460)begin   // subtitle; the warning text while warning (parser)
     segment_offset=subtitle_offset;segment_length=subtitle_length;row=y[3:0]+4'd4;
     local_x=subtitle_x[11:0];region=subtitle_x>=0;
    end
@@ -131,12 +133,12 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  wire in_block=pixel_x>=352 && pixel_x<368 && y>=32 && y<48 && (!warning || frames[4]);
  wire in_track=pixel_x>=376 && pixel_x<616 && y>=52 && y<56;
  wire fill=bar_x[7:0]<=t_now;
- wire hud_on=BAR_ENABLE && enabled && de;
+ wire hud_on=BAR_ENABLE && enabled && de && hud_enable;
  wire [1:0] hud=!hud_on?2'd0:in_block?2'd3:in_track?(fill?2'd2:2'd1):2'd0;
  wire panel=hud_on && pixel_x>=348 && pixel_x<636 && y>=28 && y<60;
- wire legend_band=LEGEND_ENABLE && scene_text_active && de && legend_length!=0 &&
+ wire legend_band=LEGEND_ENABLE && hud_enable && scene_text_active && de && legend_length!=0 &&
    pixel_x>=4 && {2'b0,pixel_x}<12'd12+{legend_length,4'd0} && y>=412 && y<436;
- wire subtitle_band=BAR_ENABLE && scene_text_active && de && subtitle_length!=0 &&
+ wire subtitle_band=BAR_ENABLE && subtitle_enable && scene_text_active && de && subtitle_length!=0 &&
    pixel_x>=8 && pixel_x<632 && y>=440 && y<464;
  wire dim=panel || legend_band || subtitle_band;
  wire border=enabled && warning && frames[4] && de &&

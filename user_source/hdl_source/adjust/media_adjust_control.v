@@ -1,18 +1,17 @@
-// Parameter state in the SD control domain. Selection 0=B, 1=C, 2=V.
-// v0.27: with panel=1 (SW4) the same gestures drive the adjust panel instead.
+// Parameter state in the SD control domain, driven only by the SW4 panel (v0.27;
+// the SW1/SW2 adjust modes are gone, mode and selected are kept for the ports).
 // Panel items: 0 bright, 1 contrast, 2 volume, 3 wave, 4 height, 5 wash,
 // 6 OSD, 7 scroll, 8 fade, 9 reset all. focus 0 moves the cursor, 1 edits.
 module media_adjust_control(
  input clk,rst,input [1:0] mode,
  input decrease,increase,restore,select_next,
  output reg [7:0] brightness,contrast,
- output reg [3:0] volume_level,output reg [1:0] selected,
+ output reg [4:0] volume_level,output reg [1:0] selected,
  input panel,hold_select,
  output reg focus,output reg [3:0] item,
  output reg wave_on,output reg [1:0] wave_height,wash_level,
  output reg osd_on,scroll_on,fade_on
 );
- reg [1:0] mode_q;
  reg panel_q;
  function [7:0] step;
   input [7:0] value;input up;
@@ -24,11 +23,11 @@ module media_adjust_control(
  endfunction
  always @(posedge clk or posedge rst)begin
   if(rst)begin
-   brightness<=128;contrast<=128;volume_level<=10;selected<=0;mode_q<=0;
+   brightness<=128;contrast<=128;volume_level<=10;selected<=0;
    panel_q<=0;focus<=0;item<=0;
    wave_on<=1;wave_height<=3;wash_level<=2;osd_on<=1;scroll_on<=1;fade_on<=1;
   end else begin
-   mode_q<=mode;panel_q<=panel;
+   panel_q<=panel;
    if(panel!=panel_q)focus<=0;
    else if(panel)begin
     if(hold_select && item==9)begin
@@ -48,7 +47,7 @@ module media_adjust_control(
      case(item)
       0:brightness<=step(brightness,increase);
       1:contrast<=step(contrast,increase);
-      2:if(increase && volume_level<10)volume_level<=volume_level+1'b1;
+      2:if(increase && volume_level<20)volume_level<=volume_level+1'b1;
         else if(decrease && volume_level>0)volume_level<=volume_level-1'b1;
       3:wave_on<=increase;
       4:wave_height<=level(wave_height,increase);
@@ -56,20 +55,6 @@ module media_adjust_control(
       6:osd_on<=increase;
       7:scroll_on<=increase;
       8:fade_on<=increase;
-     endcase
-    end
-   end
-   else if(mode!=mode_q)selected<=mode==2?1:0;
-   else if(mode==1 || mode==2)begin
-    if(select_next)selected<=selected==2?(mode==2?1:0):2;
-    else if(restore)begin
-     case(selected)0:brightness<=128;1:contrast<=128;2:volume_level<=10;endcase
-    end else if(decrease || increase)begin
-     case(selected)
-      0:brightness<=step(brightness,increase);
-      1:contrast<=step(contrast,increase);
-      2:if(increase && volume_level<10)volume_level<=volume_level+1'b1;
-        else if(decrease && volume_level>0)volume_level<=volume_level-1'b1;
      endcase
     end
    end

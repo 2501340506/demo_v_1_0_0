@@ -32,7 +32,7 @@ endmodule
 
 module tb_panel_state;
  reg clk=0,rst=1,dec=0,inc=0,res=0,sel=0,panel=0,hold=0;reg [1:0] mode=0;
- wire [7:0] b,c;wire [3:0] v,item;wire [1:0] selected,height,wash;
+ wire [7:0] b,c;wire [4:0] v;wire [3:0] item;wire [1:0] selected,height,wash;
  wire focus,wave,osd,scroll,fade;
  always #5 clk=~clk;
  media_adjust_control dut(clk,rst,mode,dec,inc,res,sel,b,c,v,selected,panel,hold,
@@ -47,9 +47,10 @@ module tb_panel_state;
   repeat(3)@(negedge clk);rst=0;@(negedge clk);
   check(item==0 && !focus && wave && height==3 && wash==2 && osd && scroll && fade,"defaults");
   // Without SW4 the v0.26 mode behaviour is unchanged.
-  mode=1;@(negedge clk);@(negedge clk);pulse(INC);check(b==144,"mode1 bright up");
-  pulse(SEL);check(selected==2,"mode1 select volume");
-  mode=0;@(negedge clk);@(negedge clk);pulse(INC);check(b==144 && v==10,"mode0 ignores adjust");
+  // Without SW4 nothing adjusts, whatever SW1/SW2 say (v0.27 removed modes 1/2).
+  mode=1;@(negedge clk);@(negedge clk);pulse(INC);check(b==128,"mode1 no longer adjusts");
+  pulse(SEL);check(selected==0 && item==0 && !focus,"mode1 select ignored");
+  mode=0;@(negedge clk);@(negedge clk);pulse(INC);check(b==128 && v==10,"mode0 ignores adjust");
   panel=1;@(negedge clk);@(negedge clk);
   pulse(DEC);check(item==9,"cursor wraps down");
   pulse(INC);check(item==0,"cursor wraps up");
@@ -67,9 +68,13 @@ module tb_panel_state;
   pulse(HOLD);check(!osd,"hold away from reset item does nothing");
   pulse(SEL);pulse(INC);check(item==9,"reset item");
   pulse(HOLD);check(b==128 && v==10 && wave && height==3 && wash==2 && osd && scroll && fade,"reset all");
+  pulse(INC);pulse(INC);pulse(INC);check(item==2,"volume item");pulse(SEL);
+  repeat(15)pulse(INC);check(v==20,"volume ceiling 200%");
+  pulse(DEC);check(v==19,"volume down from 200%");pulse(RES);check(v==10,"volume restore 100%");
+  pulse(SEL);check(!focus,"leave volume edit");
   pulse(SEL);check(focus,"focus before exit");
   panel=0;@(negedge clk);@(negedge clk);check(!focus,"exit clears focus");
-  mode=2;@(negedge clk);@(negedge clk);check(selected==1,"mode2 entry after panel");
+  mode=2;@(negedge clk);@(negedge clk);pulse(INC);check(b==128 && selected==0,"mode2 no longer adjusts");
   $display("PASS tb_panel_state");$finish;
  end
 endmodule
@@ -85,7 +90,7 @@ module tb_panel_pixels;
  wire [23:0] rgb_in={x[7:0],8'h55,8'haa};
  wire [23:0] out;
  adjust_panel_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb_in),
-  .panel(panel),.focus(1'b0),.item(4'd2),.brightness(8'd128),.contrast(8'd128),.volume_level(4'd10),
+  .panel(panel),.focus(1'b0),.item(4'd2),.brightness(8'd128),.contrast(8'd128),.volume_level(5'd10),
   .wave_on(1'b1),.wave_height(2'd3),.wash_level(2'd2),.osd_on(1'b1),.scroll_on(1'b1),.fade_on(1'b1),
   .bright_bcd(12'h128),.contrast_bcd(12'h128),.volume_bcd(12'h100),.rgb_out(out));
  always @(posedge clk)if(!rst)begin
@@ -131,9 +136,9 @@ module tb_panel_frame;
  wire [23:0] rgb_in={x[9:2],y[8:1],8'h50};
  wire [23:0] out;
  adjust_panel_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(rgb_in),
-  .panel(1'b1),.focus(focus),.item(item),.brightness(8'd160),.contrast(8'd128),.volume_level(4'd7),
+  .panel(1'b1),.focus(focus),.item(item),.brightness(8'd160),.contrast(8'd128),.volume_level(5'd20),
   .wave_on(1'b1),.wave_height(2'd2),.wash_level(2'd1),.osd_on(1'b1),.scroll_on(1'b0),.fade_on(1'b1),
-  .bright_bcd(12'h160),.contrast_bcd(12'h128),.volume_bcd(12'h070),.rgb_out(out));
+  .bright_bcd(12'h160),.contrast_bcd(12'h128),.volume_bcd(12'h200),.rgb_out(out));
  always @(posedge clk)if(!rst)begin
   if(hc==H-1)begin hc<=0;vc<=vc==V-1?0:vc+1;end else hc<=hc+1;
  end

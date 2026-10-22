@@ -1,6 +1,6 @@
 module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
  input clk,rst,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
- input [1:0] mode,selected,input [7:0] brightness,contrast,input [3:0] volume_level,
+ input [1:0] mode,selected,input [7:0] brightness,contrast,input [4:0] volume_level,
  input scene_enable,input [1:0] scene_speed,
  output [23:0] rgb_out,output active,
  output [11:0] bright_bcd,contrast_bcd,volume_bcd // v0.27: shared with the panel
@@ -9,7 +9,8 @@ module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
  osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(frame_start),.first_active());
  wire [9:0] dx=pixel_x-10'd8;wire [8:0] dy=y-9'd32;
  wire speed_visible=SCENE_ENABLE && scene_enable && mode==0;
- wire visible=ENABLE && (mode==1 || mode==2 || speed_visible);
+ // v0.27: B/C/V moved to the SW4 panel; only the scene SPEED line remains here.
+ wire visible=ENABLE && speed_visible;
  wire region=visible && de && pixel_x>=8 && pixel_x<296 && y>=32 && y<48;
  wire band=visible && de && pixel_x>=4 && pixel_x<300 && y>=28 && y<52;
  // Shared eight-step binary-to-BCD converter runs in vertical blanking.
@@ -26,7 +27,7 @@ module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
   if(shift[19:16]>=5)corrected[19:16]=shift[19:16]+4'd3;
  end
  wire [19:0] shifted=corrected<<1;
- wire [7:0] volume={4'd0,volume_level}*8'd10;
+ wire [7:0] volume={3'd0,volume_level}*8'd10;
  always @(posedge clk or posedge rst)begin
   if(rst)begin b_bcd<=12'h128;c_bcd<=12'h128;v_bcd<=12'h100;shift<=0;phase<=3;bit_count<=0;end
   else if(frame_start)begin shift<={12'd0,brightness};phase<=0;bit_count<=0;end
@@ -89,7 +90,7 @@ endmodule
 module adjust_panel_overlay #(parameter ENABLE=1)(
  input clk,rst,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input panel,focus,input [3:0] item,
- input [7:0] brightness,contrast,input [3:0] volume_level,
+ input [7:0] brightness,contrast,input [4:0] volume_level,
  input wave_on,input [1:0] wave_height,wash_level,input osd_on,scroll_on,fade_on,
  input [11:0] bright_bcd,contrast_bcd,volume_bcd,
  output [23:0] rgb_out
@@ -156,7 +157,7 @@ module adjust_panel_overlay #(parameter ENABLE=1)(
    1:begin n_value={" ",digit(contrast_bcd[11:8]),digit(contrast_bcd[7:4]),digit(contrast_bcd[3:0])};
       n_has_bar=1;n_fill=({4'd0,contrast}*12'd11)>>4;end
    2:begin n_value={digit(volume_bcd[11:8]),digit(volume_bcd[7:4]),digit(volume_bcd[3:0]),"%"};
-      n_has_bar=1;n_fill={4'd0,volume_level}*8'd17;end
+      n_has_bar=1;n_fill={volume_level,3'd0}+{3'd0,volume_level};end // 9 px per 10%
    3:n_value=onoff(wave_on);
    4:begin n_value={"   ",digit({2'd0,wave_height})};n_has_bar=1;n_fill=level_fill(wave_height);end
    5:begin n_value={"   ",digit({2'd0,wash_level})};n_has_bar=1;n_fill=level_fill(wash_level);end

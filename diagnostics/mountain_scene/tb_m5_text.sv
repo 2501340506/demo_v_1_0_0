@@ -19,7 +19,7 @@ module tb_m5_text;
   .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.resource_generation(1'b0),.scene_enable(en),.warn_mode(warn),.stage(stage),
   .legacy_region(legacy),.legacy_char(lc),.legacy_row(4'(y-200)),.legacy_col(4'(x-8)),
   .font_available(available),.scene_text_active(active),.text_addr(ta),.text_data(td),.font_addr(fa),.font_data(fd),
-  .hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb));
+  .hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb),.hud_enable(1'b1),.subtitle_enable(1'b1));
  task load(input bit text_kind,input integer count);
   begin kind=text_kind;for(integer i=0;i<count;i++)begin @(negedge wr_clk);wen=1;wa=i;wd=text_kind?tm[i]:fm[i];end
    @(negedge wr_clk);wen=0;end

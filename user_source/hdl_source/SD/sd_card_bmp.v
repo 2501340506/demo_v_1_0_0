@@ -650,7 +650,6 @@ media_frame_cache_control #(.PAUSE_ENABLE(MENU_ENABLE),.STRICT_FIRST_ENABLE(MENU
 );
 // v0.27 adjust panel: SW4 takes the keys unless the menu holds them; the
 // menu then keeps them until it exits. Main paths see released keys.
-wire main_decrease,main_increase,main_restore,main_select;
 wire panel_decrease,panel_increase,panel_restore,panel_select;
 always @(posedge clk or posedge rst)
  if(rst)panel_owns<=0;
@@ -660,10 +659,11 @@ wire key1_main=key1 || panel_owns,key2_main=key2 || panel_owns,key4_main=key4 ||
 adjust_panel_keys #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_panel_keys(.clk(clk),.rst(rst),.active(panel_owns),
  .key1(key1),.key2(key2),.key4(key4),.decrease(panel_decrease),.increase(panel_increase),
  .restore(panel_restore),.select_next(panel_select),.hold_select(panel_hold));
-assign adjust_decrease=main_decrease || panel_decrease;
-assign adjust_increase=main_increase || panel_increase;
-assign adjust_restore=main_restore || panel_restore;
-assign adjust_select=main_select || panel_select;
+// SW1/SW2 01/10 no longer adjust (they map to 00); only the panel does.
+assign adjust_decrease=panel_decrease;
+assign adjust_increase=panel_increase;
+assign adjust_restore=panel_restore;
+assign adjust_select=panel_select;
 mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.SCENE_ENABLE(SCENE_ENABLE),.PUBLICITY_ENABLE(PUBLICITY_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
  .clk(clk),.rst(rst),.enable(!scan_busy && !menu_blocked && (!app_controls_blocked || application_error)),.key1(key1_main),.key2(key2_main),.key4(key4_main),.mode(effective_mode),
  .scene_active(app_scene_enable),.application_busy(menu_blocked || (app_controls_blocked && !application_error)),.application_toggle(application_toggle),
@@ -671,7 +671,7 @@ mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.SCENE_ENABLE(SCENE_ENABLE),.
  .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity),
  .scene_allowed(first_image_committed && image_count==4 && !scan_busy),
  .scene_mode(scene_mode),.scene_next(scene_next),.scene_warn(scene_warn),.scene_speed(scene_speed),
- .adjust_decrease(main_decrease),.adjust_increase(main_increase),.adjust_restore(main_restore),.adjust_select(main_select)
+ .adjust_decrease(),.adjust_increase(),.adjust_restore(),.adjust_select()
 );
 media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS),.UI_GATE(PUBLICITY_ENABLE),.PAUSE_ENABLE(MENU_ENABLE)) u_media_player_control(
  // UI ownership extends through pending requests and key-release handover.

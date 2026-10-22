@@ -274,20 +274,22 @@ always @(posedge sd_card_clk or posedge rst_sd) begin
     else sdram_ready_sync <= {sdram_ready_sync[0], Sdr_init_done};
 end
 
-wire [1:0] switch_mode;
+wire [1:0] switch_raw;
+// v0.27: SW1/SW2 01 and 10 (the old adjust modes) now act as 00; SW4 adjusts.
+wire [1:0] switch_mode=(switch_raw==2'd1 || switch_raw==2'd2)?2'd0:switch_raw;
 wire [8:0] ring_y;
 // Session parameters: SD-domain gestures, atomic mailbox, VS-boundary commit.
 wire adjust_decrease,adjust_increase,adjust_restore,adjust_select;
 wire [7:0] brightness_src,contrast_src;
-wire [3:0] volume_src;
+wire [4:0] volume_src;
 wire [1:0] selected_src;
 // v0.27 panel state rides above the original 24 bits of the same mailbox.
 wire panel_owns_sd,panel_hold_sd,panel_focus_src,wave_on_src,osd_on_src,scroll_on_src,fade_on_src;
 wire [3:0] panel_item_src;wire [1:0] wave_height_src,wash_level_src;
-wire [37:0] adjust_frame;
+wire [38:0] adjust_frame;
 wire [1:0] adjust_mode=adjust_frame[23:22],adjust_selected=adjust_frame[21:20];
 wire [7:0] brightness_frame=adjust_frame[19:12],contrast_frame=adjust_frame[11:4];
-wire [3:0] volume_frame=adjust_frame[3:0];
+wire [4:0] volume_frame={adjust_frame[38],adjust_frame[3:0]}; // 0..20 = 0..200%
 wire panel_frame=adjust_frame[37],panel_focus_frame=adjust_frame[36];
 wire [3:0] panel_item_frame=adjust_frame[35:32];
 wire wave_on_frame=adjust_frame[31];
@@ -299,10 +301,10 @@ media_adjust_control u_adjust_control(.clk(sd_card_clk),.rst(rst_sd),.mode(effec
  .brightness(brightness_src),.contrast(contrast_src),.volume_level(volume_src),.selected(selected_src),
  .focus(panel_focus_src),.item(panel_item_src),.wave_on(wave_on_src),.wave_height(wave_height_src),
  .wash_level(wash_level_src),.osd_on(osd_on_src),.scroll_on(scroll_on_src),.fade_on(fade_on_src));
-media_adjust_cdc #(.WIDTH(38),.DEFAULT_STATE({1'b0,1'b0,4'd0,1'b1,2'd3,2'd2,3'b111,2'd0,2'd0,8'd128,8'd128,4'd10})) u_adjust_cdc(
+media_adjust_cdc #(.WIDTH(39),.DEFAULT_STATE({1'b0,1'b0,1'b0,4'd0,1'b1,2'd3,2'd2,3'b111,2'd0,2'd0,8'd128,8'd128,4'd10})) u_adjust_cdc(
  .src_clk(sd_card_clk),.src_rst(rst_sd),
- .src_state({panel_owns_sd,panel_focus_src,panel_item_src,wave_on_src,wave_height_src,wash_level_src,
-  osd_on_src,scroll_on_src,fade_on_src,switch_mode,selected_src,brightness_src,contrast_src,volume_src}),
+ .src_state({volume_src[4],panel_owns_sd,panel_focus_src,panel_item_src,wave_on_src,wave_height_src,wash_level_src,
+  osd_on_src,scroll_on_src,fade_on_src,switch_mode,selected_src,brightness_src,contrast_src,volume_src[3:0]}),
  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(adjust_frame));
 
 // Mode and key routing share the SD control clock. Synchronize mode for panel display.
@@ -317,7 +319,7 @@ always @(negedge sd_card_clk or posedge rst_sd)begin
  else begin mode_panel_half<=switch_mode;auto_panel_half<=auto_play_indicator;state_panel_half<=state_code;end
 end
 switch_mode_control #(.CLK_FREQ_HZ(100_000_000)) u_switch_mode_control (
-    .clk(sd_card_clk), .rst(rst_sd), .switches({sw2, sw1}), .mode(switch_mode)
+    .clk(sd_card_clk), .rst(rst_sd), .switches({sw2, sw1}), .mode(switch_raw)
 );
 // SW4 level, debounced like SW3; consumers are added in later v0.27 steps.
 wire [1:0] panel_switch;
@@ -735,11 +737,12 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
   .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
   .font_available(font_available),.scene_text_active(scene_text_active),
   .font_addr(font_addr),.font_data(font_data),.text_addr(scene_addr),.text_data(text_data),
-  .hs_out(scene_hs),.vs_out(scene_vs),.de_out(scene_de),.x_out(scene_x),.rgb_out(scene_rgb));
+  .hs_out(scene_hs),.vs_out(scene_vs),.de_out(scene_de),.x_out(scene_x),.rgb_out(scene_rgb),
+  .hud_enable(osd_on_frame),.subtitle_enable(scroll_on_frame));
  if(PUBLICITY_ENABLE)begin:g_narration
   publicity_subtitle_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
    .pixel_x(ring_x),.rgb_in(band_rgb),.text_valid(resources_pixel[21] && publicity_selected),
-   .text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1]),
+   .text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1] && scroll_on_frame),
    .playing(app_status_pixel[14:12]==3'd2),.restart(audio_update),.page(audio_image),
    .text_addr(narration_addr),.text_data(text_data),
    .hs_out(narration_hs),.vs_out(narration_vs),.de_out(narration_de),.x_out(narration_x),.rgb_out(narration_rgb));
