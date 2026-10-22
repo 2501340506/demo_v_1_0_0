@@ -7,9 +7,9 @@ module tb_wave_top;
  reg [9:0] x=0; reg [8:0] y=0; reg [5:0] identity=1;
  reg [31:0] rgba=32'h45678900,desc=0;
  top #(.OSD_ENABLE(0)) dut(.clk(clk),.rst_n(!rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),
- .sw1(1'b0),.sw2(1'b0),.sw3(1'b0),.sd_miso(1'b1),.uart_rx(1'b1));
+ .sw1(1'b0),.sw2(1'b0),.sw3(1'b0),.sw4(1'b0),.sd_miso(1'b1),.uart_rx(1'b1));
  top #(.OSD_ENABLE(0),.AUDIO_VIS_ENABLE(0)) ref_dut(.clk(clk),.rst_n(!rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),
- .sw1(1'b0),.sw2(1'b0),.sw3(1'b0),.sd_miso(1'b1),.uart_rx(1'b1));
+ .sw1(1'b0),.sw2(1'b0),.sw3(1'b0),.sw4(1'b0),.sd_miso(1'b1),.uart_rx(1'b1));
  `define DRIVE(D) \
  force D.video_clk=pix; force D.sd_card_clk=clk; \
  force D.rst_video=rst; force D.rst_sd=1; force D.rst_mem=1; force D.rst_panel=1; \

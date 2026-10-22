@@ -8,8 +8,8 @@ module tb_ring_pixels;
  wire [6:0] bar;
  wire [4:0] height= strength==31 ? bar%29 : strength;
  wire ho,vo,dout;wire [9:0] xo;wire [23:0] out,bypass;
- audio_ring_overlay dut(clk,rst,hs,vs,de,en,x,y,rgb,height,bar,ho,vo,dout,xo,out);
- audio_ring_overlay #(.ENABLE(0)) disabled(clk,rst,hs,vs,de,en,x,y,rgb,height, , , , , ,bypass);
+ audio_ring_overlay dut(clk,rst,hs,vs,de,en,x,y,rgb,height,bar,ho,vo,dout,xo,out,2'd2);
+ audio_ring_overlay #(.ENABLE(0)) disabled(clk,rst,hs,vs,de,en,x,y,rgb,height, , , , , ,bypass,2'd2);
  reg oldhs=1,oldvs=1,oldde=0;reg [9:0] oldx=0;reg [23:0] oldrgb=0;
  integer file,mode,px,py;
  always @(posedge clk)begin

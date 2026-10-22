@@ -10,8 +10,8 @@ module tb_wave_pixels;
  endfunction
  wire [4:0] height=level(mode,bar);
  wire ho,vo,dout;wire [9:0] xo;wire [23:0] out,bypass;
- audio_ring_overlay dut(clk,rst,hs,vs,de,en,x,y,rgb,height,bar,ho,vo,dout,xo,out);
- audio_ring_overlay #(.ENABLE(0)) disabled(clk,rst,hs,vs,de,en,x,y,rgb,height, , , , , ,bypass);
+ audio_ring_overlay dut(clk,rst,hs,vs,de,en,x,y,rgb,height,bar,ho,vo,dout,xo,out,2'd2);
+ audio_ring_overlay #(.ENABLE(0)) disabled(clk,rst,hs,vs,de,en,x,y,rgb,height, , , , , ,bypass,2'd2);
  // Independent model of the v0.26 geometry: mirrored 40-entry history,
  // cos^2 envelope, rounded caps, minimum dot and blue bottom wash.
  function [7:0] wash(input integer c,input integer b,input integer k);

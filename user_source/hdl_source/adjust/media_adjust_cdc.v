@@ -1,10 +1,13 @@
 // Latest-state held-bus mailbox, followed by a frame-boundary commit.
-module media_adjust_cdc(
- input src_clk,src_rst,input [23:0] src_state,
- input dst_clk,dst_rst,frame_start,output reg [23:0] frame_state
+// v0.27: width and reset value are parameters; defaults keep the 24-bit bus.
+module media_adjust_cdc #(
+ parameter integer WIDTH=24,
+ parameter [WIDTH-1:0] DEFAULT_STATE={2'd0,2'd0,8'd128,8'd128,4'd10}
+)(
+ input src_clk,src_rst,input [WIDTH-1:0] src_state,
+ input dst_clk,dst_rst,frame_start,output reg [WIDTH-1:0] frame_state
 );
- localparam [23:0] DEFAULT_STATE={2'd0,2'd0,8'd128,8'd128,4'd10};
- reg [23:0] held,pending;
+ reg [WIDTH-1:0] held,pending;
  reg request,acknowledge;
  (* ASYNC_REG="TRUE" *)reg [1:0] req_sync,ack_sync;
  always @(posedge src_clk or posedge src_rst)begin

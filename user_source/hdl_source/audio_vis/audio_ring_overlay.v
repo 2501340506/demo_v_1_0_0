@@ -11,7 +11,8 @@ module audio_ring_overlay #(
  output wire [6:0] bar_index,
  output reg hs_out,vs_out,de_out,
  output reg [9:0] x_out,
- output reg [23:0] rgb_out
+ output reg [23:0] rgb_out,
+ input wire [1:0] wash_level // v0.27 panel: wash base k=2+level, 2 is the v0.26 look
 );
  // 80 slots of 8px, 4px ink. The two centre slots show the newest of 40
  // history entries and age outwards. Band y=448..479, centre between
@@ -40,7 +41,7 @@ module audio_ring_overlay #(
  wire in_bar=row_q<half_height;
  wire cap=row_q==half_height-4'd1;
  wire ink=in_bar && (cap ? col_q>=3 && col_q<5 : col_q>=2 && col_q<6);
- // rgb*(16-k)/16 + blue*k/16 per channel, k=4..14 deepening downwards.
+ // rgb*(16-k)/16 + blue*k/16 per channel, k=base..base+10 deepening downwards.
  function [7:0] wash(input [7:0] c,input [7:0] blue,input [3:0] k);
   reg [11:0] keep,add;
   begin keep=c*k;add=blue*k;wash=c-keep[11:4]+add[11:4];end
@@ -55,7 +56,7 @@ module audio_ring_overlay #(
    index_q<=slot<40 ? slot : 7'd79-slot;
    edge_q<=slot<40 ? 7'd39-slot : slot-7'd40;
    row_q<=band_y[4] ? band_y[3:0] : 4'd15-band_y[3:0];
-   col_q<=pixel_x[2:0];wash_q<=4'd4+band_y[4:2]+band_y[4:3];
+   col_q<=pixel_x[2:0];wash_q<={2'd0,wash_level}+4'd2+band_y[4:2]+band_y[4:3];
    visible_q<=ENABLE && enable && de && pixel_x<640 && pixel_y>=448 && pixel_y<480;
    hs_q<=hs;vs_q<=vs;de_q<=de;x_q<=pixel_x;rgb_q<=rgb_in;
    hs_out<=hs_q;vs_out<=vs_q;de_out<=de_q;x_out<=x_q;

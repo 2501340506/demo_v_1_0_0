@@ -105,7 +105,7 @@ module tb_adjust_keys;
  .next_event(nxt),.previous_event(prev),.rescan_event(scan),.auto_toggle_event(auto_e),.manual_activity(activity),
  .adjust_decrease(dec),.adjust_increase(inc),.adjust_restore(res),.adjust_select(sel));
  wire [7:0] b,c;wire [3:0] v;wire [1:0] selected;
- media_adjust_control ctl(clk,rst,mode,dec,inc,res,sel,b,c,v,selected);
+ media_adjust_control ctl(clk,rst,mode,dec,inc,res,sel,b,c,v,selected,1'b0,1'b0);
  integer scans=0,autos=0,pictures=0;
  always @(posedge clk)begin if(scan)scans++;if(auto_e)autos++;if(nxt||prev)pictures++;end
  task ticks(input integer t);repeat(t)@(negedge clk);endtask

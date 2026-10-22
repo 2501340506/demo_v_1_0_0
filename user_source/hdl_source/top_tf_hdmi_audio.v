@@ -9,6 +9,7 @@ module top(
     input                       sw2,            // C7，拨上=1
 
     input sw3, // C6, up=1; KEY3 remains reset
+    input sw4, // C5, up=1; opens the adjust panel (v0.27)
 
     output [5:0]                seg_sel,
     output [7:0]                seg_data,
@@ -280,15 +281,28 @@ wire adjust_decrease,adjust_increase,adjust_restore,adjust_select;
 wire [7:0] brightness_src,contrast_src;
 wire [3:0] volume_src;
 wire [1:0] selected_src;
-wire [23:0] adjust_frame;
+// v0.27 panel state rides above the original 24 bits of the same mailbox.
+wire panel_owns_sd,panel_hold_sd,panel_focus_src,wave_on_src,osd_on_src,scroll_on_src,fade_on_src;
+wire [3:0] panel_item_src;wire [1:0] wave_height_src,wash_level_src;
+wire [37:0] adjust_frame;
 wire [1:0] adjust_mode=adjust_frame[23:22],adjust_selected=adjust_frame[21:20];
 wire [7:0] brightness_frame=adjust_frame[19:12],contrast_frame=adjust_frame[11:4];
 wire [3:0] volume_frame=adjust_frame[3:0];
+wire panel_frame=adjust_frame[37],panel_focus_frame=adjust_frame[36];
+wire [3:0] panel_item_frame=adjust_frame[35:32];
+wire wave_on_frame=adjust_frame[31];
+wire [1:0] wave_height_frame=adjust_frame[30:29],wash_level_frame=adjust_frame[28:27];
+wire osd_on_frame=adjust_frame[26],scroll_on_frame=adjust_frame[25],fade_on_frame=adjust_frame[24];
 media_adjust_control u_adjust_control(.clk(sd_card_clk),.rst(rst_sd),.mode(effective_mode),
  .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select),
- .brightness(brightness_src),.contrast(contrast_src),.volume_level(volume_src),.selected(selected_src));
-media_adjust_cdc u_adjust_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
- .src_state({switch_mode,selected_src,brightness_src,contrast_src,volume_src}),
+ .panel(panel_owns_sd),.hold_select(panel_hold_sd),
+ .brightness(brightness_src),.contrast(contrast_src),.volume_level(volume_src),.selected(selected_src),
+ .focus(panel_focus_src),.item(panel_item_src),.wave_on(wave_on_src),.wave_height(wave_height_src),
+ .wash_level(wash_level_src),.osd_on(osd_on_src),.scroll_on(scroll_on_src),.fade_on(fade_on_src));
+media_adjust_cdc #(.WIDTH(38),.DEFAULT_STATE({1'b0,1'b0,4'd0,1'b1,2'd3,2'd2,3'b111,2'd0,2'd0,8'd128,8'd128,4'd10})) u_adjust_cdc(
+ .src_clk(sd_card_clk),.src_rst(rst_sd),
+ .src_state({panel_owns_sd,panel_focus_src,panel_item_src,wave_on_src,wave_height_src,wash_level_src,
+  osd_on_src,scroll_on_src,fade_on_src,switch_mode,selected_src,brightness_src,contrast_src,volume_src}),
  .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(adjust_frame));
 
 // Mode and key routing share the SD control clock. Synchronize mode for panel display.
@@ -304,6 +318,12 @@ always @(negedge sd_card_clk or posedge rst_sd)begin
 end
 switch_mode_control #(.CLK_FREQ_HZ(100_000_000)) u_switch_mode_control (
     .clk(sd_card_clk), .rst(rst_sd), .switches({sw2, sw1}), .mode(switch_mode)
+);
+// SW4 level, debounced like SW3; consumers are added in later v0.27 steps.
+wire [1:0] panel_switch;
+wire panel_enable_sd=panel_switch[0];
+switch_mode_control #(.CLK_FREQ_HZ(100_000_000)) u_panel_switch(
+    .clk(sd_card_clk), .rst(rst_sd), .switches({1'b0, sw4}), .mode(panel_switch)
 );
 always @(posedge clk or posedge rst_panel) begin
     if (rst_panel) begin
@@ -400,6 +420,7 @@ sd_card_bmp #(
     .mode              (switch_mode),
     .adjust_decrease(adjust_decrease),.adjust_increase(adjust_increase),
     .adjust_restore(adjust_restore),.adjust_select(adjust_select),
+    .panel(panel_enable_sd),.panel_owns(panel_owns_sd),.panel_hold(panel_hold_sd),
     .state_code        (state_code),
     .sd_debug(sd_debug), .diagnostics(uart_diagnostics),
     .combo_event_count (combo_event_count),
@@ -528,7 +549,7 @@ brightness_contrast_adjust #(.SIDE_WIDTH(47)) u_picture_adjust(
  .side_in(hazard_side),
  .rgb_out(adjusted_rgb_raw),.side_out(adjust_side));
 video_transition_pixels u_video_transition_pixels(
-    .level(adjust_level), .wipe_active(adjust_wipe), .de(adjust_de), .pixel_x(adjust_x), .rgb_in(adjusted_rgb), .rgb_out(transition_rgb)
+    .level(fade_on_frame?adjust_level:5'd16), .wipe_active(adjust_wipe && fade_on_frame), .de(adjust_de), .pixel_x(adjust_x), .rgb_in(adjusted_rgb), .rgb_out(transition_rgb)
 );
 
 // S1 separates ownership of each FIFO; the established burst interlock stays.
@@ -605,11 +626,14 @@ generate if(AUDIO_VIS_ENABLE) begin:g_audio_vis
 end else begin:g_no_audio_vis
  assign ring_bar_height=5'd0;
 end endgenerate
+// Panel height level n shows (n+1)/4 of the bar; 3 is the v0.26 height.
+wire [6:0] ring_bar_product=ring_bar_height*({1'b0,wave_height_frame}+3'd1);
+wire [4:0] ring_bar_scaled=ring_bar_product[6:2];
 audio_ring_overlay #(.ENABLE(AUDIO_VIS_ENABLE)) u_audio_ring(
  // Use committed frame identity: scene/legacy audio must never draw bars.
  .clk(video_clk),.rst(rst_video),.hs(adjust_hs),.vs(adjust_vs),.de(adjust_de),
- .enable(PUBLICITY_ENABLE && pixel_identity[1:0]==1 && adjust_valid && adjust_audio && !adjust_preview),
- .pixel_x(adjust_x),.pixel_y(adjust_y),.rgb_in(preview_rgb),.bar_height(ring_bar_height),
+ .enable(PUBLICITY_ENABLE && pixel_identity[1:0]==1 && adjust_valid && adjust_audio && !adjust_preview && wave_on_frame),
+ .pixel_x(adjust_x),.pixel_y(adjust_y),.rgb_in(preview_rgb),.bar_height(ring_bar_scaled),.wash_level(wash_level_frame),
  .bar_index(ring_bar_index),.hs_out(ring_hs),.vs_out(ring_vs),.de_out(ring_de),.x_out(ring_x),.rgb_out(ring_rgb));
 
 reg [1:0] preview_after_ring;
@@ -617,11 +641,13 @@ always @(posedge video_clk or posedge rst_video)
  if(rst_video)preview_after_ring<=0;else preview_after_ring<={preview_after_ring[0],adjust_preview};
 wire [23:0] parameter_rgb;
 wire parameter_glyph_active;
+wire [11:0] bright_bcd,contrast_bcd,volume_bcd;
 adjust_osd_overlay #(.ENABLE(OSD_ENABLE),.SCENE_ENABLE(SCENE_DEMO_ENABLE)) u_parameter_osd(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.rgb_in(osd_rgb),
  .mode(adjust_mode),.selected(adjust_selected),.brightness(brightness_frame),.contrast(contrast_frame),
  .scene_enable(scene_enable),.scene_speed(scene_meta_pixel[15:14]),
- .volume_level(volume_frame),.rgb_out(parameter_rgb),.active(parameter_glyph_active));
+ .volume_level(volume_frame),.rgb_out(parameter_rgb),.active(parameter_glyph_active),
+ .bright_bcd(bright_bcd),.contrast_bcd(contrast_bcd),.volume_bcd(volume_bcd));
 
 osd_status_cdc u_osd_status_cdc (
     .src_clk(sd_card_clk), .src_rst(rst_sd),
@@ -634,7 +660,7 @@ osd_status_cdc u_osd_status_cdc (
 // OSD uses the ring's two-cycle-delayed video bundle throughout.
 // As in the reference project, the status line (PIC:n AUTO E:xx) and its dimmed band
 // are off in the scene and publicity applications; COMPAT keeps them.
-wire status_hide=PUBLICITY_ENABLE && (pixel_identity[1:0]==1 || pixel_identity[1:0]==2);
+wire status_hide=(PUBLICITY_ENABLE && (pixel_identity[1:0]==1 || pixel_identity[1:0]==2)) || !osd_on_frame;
 wire [8:0] status_y;
 osd_pixel_position u_status_position(.clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),
  .line_y(status_y),.frame_start(),.first_active());
@@ -656,7 +682,7 @@ scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNT
  .font_override(font_available),.font_character(legacy_font_char),.font_row(legacy_font_row),
  .font_column(legacy_font_col),.font_region(legacy_font_region),
  .runtime_text(sub_text_pixel),.runtime_length(sub_length_pixel),
- .runtime_enable(sub_enable_pixel && !preview_after_ring[1] && !scene_text_active),.runtime_text_changed(sub_text_changed)
+ .runtime_enable(sub_enable_pixel && !preview_after_ring[1] && !scene_text_active && scroll_on_frame),.runtime_text_changed(sub_text_changed)
 );
 timestamp_osd #(.ENABLE(OSD_ENABLE && TIMESTAMP_ENABLE)) u_timestamp_osd(
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
@@ -665,7 +691,7 @@ osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1),.ALT_LAY
  .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
- .rgb_out(band_dimmed),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
+ .rgb_out(band_dimmed),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active && scroll_on_frame)
 );
 // The band dims the status area; undo it where the status line is hidden.
 assign band_rgb=(status_hide && status_area)?timestamp_rgb:band_dimmed;
@@ -753,7 +779,15 @@ always @(posedge video_clk or posedge rst_video)begin
   for(menu_i=1;menu_i<5;menu_i=menu_i+1)menu_delay[menu_i]<=menu_delay[menu_i-1];
  end
 end
-assign final_rgb=menu_flag[4]?menu_delay[4]:normal_final_rgb;
+wire [23:0] panel_final_rgb;
+adjust_panel_overlay #(.ENABLE(OSD_ENABLE)) u_adjust_panel(.clk(video_clk),.rst(rst_video),
+ .vs(final_vs),.de(final_de),.pixel_x(final_x),.rgb_in(normal_final_rgb),
+ .panel(panel_frame),.focus(panel_focus_frame),.item(panel_item_frame),
+ .brightness(brightness_frame),.contrast(contrast_frame),.volume_level(volume_frame),
+ .wave_on(wave_on_frame),.wave_height(wave_height_frame),.wash_level(wash_level_frame),
+ .osd_on(osd_on_frame),.scroll_on(scroll_on_frame),.fade_on(fade_on_frame),
+ .bright_bcd(bright_bcd),.contrast_bcd(contrast_bcd),.volume_bcd(volume_bcd),.rgb_out(panel_final_rgb));
+assign final_rgb=menu_flag[4]?menu_delay[4]:panel_final_rgb;
 wire pcm_valid, pcm_ready, pcm_overflow, hdmi_sequence_error;
 wire signed [15:0] pcm_left, pcm_right;
 pcm_media_tone #(.FIXED_VOLUME(128)) u_pcm_clock (
