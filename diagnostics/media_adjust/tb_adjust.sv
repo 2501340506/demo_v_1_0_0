@@ -139,11 +139,11 @@ module tb_adjust_osd;
  // shared decimal digits still convert.
  reg clk=0,rst=1,vs=1,de=0;always #5 clk=~clk;
  reg [9:0] x=0;reg [1:0] mode=1,selected=0;
- wire [23:0] rgb;wire active;
+ wire [23:0] rgb;wire active;wire [11:0] bright_bcd,contrast_bcd,volume_bcd;
  adjust_osd_overlay dut(.clk(clk),.rst(rst),.vs(vs),.de(de),.pixel_x(x),.rgb_in(24'h804020),
  .mode(mode),.selected(selected),.brightness(8'd128),.contrast(8'd255),.volume_level(5'd20),
  .scene_enable(1'b0),.scene_speed(2'd0),.rgb_out(rgb),.active(active),
- .bright_bcd(),.contrast_bcd(),.volume_bcd());
+ .bright_bcd(bright_bcd),.contrast_bcd(contrast_bcd),.volume_bcd(volume_bcd));
  initial begin
   repeat(3)@(negedge clk);rst=0;
   for(integer m=1;m<=2;m++)begin
@@ -156,7 +156,7 @@ module tb_adjust_osd;
     @(negedge clk);de=0;repeat(3)@(negedge clk);
    end
   end
-  if(dut.b_digits!==24'h313238 || dut.c_digits!==24'h323535 || dut.v_digits!==24'h323030)$fatal(1,"decimal conversion");
-  $display("PASS OSD hidden in modes 1/2, decimal 128/255/200");$finish;
+  if(bright_bcd!==12'h128 || contrast_bcd!==12'h255 || volume_bcd!==12'h200)$fatal(1,"decimal conversion");
+  $display("PASS OSD draws nothing (B/C/V and SPEED removed), decimal 128/255/200");$finish;
  end
 endmodule

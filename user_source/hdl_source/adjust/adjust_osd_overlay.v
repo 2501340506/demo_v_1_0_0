@@ -1,20 +1,16 @@
+// Former parameter OSD. v0.27: B/C/V moved to the SW4 panel and the scene
+// SPEED line was removed, so it draws nothing; it only converts brightness,
+// contrast and volume to decimal for the panel. Ports are kept for callers.
 module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
  input clk,rst,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input [1:0] mode,selected,input [7:0] brightness,contrast,input [4:0] volume_level,
  input scene_enable,input [1:0] scene_speed,
  output [23:0] rgb_out,output active,
- output [11:0] bright_bcd,contrast_bcd,volume_bcd // v0.27: shared with the panel
+ output [11:0] bright_bcd,contrast_bcd,volume_bcd
 );
- wire [8:0] y;wire frame_start;
- osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(frame_start),.first_active());
- wire [9:0] dx=pixel_x-10'd8;wire [8:0] dy=y-9'd32;
- wire speed_visible=SCENE_ENABLE && scene_enable && mode==0;
- // v0.27: B/C/V moved to the SW4 panel; only the scene SPEED line remains here.
- wire visible=ENABLE && speed_visible;
- wire region=visible && de && pixel_x>=8 && pixel_x<296 && y>=32 && y<48;
- wire band=visible && de && pixel_x>=4 && pixel_x<300 && y>=28 && y<52;
+ wire frame_start;
+ osd_pixel_position position(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(),.frame_start(frame_start),.first_active());
  // Shared eight-step binary-to-BCD converter runs in vertical blanking.
- // Values are frame-stable; all three fields finish long before text line 32.
  reg [11:0] b_bcd,c_bcd,v_bcd;
  reg [19:0] shift;
  reg [1:0] phase;
@@ -43,44 +39,8 @@ module adjust_osd_overlay #(parameter ENABLE=1,SCENE_ENABLE=0)(
   end
  end
  assign bright_bcd=b_bcd;assign contrast_bcd=c_bcd;assign volume_bcd=v_bcd;
- wire [23:0] b_digits={4'h3,b_bcd[11:8],4'h3,b_bcd[7:4],4'h3,b_bcd[3:0]};
- wire [23:0] c_digits={4'h3,c_bcd[11:8],4'h3,c_bcd[7:4],4'h3,c_bcd[3:0]};
- wire [23:0] v_digits={4'h3,v_bcd[11:8],4'h3,v_bcd[7:4],4'h3,v_bcd[3:0]};
- reg [7:0] character;reg [1:0] item;
- always @*begin
-  character=" ";item=3;
-  case(dx[8:4])
-   0:begin character="B";item=0;end
-   1:begin character=":";item=0;end
-   2:begin character=b_digits[23:16];item=0;end
-   3:begin character=b_digits[15:8];item=0;end
-   4:begin character=b_digits[7:0];item=0;end
-   6:begin character="C";item=1;end
-   7:begin character=":";item=1;end
-   8:begin character=c_digits[23:16];item=1;end
-   9:begin character=c_digits[15:8];item=1;end
-   10:begin character=c_digits[7:0];item=1;end
-   12:begin character="V";item=2;end
-   13:begin character=":";item=2;end
-   14:begin character=v_digits[23:16];item=2;end
-   15:begin character=v_digits[15:8];item=2;end
-   16:begin character=v_digits[7:0];item=2;end
-   17:begin character="%";item=2;end
-  endcase
-  if(speed_visible)begin
-   item=selected;
-   case(dx[8:4])
-    0:character="S";1:character="P";2:character="E";3:character="E";4:character="D";
-    5:character=":";7:character=scene_speed==0?"1":scene_speed==1?"2":"4";
-    8:character="X";default:character=" ";
-   endcase
-  end
- end
- wire [4:0] glyph;
- osd_font_5x7 font(.character(character),.row(dy[3:1]),.pixels(glyph));
- assign active=region && dx[3:1]<5 && dy[3:1]<7 && glyph[3'd4-dx[3:1]];
- assign rgb_out=active?(item==selected?24'hffff00:24'hffffff):
-  band?{1'b0,rgb_in[23:17],1'b0,rgb_in[15:9],1'b0,rgb_in[7:1]}:rgb_in;
+ assign rgb_out=rgb_in;
+ assign active=1'b0;
 endmodule
 
 // v0.27 adjust panel (SW4): 336x200 at x=296,y=120, slides in from the right
