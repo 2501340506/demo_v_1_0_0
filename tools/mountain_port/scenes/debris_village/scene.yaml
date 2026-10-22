@@ -18,7 +18,6 @@ stages:
     hazard: debris_flow
     role: cause
     title: 阶段1 致因：暴雨汇流                # M5 OSD 标题（≤16 格）
-    subtitle: 暴雨汇流，沟道堆满松散土石  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[zone, 物源区], [rain, 暴雨]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 暴雨汇流，沟道里堆满松散土石。, file: voice/debris_s1_t000.wav}
@@ -33,7 +32,6 @@ stages:
     hazard: debris_flow
     role: onset
     title: 阶段2 发生：泥石流涌下                # M5 OSD 标题（≤16 格）
-    subtitle: 泥石流沿沟道涌下来了  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[mud, 泥石流], [rock, 石块]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 泥石流沿沟道涌下来了！, file: voice/debris_s2_t000.wav}
@@ -65,7 +63,6 @@ stages:
     hazard: debris_flow
     role: aftermath
     title: 阶段3 后果：沟口堆积                # M5 OSD 标题（≤16 格）
-    subtitle: 泥石流冲出沟口，掩埋房屋  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[mud, 扇形堆积区]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 泥石流冲出沟口，堆积成扇形。, file: voice/debris_s3_t000.wav}
@@ -90,7 +87,6 @@ stages:
     sound_gain: 0.3
     sound_loop: true
     title: 阶段4 撤离：向两侧高处                # M5 OSD 标题（≤16 格）
-    subtitle: 向两侧高处转移，不横穿沟口  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[danger, 危险区], [route, 撤离路线], [refuge, 避险点]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 立即撤离！向沟道两侧的高处转移。, file: voice/debris_s4_t000.wav}

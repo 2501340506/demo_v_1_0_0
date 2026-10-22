@@ -80,7 +80,7 @@ wire [23:0] transition_rgb;
 wire [23:0] osd_rgb;
 wire [23:0] scroll_rgb;
 wire [23:0] timestamp_rgb;
-wire [23:0] band_rgb;
+wire [23:0] band_rgb,band_dimmed;
 wire status_glyph_active, scroll_glyph_active;
 wire timestamp_glyph_active;
 wire [7:0] osd_error_src, osd_error_pixel;
@@ -632,12 +632,23 @@ osd_status_cdc u_osd_status_cdc (
 // AUTO/error: acknowledged SD-domain mailbox. Image ID/valid: existing pixel
 // domain media commit. Status snapshots at first active pixel after blanking.
 // OSD uses the ring's two-cycle-delayed video bundle throughout.
+// As in the reference project, the status line (PIC:n AUTO E:xx) and its dimmed band
+// are off in the scene and publicity applications; COMPAT keeps them.
+wire status_hide=PUBLICITY_ENABLE && (pixel_identity[1:0]==1 || pixel_identity[1:0]==2);
+wire [8:0] status_y;
+osd_pixel_position u_status_position(.clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),
+ .line_y(status_y),.frame_start(),.first_active());
+wire status_area=ring_de && ring_x>=4 && ring_x<284 && status_y>=4 && status_y<28;
+wire [23:0] status_rgb;
+wire status_glyph_raw;
 status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .clk(video_clk), .rst(rst_video), .vs(ring_vs), .de(ring_de), .pixel_x(ring_x),
     .rgb_in(ring_rgb), .image_index(audio_image), .image_valid(audio_enable),
-    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
-    .active(status_glyph_active)
+    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(status_rgb),
+    .active(status_glyph_raw)
 );
+assign osd_rgb=status_hide?ring_rgb:status_rgb;
+assign status_glyph_active=status_glyph_raw && !status_hide;
 scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1),.BRAM_ENABLE(SCENE_DEMO_ENABLE),.ALT_LAYOUT_ENABLE(PUBLICITY_ENABLE)) u_scroll_osd (
  .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.image_valid(audio_enable),
@@ -654,8 +665,10 @@ osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1),.ALT_LAY
  .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
- .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
+ .rgb_out(band_dimmed),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
 );
+// The band dims the status area; undo it where the status line is hidden.
+assign band_rgb=(status_hide && status_area)?timestamp_rgb:band_dimmed;
 wire [23:0] app_status_pixel;
 generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  wire [10:0] font_addr,text_addr;wire [15:0] font_data,text_data;

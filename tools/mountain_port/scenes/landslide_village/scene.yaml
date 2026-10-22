@@ -17,7 +17,6 @@ stages:
     hazard: landslide
     role: cause
     title: 阶段1 致因：强降雨                # M5 OSD 标题（≤16 格）
-    subtitle: 持续强降雨，山坡吸饱了水  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[zone, 滑坡隐患区], [rain, 强降雨]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 持续强降雨，山坡吸饱了水。, file: voice/landslide_s1_t000.wav}
@@ -38,7 +37,6 @@ stages:
     hazard: landslide
     role: onset
     title: 阶段2 发生：坡体下滑                # M5 OSD 标题（≤16 格）
-    subtitle: 坡体整体下滑，注意落石  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[mud, 滑坡体], [rock, 落石]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 坡顶出现裂缝。, file: voice/landslide_s2_t000.wav}
@@ -146,7 +144,6 @@ stages:
     hazard: landslide
     role: aftermath
     title: 阶段3 后果：掩埋房屋                # M5 OSD 标题（≤16 格）
-    subtitle: 滑坡掩埋了坡脚房屋和道路  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[mud, 堆积掩埋区]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 滑坡堆积掩埋了坡脚的房屋和道路。, file: voice/landslide_s3_t000.wav}
@@ -172,7 +169,6 @@ stages:
     sound_gain: 0.3
     sound_loop: true
     title: 阶段4 撤离：横向离开                # M5 OSD 标题（≤16 格）
-    subtitle: 横向离开滑坡区，不要过桥  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[danger, 危险区], [route, 撤离路线], [refuge, 避险点]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 立即撤离！横向离开滑坡区。, file: voice/landslide_s4_t000.wav}

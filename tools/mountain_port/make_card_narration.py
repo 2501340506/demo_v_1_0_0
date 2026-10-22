@@ -12,14 +12,19 @@ written files are read back, and every other file under the card's
 情景模式 and 宣讲模式 folders must stay byte-identical.
 
 With --legends the stage's `legend: [[swatch, text], ...]` is written as well (TEXT.BIN with
-14 segments, one 16 px legend line per stage, at most 31 cells): this needs the v0.25 S5
-firmware, which also reads the 10-segment files; older firmware rejects the 14-segment one.
+14 segments, one 16 px legend line per stage, at most 38 cells as in the reference project).
+
+As in the reference project, a stage without `subtitle:` uses its whole narration as the
+subtitle (the lines' text joined by two spaces).
 
 Display limits (scene_text_overlay, 16 px cells): the title and the village name sit in
-the 256 px wide top-right panel (at most 16 characters); the warning is shown centred
-at 2x (at most 19); the subtitle moves left 2 px per frame at 60 frames per second, so a
-subtitle of n characters is gone after (624+16n)/120 s: at most 24 characters finish
-inside one 8.5 s stage.
+the 256 px wide top-right panel (at most 16 characters); the subtitle, and the warning
+in warning mode, move left through the bottom band at 2 px per frame (60 frames per
+second), so the last of n characters has come in after 16n/120 s: at most 60 characters
+are all shown within one 8.5 s stage.
+
+Firmware: segments longer than 31 characters (the narration subtitles) and the 14-segment
+legend file need the v0.25 S5 firmware; older firmware rejects them and shows no text.
 """
 import argparse
 import hashlib
@@ -42,7 +47,7 @@ import scene_audio  # noqa: E402
 
 FOLDERS = {'landslide_village': 1, 'debris_village': 2, 'flood_village': 3, 'quake_village': 4}
 NAMES = ['FONT.BIN', 'TEXT.BIN'] + [f'SND{i}.PCM' for i in range(1, 5)]
-STATIC_CELLS, TITLE_CELLS, SUBTITLE_CELLS, LEGEND_CELLS = 19, 16, 24, 31   # STATIC_CELLS: the warning
+TITLE_CELLS, SUBTITLE_CELLS, WARNING_CELLS, LEGEND_CELLS = 16, 60, 60, 38
 MIN_SAMPLES = scene_audio.T_END * scene_audio.SAMPLES_PER_T + scene_audio.SAMPLE_HZ // 2
 
 
@@ -58,10 +63,17 @@ def normal(s):
     return ''.join(FULLWIDTH.get(c, c) for c in str(s))
 
 
+def stage_subtitle(stage):
+    """The stage's subtitle: `subtitle:` if given, else its narration lines joined by two spaces."""
+    if stage.get('subtitle'):
+        return str(stage['subtitle'])
+    return '  '.join(str(line['text']) for line in sorted(stage.get('narration') or [], key=lambda d: d['t']))
+
+
 def text_spec(cfg, where, legends=False):
     stages = cfg['stages']
     assert len(stages) == 4, f'{where}: four stages'
-    spec = {'titles': [normal(s['title']) for s in stages], 'subtitles': [normal(s['subtitle']) for s in stages],
+    spec = {'titles': [normal(s['title']) for s in stages], 'subtitles': [normal(stage_subtitle(s)) for s in stages],
             'warning': normal(cfg['warning']), 'village': normal(cfg['village'])}
     if legends:
         spec['legends'] = [legend_string(s.get('legend'), f'{where}: stage {n + 1} legend') for n, s in enumerate(stages)]
@@ -70,7 +82,7 @@ def text_spec(cfg, where, legends=False):
         if not any(spec['legends']):
             del spec['legends']
     for label, values, limit in (('title', spec['titles'], TITLE_CELLS), ('subtitle', spec['subtitles'], SUBTITLE_CELLS),
-                                 ('warning', [spec['warning']], STATIC_CELLS), ('village', [spec['village']], TITLE_CELLS)):
+                                 ('warning', [spec['warning']], WARNING_CELLS), ('village', [spec['village']], TITLE_CELLS)):
         for v in values:
             assert 0 < len(v) <= limit, f'{where}: {label} {v!r} has {len(v)} characters (1..{limit})'
     return spec

@@ -61,15 +61,17 @@ Mutant 'block_corner' 'pixel_x<368 && y>=32 && y<48 && (!warning' 'pixel_x<368 &
 Mutant 'block_blink' '&& (!warning || frames[4]);' ';'
 Mutant 'panel_edge' 'pixel_x>=348 && pixel_x<636 && y>=28 && y<60;' 'pixel_x>=348 && pixel_x<636 && y>=28 && y<59;'
 Mutant 'dim_quarter' "{1'b0,video2[23:17],1'b0,video2[15:9],1'b0,video2[7:1]}" "{2'b0,video2[23:18],2'b0,video2[15:10],2'b0,video2[7:2]}"
-Mutant 'title_x' "local_x={1'b0,pixel_x}-11'd376;" "local_x={1'b0,pixel_x}-11'd377;"
+Mutant 'title_x' "local_x={2'b0,pixel_x}-12'd376;" "local_x={2'b0,pixel_x}-12'd377;"
 Mutant 'village_in_warning' 'segment_offset=warning?village_offset:title_offset;' 'segment_offset=title_offset;'
 Mutant 'legend_row' 'y>=416 && y<432 && legend_length!=0' 'y>=417 && y<432 && legend_length!=0'
 Mutant 'legend_band' 'y>=412 && y<436;' 'y>=413 && y<436;'
 Mutant 'subtitle_band' 'y>=440 && y<464;' 'y>=441 && y<464;'
 Mutant 'subtitle_row' "row=y[3:0]+4'd4;" "row=y[3:0]+4'd5;"
-Mutant 'scroll_speed' "scroll<=scroll+11'd2;" "scroll<=scroll+11'd1;"
-Mutant 'glyph_colour' "(red2?24'hff0000:24'hffffff)" "(red2?24'hff0000:24'hfffffe)"
-Mutant 'centre_red' 'red1<=centre;' 'red1<=warning;'
+Mutant 'scroll_speed' "scroll<=scroll+13'd2;" "scroll<=scroll+13'd1;"
+Mutant 'glyph_colour' "((cn2 && font_row[~col2]) || ascii2)?24'hffffff:" "((cn2 && font_row[~col2]) || ascii2)?24'hfffffe:"
+Mutant 'warning_in_band' "descriptor==(parse_warning?4'd8:{1'b0,parse_stage,1'b1})" "descriptor=={1'b0,parse_stage,1'b1}"
+Mutant 'length_5bit' 'descriptor_length<=parse_byte;' "descriptor_length<={3'd0,parse_byte[4:0]};"
+Mutant 'warning_band_hidden' 'subtitle_band=BAR_ENABLE && scene_text_active && de' 'subtitle_band=BAR_ENABLE && scene_text_active && !warning && de'
 Mutant 'swatch_inset' 'col1>=2 && col1<14 && row1>=2' 'col1>=1 && col1<14 && row1>=2'
 Mutant 'refuge_blink' "(code[2:0]!=3'd2 || frames[5])" "(code[2:0]!=3'd2 || frames[4])"
 Mutant 'swatch_colour' "3'd3:swatch_rgb=24'h8c6a3c" "3'd3:swatch_rgb=24'h8c6a3d"

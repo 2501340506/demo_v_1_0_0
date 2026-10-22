@@ -39,11 +39,12 @@ class SceneTextTests(unittest.TestCase):
         self.assertLessEqual(len(font), 4096)
 
     def test_bounds_and_escapes(self):
-        spec = dict(titles=['0'*31]*4, subtitles=[ESCAPES]*4)
+        # v0.25 S5: a segment may hold up to 255 characters (a stage's whole narration).
+        spec = dict(titles=['0'*255]*4, subtitles=[ESCAPES]*4)
         font, text, _ = encode_text(spec, self.cfg['stages'])
         self.assertEqual(len(font), 416)
         self.assertIn(bytes(range(0xf0, 0x100)), text)
-        for changed in [dict(titles=['0'*32]*4), dict(subtitles=['A']*4), dict(titles=['1']*3)]:
+        for changed in [dict(titles=['0'*256]*4), dict(subtitles=['A']*4), dict(titles=['1']*3)]:
             with self.assertRaises(ValueError):
                 encode_text(spec | changed, self.cfg['stages'])
         # 116 distinct new CJK glyphs exceed the 115 remaining slots.

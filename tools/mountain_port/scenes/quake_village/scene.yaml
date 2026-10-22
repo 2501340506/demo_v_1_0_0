@@ -20,7 +20,6 @@ stages:
     hazard: earthquake
     role: cause
     title: 阶段1 致因：断层活动                # M5 OSD 标题（≤16 格）
-    subtitle: 断层活动，主震后余震不断  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[fault, 断层]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 断层附近开始出现小地震。, file: voice/quake_s1_t000.wav}
@@ -57,7 +56,6 @@ stages:
     hazard: earthquake
     role: onset
     title: 阶段2 发生：强烈晃动                # M5 OSD 标题（≤16 格）
-    subtitle: 强烈晃动，就近躲避  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[rock, 落石]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 地震波正在传来。, file: voice/quake_s2_t000.wav}
@@ -125,7 +123,6 @@ stages:
     hazard: earthquake
     role: aftermath
     title: 阶段3 后果：崩塌开裂                # M5 OSD 标题（≤16 格）
-    subtitle: 岩壁崩塌，地面沿断层开裂  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[rock, 崩塌碎石], [fault, 地裂缝]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 岩壁崩塌，碎石掩埋了坡脚房屋。, file: voice/quake_s3_t000.wav}
@@ -159,7 +156,6 @@ stages:
     sound_gain: 0.3
     sound_loop: true
     title: 阶段4 撤离：到空旷平地                # M5 OSD 标题（≤16 格）
-    subtitle: 震动停止后到空旷平地避险  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
     legend: [[danger, 危险区], [route, 撤离路线], [refuge, 避险点]]
     narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
       - {t: 0, text: 震动停止后，迅速离开建筑和山坡。, file: voice/quake_s4_t000.wav}

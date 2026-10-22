@@ -44,26 +44,40 @@ class CardTextStatus(unittest.TestCase):
         for k in ('village', 'warning'):
             cfg.pop(k)
         for st in cfg['stages']:
-            st.pop('title'), st.pop('subtitle'), st.pop('legend', None)
+            st.pop('title'), st.pop('subtitle', None), st.pop('legend', None), st.pop('narration', None)
         self.assertEqual(tool.card_text_status(cfg)[0], 'none')
+
+    def test_subtitle_defaults_to_the_narration(self):
+        cfg = load_cfg()
+        self.assertNotIn('subtitle', cfg['stages'][1])
+        spec = tool.mcn.text_spec(cfg, 'scene.yaml')
+        lines = [str(l['text']) for l in sorted(cfg['stages'][1]['narration'], key=lambda d: d['t'])]
+        self.assertEqual(spec['subtitles'][1], tool.mcn.normal('  '.join(lines)))
+        cfg['stages'][1]['subtitle'] = '自定字幕'
+        self.assertEqual(tool.mcn.text_spec(cfg, 'scene.yaml')['subtitles'][1], '自定字幕')
 
     def test_partial_and_bad_text(self):
         cfg = load_cfg()
-        del cfg['stages'][2]['subtitle']
+        del cfg['stages'][2]['title']
+        state, why = tool.card_text_status(cfg)
+        self.assertEqual(state, 'bad')
+        self.assertIn('title', why)
+        cfg = load_cfg()
+        cfg['stages'][2]['narration'] = []                                 # no subtitle and no narration
         state, why = tool.card_text_status(cfg)
         self.assertEqual(state, 'bad')
         self.assertIn('subtitle', why)
         cfg = load_cfg()
-        cfg['stages'][0]['subtitle'] = '字' * 25
-        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 24 characters at most
-        cfg['stages'][0]['subtitle'] = '字' * 24
+        cfg['stages'][0]['subtitle'] = '字' * 61
+        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 60 characters at most
+        cfg['stages'][0]['subtitle'] = '字' * 60
         self.assertEqual(tool.card_text_status(cfg)[0], 'ok')
         cfg = load_cfg()
         cfg['stages'][1]['title'] = '字' * 17
         self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # titles and the village: 16
         cfg = load_cfg()
-        cfg['warning'] = '红' * 20
-        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 19 at most
+        cfg['warning'] = '红' * 61
+        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 60 at most (it scrolls)
         cfg = load_cfg()
         cfg['village'] = 'ABC村'
         state, why = tool.card_text_status(cfg)
@@ -72,7 +86,7 @@ class CardTextStatus(unittest.TestCase):
         cfg = load_cfg()
         for n, st in enumerate(cfg['stages']):                            # more than 128 distinct glyphs
             st['title'] = ''.join(chr(0x4e00 + n * 40 + i) for i in range(16))
-            st['subtitle'] = ''.join(chr(0x5000 + n * 40 + i) for i in range(24))
+            st['subtitle'] = ''.join(chr(0x5000 + n * 40 + i) for i in range(30))
         cfg['village'] = ''.join(chr(0x6000 + i) for i in range(16))
         cfg['warning'] = ''.join(chr(0x6100 + i) for i in range(19))
         state, why = tool.card_text_status(cfg)
@@ -95,10 +109,10 @@ class Legends(unittest.TestCase):
         self.assertEqual(state, 'bad')
         self.assertIn('purple', why)
         cfg = load_cfg()
-        cfg['stages'][3]['legend'] = [['danger', '危' * 16], ['route', '路' * 12]]       # 18 + 14 + 2 cells
+        cfg['stages'][3]['legend'] = [['danger', '危' * 20], ['route', '路' * 15]]       # 22 + 17 + 2 cells
         state, why = tool.card_text_status(cfg)
         self.assertEqual(state, 'bad')
-        self.assertIn('31', why)
+        self.assertIn('38', why)
 
     def test_legends_make_a_fourteen_segment_text(self):
         cfg = load_cfg()

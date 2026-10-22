@@ -70,8 +70,8 @@ def encode_text(spec, stages):
         if len(legends) != 4:
             raise ValueError("text needs four legend lines (empty ones allowed)")
         segments += list(legends)       # segments 10-13: needs v0.25 S5 firmware
-    if any(not isinstance(s, str) or len(s) > 31 for s in segments):
-        raise ValueError("each text segment must contain at most 31 characters")
+    if any(not isinstance(s, str) or len(s) > 255 for s in segments):
+        raise ValueError("each text segment must contain at most 255 characters")
     # Preserve all original bit patterns, including the older hand drawn glyphs.
     source = repo_root() / "user_source/hdl_source/osd/osd_font_cn_16x16.v"
     matches = re.findall(r"8'h(8[0-9a-c]): bits = 256'([bh])([01a-f0-9]+);", source.read_text(encoding="utf-8"))
