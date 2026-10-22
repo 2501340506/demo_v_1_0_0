@@ -20,6 +20,6 @@
 - 生成：`python -I -X utf8 tools/mountain_port/make_card_narration.py prepare --legends --output diagnostics/output/<新目录>`。两次生成逐字节一致。不加 `--legends` 就是 S2 的 10 段。
 - 仿真：`diagnostics/lut_opt25/run_s5_overlay.ps1`，用生产的 `scene_text_overlay` 对这四张卡逐像素比对，通过。
 - 写卡用 `install --card <卡盘符>/情景模式 --output <同一目录>`，被替换的原文件先备份到 `<目录>/backup/`，写后读回核对，其他文件不动；也可以手动覆盖。**写之前确认固件已经是 s5-local.1 或更新。**（已执行一次，换卡时重复。）
-- 2026-10-23 已写入用户的 SD 卡（G 盘）：24 个文件写入并读回一致；被替换的 24 个文件已备份，与 s2-card.1 逐字节一致；PIC、THUMB 和宣讲模式的其余 30 个文件未变。写卡清单见 `validation/card_write_result.json`。固件 s5-local.1 先用 S2 卡上板确认正常后才写的。**图例的显示效果待用户确认。**
+- 2026-10-22 已写入用户的 SD 卡（G 盘）：24 个文件写入并读回一致；被替换的 24 个文件已备份，与 s2-card.1 逐字节一致；PIC、THUMB 和宣讲模式的其余 30 个文件未变。写卡清单见 `validation/card_write_result.json`。固件 s5-local.1 先用 S2 卡上板确认正常后才写的。**图例的显示效果待用户确认。**
 
 回退：用 [s2-card.1](../s2-card.1/README.md) 的同名文件覆盖。
