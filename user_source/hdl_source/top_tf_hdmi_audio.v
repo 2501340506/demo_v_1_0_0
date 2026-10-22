@@ -599,7 +599,7 @@ thumbnail_layout u_thumbnail_layout(.in_de(adjust_de),.pixel_x(adjust_x),.pixel_
 osd_pixel_position u_ring_position(.clk(video_clk),.rst(rst_video),.vs(vs),.de(de),
  .line_y(ring_y),.frame_start(ring_frame_start),.first_active());
 generate if(AUDIO_VIS_ENABLE) begin:g_audio_vis
- audio_ring_levels #(.BAR_COUNT(80)) u_levels(.clk(video_clk),.rst(rst_video),.frame_start(ring_frame_start),
+ audio_ring_levels #(.BAR_COUNT(40)) u_levels(.clk(video_clk),.rst(rst_video),.frame_start(ring_frame_start),
   .pcm_valid(ring_tap_valid),.pcm_left(ring_tap_left),.pcm_right(ring_tap_right),
   .bar_index(ring_bar_index),.bar_height(ring_bar_height));
 end else begin:g_no_audio_vis
