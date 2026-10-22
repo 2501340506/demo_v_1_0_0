@@ -1,0 +1,526 @@
+== LUT-driven reset nets: 61 nets, 1987 sr pins
+    96  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_27
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/bpb_ok  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/cluster_count_b3_n_syn_2  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/mbr_found  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/state_reg_syn_1 [17]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/state_reg_syn_1 [20]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte [5]  [q]
+    94  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_25
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/shift_count [2]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/shift_count_reg[2]_syn_12  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/shift_count_reg[2]_syn_14  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/shift_count_reg[2]_syn_8  [f]
+    91  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_11
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_y [12:11]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_count [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [12]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [9]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/native_thumb_dup_12  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+    86  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_53
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_3  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    86  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_20
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/fat_sectors [6]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/fat_sectors [7]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/fat_sectors [8]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/fat_sectors [9]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte [5]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte [6]  [q]
+    64  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_8
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start_dup_77  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_rgba [14]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_rgba [17]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_11  [f]
+    62  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_15
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/state_reg_syn_1 [10]  [q]
+    56  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_17
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_13  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/header_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_26  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_30  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_81  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_93  [f]
+    50  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_26
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/scan_start  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/state_reg_syn_1 [0]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte[4]_dup_22  [q]
+    50  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_13
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_4  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    49  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_3
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters [136]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters [97]  [q]
+          <- \sd_card_bmp_m0/g_menu$backend/chosen_focus[1]_syn_204  [f]
+          <- \sd_card_bmp_m0/g_menu$backend/clusters [72]  [q]
+          <- \sd_card_bmp_m0/g_menu$backend/clusters [8]  [q]
+          <- \sd_card_bmp_m0/g_menu$backend/selected_directory_b[8]_syn_2  [f]
+    49  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_14
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start_dup_77  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_y [13]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_y [15]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_11  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_x [9]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_y [3]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/source_last_x [9]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/sy [3]  [q]
+    49  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_5
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_22  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/fat_start_lba_b1 [1]  [f]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/fat_entry_offset_b4_n_syn_4  [f]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/sector_lba_b7 [26]  [fx]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/sector_lba_b8 [26]  [fx]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/state_reg_syn_1 [6]  [q]
+    48  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_1
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters [115]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters [177]  [q]
+          <- \sd_card_bmp_m0/g_menu$backend/chosen_focus[1]_syn_204  [f]
+          <- \sd_card_bmp_m0/g_menu$backend/clusters [27]  [q]
+          <- \sd_card_bmp_m0/g_menu$backend/clusters [91]  [q]
+          <- \sd_card_bmp_m0/g_menu$backend/selected_directory_b[27]_syn_2  [f]
+    48  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_5
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_13  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height [16]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height [17]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height [18]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height [23]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/header_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_36  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_81  [f]
+    46  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_23
+          <- \sd_card_bmp_m0/bmp_read_m0/a_index [3:2]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/next_invalid_n_syn_12  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/state_reg_syn_1 [10]  [q]
+    46  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_22
+          <- \g_scene_text$g_narration$overlay/cursor [7]  [q]
+          <- \g_scene_text$g_narration$overlay/render_word [7]  [?]
+          <- \g_scene_text$g_narration$overlay/text_addr_b_n  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+    44  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_6
+          <- \app_status/ch_b8_n2  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters [154]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters [176]  [q]
+          <- resources_pixel[21]  [q]
+    44  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_9
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/font_cluster_b [21]  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/font_cluster_b [7]  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/cluster_hi_eq  [q]
+          <- \sd_card_bmp_m0/g_audio$u_stream/cluster_hi_gt  [q]
+          <- \sd_card_bmp_m0/g_audio$u_stream/cluster_lo_gt  [q]
+          <- \sd_card_bmp_m0/g_audio$u_stream/start_bad  [q]
+    43  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start_dup_77  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_11  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/source_last_x_b1 [3]  [f]
+    43  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_15
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/current_cluster [17]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/current_cluster [20]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/fat_cluster_snapshot [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/fat_cluster_snapshot [2]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/fat_value_latched [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/fat_value_latched [2]  [q]
+    39  \sd_card_bmp_m0/g_bins$loader/rst
+          <- \sd_card_bmp_m0/g_bins$epoch_reset  [q]
+          <- \sd_card_bmp_m0/normal_state_code [2]  [q]
+          <- \sd_card_bmp_m0/osd_error_code_b_n  [f]
+          <- \sd_card_bmp_m0/u_cache_control/mux90_syn_51  [f]
+          <- \sd_card_bmp_m0/u_cache_control/phase_reg_syn_dup_38  [q]
+    37  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_13
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start_dup_77  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_11  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/source_last_x_b1 [2]  [?]
+    37  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_13
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_rgba [30]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_25  [q]
+    36  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_15
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_13  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/compression_zero_reg[2]_syn_4  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/mux6_syn_79  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/header_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_81  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_93  [f]
+    30  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_51
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_2  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    30  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n
+          <- \sd_card_bmp_m0/bmp_read_m0/a_index [0]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/sector_byte_index[2]_syn_64  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte_index [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte_index [3]  [?]
+    29  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_19
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_2  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    28  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_9
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_13  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/compression_zero_reg[3]_syn_19  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/compression_zero_reg[3]_syn_21  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/compression_zero_reg[3]_syn_23  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/header_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_81  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/mux28_syn_dup_93  [f]
+    28  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_10
+          <- \g_scene_text$font_ram/wr_data [7]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/fat_byte2 [7:6]  [?]
+    26  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_49
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_3  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    26  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_17
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height [0]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height [2]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/remaining_empty  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/remaining_one  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_valid  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/thumb_selected_reg_syn_7  [f]
+    25  \u_frame_loader/full_writer/write_buf/ram_inst/rstb
+          <- \u_frame_loader/full_writer/write_buf/asy_r_rst1  [q]
+          <- \u_frame_loader/thumb_writer/active_n18  [f]
+          <- \u_frame_loader/thumb_writer/active_reg_syn_12  [f]
+          <- \u_frame_loader/thumb_writer/active_reg_syn_15  [fx]
+          <- \u_frame_loader/thumb_writer/active_reg_syn_5  [f]
+          <- \u_frame_loader/thumb_writer/active_reg_syn_8  [f]
+    25  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_11
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/entry_cluster [16]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/g_directories$matcher/clear_dup_62  [f]
+    25  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_47
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_2  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    25  \u_frame_loader/thumb_writer/write_buf/ram_inst/rstb
+          <- Sdr_init_ref_vld  [f]
+          <- \u_frame_loader/thumb_writer/complete_sync [1]  [q]
+          <- \u_frame_loader/thumb_writer/fifo_empty  [f]
+          <- \u_frame_loader/thumb_writer/fifo_words [7]  [?]
+          <- \u_frame_loader/thumb_writer/write_buf/asy_r_rst1  [q]
+          <- \u_frame_loader/thumb_writer/written  [q]
+    24  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_9
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/thumb_selected_reg_syn_3  [f]
+    23  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_12
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_19  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/current_cluster [31:30]  [?]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/fat_cluster_snapshot [21]  [q]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/fat_cluster_snapshot [22]  [?]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/fat_value_latched [21]  [q]
+          <- \sd_card_bmp_m0/g_shared_source$source/streamer/fat_value_latched [22]  [?]
+    23  \u_frame_reader/read_buf/ram_inst/rsta
+          <- \u_frame_reader/read_buf/asy_w_rst1  [q]
+          <- \u_media_hdmi_audio_bridge/u_symbol_core/u_island_scheduler/mux4_syn_112  [f]
+          <- \u_media_hdmi_audio_bridge/u_symbol_core/u_island_scheduler/mux4_syn_116  [f]
+          <- \u_media_hdmi_audio_bridge/u_symbol_core/u_island_scheduler/mux4_syn_118  [f]
+          <- vout_data_raw[2]  [q]
+          <- vout_data_raw[4]  [q]
+    22  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_13
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/max_cluster [26]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/max_cluster_b1 [3:2]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/selected_gt_b[3]_syn_2  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/task_cluster [26]  [?]
+    20  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_9
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_y [12:11]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_count [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [12]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [9]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/native_thumb_dup_12  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+    20  \sd_card_bmp_m0/u_mode_key_control/adjust_keys/rst
+          <- \sd_card_bmp_m0/effective_mode [1]  [q]
+          <- \sd_card_bmp_m0/u_mode_key_control/rescan_allowed_n9  [f]
+          <- \sd_card_bmp_m0/u_mode_key_control/short_allowed_reg_syn_5  [f]
+          <- \sd_card_bmp_m0/u_mode_key_control/short_mode [1]  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+    19  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_14
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/commit_edu  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/data_start_lba_b1 [4:3]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/image_commit  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/publicity_bmp_size_ok  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/publicity_cluster_ok  [q]
+    18  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_8
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_y [12:11]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_count [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [12]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [9]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/native_thumb_dup_12  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+    17  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_4
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_rgba [3]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_6  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_rgb [19]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/pixel_black  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/ram_pixel [19]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/native_thumb_dup_9  [q]
+    15  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_6
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_rgba [30]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_25  [q]
+    13  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_3
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start_dup_77  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_10  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+    13  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_17
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scan_cancel_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/state_reg_syn_1 [14]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/visited_b7 [11]  [f]
+    13  mux3_syn_26
+          <- \sd_card_bmp_m0/display_valid  [q]
+          <- \seg7_panel_m0/state_code [0]  [q]
+          <- \seg7_panel_m0/state_code [1]  [q]
+          <- \seg7_panel_m0/state_code [2]  [q]
+          <- \seg7_panel_m0/state_code [3]  [q]
+          <- \u_frame_reader/reader/descriptor_sync0 [7:6]  [?]
+          <- pixel_descriptor[24]  [q]
+    10  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_5
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/file_start_dup_77  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_10  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+    10  reset_request
+          <- \sd_card_bmp_m0/g_audio$u_player/level_rd [5]  [?]
+          <- \sd_card_bmp_m0/g_audio$u_player/level_rd [6]  [?]
+          <- \sd_card_bmp_m0/g_audio$u_player/level_rd [9]  [?]
+          <- \sd_card_bmp_m0/g_audio$u_player/mux58_syn_267  [f]
+          <- rst_n_dup_1  [?]
+          <- sys_pll_lock  [?]
+     7  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_21
+          <- \sd_card_bmp_m0/bmp_read_m0/a_index [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/abort_file_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/scanner/name_match_reg_syn_14  [f]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte_index [2]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/streamer/sector_byte_index [3]  [?]
+     7  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_45
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_4  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+     4  \u_picture_adjust/center_b6_n1
+          <- \u_picture_adjust/center_b6_n3  [f]
+          <- \u_picture_adjust/center_b6_n4  [f]
+          <- \u_picture_adjust/ramread1_syn_52 [4]  [?]
+          <- \u_picture_adjust/ramread1_syn_52 [5]  [?]
+          <- \u_picture_adjust/ramread1_syn_52 [6]  [?]
+          <- \u_picture_adjust/ramread1_syn_52 [7]  [?]
+          <- \u_picture_adjust/ramread1_syn_52 [8]  [?]
+          <- \u_picture_adjust/ramread1_syn_61 [4:3]  [?]
+     4  \u_picture_adjust/center_b8_n1
+          <- \sd_card_bmp_m0/u_mode_key_control/u_key4/cnt [0]  [q]
+          <- \sd_card_bmp_m0/u_mode_key_control/u_key4/cnt [1]  [q]
+          <- \sd_card_bmp_m0/u_mode_key_control/u_key4/cnt [2]  [q]
+          <- \sd_card_bmp_m0/u_mode_key_control/u_key4/cnt [3]  [q]
+          <- \u_picture_adjust/center_b8_n3  [f]
+          <- \u_picture_adjust/center_b8_n4  [f]
+          <- \u_picture_adjust/ramread1_syn_52 [0]  [?]
+          <- \u_picture_adjust/ramread1_syn_52 [5]  [?]
+          <- \u_picture_adjust/ramread1_syn_70 [8]  [?]
+     4  \u_picture_adjust/center_b7_n1
+          <- \seg7_panel_m0/auto_play_indicator  [q]
+          <- \seg7_panel_m0/eq7_syn_26  [f]
+          <- \seg7_panel_m0/scene_enable  [q]
+          <- \u_picture_adjust/center_b7_n3  [f]
+          <- \u_picture_adjust/center_b7_n4  [f]
+          <- \u_picture_adjust/ramread1_syn_61 [0]  [?]
+          <- \u_picture_adjust/ramread1_syn_61 [6]  [?]
+          <- \u_picture_adjust/ramread1_syn_61 [8]  [?]
+     3  \u_frame_loader/thumb_writer/App_wr_din_n
+          <- \U3/u2_ram/u2_wrrd/app_wr_din_3d [26]  [?]
+          <- \U3/u2_ram/u2_wrrd/app_wr_din_3d [29]  [q]
+          <- \g_audio_vis$u_levels/level[1]_syn_3  [f]
+          <- \g_audio_vis$u_levels/level[3]_syn_29  [f]
+          <- \g_audio_vis$u_levels/level[3]_syn_59  [f]
+          <- \g_audio_vis$u_levels/peak [10]  [?]
+          <- \u_frame_loader/thumb_writer/writer/fifo_aclr  [q]
+          <- \u_reset_mem/release_pipe [2]  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+     3  \u_frame_loader/full_writer/App_wr_din_n
+          <- \sd_card_bmp_m0/g_audio$u_player/done_rd_reg_syn_43  [f]
+          <- \sd_card_bmp_m0/g_audio$u_player/done_rd_reg_syn_45  [f]
+          <- \sd_card_bmp_m0/g_audio$u_player/done_rd_reg_syn_47  [f]
+          <- \sd_card_bmp_m0/g_audio$u_player/done_rd_reg_syn_49  [f]
+          <- \u_frame_loader/full_writer/writer/fifo_aclr  [q]
+          <- \u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body [135]  [q]
+          <- \u_media_hdmi_audio_bridge/u_symbol_core/u_audio_packetizer/packet_body [191]  [q]
+          <- \u_reset_mem/release_pipe [2]  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+     3  \u_frame_reader/fifo_data_n
+          <- \u_frame_reader/fifo_clear  [q]
+          <- \u_frame_reader/reader/g_preview_address$address_gen/banks [5]  [q]
+          <- \u_frame_reader/reader/g_preview_address$address_gen/banks [7]  [q]
+          <- \u_frame_reader/reader/g_preview_address$address_gen/image_id [1]  [f]
+          <- \u_frame_reader/reader/g_preview_address$address_gen/image_id[0]_syn_2  [f]
+          <- \u_reset_mem/release_pipe [2]  [q]
+          <- \u_reset_video/release_pipe [2]  [q]
+          <- vout_data_raw[13]  [q]
+          <- vout_data_raw[14]  [q]
+     1  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_10
+          <- \sd_card_bmp_m0/bmp_read_m0/decoder_reset_q  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/pixel_y [12:11]  [?]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_count [1]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [12]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/state_reg_syn_1 [9]  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/native_thumb_dup_12  [q]
+          <- \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  [q]
+     1  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_5
+          <- \sd_card_bmp_m0/g_application$application/mux6_syn_148  [f]
+          <- \sd_card_bmp_m0/g_audio$u_stream/mux31_syn_148  [f]
+          <- \sd_card_bmp_m0/g_bins$loader/rst  [f]
+          <- \sd_card_bmp_m0/response_bin_dup_4  [q]
+          <- \u_reset_sd/release_pipe [2]  [q]
+== OTHER-driven reset nets: 0 nets, 0 sr pins
+== REG-driven reset nets: 24 nets, 3612 sr pins
+== sd_card_bmp_m0/sd_card_top_m0/
+    90 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_27  <- .q of g_scene_text$font_ram/wr_en_syn_23
+    51 sr  \sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_dup_5  <- .q of sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/spi_wr_req_reg_syn_85
+    37 sr  \sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_dup_3  <- .q of U3/u2_ram/u2_wrrd/SDR_ADDR_b[4]_syn_4
+    34 sr  \sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_dup_6  <- .q of sd_card_bmp_m0/sd_card_top_m0/protocol_rst_reg_syn_18
+    10 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_11  <- .q of sd_card_bmp_m0/bmp_read_m0/candidate_reg[2]_syn_14
+     8 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_10  <- .q of g_scene_text$font_ram/wr_en_syn_24
+     6 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_audio$u_player/active_reg_syn_78
+     5 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_8  <- .q of sd_card_bmp_m0/bmp_read_m0/candidate_reg[0]_syn_16
+     4 sr  \sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_dup_4  <- .q of sd_card_bmp_m0/g_menu$ui/k2/cnt_b[20]_syn_24
+     3 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/u_cache_control/load_state_reg[0]_syn_13
+     3 sr  \u_reset_mem/release_pipe [2]  <- .q of u_reset_mem/release_pipe_reg[1]_syn_4
+     2 sr  \u_frame_reader/read_buf/ram_inst/rsta  <- .f of u_hazard/modern/rgb1_reg[2]_syn_4
+     2 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_15  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_39
+     1 sr  reset_request  <- .f of sd_card_bmp_m0/g_audio$u_player/mux58_syn_344
+== sd_card_bmp_m0/bmp_read_m0/
+    96 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_27  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/capacity_hi_gt_i_syn_48
+    94 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_25  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/capacity_hi_gt_i_syn_58
+    91 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_11  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_y_reg[12]_syn_7
+    86 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_20  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/root_cluster_reg[21]_syn_4
+    66 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_26  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_67
+    64 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_8  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_rgb_reg[17]_syn_4
+    62 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_15  <- .f of sd_card_bmp_m0/bmp_read_m0/streamer/state_reg[11]_syn_4
+    59 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_25  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_66
+    56 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_17  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/dib_size_reg[28]_syn_4
+    52 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_15  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_39
+    49 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_14  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_y_reg[15]_syn_4
+    48 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_5  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/height_reg[31]_syn_4
+    47 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_5  <- .f of sd_card_bmp_m0/g_shared_source$source/streamer/sector_lba_b[26]_syn_5
+    46 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_23  <- .f of sd_card_bmp_m0/bmp_read_m0/file_sector_index_reg[3]_syn_4
+    46 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_22  <- .f of g_scene_text$text_ram/rd_addr[7]_syn_8
+    45 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_61
+    45 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_26  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/g_directories$matcher/entry_match_reg[2]_syn_57
+    44 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/u_cache_control/load_state_reg[0]_syn_13
+    43 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_n_syn_47
+    43 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_15  <- .f of sd_card_bmp_m0/bmp_read_m0/streamer/fat_cluster_snapshot_reg[17]_syn_4
+    40 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_6  <- .f of sd_card_bmp_m0/g_menu$backend/clusters_reg[90]_syn_4
+    39 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_3  <- .f of sd_card_bmp_m0/g_menu$backend/clusters_reg[72]_syn_4
+    37 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_13  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_n_syn_49
+    37 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_9  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/text_cluster_reg[21]_syn_4
+    36 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_15  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/dib_size_reg[21]_syn_4
+    36 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_13  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_n_syn_39
+    34 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_1  <- .f of sd_card_bmp_m0/g_menu$backend/clusters_reg[51]_syn_4
+    33 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_11  <- .q of sd_card_bmp_m0/bmp_read_m0/candidate_reg[2]_syn_14
+    30 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/mbr_found_reg_syn_18
+    28 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/rst_dup_9  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$shared_header/check/dib_size_reg[13]_syn_4
+    26 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_17  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/sh_reg[2]_syn_4
+    26 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_10  <- .f of sd_card_bmp_m0/g_shared_source$source/streamer/fat_value_latched_reg[23]_syn_4
+    23 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_9  <- .f of sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_syn_27
+    21 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_audio$u_player/active_reg_syn_78
+    20 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_9  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_y_reg[12]_syn_5
+    19 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_13  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/max_cluster_reg[3]_syn_4
+    18 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_8  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_y_reg[12]_syn_4
+    18 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_14  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/data_start_lba_reg[4]_syn_4
+    17 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_4  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_b[19]_syn_4
+    16 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_19  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_60
+    15 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_6  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_n_syn_39
+    15 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_12  <- .f of sd_card_bmp_m0/g_shared_source$source/streamer/fat_cluster_snapshot_reg[31]_syn_4
+    13 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_22  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_63
+    13 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/scaler/rst_dup_3  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_n_syn_59
+    13 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_17  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/capacity_hi_gt_i_syn_50
+    13 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_11  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/capacity_hi_gt_i_syn_52
+    10 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_8  <- .q of sd_card_bmp_m0/bmp_read_m0/candidate_reg[0]_syn_16
+    10 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_5  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/pixel_slot_n_syn_59
+     7 sr  \sd_card_bmp_m0/bmp_read_m0/streamer/rst_n_dup_21  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/mux42_syn_92
+     6 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_21  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_62
+     6 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_7  <- .q of sd_card_bmp_m0/g_shared_source$source/streamer/remaining_one_n_syn_80
+     4 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_10  <- .q of g_scene_text$font_ram/wr_en_syn_24
+     4 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_13  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_42
+     3 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_51  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_50
+     3 sr  \u_frame_loader/full_writer/write_buf/ram_inst/rsta  <- .q of sd_card_bmp_m0/g_audio$u_player/done_rd_reg_syn_65
+     3 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_53  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_52
+     2 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_49  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_48
+     2 sr  \u_frame_loader/full_writer/write_buf/ram_inst/rstb  <- .f of u_frame_loader/full_writer/write_buf/u_read_reset_hold_syn_3
+     1 sr  \sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/decoder/rst_dup_10  <- .f of sd_card_bmp_m0/bmp_read_m0/g_scale$scaled/raw_pipe_y_reg[12]_syn_6
+     1 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_27  <- .q of g_scene_text$font_ram/wr_en_syn_23
+     1 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_19  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_34
+     1 sr  \sd_card_bmp_m0/g_bins$loader/rst  <- .f of sd_card_bmp_m0/g_bins$u_epoch_reset_hold_syn_3
+== sd_card_bmp_m0/g_audio
+    97 sr  \u_reset_video/release_pipe [2]  <- .q of sd_card_bmp_m0/g_audio$u_player/active_reg_syn_78
+    92 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/u_cache_control/load_state_reg[0]_syn_13
+     5 sr  \sd_card_bmp_m0/g_bins$loader/rst  <- .f of sd_card_bmp_m0/g_bins$u_epoch_reset_hold_syn_3
+     5 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_11  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/capacity_hi_gt_i_syn_52
+     5 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_13  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_42
+     2 sr  \u_frame_loader/full_writer/App_wr_din_n  <- .f of u_media_hdmi_audio_bridge/u_symbol_core/audio_body_q_reg[191]_syn_4
+     2 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_6  <- .f of sd_card_bmp_m0/g_menu$backend/clusters_reg[90]_syn_4
+     2 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_13  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/max_cluster_reg[3]_syn_4
+     2 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_26  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/g_directories$matcher/entry_match_reg[2]_syn_57
+     1 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_27  <- .q of g_scene_text$font_ram/wr_en_syn_23
+     1 sr  reset_request  <- .f of sd_card_bmp_m0/g_audio$u_player/mux58_syn_344
+     1 sr  \u_frame_loader/thumb_writer/App_wr_din_n  <- .f of U3/u2_ram/u2_wrrd/app_wr_din_4d_reg[26]_syn_4
+     1 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_9  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/text_cluster_reg[21]_syn_4
+     1 sr  \sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_dup_53  <- .fx of sd_card_bmp_m0/g_shared_source$source/streamer/rst_n_syn_52

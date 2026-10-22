@@ -1,0 +1,13 @@
+{
+  "candidate": "v0.25.0-s3-local.1",
+  "source_commit": "396ac71",
+  "build": "lut25_narration_td_s43",
+  "seed": 43,
+  "bit_sha256": "8213a70f47897e9e085450b1918cd2550598ed400613b5e218a4fd9b80ff2c15",
+  "bit_bytes": 675020,
+  "lut": 16793,
+  "registers": 10023,
+  "setup_ns": "+0.108",
+  "hold_ns": "+0.019",
+  "board": "pending"
+}
