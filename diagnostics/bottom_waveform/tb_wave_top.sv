@@ -23,16 +23,31 @@ module tb_wave_top;
   `DRIVE(ref_dut)
   force dut.ring_bar_height=28;
  end
- reg paint[0:18],check[0:18]; reg [12:0] timing[0:18];
+ // Height forced to 28: half height = (28*w)>>5 + 1 with the cos^2 envelope.
+ function [7:0] wash(input integer c,input integer b,input integer k);
+  wash=c-(c*k)/16+(b*k)/16;
+ endfunction
+ function [23:0] band(input integer px,input integer py,input [23:0] c);
+  integer slot,e,w,half,row,col,k;
+  begin
+   slot=px/8;e=slot<40?39-slot:slot-40;
+   w=$rtoi(2.0+14.0*$cos(3.14159265358979*e/80.0)**2+0.5);
+   half=(28*w)/32+1;row=py<464?463-py:py-464;col=px%8;k=4+(py-448)/4+(py-448)/8;
+   if(row<half && (row==half-1 ? col>=3 && col<5 : col>=2 && col<6))band=24'hffffff;
+   else band={wash(c[23:16],8'h3c,k),wash(c[15:8],8'h82,k),wash(c[7:0],8'hf0,k)};
+  end
+ endfunction
+ reg paint[0:18],check[0:18]; reg [12:0] timing[0:18]; reg [18:0] pos[0:18];
  integer i,checked=0,painted=0,case_id=0;
  always @(posedge pix)begin
-  for(i=18;i>0;i--)begin paint[i]=paint[i-1];check[i]=check[i-1];timing[i]=timing[i-1];end
-  paint[0]=de && valid && audio && identity==1 && !desc[17] && !desc[24] && y>=452 && y<480 && x<640 && x%8>=2 && x%8<5;
+  for(i=18;i>0;i--)begin paint[i]=paint[i-1];check[i]=check[i-1];timing[i]=timing[i-1];pos[i]=pos[i-1];end
+  paint[0]=de && valid && audio && identity==1 && !desc[17] && !desc[24] && y>=448 && y<480 && x<640;
+  pos[0]={y,x};
   timing[0]={hs,vs,de,x};check[0]=!rst;
   #1;
   if(check[18])begin
    if({dut.final_hs,dut.final_vs,dut.final_de,dut.final_x}!==timing[18])$fatal(1,"top latency case %d",case_id);
-   if(dut.final_rgb !== (paint[18]?24'hb45ac8:ref_dut.final_rgb))
+   if(dut.final_rgb !== (paint[18]?band(pos[18][9:0],pos[18][18:10],ref_dut.final_rgb):ref_dut.final_rgb))
     $fatal(1,"top pixel case=%d x=%d got=%h ref=%h paint=%b",case_id,dut.final_x,dut.final_rgb,ref_dut.final_rgb,paint[18]);
    if(dut.final_de)begin checked++;if(paint[18])painted++;end
   end
@@ -55,8 +70,8 @@ module tb_wave_top;
    end
    repeat(30)@(negedge pix);
   end
-  if(checked!=2457600 || painted!=6720)$fatal(1,"counts checked=%d painted=%d",checked,painted);
-  $display("PASS wave top: 2457600 pixels; publicity/scene/legacy/preview/menu/invalid/no-audio/other; full width 80 bars; final RGB and 18-clock timing");$finish;
+  if(checked!=2457600 || painted!=20480)$fatal(1,"counts checked=%d painted=%d",checked,painted);
+  $display("PASS wave top: 2457600 pixels; publicity/scene/legacy/preview/menu/invalid/no-audio/other; mirrored 80 slots, envelope, blue wash; final RGB and 18-clock timing");$finish;
  end
  initial begin #200000000;$fatal(1,"top watchdog");end
 endmodule

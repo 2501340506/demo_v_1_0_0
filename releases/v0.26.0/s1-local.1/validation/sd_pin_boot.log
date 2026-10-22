@@ -1,0 +1,11 @@
+Prepared 24 sparse FAT32 selector cards (including full-size pages with sustained narration)
+== reference
+SD init done t=3699735000 commands=8 cmd59=1
+SCAN RESULT t=6206105000 success=1 images=4 reads=9 unknown=0 fat_error=00 bmp_error=0
+FINAL t=60000095000 init_done=1 init_failed=0 scan_seen=1 success=1 state_code=1 osd=00 app_error=0 reads=10 unknown=0 sd_debug=0200c124c1241100
+PASS sd pin boot
+== current
+SD init done t=3699735000 commands=8 cmd59=1
+SCAN RESULT t=6206105000 success=1 images=4 reads=9 unknown=0 fat_error=00 bmp_error=0
+FINAL t=60000095000 init_done=1 init_failed=0 scan_seen=1 success=1 state_code=1 osd=00 app_error=0 reads=10 unknown=0 sd_debug=0200c124c1241100
+PASS sd pin boot

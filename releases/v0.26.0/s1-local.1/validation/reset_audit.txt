@@ -1,0 +1,7 @@
+== u_audio_ring
+    51 sr  \u_reset_video/release_pipe [2]  <- .q of u_hazard/modern/ek[1]_syn_89
+     4 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/response_due_n_syn_21
+     4 sr  \u_reset_mem/release_pipe [2]  <- .q of u_frame_reader/read_buf/u_write_reset_hold_syn_3
+     1 sr  \u_frame_loader/thumb_writer/App_wr_din_n  <- .f of menu_delay_reg[55]_syn_4
+== g_audio_vis
+    45 sr  \u_reset_video/release_pipe [2]  <- .q of u_hazard/modern/ek[1]_syn_89
