@@ -2,8 +2,8 @@ param([string]$RunName='lut25_overlay1',[string]$Cards='',[string]$Legacy='')
 # v0.25 S5: the scene HUD (alert block, progress bar) and the legend.
 #  1. tb_m6_text on 14-segment legend cards, 10-segment cards and frozen older cards: every pixel and
 #     video bundle against an independent model, plus invalid-file cases.
-#  2. tb_overlay_lockstep: BAR_ENABLE=0/LEGEND_ENABLE=0 equals the frozen S3 overlay every clock.
-#  3. mutants of the overlay that each bench must catch.
+#  2. mutants of the overlay (layout, colours, blink, scroll, parsing) that the bench must catch.
+# (The lockstep against the frozen S3 overlay was retired: the text layout changed on purpose.)
 # -Cards: folder with <scene>_village/{FONT.BIN,TEXT.BIN} of 14 segments; -Legacy: same, 10 segments.
 $ErrorActionPreference='Stop'
 if(!$Cards){throw '-Cards is required'}
@@ -45,21 +45,6 @@ $textBench="$root/diagnostics/mountain_scene/tb_m6_text.sv"
 $lib=New-Lib 'text' $overlay @($textBench)
 foreach($f in $folders){Run-Text 'text' $lib $f $Cards $true;Write-Output "PASS legend card $f"}
 if($Legacy){foreach($f in $folders){Run-Text 'text' $lib $f $Legacy $true;Write-Output "PASS 10-segment card $f"}}
-# lockstep against the frozen S3 overlay (a 10-segment card)
-$lockCard=if($Legacy){$Legacy}else{$null}
-if($lockCard){
- $lockLib=New-Lib 'lockstep' $overlay @("$PSScriptRoot/scene_text_overlay_s3.v","$PSScriptRoot/tb_overlay_lockstep.sv")
- $case="$out/lockstep/case"; New-Item -ItemType Directory $case | Out-Null
- & $python -I -X utf8 "$root/diagnostics/mountain_scene/text_vectors.py" $case "$lockCard/landslide_village"
- $sizes=Get-Content "$case/sizes.json" -Raw | ConvertFrom-Json
- Push-Location $case
- try{
-  & "$sim/vsim.exe" -c -quiet -lib $lockLib tb_overlay_lockstep glbl "+F_BYTES=$($sizes.font)" "+T_BYTES=$($sizes.text)" -l "$case/lock.log" -do 'run -all; quit -f' *> "$case/console.log"
-  $log=Get-Content -Raw "$case/lock.log"
-  if($LASTEXITCODE -or $log -match '\*\* (Fatal|Error):' -or $log -notmatch 'PASS overlay lockstep'){throw "Lockstep failed: $case/lock.log"}
-  Write-Output ([regex]'PASS overlay lockstep[^\r\n]*').Match($log).Value
- }finally{Pop-Location}
-}
 # mutants (landslide card only)
 $mut="$out/mutant_src"; New-Item -ItemType Directory $mut | Out-Null
 $text=Get-Content $overlay -Raw
@@ -70,10 +55,21 @@ function Mutant([string]$name,[string]$from,[string]$to){
  Run-Text "mut_$name" $l 'landslide_village' $Cards $false
  Write-Output "DETECTED $name"
 }
-Mutant 'fill_off_by_one' "wire fill=bar_x<={4'd0,t_now};" "wire fill=bar_x<{4'd0,t_now};"
-Mutant 'bar_row' 'y>=12 && y<20;' 'y>=12 && y<21;'
-Mutant 'block_corner' 'pixel_x>=368 && pixel_x<384 && y>=8 && y<24;' 'pixel_x>=368 && pixel_x<384 && y>=9 && y<24;'
-Mutant 'legend_row' 'y>=384 && y<400 && legend_length!=0' 'y>=385 && y<400 && legend_length!=0'
+Mutant 'fill_off_by_one' 'wire fill=bar_x[7:0]<=t_now;' 'wire fill=bar_x[7:0]<t_now;'
+Mutant 'bar_row' 'y>=52 && y<56;' 'y>=52 && y<57;'
+Mutant 'block_corner' 'pixel_x<368 && y>=32 && y<48 && (!warning' 'pixel_x<368 && y>=33 && y<48 && (!warning'
+Mutant 'block_blink' '&& (!warning || frames[4]);' ';'
+Mutant 'panel_edge' 'pixel_x>=348 && pixel_x<636 && y>=28 && y<60;' 'pixel_x>=348 && pixel_x<636 && y>=28 && y<59;'
+Mutant 'dim_quarter' "{1'b0,video2[23:17],1'b0,video2[15:9],1'b0,video2[7:1]}" "{2'b0,video2[23:18],2'b0,video2[15:10],2'b0,video2[7:2]}"
+Mutant 'title_x' "local_x={1'b0,pixel_x}-11'd376;" "local_x={1'b0,pixel_x}-11'd377;"
+Mutant 'village_in_warning' 'segment_offset=warning?village_offset:title_offset;' 'segment_offset=title_offset;'
+Mutant 'legend_row' 'y>=416 && y<432 && legend_length!=0' 'y>=417 && y<432 && legend_length!=0'
+Mutant 'legend_band' 'y>=412 && y<436;' 'y>=413 && y<436;'
+Mutant 'subtitle_band' 'y>=440 && y<464;' 'y>=441 && y<464;'
+Mutant 'subtitle_row' "row=y[3:0]+4'd4;" "row=y[3:0]+4'd5;"
+Mutant 'scroll_speed' "scroll<=scroll+11'd2;" "scroll<=scroll+11'd1;"
+Mutant 'glyph_colour' "(red2?24'hff0000:24'hffffff)" "(red2?24'hff0000:24'hfffffe)"
+Mutant 'centre_red' 'red1<=centre;' 'red1<=warning;'
 Mutant 'swatch_inset' 'col1>=2 && col1<14 && row1>=2' 'col1>=1 && col1<14 && row1>=2'
 Mutant 'refuge_blink' "(code[2:0]!=3'd2 || frames[5])" "(code[2:0]!=3'd2 || frames[4])"
 Mutant 'swatch_colour' "3'd3:swatch_rgb=24'h8c6a3c" "3'd3:swatch_rgb=24'h8c6a3d"

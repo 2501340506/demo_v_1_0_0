@@ -38,22 +38,27 @@ module tb_m6_text;
     4:swatch_color=24'hffd000;5:swatch_color=24'he83020;6:swatch_color=24'h8e8a84;default:swatch_color=24'hc8d2dc;endcase
   end
  endfunction
+ function automatic [23:0] dimmed(input [23:0] c);
+  begin dimmed={1'b0,c[23:17],1'b0,c[15:9],1'b0,c[7:1]}; end
+ endfunction
+ // Scene OSD as drawn by the reference project (tools/scenes/*/out/osd), modelled from the
+ // layout, not from the RTL: white 16 px text on half-dimmed bands; top-right panel with the
+ // alert block, the title (the village name while warning) and the progress bar; bottom-left
+ // legend (14-segment TEXT.BIN only); bottom subtitle scrolling 2 px per frame; centred red
+ // warning text and the blinking red frame while warning.
  function automatic [23:0] reference(input integer px,py);
-  integer segment,tx,row,offset,code,at;bit hit,swatch;
+  integer segment,tx,row,offset,code,at,lseg,lbytes;bit hit,swatch,centre,dim;
   begin
-   reference=24'h123456;segment=-1;tx=px-8;row=py%16;hit=0;swatch=0;
-   if(en && !warn && py>=64 && py<96)begin segment=stage*2;row=(py-64)/2;tx=(px-8)/2;end
-   if(en && !warn && py>=112 && py<144)begin segment=9;row=(py-112)/2;tx=(px-8)/2;end
-   if(en && !warn && py>=416 && py<448)begin segment=stage*2+1;row=(py-416)/2;tx=(px+step-632)/2;if(px+step<632)tx=-1;end
-   // Legend (14-segment TEXT.BIN only): 16 px cells, one line per stage.
-   if(en && !warn && tm[3]==14 && py>=384 && py<400 && tm[6+(10+stage)*4]!=0)begin segment=10+stage;row=py-384;tx=px-8;end
+   reference=24'h123456;segment=-1;tx=0;row=0;hit=0;swatch=0;centre=0;dim=0;code=0;
+   lseg=10+stage;lbytes=(tm[3]==14)?tm[6+lseg*4]:0;
+   if(en && py>=32 && py<48 && px>=376)begin segment=warn?9:stage*2;row=py-32;tx=px-376;end
+   if(en && lbytes!=0 && py>=416 && py<432)begin segment=lseg;row=py-416;tx=px-8;end
+   if(en && !warn && py>=444 && py<460)begin segment=stage*2+1;row=py-444;tx=px+step-632;if(px+step<632)tx=-1;end
    if(en && warn)begin
-    segment=8;
     // 4x while blinking only for at most 9 characters; above 19, 1x.
     at=tm[6+8*4]>19?1:blink && tm[6+8*4]<=9?4:2;
     offset=(640-tm[6+8*4]*16*at)/2;
-    if(py>=240-8*at && py<240+8*at && px>=offset)begin tx=(px-offset)/at;row=(py-(240-8*at))/at;end
-    else segment=-1;
+    if(py>=240-8*at && py<240+8*at && px>=offset)begin segment=8;tx=(px-offset)/at;row=(py-(240-8*at))/at;centre=1;end
    end
    if(segment>=0 && px>=8 && px<632 && tx>=0 && tx<tm[6+segment*4]*16)begin
     offset=tm[4+segment*4]+256*tm[5+segment*4];code=tm[offset+tx/16];
@@ -64,11 +69,18 @@ module tb_m6_text;
     else if(code>=224 && code<232 && tx%16>=2 && tx%16<14 && row>=2 && row<14 && (code!=226 || slow))swatch=1;
    end
    if(legacy)begin at=((px-8)/16)*32+(py-200)*2+((px-8)%16)/8;hit=(fm[at]>>(7-(px-8)%8))&1;end
-   if(hit)reference=legacy?24'hffffff:warn?24'hff0000:24'h000000;
+   // Half-dimmed panel and bands.
+   if(en && de)begin
+    if(px>=348 && px<636 && py>=28 && py<60)dim=1;
+    if(lbytes!=0 && px>=4 && px<12+16*lbytes && py>=412 && py<436)dim=1;
+    if(!warn && tm[6+(stage*2+1)*4]!=0 && px>=8 && px<632 && py>=440 && py<464)dim=1;
+   end
+   if(dim)reference=dimmed(reference);
+   // Alert block (blinks while warning) and progress bar: one pixel per t.
+   if(en && de && px>=352 && px<368 && py>=32 && py<48 && (!warn || blink))reference=alert_color(warn,stage);
+   else if(en && de && px>=376 && px<616 && py>=52 && py<56)reference=(px-376<=tnow)?alert_color(warn,stage):24'h404040;
    if(swatch)reference=swatch_color(code-224);
-   // HUD: alert block and progress bar (track dark, fill in the alert colour, one pixel per t).
-   if(en && px>=368 && px<384 && py>=8 && py<24)reference=alert_color(warn,stage);
-   else if(en && px>=392 && px<632 && py>=12 && py<20)reference=(px-392<=tnow)?alert_color(warn,stage):24'h303030;
+   if(hit)reference=centre?24'hff0000:24'hffffff;
    if(en && warn && blink && de && (px<8 || px>=632 || py<8 || py>=472))reference=24'hff0000;
   end
  endfunction
@@ -121,7 +133,7 @@ module tb_m6_text;
   #2000;load(0,fbytes);load(1,tbytes);rst=0;fv=1;tv=1;
   repeat(9000)@(negedge clk);if(!available || dut.parser!=4)$fatal(1,"valid parser %d bad=%d",dut.parser,dut.bad);
   force dut.frames=0;en=1;
-  for(integer s=0;s<4;s++)begin stage=s;tnow=s==0?8'd0:s==1?8'd1:s==2?8'd100:8'd239;frame(0);frame(1);force dut.scroll=400;frame(400);release dut.scroll;end
+  for(integer s=0;s<4;s++)begin stage=s;tnow=s==0?8'd0:s==1?8'd1:s==2?8'd100:8'd239;frame(0);frame(2);force dut.scroll=400;frame(400);release dut.scroll;end
   // Slow blink on (frames[5]=1, frames[4]=0): the refuge swatch of a legend shows.
   force dut.frames=32;force dut.scroll=0;slow=1;tnow=8'd239;frame(0);slow=0;release dut.scroll;force dut.frames=0;
   warn=1;tnow=8'd239;frame(0);

@@ -54,8 +54,13 @@ class CardTextStatus(unittest.TestCase):
         self.assertEqual(state, 'bad')
         self.assertIn('subtitle', why)
         cfg = load_cfg()
-        cfg['stages'][0]['subtitle'] = '字' * 16
-        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 15 characters at most
+        cfg['stages'][0]['subtitle'] = '字' * 25
+        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 24 characters at most
+        cfg['stages'][0]['subtitle'] = '字' * 24
+        self.assertEqual(tool.card_text_status(cfg)[0], 'ok')
+        cfg = load_cfg()
+        cfg['stages'][1]['title'] = '字' * 17
+        self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # titles and the village: 16
         cfg = load_cfg()
         cfg['warning'] = '红' * 20
         self.assertEqual(tool.card_text_status(cfg)[0], 'bad')            # 19 at most
@@ -66,9 +71,9 @@ class CardTextStatus(unittest.TestCase):
         self.assertIn('CJK', why)                                         # no Latin letters in TEXT.BIN
         cfg = load_cfg()
         for n, st in enumerate(cfg['stages']):                            # more than 128 distinct glyphs
-            st['title'] = ''.join(chr(0x4e00 + n * 40 + i) for i in range(19))
-            st['subtitle'] = ''.join(chr(0x5000 + n * 40 + i) for i in range(15))
-        cfg['village'] = ''.join(chr(0x6000 + i) for i in range(19))
+            st['title'] = ''.join(chr(0x4e00 + n * 40 + i) for i in range(16))
+            st['subtitle'] = ''.join(chr(0x5000 + n * 40 + i) for i in range(24))
+        cfg['village'] = ''.join(chr(0x6000 + i) for i in range(16))
         cfg['warning'] = ''.join(chr(0x6100 + i) for i in range(19))
         state, why = tool.card_text_status(cfg)
         self.assertEqual((state, 'FONT' in why), ('bad', True), why)

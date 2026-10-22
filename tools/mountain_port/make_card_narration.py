@@ -15,10 +15,11 @@ With --legends the stage's `legend: [[swatch, text], ...]` is written as well (T
 14 segments, one 16 px legend line per stage, at most 31 cells): this needs the v0.25 S5
 firmware, which also reads the 10-segment files; older firmware rejects the 14-segment one.
 
-Display limits (scene_text_overlay, 32 px cells, 624 px wide): titles, the
-village name and the warning are static, so at most 19 characters; the
-subtitle scrolls in at 1 px per frame, so at most 15 characters appear
-completely within one 8 s stage at 1x.
+Display limits (scene_text_overlay, 16 px cells): the title and the village name sit in
+the 256 px wide top-right panel (at most 16 characters); the warning is shown centred
+at 2x (at most 19); the subtitle moves left 2 px per frame at 60 frames per second, so a
+subtitle of n characters is gone after (624+16n)/120 s: at most 24 characters finish
+inside one 8.5 s stage.
 """
 import argparse
 import hashlib
@@ -41,7 +42,7 @@ import scene_audio  # noqa: E402
 
 FOLDERS = {'landslide_village': 1, 'debris_village': 2, 'flood_village': 3, 'quake_village': 4}
 NAMES = ['FONT.BIN', 'TEXT.BIN'] + [f'SND{i}.PCM' for i in range(1, 5)]
-STATIC_CELLS, SUBTITLE_CELLS, LEGEND_CELLS = 19, 15, 31
+STATIC_CELLS, TITLE_CELLS, SUBTITLE_CELLS, LEGEND_CELLS = 19, 16, 24, 31   # STATIC_CELLS: the warning
 MIN_SAMPLES = scene_audio.T_END * scene_audio.SAMPLES_PER_T + scene_audio.SAMPLE_HZ // 2
 
 
@@ -68,8 +69,8 @@ def text_spec(cfg, where, legends=False):
             assert len(v) <= LEGEND_CELLS, f'{where}: legend {v!r} has {len(v)} cells (at most {LEGEND_CELLS})'
         if not any(spec['legends']):
             del spec['legends']
-    for label, values, limit in (('title', spec['titles'], STATIC_CELLS), ('subtitle', spec['subtitles'], SUBTITLE_CELLS),
-                                 ('warning', [spec['warning']], STATIC_CELLS), ('village', [spec['village']], STATIC_CELLS)):
+    for label, values, limit in (('title', spec['titles'], TITLE_CELLS), ('subtitle', spec['subtitles'], SUBTITLE_CELLS),
+                                 ('warning', [spec['warning']], STATIC_CELLS), ('village', [spec['village']], TITLE_CELLS)):
         for v in values:
             assert 0 < len(v) <= limit, f'{where}: {label} {v!r} has {len(v)} characters (1..{limit})'
     return spec

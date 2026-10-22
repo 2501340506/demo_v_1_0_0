@@ -1,10 +1,16 @@
 // Synchronous TEXT -> FONT -> RGB pipeline. All video fields travel together.
 // Resource metadata is an acknowledged mailbox, held stable after loading.
-// v0.25 S5: scene HUD. With scene_enable, an alert block (x368-383, y8-23) and a
-// progress bar (x392-631, y12-19, one pixel per t, in the stage's alert colour)
-// sit top right; they need no TEXT. TEXT.BIN with 14 segments adds one legend
-// line per stage (segments 10-13, type 4, x8.., y384-399, 16 px cells, black
-// glyphs; codes E0-E7 draw a colour swatch). 10-segment files are unchanged.
+// v0.25 S5 scene OSD, laid out like the reference project's (tools/scenes/*/out/osd):
+// all text is white, 16 px cells (1:1), on half-dimmed bands.
+//   top right  panel x348-635 y28-59: alert block x352-367 y32-47, title x376+16i
+//              y32-47 (the village name in warning mode), progress bar x376-615
+//              y52-55 (one pixel per t, in the stage's alert colour); no TEXT needed
+//   bottom left legend x8+16i y416-431 on a band y412-435 (TEXT.BIN with 14 segments:
+//              segments 10-13, type 4; codes E0-E7 draw a colour swatch)
+//   bottom     subtitle y444-459 on a band y440-463, moving left 2 px per frame
+//   warning    the centred red warning text and the blinking red frame, as before;
+//              the panel shows the village name and the legend stays
+// 10-segment TEXT.BIN files are read as before (no legend).
 module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input font_valid,text_valid,input [7:0] font_count,input [12:0] text_bytes,
@@ -81,7 +87,7 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  wire warning=first_active?warn_mode:warn_q;
  reg [10:0] scroll;
  wire changed=scene_enable!=enabled_q || warn_mode!=warn_q || stage!=stage_q;
- wire [10:0] scroll_end=11'd624+{1'd0,subtitle_length,5'd0};
+ wire [10:0] scroll_end=11'd624+{2'd0,subtitle_length,4'd0};
  always @(posedge clk or posedge rst)begin
   if(rst)begin enabled_q<=0;warn_q<=0;stage_q<=0;scroll<=0;frames<=0;end
   else begin
@@ -91,13 +97,13 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
    end
    if(frame_start)begin
     frames<=frames+1'b1;
-    if(scroll>=scroll_end)scroll<=0;else scroll<=scroll+1'b1;
+    if(scroll>=scroll_end)scroll<=0;else scroll<=scroll+11'd2;
    end
   end
  end
  assign scene_text_active=enabled && parser==READY;
  reg [11:0] segment_offset;reg [4:0] segment_length;
- reg [10:0] local_x;reg [3:0] row;reg region;
+ reg [10:0] local_x;reg [3:0] row;reg region,centre_sel,centre;
  wire signed [12:0] subtitle_x=$signed({2'b0,scroll})+$signed({3'b0,pixel_x})-13'sd632;
  // Power-of-two nearest-neighbour scaling keeps the glyph address path small.
  // Long card warnings reduce scale so the complete message remains visible.
@@ -108,32 +114,42 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  wire [8:0] warning_height=9'd16<<warning_shift;
  wire [8:0] warning_top=9'd240-(warning_height>>1);
  always @*begin
-  segment_offset=title_offset;segment_length=title_length;local_x=({1'b0,pixel_x}-11'd8)>>1;row=0;region=0;
+  segment_offset=title_offset;segment_length=title_length;local_x=0;row=0;region=0;centre_sel=0;
   if(scene_text_active && de)begin
-   if(warning)begin
+   if(y>=32 && y<48)begin               // panel title; the village name while warning
+    segment_offset=warning?village_offset:title_offset;segment_length=warning?village_length:title_length;
+    row=y[3:0];local_x={1'b0,pixel_x}-11'd376;region=pixel_x>=376;
+   end else if(LEGEND_ENABLE && y>=416 && y<432 && legend_length!=0)begin
+    segment_offset=legend_offset;segment_length=legend_length;row=y[3:0];
+    local_x={1'b0,pixel_x}-11'd8;region=1;
+   end else if(!warning && y>=444 && y<460)begin
+    segment_offset=subtitle_offset;segment_length=subtitle_length;row=y[3:0]+4'd4;
+    local_x=subtitle_x[10:0];region=subtitle_x>=0;
+   end else if(warning)begin            // centred red warning text
     segment_offset=subtitle_offset;segment_length=subtitle_length;
     local_x=({1'b0,pixel_x}-{1'b0,warning_left})>>warning_shift;
     row=(y-warning_top)>>warning_shift;
     region=y>=warning_top && y<warning_top+warning_height && pixel_x>=warning_left;
-   end else if(y>=64 && y<96)begin row=(y-64)>>1;region=1;end
-   else if(y>=112 && y<144)begin segment_offset=village_offset;segment_length=village_length;row=(y-112)>>1;region=1;end
-   else if(y>=416 && y<448)begin
-    segment_offset=subtitle_offset;segment_length=subtitle_length;row=(y-416)>>1;
-    local_x=subtitle_x[11:1];region=subtitle_x>=0;
-   end
-   else if(LEGEND_ENABLE && y>=384 && y<400 && legend_length!=0)begin
-    segment_offset=legend_offset;segment_length=legend_length;row=y[3:0];
-    local_x={1'b0,pixel_x}-11'd8;region=1;
+    centre_sel=1;
    end
    region=region && pixel_x>=8 && pixel_x<632 && local_x<{2'd0,segment_length,4'd0};
   end
+  centre=centre_sel && region;
  end
- // HUD: 0 none, 1 bar track, 2 bar fill, 3 alert block. Registered with the video.
- wire [11:0] bar_x={2'b00,pixel_x}-12'd392;
- wire in_block=pixel_x>=368 && pixel_x<384 && y>=8 && y<24;
- wire in_track=pixel_x>=392 && pixel_x<632 && y>=12 && y<20;
- wire fill=bar_x<={4'd0,t_now};
- wire [1:0] hud=!(BAR_ENABLE && enabled && de)?2'd0:in_block?2'd3:in_track?(fill?2'd2:2'd1):2'd0;
+ // HUD: 0 none, 1 bar track, 2 bar fill, 3 alert block (blinks while warning); dim marks
+ // the half-dimmed panel and bands. Both are registered with the video.
+ wire [9:0] bar_x=pixel_x-10'd376;
+ wire in_block=pixel_x>=352 && pixel_x<368 && y>=32 && y<48 && (!warning || frames[4]);
+ wire in_track=pixel_x>=376 && pixel_x<616 && y>=52 && y<56;
+ wire fill=bar_x[7:0]<=t_now;
+ wire hud_on=BAR_ENABLE && enabled && de;
+ wire [1:0] hud=!hud_on?2'd0:in_block?2'd3:in_track?(fill?2'd2:2'd1):2'd0;
+ wire panel=hud_on && pixel_x>=348 && pixel_x<636 && y>=28 && y<60;
+ wire legend_band=LEGEND_ENABLE && scene_text_active && de && legend_length!=0 &&
+   pixel_x>=4 && {1'b0,pixel_x}<11'd12+{2'd0,legend_length,4'd0} && y>=412 && y<436;
+ wire subtitle_band=BAR_ENABLE && scene_text_active && !warning && de && subtitle_length!=0 &&
+   pixel_x>=8 && pixel_x<632 && y>=440 && y<464;
+ wire dim=panel || legend_band || subtitle_band;
  wire border=enabled && warning && frames[4] && de &&
    (pixel_x<8 || pixel_x>=632 || y<8 || y>=472);
  wire [11:0] render_addr=segment_offset+{5'd0,local_x[10:4]};
@@ -142,7 +158,7 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  reg [9:0] x1,x2;
  reg text_lane1,region1,legacy1,border1,region2,cn2,ascii2,border2;
  reg scene1,scene2,red1,red2;
- reg [1:0] hud1,hud2;reg sw2;reg [2:0] swc2;
+ reg [1:0] hud1,hud2;reg dim1,dim2,sw2;reg [2:0] swc2;
  reg [3:0] row1,col1,col2;
  reg [7:0] legacy1_char;
  wire [7:0] code=text_lane1?text_data[15:8]:text_data[7:0];
@@ -188,13 +204,13 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
    video1<=0;video2<=0;x1<=0;x2<=0;text_lane1<=0;region1<=0;legacy1<=0;
    row1<=0;col1<=0;legacy1_char<=0;border1<=0;region2<=0;cn2<=0;ascii2<=0;border2<=0;col2<=0;
    hs_out<=0;vs_out<=0;de_out<=0;x_out<=0;rgb_out<=0;scene1<=0;scene2<=0;red1<=0;red2<=0;
-   hud1<=0;hud2<=0;sw2<=0;swc2<=0;
+   hud1<=0;hud2<=0;dim1<=0;dim2<=0;sw2<=0;swc2<=0;
   end else begin
-   hud1<=hud;hud2<=hud1;
+   hud1<=hud;hud2<=hud1;dim1<=dim;dim2<=dim1;
    sw2<=LEGEND_ENABLE && region1 && code[7:3]==5'b11100 && col1>=2 && col1<14 && row1>=2 && row1<14 && (code[2:0]!=3'd2 || frames[5]);
    swc2<=code[2:0];
    video1<={hs,vs,de,rgb_in};x1<=pixel_x;text_lane1<=render_addr[0];region1<=region;
-   scene1<=region;red1<=warning;scene2<=scene1;red2<=red1;
+   scene1<=region;red1<=centre;scene2<=scene1;red2<=red1;
    legacy1<=!region && legacy_region && font_available;
    legacy1_char<=legacy_char-8'h80;
    row1<=region?row:legacy_row;col1<=region?local_x[3:0]:legacy_col;border1<=border;
@@ -202,9 +218,10 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
    region2<=region1 || legacy1;cn2<=legacy1 || code<128;
    ascii2<=region1 && code>=240 && col1[3:1]<5 && row1[3:1]<7 && ascii_pixels[ascii_column];
    {hs_out,vs_out,de_out}<=video2[26:24];x_out<=x2;
-   rgb_out<=border2?24'hff0000:hud2[1]?alert_rgb:(hud2==2'd1)?24'h303030:sw2?swatch_rgb:
-     region2 && ((cn2 && font_row[~col2]) || ascii2)?
-     (scene2?(red2?24'hff0000:24'h000000):24'hffffff):video2[23:0];
+   rgb_out<=border2?24'hff0000:
+     region2 && ((cn2 && font_row[~col2]) || ascii2)?(red2?24'hff0000:24'hffffff):
+     sw2?swatch_rgb:hud2[1]?alert_rgb:(hud2==2'd1)?24'h404040:
+     dim2?{1'b0,video2[23:17],1'b0,video2[15:9],1'b0,video2[7:1]}:video2[23:0];
   end
  end
 endmodule

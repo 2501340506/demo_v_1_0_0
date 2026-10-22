@@ -538,12 +538,12 @@ class App:
         f = ttk.Frame(top)
         f.pack(padx=10, pady=8)
         cells = {}
-        rows = [('村名', 'village', self.cfg.get('village', ''), f'正常播放时显示在标题下方，≤{mcn.STATIC_CELLS} 字'),
-                ('预警语', 'warning', self.cfg.get('warning', ''), f'预警（KEY1）时居中红字，≤{mcn.STATIC_CELLS} 字')]
+        rows = [('村名', 'village', self.cfg.get('village', ''), f'预警（KEY1）时显示在右上角面板里，≤{mcn.TITLE_CELLS} 字'),
+                ('预警语', 'warning', self.cfg.get('warning', ''), f'预警（KEY1）时画面正中的红字，≤{mcn.STATIC_CELLS} 字')]
         for n, st in enumerate(self.cfg['stages']):
-            rows.append((f'PIC{n + 1} 标题', f'title{n}', st.get('title', ''), f'画面上方，≤{mcn.STATIC_CELLS} 字'))
+            rows.append((f'PIC{n + 1} 标题', f'title{n}', st.get('title', ''), f'右上角面板，≤{mcn.TITLE_CELLS} 字'))
             rows.append((f'PIC{n + 1} 字幕', f'subtitle{n}', st.get('subtitle', ''),
-                         f'画面下方滚动，≤{mcn.SUBTITLE_CELLS} 字（8 秒内能完整滚入）'))
+                         f'画面下方滚动，≤{mcn.SUBTITLE_CELLS} 字（8.5 秒内能滚完）'))
             rows.append((f'PIC{n + 1} 图例', f'legend{n}', format_legend(st.get('legend')),
                          '左下一行：色块名 文字; 色块名 文字'))
         status = ttk.Label(f, text='', anchor='w')

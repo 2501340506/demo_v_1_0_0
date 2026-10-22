@@ -791,7 +791,9 @@ hdmi_phy_wrapper #(
 endmodule
 
 // Compact M3 state label in the content template's reserved top-right area.
-module publicity_status_overlay #(parameter ENABLE=1)(
+// SHOW_PAGE=0 hides the page label (SCENE/EDU/COMPAT n/4, AUTO and voice flags); BUSY, ERROR,
+// NO SET and a voice error are still shown.
+module publicity_status_overlay #(parameter ENABLE=1,SHOW_PAGE=0)(
  input clk,rst,vs,de,input [9:0] x,input [23:0] rgb_in,
  input [1:0] app,page,input busy,error,auto_enable,input [2:0] voice_status,output [23:0] rgb_out
 );
@@ -811,7 +813,8 @@ module publicity_status_overlay #(parameter ENABLE=1)(
  end
  wire [4:0] glyph;
  osd_font_5x7 font(.character(ch),.row(dy[3:1]),.pixels(glyph));
- wire region=ENABLE && de && x>=400 && x<608 && y>=8 && y<24;
+ wire show=SHOW_PAGE || busy || error || (app==1 && voice_status==4);
+ wire region=ENABLE && show && de && x>=400 && x<608 && y>=8 && y<24;
  wire hit=region && dx[3:1]<5 && dy[3:1]<7 && glyph[4-dx[3:1]];
  assign rgb_out=hit?((error || (app==1 && voice_status==4))?24'hff4040:24'hffffff):region?24'h102030:rgb_in;
 endmodule
