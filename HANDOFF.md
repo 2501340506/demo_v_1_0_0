@@ -1,4 +1,14 @@
-# 当前交接：v0.27.0 调节面板 s1-local.4 待板测（2026-10-23）
+# 当前交接：v0.27.0 调节面板 s1-local.5 待板测（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。[s1-local.5](releases/v0.27.0/s1-local.5/README.md)（源码 `4a27188`，Seed 11）= s1-local.4 + 宣讲旁白字幕残留修复。17543 LUT，Setup +0.106 / Hold +0.054 ns。
+- 已完成：`publicity_subtitle_overlay` 加 `done` 输入（top 接 `app_status_pixel[14:12]==3`）；滚动条件由 `enable && playing && READY` 改为 `(playing || (done && phase!=0)) && READY`。`tb_narration` 加短语音尾滚和隐藏帧同步两项；`narration_subtitles/run_unit.ps1` 仿真器路径更新。
+- 卡住的问题：无。第 1 页实际丢了几帧没有在板上测量，"开头丢帧"的原因和现象、余量数据一致，但修复不依赖丢多少帧。
+- 下一步：等 s1-local.5 板测（重点看宣讲第 1 页结尾）。
+- 踩坑：宣讲旁白的每页滚动速度由 `tools/publicity/make_narration_subtitles.py` 按语音长度算，结尾只留 1～7 帧余量；任何让滚动少走的条件都会在结尾留下残字。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.4（2026-10-23）
 
 - 当前状态：分支 `feature/adjust-panel`。[s1-local.4](releases/v0.27.0/s1-local.4/README.md)（源码 `0ad133c`，Seed 11）= s1-local.3 + 去掉场景左上角 SPEED。17617 LUT，Setup +0.116 / Hold +0.038 ns。s1-local.2、.3 都没收到板测反馈，这一版要把三轮改动一起测。
 - 已完成：`adjust_osd_overlay` 只剩 BCD 转换（`rgb_out=rgb_in`、`active=0`），端口保留；`tb_m5_ui` 改查直通、`tb_adjust_osd` 改读 BCD 输出。
