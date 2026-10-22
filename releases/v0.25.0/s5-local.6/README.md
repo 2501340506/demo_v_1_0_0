@@ -1,5 +1,7 @@
 # v0.25.0 S5 候选 4：场景 OSD 与参考项目逐像素一致（Seed 13）
 
+> **已被 [s5-local.8](../s5-local.8/README.md) 和 [s5-local.9](../s5-local.9/README.md) 取代**：本候选切换场景后第一张图的图例会缺字（沿用上一个场景的文字段位置）。保留作回退。
+
 候选 `v0.25.0-s5-local.6`，源码提交 `ff95f7a`，构建 `lut25_hud6_td_s13`。取代 [s5-local.4/.5](../s5-local.4/README.md)。与 [s5-local.7](../s5-local.7/README.md) 源码相同、只差布局种子。Setup 余量最大，先用这个。
 
 **换卡：** 字幕改成整段旁白，要用新卡包 [s5-card.2](../s5-card.2/README.md)。卡上现在的 s5-card.1 也能用（精简字幕），可以先不换卡验证固件。
