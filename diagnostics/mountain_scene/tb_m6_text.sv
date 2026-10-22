@@ -67,8 +67,8 @@ module tb_m6_text;
    if(hit)reference=legacy?24'hffffff:warn?24'hff0000:24'h000000;
    if(swatch)reference=swatch_color(code-224);
    // HUD: alert block and progress bar (track dark, fill in the alert colour, one pixel per t).
-   if(en && px>=8 && px<24 && py>=40 && py<56)reference=alert_color(warn,stage);
-   else if(en && px>=32 && px<272 && py>=44 && py<52)reference=(px-32<=tnow)?alert_color(warn,stage):24'h303030;
+   if(en && px>=368 && px<384 && py>=8 && py<24)reference=alert_color(warn,stage);
+   else if(en && px>=392 && px<632 && py>=12 && py<20)reference=(px-392<=tnow)?alert_color(warn,stage):24'h303030;
    if(en && warn && blink && de && (px<8 || px>=632 || py<8 || py>=472))reference=24'hff0000;
   end
  endfunction

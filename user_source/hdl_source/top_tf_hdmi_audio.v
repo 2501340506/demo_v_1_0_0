@@ -36,7 +36,7 @@ parameter integer MENU_ENABLE=1;
 parameter integer OSD_ENABLE = 1;
 parameter integer SCROLL_ENABLE = 1;
 parameter integer BAND_ENABLE = 1;
-parameter integer TIMESTAMP_ENABLE = 1;
+parameter integer TIMESTAMP_ENABLE = 0;   // v0.25: the elapsed-time text at the top right is off; the scene HUD uses that corner
 // Optional UART debug features; production frees their LUT/BRAM by default.
 parameter integer UART_LOG_ENABLE = 0;
 parameter integer UART_SUBTITLE_ENABLE = 0;

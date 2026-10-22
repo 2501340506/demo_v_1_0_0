@@ -1,8 +1,8 @@
 // Synchronous TEXT -> FONT -> RGB pipeline. All video fields travel together.
 // Resource metadata is an acknowledged mailbox, held stable after loading.
-// v0.25 S5: scene HUD. With scene_enable, a progress bar (x32-271, y44-51, one
-// pixel per t, in the stage's alert colour) and an alert block (x8-23, y40-55)
-// sit top left; they need no TEXT. TEXT.BIN with 14 segments adds one legend
+// v0.25 S5: scene HUD. With scene_enable, an alert block (x368-383, y8-23) and a
+// progress bar (x392-631, y12-19, one pixel per t, in the stage's alert colour)
+// sit top right; they need no TEXT. TEXT.BIN with 14 segments adds one legend
 // line per stage (segments 10-13, type 4, x8.., y384-399, 16 px cells, black
 // glyphs; codes E0-E7 draw a colour swatch). 10-segment files are unchanged.
 module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
@@ -129,9 +129,9 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
   end
  end
  // HUD: 0 none, 1 bar track, 2 bar fill, 3 alert block. Registered with the video.
- wire [11:0] bar_x={2'b00,pixel_x}-12'd32;
- wire in_block=pixel_x>=8 && pixel_x<24 && y>=40 && y<56;
- wire in_track=pixel_x>=32 && pixel_x<272 && y>=44 && y<52;
+ wire [11:0] bar_x={2'b00,pixel_x}-12'd392;
+ wire in_block=pixel_x>=368 && pixel_x<384 && y>=8 && y<24;
+ wire in_track=pixel_x>=392 && pixel_x<632 && y>=12 && y<20;
  wire fill=bar_x<={4'd0,t_now};
  wire [1:0] hud=!(BAR_ENABLE && enabled && de)?2'd0:in_block?2'd3:in_track?(fill?2'd2:2'd1):2'd0;
  wire border=enabled && warning && frames[4] && de &&

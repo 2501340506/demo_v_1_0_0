@@ -71,8 +71,8 @@ function Mutant([string]$name,[string]$from,[string]$to){
  Write-Output "DETECTED $name"
 }
 Mutant 'fill_off_by_one' "wire fill=bar_x<={4'd0,t_now};" "wire fill=bar_x<{4'd0,t_now};"
-Mutant 'bar_row' 'y>=44 && y<52;' 'y>=44 && y<53;'
-Mutant 'block_corner' 'pixel_x>=8 && pixel_x<24 && y>=40 && y<56;' 'pixel_x>=8 && pixel_x<24 && y>=41 && y<56;'
+Mutant 'bar_row' 'y>=12 && y<20;' 'y>=12 && y<21;'
+Mutant 'block_corner' 'pixel_x>=368 && pixel_x<384 && y>=8 && y<24;' 'pixel_x>=368 && pixel_x<384 && y>=9 && y<24;'
 Mutant 'legend_row' 'y>=384 && y<400 && legend_length!=0' 'y>=385 && y<400 && legend_length!=0'
 Mutant 'swatch_inset' 'col1>=2 && col1<14 && row1>=2' 'col1>=1 && col1<14 && row1>=2'
 Mutant 'refuge_blink' "(code[2:0]!=3'd2 || frames[5])" "(code[2:0]!=3'd2 || frames[4])"
