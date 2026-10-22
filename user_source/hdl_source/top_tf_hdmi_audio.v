@@ -36,7 +36,7 @@ parameter integer MENU_ENABLE=1;
 parameter integer OSD_ENABLE = 1;
 parameter integer SCROLL_ENABLE = 1;
 parameter integer BAND_ENABLE = 1;
-parameter integer TIMESTAMP_ENABLE = 1;
+parameter integer TIMESTAMP_ENABLE = 0;   // v0.25: the elapsed-time text at the top right is off; the scene HUD uses that corner
 // Optional UART debug features; production frees their LUT/BRAM by default.
 parameter integer UART_LOG_ENABLE = 0;
 parameter integer UART_SUBTITLE_ENABLE = 0;
@@ -80,7 +80,7 @@ wire [23:0] transition_rgb;
 wire [23:0] osd_rgb;
 wire [23:0] scroll_rgb;
 wire [23:0] timestamp_rgb;
-wire [23:0] band_rgb;
+wire [23:0] band_rgb,band_dimmed;
 wire status_glyph_active, scroll_glyph_active;
 wire timestamp_glyph_active;
 wire [7:0] osd_error_src, osd_error_pixel;
@@ -632,12 +632,23 @@ osd_status_cdc u_osd_status_cdc (
 // AUTO/error: acknowledged SD-domain mailbox. Image ID/valid: existing pixel
 // domain media commit. Status snapshots at first active pixel after blanking.
 // OSD uses the ring's two-cycle-delayed video bundle throughout.
+// As in the reference project, the status line (PIC:n AUTO E:xx) and its dimmed band
+// are off in the scene and publicity applications; COMPAT keeps them.
+wire status_hide=PUBLICITY_ENABLE && (pixel_identity[1:0]==1 || pixel_identity[1:0]==2);
+wire [8:0] status_y;
+osd_pixel_position u_status_position(.clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),
+ .line_y(status_y),.frame_start(),.first_active());
+wire status_area=ring_de && ring_x>=4 && ring_x<284 && status_y>=4 && status_y<28;
+wire [23:0] status_rgb;
+wire status_glyph_raw;
 status_osd_overlay #(.OSD_ENABLE(OSD_ENABLE)) u_status_osd (
     .clk(video_clk), .rst(rst_video), .vs(ring_vs), .de(ring_de), .pixel_x(ring_x),
     .rgb_in(ring_rgb), .image_index(audio_image), .image_valid(audio_enable),
-    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(osd_rgb),
-    .active(status_glyph_active)
+    .auto_enabled(osd_auto_pixel), .error_code(osd_error_pixel), .rgb_out(status_rgb),
+    .active(status_glyph_raw)
 );
+assign osd_rgb=status_hide?ring_rgb:status_rgb;
+assign status_glyph_active=status_glyph_raw && !status_hide;
 scroll_text_overlay #(.ENABLE(OSD_ENABLE && SCROLL_ENABLE), .CN_ENABLE(1), .RUNTIME_ENABLE(1),.BRAM_ENABLE(SCENE_DEMO_ENABLE),.ALT_LAYOUT_ENABLE(PUBLICITY_ENABLE)) u_scroll_osd (
  .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),.image_valid(audio_enable),
@@ -654,8 +665,10 @@ osd_alpha_band #(.ENABLE(OSD_ENABLE && BAND_ENABLE), .RUNTIME_ENABLE(1),.ALT_LAY
  .alternate_layout(pixel_identity[1:0]==1),
  .clk(video_clk),.rst(rst_video),.vs(ring_vs),.de(ring_de),.pixel_x(ring_x),
  .rgb_in(timestamp_rgb),.glyph_active(parameter_glyph_active || status_glyph_active || scroll_glyph_active || timestamp_glyph_active),
- .rgb_out(band_rgb),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
+ .rgb_out(band_dimmed),.active(),.subtitle_enable(sub_enable_pixel && !preview_after_ring[1] && sub_length_pixel!=0 && !scene_text_active)
 );
+// The band dims the status area; undo it where the status line is hidden.
+assign band_rgb=(status_hide && status_area)?timestamp_rgb:band_dimmed;
 wire [23:0] app_status_pixel;
 generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  wire [10:0] font_addr,text_addr;wire [15:0] font_data,text_data;
@@ -671,8 +684,19 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  assign {final_hs,final_vs,final_de,final_x,final_content_rgb}=publicity_delay[2]?
   {narration_hs,narration_vs,narration_de,narration_x,narration_rgb}:
   {scene_hs,scene_vs,scene_de,scene_x,scene_rgb};
+ // A FONT/TEXT load takes a few ms, often less than a frame, and the mailbox below
+ // only samples once per frame: the pixel side may never see valid drop between
+ // two cards. This bit toggles on every completed load so the text parsers always
+ // re-read the new TEXT.BIN instead of keeping the old card's offsets.
+ reg resource_generation,resources_ready_q;
+ always @(posedge sd_card_clk or posedge rst_sd)
+  if(rst_sd)begin resource_generation<=0;resources_ready_q<=0;end
+  else begin
+   resources_ready_q<=font_valid_src && text_valid_src;
+   if(font_valid_src && text_valid_src && !resources_ready_q)resource_generation<=!resource_generation;
+  end
  media_adjust_cdc resource_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
-  .src_state({1'b0,font_valid_src,text_valid_src,font_count_src,text_bytes_src}),
+  .src_state({resource_generation,font_valid_src,text_valid_src,font_count_src,text_bytes_src}),
   .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(resources_pixel));
  scene_bram32k font_ram(.wr_clk(sd_card_clk),.wr_en(bin_wr_en && !bin_wr_text),
   .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(font_addr),.rd_data(font_data));
@@ -680,8 +704,8 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
   .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(text_addr),.rd_data(text_data));
  scene_text_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
   .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21] && !publicity_selected),
-  .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),
-  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),
+  .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),
+  .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),.t_now(scene_time),
   .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
   .font_available(font_available),.scene_text_active(scene_text_active),
   .font_addr(font_addr),.font_data(font_data),.text_addr(scene_addr),.text_data(text_data),
@@ -689,7 +713,7 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  if(PUBLICITY_ENABLE)begin:g_narration
   publicity_subtitle_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
    .pixel_x(ring_x),.rgb_in(band_rgb),.text_valid(resources_pixel[21] && publicity_selected),
-   .text_bytes(resources_pixel[12:0]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1]),
+   .text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1]),
    .playing(app_status_pixel[14:12]==3'd2),.restart(audio_update),.page(audio_image),
    .text_addr(narration_addr),.text_data(text_data),
    .hs_out(narration_hs),.vs_out(narration_vs),.de_out(narration_de),.x_out(narration_x),.rgb_out(narration_rgb));
@@ -791,7 +815,9 @@ hdmi_phy_wrapper #(
 endmodule
 
 // Compact M3 state label in the content template's reserved top-right area.
-module publicity_status_overlay #(parameter ENABLE=1)(
+// SHOW_PAGE=0 hides the page label (SCENE/EDU/COMPAT n/4, AUTO and voice flags); BUSY, ERROR,
+// NO SET and a voice error are still shown.
+module publicity_status_overlay #(parameter ENABLE=1,SHOW_PAGE=0)(
  input clk,rst,vs,de,input [9:0] x,input [23:0] rgb_in,
  input [1:0] app,page,input busy,error,auto_enable,input [2:0] voice_status,output [23:0] rgb_out
 );
@@ -811,7 +837,8 @@ module publicity_status_overlay #(parameter ENABLE=1)(
  end
  wire [4:0] glyph;
  osd_font_5x7 font(.character(ch),.row(dy[3:1]),.pixels(glyph));
- wire region=ENABLE && de && x>=400 && x<608 && y>=8 && y<24;
+ wire show=SHOW_PAGE || busy || error || (app==1 && voice_status==4);
+ wire region=ENABLE && show && de && x>=400 && x<608 && y>=8 && y<24;
  wire hit=region && dx[3:1]<5 && dy[3:1]<7 && glyph[4-dx[3:1]];
  assign rgb_out=hit?((error || (app==1 && voice_status==4))?24'hff4040:24'hffffff):region?24'h102030:rgb_in;
 endmodule

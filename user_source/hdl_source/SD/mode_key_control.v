@@ -1,4 +1,8 @@
 // Three independent active-low keys. Mode gates new picture events only.
+// v0.25: one 1 ms prescaler times every key counter (debounce, KEY2 rescan,
+// KEY1/KEY4 long presses and adjust gestures), so each duration may end up
+// to 1 ms late; with CLK_FREQ_HZ=1000 the tick is every clock and timing is
+// unchanged.
 module mode_key_control #(
     parameter integer CLK_FREQ_HZ = 100_000_000,
     parameter integer RESCAN_HOLD_MS = 2000,
@@ -18,18 +22,33 @@ module mode_key_control #(
     input scene_active,application_busy,
     output wire application_toggle
 );
+    localparam integer MS_CYCLES = CLK_FREQ_HZ / 1000;
+    localparam integer MS_BITS = MS_CYCLES > 1 ? $clog2(MS_CYCLES) : 1;
+    reg [MS_BITS-1:0] ms_count;
+    wire ms_tick = MS_CYCLES <= 1 || ms_count == MS_CYCLES - 1;
+    // The old cycle counts started at 1 and ended at N-1, two clocks short of
+    // N ms. Counted in ticks that would be two ms short, so with a real
+    // prescaler the limits are raised to end within 1 ms of the old timing;
+    // with one clock per ms (tests) they are the old counts.
+    localparam integer TICK_ADJ = MS_CYCLES > 1 ? 1 : 0;
+    localparam integer LONG_TICKS = 1000 + 2*TICK_ADJ;
+    always @(posedge clk or posedge rst) begin
+        if (rst) ms_count <= 0;
+        else if (ms_tick) ms_count <= 0;
+        else ms_count <= ms_count + 1'b1;
+    end
     wire press1, press2, press4;
     wire stable1, stable2, stable4;
-    key_press_debounce #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_key1 (
-        .clk(clk), .rst(rst), .button_in(key1),
+    key_ms_debounce u_key1 (
+        .clk(clk), .rst(rst), .ms_tick(ms_tick), .button_in(key1),
         .press_pulse(press1), .button_stable_out(stable1)
     );
-    key_press_debounce #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_key2 (
-        .clk(clk), .rst(rst), .button_in(key2),
+    key_ms_debounce u_key2 (
+        .clk(clk), .rst(rst), .ms_tick(ms_tick), .button_in(key2),
         .press_pulse(press2), .button_stable_out(stable2)
     );
-    key_press_debounce #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_key4 (
-        .clk(clk), .rst(rst), .button_in(key4),
+    key_ms_debounce u_key4 (
+        .clk(clk), .rst(rst), .ms_tick(ms_tick), .button_in(key4),
         .press_pulse(press4), .button_stable_out(stable4)
     );
     // Capture the mode at the debounced press edge, even if mode changes on
@@ -54,7 +73,7 @@ module mode_key_control #(
     assign scene_next=next_raw && scene_play_keys;
     reg warn_event;
     assign scene_warn=SCENE_ENABLE && warn_event;
-    localparam integer HOLD_CYCLES = (CLK_FREQ_HZ / 1000) * RESCAN_HOLD_MS;
+    localparam integer HOLD_CYCLES = RESCAN_HOLD_MS + 2*TICK_ADJ;   // in ms ticks
     localparam integer HOLD_BITS = $clog2(HOLD_CYCLES + 1);
     reg [HOLD_BITS-1:0] held_cycles;
     reg stable2_d, long_fired, short_allowed, rescan_allowed;
@@ -79,7 +98,7 @@ module mode_key_control #(
                         rescan_event <= 1;
                         long_fired <= 1;
                         short_allowed <= 0;
-                    end else held_cycles <= held_cycles + 1'b1;
+                    end else if (ms_tick) held_cycles <= held_cycles + 1'b1;
                 end
             end else begin
                 if (!stable2_d && !long_fired && short_allowed && enable && mode == short_mode)
@@ -88,15 +107,15 @@ module mode_key_control #(
             end
         end
     end
-    adjust_key_gestures #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) adjust_keys(
-        .clk(clk),.rst(rst || (PUBLICITY_ENABLE && application_busy)),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
+    adjust_key_gestures #(.TICK_ADJ(TICK_ADJ)) adjust_keys(
+        .clk(clk),.rst(rst || (PUBLICITY_ENABLE && application_busy)),.ms_tick(ms_tick),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
         .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select));
     // Register the media toggle to break mode -> preview -> cache request logic.
     generate if(PUBLICITY_ENABLE)begin:g_publicity
      reg application_event;
      assign application_toggle=application_event;
      reg tracking4,long4,s4q,tracking1,long1,s1q;
-     reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold4,hold1;
+     reg [$clog2(LONG_TICKS+1)-1:0] hold4,hold1;   // in ms ticks
      reg speed_event;
      assign scene_mode=scene_active;
      assign scene_speed=speed_event;
@@ -109,12 +128,12 @@ module mode_key_control #(
        if(hold_clear)hold4<=0;
        else if(mode==0)begin
         if(s4q && !stable4)hold4<=1;
-        else if(!stable4 && tracking4 && !long4 && hold4<CLK_FREQ_HZ-1)hold4<=hold4+1'b1;
+        else if(!stable4 && tracking4 && !long4 && hold4<LONG_TICKS-1 && ms_tick)hold4<=hold4+1'b1;
        end
        if(hold_clear)hold1<=0;
        else if(mode==0 && scene_active)begin
         if(s1q && !stable1)hold1<=1;
-        else if(!stable1 && tracking1 && !long1 && hold1<CLK_FREQ_HZ-1)hold1<=hold1+1'b1;
+        else if(!stable1 && tracking1 && !long1 && hold1<LONG_TICKS-1 && ms_tick)hold1<=hold1+1'b1;
        end
       end
      end
@@ -130,7 +149,7 @@ module mode_key_control #(
         if(mode==0)begin
          if(s4q && !stable4)begin tracking4<=1;long4<=0;end
          else if(!stable4 && tracking4 && !long4)begin
-          if(hold4>=CLK_FREQ_HZ-1)begin long4<=1;application_event<=1;end
+          if(hold4>=LONG_TICKS-1)begin long4<=1;application_event<=1;end
          end else if(stable4 && tracking4)begin
           if(!long4)auto_toggle_event<=1;
           tracking4<=0;
@@ -138,7 +157,7 @@ module mode_key_control #(
          if(scene_active)begin
           if(s1q && !stable1)begin tracking1<=1;long1<=0;end
           else if(!stable1 && tracking1 && !long1)begin
-           if(hold1>=CLK_FREQ_HZ-1)begin long1<=1;speed_event<=1;end
+           if(hold1>=LONG_TICKS-1)begin long1<=1;speed_event<=1;end
           end else if(stable1 && tracking1)begin
            if(!long1)warn_event<=1;
            tracking1<=0;
@@ -162,8 +181,8 @@ module mode_key_control #(
      assign application_toggle=0;
      reg active,armed,tracking,long4,s4q;
      reg s1q,tracking1,long1;
-     reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold1;
-     reg [$clog2(CLK_FREQ_HZ+1)-1:0] hold4;
+     reg [$clog2(LONG_TICKS+1)-1:0] hold1;   // in ms ticks
+     reg [$clog2(LONG_TICKS+1)-1:0] hold4;
      reg speed_event;
      assign scene_mode=active;
      assign scene_speed=speed_event;
@@ -175,8 +194,8 @@ module mode_key_control #(
        if(!active || !enable || mode!=0 || press_mode!=mode || rescan_event)begin tracking1<=0;hold1<=0;end
        else if(s1q && !stable1)begin tracking1<=1;hold1<=1;long1<=0;end
        else if(!stable1 && tracking1 && !long1)begin
-        if(hold1>=CLK_FREQ_HZ-1)begin speed_event<=1;long1<=1;end
-        else hold1<=hold1+1'b1;
+        if(hold1>=LONG_TICKS-1)begin speed_event<=1;long1<=1;end
+        else if(ms_tick)hold1<=hold1+1'b1;
        end else if(stable1 && tracking1)begin
         if(!long1)warn_event<=1;
         tracking1<=0;hold1<=0;
@@ -187,9 +206,9 @@ module mode_key_control #(
        if(mode==0 && armed && enable)begin
         if(s4q && !stable4)begin tracking<=1;hold4<=1;long4<=0;end
         else if(!stable4 && tracking && !long4)begin
-         if(hold4>=CLK_FREQ_HZ-1)begin
+         if(hold4>=LONG_TICKS-1)begin
           long4<=1;if(scene_allowed)active<=!active;
-         end else hold4<=hold4+1'b1;
+         end else if(ms_tick)hold4<=hold4+1'b1;
         end else if(stable4 && tracking)begin
          if(!long4)auto_toggle_event<=1;
          tracking<=0;hold4<=0;
@@ -206,12 +225,13 @@ module mode_key_control #(
 endmodule
 
 // All inputs are already debounced. Wait for release after mode changes.
-module adjust_key_gestures #(parameter CLK_FREQ_HZ=100_000_000)(
- input clk,rst,input [1:0] mode,input stable1,stable2,stable4,
+// Durations count ms ticks: 100 ms press window, 1 s KEY4 long press.
+module adjust_key_gestures #(parameter integer TICK_ADJ=0)(
+ input clk,rst,ms_tick,input [1:0] mode,input stable1,stable2,stable4,
  output reg decrease,increase,restore,select_next
 );
- localparam WINDOW=CLK_FREQ_HZ/10;
- localparam LONG=CLK_FREQ_HZ;
+ localparam WINDOW=100+2*TICK_ADJ;
+ localparam LONG=1000+TICK_ADJ;
  reg [1:0] mode_q,state;
  reg armed,s1_q,s2_q,s4_q,key4_active;
  reg [$clog2(WINDOW+1)-1:0] count;
@@ -241,12 +261,12 @@ module adjust_key_gestures #(parameter CLK_FREQ_HZ=100_000_000)(
       if((state==1 && p2) || (state==2 && p1))begin restore<=1;state<=3;end
       else if(count>=WINDOW-1 || (state==1 && stable1) || (state==2 && stable2))begin
        decrease<=state==1;increase<=state==2;state<=3;
-      end else count<=count+1'b1;
+      end else if(ms_tick)count<=count+1'b1;
      end
      3:if(stable1 && stable2)state<=0;
     endcase
     if(s4_q && !stable4)begin key4_active<=1;hold4<=1;end
-    else if(!stable4 && key4_active)begin if(hold4<LONG)hold4<=hold4+1'b1;end
+    else if(!stable4 && key4_active)begin if(hold4<LONG && ms_tick)hold4<=hold4+1'b1;end
     else if(stable4 && key4_active)begin
      if(hold4<LONG && state==0 && stable1 && stable2)select_next<=1;
      key4_active<=0;hold4<=0;
@@ -254,4 +274,35 @@ module adjust_key_gestures #(parameter CLK_FREQ_HZ=100_000_000)(
    end
   end
  end
+endmodule
+
+// key_press_debounce counted in ms ticks: a level must differ from the
+// stable one for DEBOUNCE_MS ticks (the first may be partial).
+module key_ms_debounce #(parameter integer DEBOUNCE_MS = 20)(
+    input wire clk, rst, ms_tick,
+    input wire button_in,    // released=1, pressed=0
+    output reg press_pulse,
+    output wire button_stable_out
+);
+    reg button_sync0, button_sync1, button_stable;
+    reg [$clog2(DEBOUNCE_MS)-1:0] cnt;
+    assign button_stable_out = button_stable;
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            button_sync0 <= 1'b1; button_sync1 <= 1'b1; button_stable <= 1'b1;
+            cnt <= 0; press_pulse <= 1'b0;
+        end else begin
+            button_sync0 <= button_in;
+            button_sync1 <= button_sync0;
+            press_pulse <= 1'b0;
+            if (button_sync1 == button_stable) cnt <= 0;
+            else if (ms_tick) begin
+                if (cnt >= DEBOUNCE_MS - 1) begin
+                    if (button_stable && !button_sync1) press_pulse <= 1'b1;
+                    button_stable <= button_sync1;
+                    cnt <= 0;
+                end else cnt <= cnt + 1'b1;
+            end
+        end
+    end
 endmodule

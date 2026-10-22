@@ -8,7 +8,7 @@ module tb_narration;
  scene_bram32k ram(.wr_clk(wr_clk),.wr_en(wen),.wr_addr(wa),.wr_data(wd),
   .rd_clk(clk),.rd_addr(ta),.rd_data(td));
  publicity_subtitle_overlay dut(.clk(clk),.rst(rst),.hs(hs),.vs(vs),.de(de),.pixel_x(x),.rgb_in(24'h789abc),
-  .text_valid(tv),.text_bytes(13'd1242),.enable(en),.playing(playing),.restart(restart),.page(page),
+  .text_valid(tv),.text_bytes(13'd1242),.resource_generation(1'b0),.enable(en),.playing(playing),.restart(restart),.page(page),
   .text_addr(ta),.text_data(td),.hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb));
  integer py=0,scroll=0,checks=0,ink=0,visible_chars=0;
  bit compare=0;

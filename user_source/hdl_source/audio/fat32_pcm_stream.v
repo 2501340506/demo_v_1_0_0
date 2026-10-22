@@ -15,6 +15,10 @@ module fat32_pcm_stream_core #(
  input wire sector_permit,player_stopped,player_ready,
  output wire player_enable,output wire file_valid,output wire [7:0] file_byte,
  output wire stopped,output reg [7:0] error_code,output reg [31:0] loop_count,
+ // pass_done: the file has been read through once since the session started
+ // (set where loop_count first increments; cleared with it). The player's
+ // buffer still holds up to HIGH_WATER samples (64 ms) when it rises.
+ output reg pass_done,
  input wire sector_busy,
  output wire [66:0] source_request,input wire [50:0] source_response
 );
@@ -64,13 +68,13 @@ module fat32_pcm_stream_core #(
  assign {busy,done,valid,byte_data}=source_response[50:40];
  assign fs_error=source_response[7:0];
  always @(posedge clk or negedge rst_n)begin
-  if(!rst_n)begin state<=IDLE;single_latched<=0;start<=0;error_code<=0;loop_count<=0;cluster_latched<=0;size_latched<=0;found_latched<=0;start_bad<=0;cluster_hi_gt<=0;cluster_hi_eq<=0;cluster_lo_gt<=0;cache_write<=0;replay_offset<=0;end
+  if(!rst_n)begin state<=IDLE;single_latched<=0;start<=0;error_code<=0;loop_count<=0;pass_done<=0;cluster_latched<=0;size_latched<=0;found_latched<=0;start_bad<=0;cluster_hi_gt<=0;cluster_hi_eq<=0;cluster_lo_gt<=0;cache_write<=0;replay_offset<=0;end
   else begin
    start<=0;
    if(state==READ && valid)cache_write<=cache_write+1'b1;
    case(state)
     IDLE:if(enable && player_stopped && !sector_busy)begin
-     error_code<=0;loop_count<=0;cache_write<=0;replay_offset<=0;
+     error_code<=0;loop_count<=0;pass_done<=0;cache_write<=0;replay_offset<=0;
      cluster_latched<=first_cluster;size_latched<=file_size;found_latched<=audio_found;
      single_latched<=SINGLE_SUPPORT && single_play;
      start_bad<=!SINGLE_SUPPORT && (file_size==0 || file_size[0] || first_cluster<2 || first_cluster>max_cluster);
@@ -97,7 +101,7 @@ module fat32_pcm_stream_core #(
     else if(done)begin
      if(fs_error!=0)begin error_code<=fs_error;state<=DRAIN;end
      else if(single_latched)state<=FINISHED;
-     else begin loop_count<=loop_count+1'b1;state<=(size_latched<=512)?REPLAY_REQ:START;end
+     else begin loop_count<=loop_count+1'b1;pass_done<=1;state<=(size_latched<=512)?REPLAY_REQ:START;end
     end
     DRAIN:if(!sector_busy && player_stopped)begin
      if(enable)state<=FAILED;else state<=IDLE;
@@ -108,7 +112,7 @@ module fat32_pcm_stream_core #(
     REPLAY_OUT:if(!enable)state<=DRAIN;
     else if(player_ready)begin
      // Replay is entered only with size_latched<=512, so its upper bits are zero.
-     if({1'b0,replay_offset}+1'b1>=size_latched[9:0])begin replay_offset<=0;loop_count<=loop_count+1'b1;end
+     if({1'b0,replay_offset}+1'b1>=size_latched[9:0])begin replay_offset<=0;loop_count<=loop_count+1'b1;pass_done<=1;end
      else replay_offset<=replay_offset+1'b1;
      state<=REPLAY_REQ;
     end
@@ -129,7 +133,7 @@ module fat32_pcm_stream #(
  input wire [31:0] fat_start_lba,data_start_lba,max_cluster,
  input wire sector_permit,player_stopped,player_ready,
  output wire player_enable,output wire file_valid,output wire [7:0] file_byte,
- output wire stopped,output wire [7:0] error_code,output wire [31:0] loop_count,
+ output wire stopped,output wire [7:0] error_code,output wire [31:0] loop_count,output wire pass_done,
  output wire sector_req,output wire [31:0] sector_lba,
  input wire sector_busy,sector_valid,sector_done,
  input wire [7:0] sector_byte,sector_error,input wire [8:0] sector_index
@@ -140,7 +144,7 @@ module fat32_pcm_stream #(
   .first_cluster(first_cluster),.file_size(file_size),.sectors_per_cluster(sectors_per_cluster),
   .max_cluster(max_cluster),.sector_permit(sector_permit),.player_stopped(player_stopped),
   .player_ready(player_ready),.player_enable(player_enable),.file_valid(file_valid),.file_byte(file_byte),
-  .stopped(stopped),.error_code(error_code),.loop_count(loop_count),.sector_busy(sector_busy),
+  .stopped(stopped),.error_code(error_code),.loop_count(loop_count),.pass_done(pass_done),.sector_busy(sector_busy),
   .source_request(source_request),.source_response(source_response));
  fat32_source_streamer #(.MAX_VISITED_CLUSTERS(MAX_VISITED_CLUSTERS),.DATA_GATE_ENABLE(1)) source(
   .clk(clk),.request(source_request),.response(source_response),

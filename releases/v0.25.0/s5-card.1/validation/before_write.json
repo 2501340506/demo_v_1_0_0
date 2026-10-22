@@ -1,0 +1,218 @@
+{
+  "G:\\情景模式\\debris_village\\FONT.BIN": {
+    "bytes": 2176,
+    "sha256": "6847ae3739fe9b69bfb531f0b6fb4da8ffc0a8f8b3f5d462ca48e7395c1a8278"
+  },
+  "G:\\情景模式\\debris_village\\PIC1.BMP": {
+    "bytes": 1228854,
+    "sha256": "30757df2f02374104c0e4d7a663cf2f3ff9d23136d3f97cc1ba2eeded37268bb"
+  },
+  "G:\\情景模式\\debris_village\\PIC2.BMP": {
+    "bytes": 1228854,
+    "sha256": "99b589827e78b5794e4be4e717c2478ce93ebd46b16e2acdfc84c9791b564ab9"
+  },
+  "G:\\情景模式\\debris_village\\PIC3.BMP": {
+    "bytes": 1228854,
+    "sha256": "2d56f6afbfa5247ef7aeb65856e01c13d960ea53e4e4e00b284802b7979f1a83"
+  },
+  "G:\\情景模式\\debris_village\\PIC4.BMP": {
+    "bytes": 1228854,
+    "sha256": "10175eb889a483d7e2784d3acc97b02565f4020bd96fda729e652aba4d672021"
+  },
+  "G:\\情景模式\\debris_village\\SND1.PCM": {
+    "bytes": 816000,
+    "sha256": "70c8a762e9244e903762e86415071962069b0118a2786433dacb59e0b6513cc4"
+  },
+  "G:\\情景模式\\debris_village\\SND2.PCM": {
+    "bytes": 816000,
+    "sha256": "221a36b62256db863cac3fb4a945e0fe953f3c288ab7e0b83a56f776e6cb5fb6"
+  },
+  "G:\\情景模式\\debris_village\\SND3.PCM": {
+    "bytes": 816000,
+    "sha256": "704fe1721434c98f11d10810c3eaada5a1ba01602aa9458e7b9394c2cbff934a"
+  },
+  "G:\\情景模式\\debris_village\\SND4.PCM": {
+    "bytes": 816000,
+    "sha256": "169ccc9ecd791a90d195b1488e29bc1d6083b0586da089982dc244ed07b91f0c"
+  },
+  "G:\\情景模式\\debris_village\\TEXT.BIN": {
+    "bytes": 159,
+    "sha256": "ade976abf04e80f3195fd5965698867187648647de2b308e0ee6f76c9c5dc8b0"
+  },
+  "G:\\情景模式\\debris_village\\THUMB.BMP": {
+    "bytes": 147510,
+    "sha256": "65b1afc367e52ce554a4263b6c648dace6cb346e6e0691d073ac2c8c446ee35f"
+  },
+  "G:\\情景模式\\flood_village\\FONT.BIN": {
+    "bytes": 2144,
+    "sha256": "379725881cc570072e75d7b16f9eae274c0d6e7605bc7f5b57019821137b1f9f"
+  },
+  "G:\\情景模式\\flood_village\\PIC1.BMP": {
+    "bytes": 1228854,
+    "sha256": "d90028e8dc553779fb3f7c1a0d61a32520b0a7188b604d9c39cc86e0ea887625"
+  },
+  "G:\\情景模式\\flood_village\\PIC2.BMP": {
+    "bytes": 1228854,
+    "sha256": "d5ea17617df252ca9ca5f9df6b2deb8d71d2f6966a78214d9b553277e2c01842"
+  },
+  "G:\\情景模式\\flood_village\\PIC3.BMP": {
+    "bytes": 1228854,
+    "sha256": "71529761b767ea8e312104aab4727f9c904d7ce09106d58b772fbfa55f2ecfdf"
+  },
+  "G:\\情景模式\\flood_village\\PIC4.BMP": {
+    "bytes": 1228854,
+    "sha256": "49bfd490710bb9bbbae2fd47c431ee499fc3eb75d4017ff8cea924a92d7bf378"
+  },
+  "G:\\情景模式\\flood_village\\SND1.PCM": {
+    "bytes": 816000,
+    "sha256": "0157fffc2010bb6b9fc4161ce65cd9056934c1586964fc81bb1b79c5d5a1963b"
+  },
+  "G:\\情景模式\\flood_village\\SND2.PCM": {
+    "bytes": 816000,
+    "sha256": "c5dd2e6626429dcf1ac4335093641dace47e54dfc16b7ac8ed691863679f0d74"
+  },
+  "G:\\情景模式\\flood_village\\SND3.PCM": {
+    "bytes": 816000,
+    "sha256": "debab57b770160d65b4a6631066c5512229b95898e299f3be3d4142c06af967f"
+  },
+  "G:\\情景模式\\flood_village\\SND4.PCM": {
+    "bytes": 816000,
+    "sha256": "1cc2b1d58dbefab33bec76424efbf35e8ab11fd769961893854fdbf2eb42254d"
+  },
+  "G:\\情景模式\\flood_village\\TEXT.BIN": {
+    "bytes": 156,
+    "sha256": "0ce95028e9a01028ccb6d935b3f99bbb27dc820c7138c3d5912801799d16ce14"
+  },
+  "G:\\情景模式\\flood_village\\THUMB.BMP": {
+    "bytes": 147510,
+    "sha256": "82fba055d0dada659f64ec3db7f96700dd9942f118541cb23e423ca11b5f81a1"
+  },
+  "G:\\情景模式\\landslide_village\\FONT.BIN": {
+    "bytes": 2144,
+    "sha256": "273d2238383f63a0d7a57cbdc948758b128150964d8e02228502719b64c5c58e"
+  },
+  "G:\\情景模式\\landslide_village\\PIC1.BMP": {
+    "bytes": 1228854,
+    "sha256": "a53e989af52f7bf985e28d9a6206654e079daeeb5b6a9f64ce9535d3a99257b7"
+  },
+  "G:\\情景模式\\landslide_village\\PIC2.BMP": {
+    "bytes": 1228854,
+    "sha256": "660f2aea78f42cce7608c9655e5c1d1b6cdc2f88187a27fec4c06a1ac3f6683e"
+  },
+  "G:\\情景模式\\landslide_village\\PIC3.BMP": {
+    "bytes": 1228854,
+    "sha256": "b92348a8c53567185f4ab302311794b2f2e15d03e60146cf1d2c4ba25f782695"
+  },
+  "G:\\情景模式\\landslide_village\\PIC4.BMP": {
+    "bytes": 1228854,
+    "sha256": "06c82b640da65937ddbc772aeac5181f91574d638c5fc36f1fe749f5032fffa3"
+  },
+  "G:\\情景模式\\landslide_village\\SND1.PCM": {
+    "bytes": 816000,
+    "sha256": "365e4ff442cb9db7e95c1902ce281bc18d4cf8578b662ddb9a3b6132393752a9"
+  },
+  "G:\\情景模式\\landslide_village\\SND2.PCM": {
+    "bytes": 816000,
+    "sha256": "30a360a6fac0e5cc93ec21d13f93388ed89a5acd1b3dca4017171839094c4648"
+  },
+  "G:\\情景模式\\landslide_village\\SND3.PCM": {
+    "bytes": 816000,
+    "sha256": "538ceb831690168254861d36a99ee0cb4779b94f5c0c51b0a482ccbacc78e811"
+  },
+  "G:\\情景模式\\landslide_village\\SND4.PCM": {
+    "bytes": 816000,
+    "sha256": "1439fc72ece59a799ad2d998fcfe90e19a90d1bebb7a0e23705bf9e8b5b6756c"
+  },
+  "G:\\情景模式\\landslide_village\\TEXT.BIN": {
+    "bytes": 153,
+    "sha256": "2536618842b1334ff77da18aef4617d8324b613a6d48df0737f192ec99558e4d"
+  },
+  "G:\\情景模式\\landslide_village\\THUMB.BMP": {
+    "bytes": 147510,
+    "sha256": "991cac8718de8e5f7a9fe2558bd3d4442316861bb360264b9395cbbebc4cf2af"
+  },
+  "G:\\情景模式\\quake_village\\FONT.BIN": {
+    "bytes": 1952,
+    "sha256": "acb5f8a992abca067b12c78ab2ee92d3e4978c3acf78a78bc824c0e2cf28399c"
+  },
+  "G:\\情景模式\\quake_village\\PIC1.BMP": {
+    "bytes": 1228854,
+    "sha256": "2ef5b1cd687d559d106fe355e3e8362d73f48bb46665971f812050e8dda5dc73"
+  },
+  "G:\\情景模式\\quake_village\\PIC2.BMP": {
+    "bytes": 1228854,
+    "sha256": "62304c1651ab163e00b284854774405396013c1d0049648514ac74b63fc3fcf2"
+  },
+  "G:\\情景模式\\quake_village\\PIC3.BMP": {
+    "bytes": 1228854,
+    "sha256": "8c173f4bc56a018e48791c75b6b44b8c042bdd7ca1640e90eae589d3547384b6"
+  },
+  "G:\\情景模式\\quake_village\\PIC4.BMP": {
+    "bytes": 1228854,
+    "sha256": "2fca5675959244a5ad5e4582192641366820f7b37d45e2beedd17b3474306e4f"
+  },
+  "G:\\情景模式\\quake_village\\SND1.PCM": {
+    "bytes": 816000,
+    "sha256": "77f509a213d5c333119eeb51d4c7f9dadce60ac2bdab40d97f3bc5e671b4f70b"
+  },
+  "G:\\情景模式\\quake_village\\SND2.PCM": {
+    "bytes": 816000,
+    "sha256": "459cd1203b8c4021563aca626b420eb063ba3867a622b644a606a34e6d5b991b"
+  },
+  "G:\\情景模式\\quake_village\\SND3.PCM": {
+    "bytes": 816000,
+    "sha256": "d1228b3a346b929cf45b5a693c7d8f8bf1ffd346cf14001cd790bd0e45ff75de"
+  },
+  "G:\\情景模式\\quake_village\\SND4.PCM": {
+    "bytes": 816000,
+    "sha256": "e4cbc829adc8a63792c6b3c73b6354d391d83903d7339fb1600a36dda13b3721"
+  },
+  "G:\\情景模式\\quake_village\\TEXT.BIN": {
+    "bytes": 152,
+    "sha256": "410a12fc4430794d1f5fef9bf0d2a6b41229af00698d8d0414a751924b9b152e"
+  },
+  "G:\\情景模式\\quake_village\\THUMB.BMP": {
+    "bytes": 147510,
+    "sha256": "b78f86445f61920b68faad176110a8b553eacd869603972c5667d8ee39719a63"
+  },
+  "G:\\宣讲模式\\EDU1.BMP": {
+    "bytes": 921654,
+    "sha256": "51529756de593d87969e8cd59579b61e7a5a606b2b8289b0251201616338026e"
+  },
+  "G:\\宣讲模式\\EDU2.BMP": {
+    "bytes": 921654,
+    "sha256": "13f1dd47ec31698c574414bec40f59ae9d51431f56e5b0e696f56e2959a42641"
+  },
+  "G:\\宣讲模式\\EDU3.BMP": {
+    "bytes": 921654,
+    "sha256": "41efa637bf063a86958d7de43a0b38c96050c99d86008f549c1c07c508520f01"
+  },
+  "G:\\宣讲模式\\EDU4.BMP": {
+    "bytes": 921654,
+    "sha256": "6d27d18af513364f9e5bf448a08e95a755aa76c2b4108ddc40885fa55460075d"
+  },
+  "G:\\宣讲模式\\FONT.BIN": {
+    "bytes": 1504,
+    "sha256": "dbdcb6607f0d38cb5645b261b0ded1007af6ea6ea99aae16ff5cb3f225cfe8d5"
+  },
+  "G:\\宣讲模式\\TEXT.BIN": {
+    "bytes": 1242,
+    "sha256": "f3f01fcf49b193ad54155659146c5442edbac8a6593111190f672475d76dbe89"
+  },
+  "G:\\宣讲模式\\VOI1.PCM": {
+    "bytes": 3782058,
+    "sha256": "14c176645e74654df738d812e2f97dccdde819c90f3f78c24a0b2b0e0c27cfa3"
+  },
+  "G:\\宣讲模式\\VOI2.PCM": {
+    "bytes": 3964944,
+    "sha256": "5b10be724d4d895849ee4f1f635b30c9e82ec1ca5f626c4b346dca47e7e13de1"
+  },
+  "G:\\宣讲模式\\VOI3.PCM": {
+    "bytes": 4422354,
+    "sha256": "3d863bb9c6a45b7933fdfee9244088ba0dd3e0ab8619d77573899da463b995c2"
+  },
+  "G:\\宣讲模式\\VOI4.PCM": {
+    "bytes": 4591026,
+    "sha256": "69e298d4d45cbf878ab1b16d56aa1e0a82224181fe6484a80a89dfddf979507b"
+  }
+}

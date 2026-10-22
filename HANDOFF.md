@@ -1,4 +1,14 @@
-# 当前交接：v0.24.0 正式版完成并合并 main（2026-10-21）
+# 当前交接：v0.25.0 正式版完成，已合并 main（2026-10-22）
+
+- 当前状态：A 项目功能移植结项。[v0.25.0 正式版](releases/v0.25.0/README.md) 复用板测通过的 s5-local.8 bit（逐字节一致），16796 LUT（85.69%），Setup +0.135 ns / Hold +0.027 ns；用户的卡已是 s5-card.2。板测全部通过，冷启动出图 5 s。功能分支 `feature/a-port-v025` 已在本地合并 main，打了 `v0.25.0` 标签，**尚未推送**。
+- 已完成：S1 按键 1 ms 计时（−165 LUT；A 的另外三项减量无收益）；S2 四张卡的旁白、标题、村名、预警语；S3 旁白播完才 AUTO；S4 标注工具、exe 打包、使用说明和教程；S5 场景 OSD 与 A 逐像素一致、隐藏页码/累计时间/状态行、换场景后图例缺字的修复。[计划及执行状态](docs/A项目功能移植v0.25分阶段计划.md)。
+- 卡住的问题：无。遗留：SD 时钟域余量小，部分种子时序不过；4 个旧测试台连着已删端口（`tb_rescan_key`、`tb_preview_keys`、`tb_m3_scan_bounds`、`tb_audio_scan`）；`four_bank/run_system.ps1` 缺原语库；教程没有人按步骤完整走过；冷启动 5 s 没有优化。
+- 下一步：以 v0.25.0 为基线。新候选至少跑 `diagnostics/lut24/run_sd_pin_boot.ps1`、`reset_of_module.py` 复位审计，动了场景文字就跑 `diagnostics/lut_opt25/run_s5_overlay.ps1` 和 `run_card_switch.ps1`；每次构建并行跑 3–5 个种子再挑。
+- 踩坑：资源状态跨时钟域邮箱每帧只取一次，短于一帧的变化会丢（换场景图例缺字就是这样）——需要“变过”的信息时送一个翻转位；对照 A 时用 `diagnostics/lut_opt25/tb_osd_render.sv` 把真实 RTL 渲染到同一张底图上逐像素比，比肉眼可靠；旧脚本里的仿真器/TD 路径（`v_5f55`、`v_c075`）已失效，用 `diagnostics/lut24/invoke_legacy.ps1` 调用；TD 单独综合跑完会停在 `td >` 提示符不退出，要手动结束 `td_commands_prompt.exe`；`python -I` 会忽略 `PYTHONIOENCODING`，输出中文要在脚本里 `reconfigure`；14 段 TEXT.BIN 和超过 31 字的段旧固件不认。
+
+## 历史交接
+
+### v0.24.0 正式版完成并合并 main（2026-10-21）
 
 - 当前状态：LUT 资源裁减结项。[v0.24.0 正式版](releases/v0.24.0/README.md) 复用板测通过的 s3-local.2 bit（逐字节一致），16926 LUT（86.36%），Setup +0.130ns / Hold +0.030ns。目标 ≤16500 按用户确认修订为实测值。
 - 已完成：S1–S3、异步复位毛刺修复、两种子板测通过；S4 三项评估均不交付（[S4 记录](docs/LUT资源裁减v0.24-S4记录.md)）。功能分支 `feature/lut-reduction` 合并 main，推送 main、功能分支和 `v0.24.0` 标签。
@@ -6,7 +16,6 @@
 - 下一步：后续任务以 v0.24.0 为基线。新候选建议固定执行 `diagnostics/lut24/run_sd_pin_boot.ps1` 和 `reset_of_module.py` 复位审计。
 - 踩坑：异步复位不要接组合译码；寄存器减少不等于物理 LUT 减少，以完整 TD 物理报告为准；控制器/快速指标运行每次生成约 4.9 GB 卡镜像，回归脚本运行后自动删除；常数乘法改写会被映射到 DSP。[归档](docs/history/2026-10-21/lut-reduction-v0.24/README.md)。
 
-## 历史交接
 
 
 - 板测：用户确认 [s3-local.2](releases/v0.24.0/s3-local.2/README.md)（Seed47，16926 LUT）与 [s3-local.3](releases/v0.24.0/s3-local.3/README.md)（Seed43，16956 LUT）都正常工作；未提供逐项结果或次数。已建 `v0.24.0-s3-board.2`、`v0.24.0-s3-board.3`，推送当前分支与本轮标签。[板测记录](docs/LUT资源裁减v0.24-S3板测反馈.md)。

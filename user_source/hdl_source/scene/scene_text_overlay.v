@@ -1,9 +1,24 @@
 // Synchronous TEXT -> FONT -> RGB pipeline. All video fields travel together.
 // Resource metadata is an acknowledged mailbox, held stable after loading.
-module scene_text_overlay(
+// v0.25 S5 scene OSD, laid out like the reference project's (tools/scenes/*/out/osd):
+// all text is white, 16 px cells (1:1), on half-dimmed bands.
+//   top right  panel x348-635 y28-59: alert block x352-367 y32-47, title x376+16i
+//              y32-47 (the village name in warning mode), progress bar x376-615
+//              y52-55 (one pixel per t, in the stage's alert colour); no TEXT needed
+//   bottom left legend x8+16i y416-431 on a band y412-435 (TEXT.BIN with 14 segments:
+//              segments 10-13, type 4; codes E0-E7 draw a colour swatch)
+//   bottom     subtitle y444-459 on a band y440-463, moving left 2 px per frame
+//   warning    as the reference project: the panel shows the village name, the bottom
+//              band scrolls the warning text, the legend stays, the alert block and an
+//              8 px red frame blink
+// Segments may be up to 255 characters (the subtitle is the stage's whole narration).
+// 10-segment TEXT.BIN files are read as before (no legend).
+module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input font_valid,text_valid,input [7:0] font_count,input [12:0] text_bytes,
- input scene_enable,warn_mode,input [1:0] stage,
+ // Toggles on every completed FONT/TEXT load: re-parse even if valid never dropped.
+ input resource_generation,
+ input scene_enable,warn_mode,input [1:0] stage,input [7:0] t_now,
  input legacy_region,input [7:0] legacy_char,input [3:0] legacy_row,legacy_col,
  output font_available,scene_text_active,
  output [10:0] text_addr,input [15:0] text_data,
@@ -15,9 +30,10 @@ module scene_text_overlay(
   .frame_start(frame_start),.first_active(first_active));
  // Cache only the three displayed descriptors. Re-parse on a stage/mode
  // change in blanking; this avoids a ten-way offset/length register mux.
- reg [11:0] title_offset,subtitle_offset,village_offset;
- reg [4:0] title_length,subtitle_length,village_length,descriptor_length;
- reg [1:0] parse_stage;reg parse_warning;
+ reg [11:0] title_offset,subtitle_offset,village_offset,legend_offset;
+ reg [7:0] title_length,subtitle_length,village_length,legend_length,descriptor_length;
+ reg wide;       // TEXT.BIN has 14 segments (legends)
+ reg [1:0] parse_stage;reg parse_warning,parse_generation;
  localparam IDLE=0,REQ=1,BYTE=2,CHECK=3,READY=4,BAD=5;
  reg [2:0] parser;
  reg [11:0] cursor;reg bad;
@@ -26,40 +42,41 @@ module scene_text_overlay(
  wire [11:0] descriptor_byte=cursor-12'd4;
  wire [3:0] descriptor=descriptor_byte[5:2];
  wire [11:0] descriptor_offset={high_offset[3:0],low_offset};
- wire [12:0] segment_end={1'b0,descriptor_offset}+{8'd0,descriptor_length};
+ wire [12:0] segment_end={1'b0,descriptor_offset}+{5'd0,descriptor_length};
  assign font_available=font_valid && font_count>=13 && font_count<=128;
  // A bad TEXT file does not disable a successfully loaded FONT for UART OSD.
  always @(posedge clk or posedge rst)begin
   if(rst)begin parser<=IDLE;cursor<=0;bad<=0;low_offset<=0;high_offset<=0;
-   parse_stage<=0;parse_warning<=0;title_offset<=0;subtitle_offset<=0;village_offset<=0;
-   title_length<=0;subtitle_length<=0;village_length<=0;descriptor_length<=0;end
+   parse_stage<=0;parse_warning<=0;parse_generation<=0;title_offset<=0;subtitle_offset<=0;village_offset<=0;legend_offset<=0;
+   title_length<=0;subtitle_length<=0;village_length<=0;legend_length<=0;descriptor_length<=0;wide<=0;end
   else if(!font_available || !text_valid)begin parser<=IDLE;cursor<=0;bad<=0;end
-  else if(parser!=IDLE && (stage!=parse_stage || warn_mode!=parse_warning))parser<=IDLE;
+  else if(parser!=IDLE && (stage!=parse_stage || warn_mode!=parse_warning || resource_generation!=parse_generation))parser<=IDLE;
   else case(parser)
-   IDLE:begin cursor<=0;bad<=text_bytes<44 || text_bytes>4096;parse_stage<=stage;parse_warning<=warn_mode;parser<=REQ;end
+   IDLE:begin cursor<=0;bad<=text_bytes<44 || text_bytes>4096;parse_stage<=stage;parse_warning<=warn_mode;parse_generation<=resource_generation;legend_length<=0;parser<=REQ;end
    REQ:parser<=BYTE;
    BYTE:begin
     case(cursor)
      0:if(parse_byte!="T")bad<=1;
      1:if(parse_byte!="X")bad<=1;
      2:if(parse_byte!=1)bad<=1;
-     3:if(parse_byte!=10)bad<=1;
+     3:begin wide<=LEGEND_ENABLE && parse_byte==14;if(parse_byte!=10 && !(LEGEND_ENABLE && parse_byte==14))bad<=1;end
      default:begin
-      if(cursor<44)case(descriptor_byte[1:0])
+      if(cursor<(wide?12'd60:12'd44))case(descriptor_byte[1:0])
        0:low_offset<=parse_byte;
        1:high_offset<=parse_byte;
        2:begin
-        descriptor_length<=parse_byte[4:0];
-        if(high_offset[7:4]!=0 || parse_byte>31)bad<=1;
+        descriptor_length<=parse_byte;
+        if(high_offset[7:4]!=0)bad<=1;
        end
        3:begin
-        if(parse_byte!=(descriptor<8?{7'd0,descriptor[0]}:descriptor==8?8'd2:8'd3) || descriptor_offset<44 || segment_end>text_bytes)bad<=1;
+        if(parse_byte!=(descriptor<8?{7'd0,descriptor[0]}:descriptor==8?8'd2:descriptor==9?8'd3:8'd4) || descriptor_offset<(wide?12'd60:12'd44) || segment_end>text_bytes)bad<=1;
         if(descriptor=={1'b0,parse_stage,1'b0})begin title_offset<=descriptor_offset;title_length<=descriptor_length;end
         if(descriptor==(parse_warning?4'd8:{1'b0,parse_stage,1'b1}))begin subtitle_offset<=descriptor_offset;subtitle_length<=descriptor_length;end
         if(descriptor==9)begin village_offset<=descriptor_offset;village_length<=descriptor_length;end
+        if(descriptor==4'd10+{2'd0,parse_stage})begin legend_offset<=descriptor_offset;legend_length<=descriptor_length;end
        end
       endcase
-      else if(parse_byte<128 ? {1'b0,parse_byte}>= {1'b0,font_count} : parse_byte<240)bad<=1;
+      else if(parse_byte<128 ? {1'b0,parse_byte}>= {1'b0,font_count} : parse_byte<240 && !(LEGEND_ENABLE && parse_byte[7:3]==5'b11100))bad<=1;
      end
     endcase
     if({1'b0,cursor}+13'd1>=text_bytes)parser<=CHECK;
@@ -72,9 +89,9 @@ module scene_text_overlay(
  reg enabled_q,warn_q;reg [1:0] stage_q;reg [5:0] frames;
  wire enabled=first_active?scene_enable:enabled_q;
  wire warning=first_active?warn_mode:warn_q;
- reg [10:0] scroll;
+ reg [12:0] scroll;
  wire changed=scene_enable!=enabled_q || warn_mode!=warn_q || stage!=stage_q;
- wire [10:0] scroll_end=11'd624+{1'd0,subtitle_length,5'd0};
+ wire [12:0] scroll_end=13'd624+{1'b0,subtitle_length,4'd0};
  always @(posedge clk or posedge rst)begin
   if(rst)begin enabled_q<=0;warn_q<=0;stage_q<=0;scroll<=0;frames<=0;end
   else begin
@@ -84,47 +101,52 @@ module scene_text_overlay(
    end
    if(frame_start)begin
     frames<=frames+1'b1;
-    if(scroll>=scroll_end)scroll<=0;else scroll<=scroll+1'b1;
+    if(scroll>=scroll_end)scroll<=0;else scroll<=scroll+13'd2;
    end
   end
  end
  assign scene_text_active=enabled && parser==READY;
- reg [11:0] segment_offset;reg [4:0] segment_length;
- reg [10:0] local_x;reg [3:0] row;reg region;
- wire signed [12:0] subtitle_x=$signed({2'b0,scroll})+$signed({3'b0,pixel_x})-13'sd632;
- // Power-of-two nearest-neighbour scaling keeps the glyph address path small.
- // Long card warnings reduce scale so the complete message remains visible.
- wire [1:0] warning_shift=subtitle_length>19?2'd0:
-                         frames[4] && subtitle_length<=9?2'd2:2'd1;
- wire [10:0] warning_width={2'd0,subtitle_length,4'd0}<<warning_shift;
- wire [9:0] warning_left=10'd320-warning_width[10:1];
- wire [8:0] warning_height=9'd16<<warning_shift;
- wire [8:0] warning_top=9'd240-(warning_height>>1);
+ reg [11:0] segment_offset;reg [7:0] segment_length;
+ reg [11:0] local_x;reg [3:0] row;reg region;
+ wire signed [13:0] subtitle_x=$signed({1'b0,scroll})+$signed({4'b0,pixel_x})-14'sd632;
  always @*begin
-  segment_offset=title_offset;segment_length=title_length;local_x=({1'b0,pixel_x}-11'd8)>>1;row=0;region=0;
+  segment_offset=title_offset;segment_length=title_length;local_x=0;row=0;region=0;
   if(scene_text_active && de)begin
-   if(warning)begin
-    segment_offset=subtitle_offset;segment_length=subtitle_length;
-    local_x=({1'b0,pixel_x}-{1'b0,warning_left})>>warning_shift;
-    row=(y-warning_top)>>warning_shift;
-    region=y>=warning_top && y<warning_top+warning_height && pixel_x>=warning_left;
-   end else if(y>=64 && y<96)begin row=(y-64)>>1;region=1;end
-   else if(y>=112 && y<144)begin segment_offset=village_offset;segment_length=village_length;row=(y-112)>>1;region=1;end
-   else if(y>=416 && y<448)begin
-    segment_offset=subtitle_offset;segment_length=subtitle_length;row=(y-416)>>1;
-    local_x=subtitle_x[11:1];region=subtitle_x>=0;
+   if(y>=32 && y<48)begin               // panel title; the village name while warning
+    segment_offset=warning?village_offset:title_offset;segment_length=warning?village_length:title_length;
+    row=y[3:0];local_x={2'b0,pixel_x}-12'd376;region=pixel_x>=376;
+   end else if(LEGEND_ENABLE && y>=416 && y<432 && legend_length!=0)begin
+    segment_offset=legend_offset;segment_length=legend_length;row=y[3:0];
+    local_x={2'b0,pixel_x}-12'd8;region=1;
+   end else if(y>=444 && y<460)begin   // subtitle; the warning text while warning (parser)
+    segment_offset=subtitle_offset;segment_length=subtitle_length;row=y[3:0]+4'd4;
+    local_x=subtitle_x[11:0];region=subtitle_x>=0;
    end
-   region=region && pixel_x>=8 && pixel_x<632 && local_x<{2'd0,segment_length,4'd0};
+   region=region && pixel_x>=8 && pixel_x<632 && local_x<{segment_length,4'd0};
   end
  end
+ // HUD: 0 none, 1 bar track, 2 bar fill, 3 alert block (blinks while warning); dim marks
+ // the half-dimmed panel and bands. Both are registered with the video.
+ wire [9:0] bar_x=pixel_x-10'd376;
+ wire in_block=pixel_x>=352 && pixel_x<368 && y>=32 && y<48 && (!warning || frames[4]);
+ wire in_track=pixel_x>=376 && pixel_x<616 && y>=52 && y<56;
+ wire fill=bar_x[7:0]<=t_now;
+ wire hud_on=BAR_ENABLE && enabled && de;
+ wire [1:0] hud=!hud_on?2'd0:in_block?2'd3:in_track?(fill?2'd2:2'd1):2'd0;
+ wire panel=hud_on && pixel_x>=348 && pixel_x<636 && y>=28 && y<60;
+ wire legend_band=LEGEND_ENABLE && scene_text_active && de && legend_length!=0 &&
+   pixel_x>=4 && {2'b0,pixel_x}<12'd12+{legend_length,4'd0} && y>=412 && y<436;
+ wire subtitle_band=BAR_ENABLE && scene_text_active && de && subtitle_length!=0 &&
+   pixel_x>=8 && pixel_x<632 && y>=440 && y<464;
+ wire dim=panel || legend_band || subtitle_band;
  wire border=enabled && warning && frames[4] && de &&
    (pixel_x<8 || pixel_x>=632 || y<8 || y>=472);
- wire [11:0] render_addr=segment_offset+{5'd0,local_x[10:4]};
+ wire [11:0] render_addr=segment_offset+{4'd0,local_x[11:4]};
  assign text_addr=(parser==REQ || parser==BYTE)?cursor[11:1]:render_addr[11:1];
  reg [26:0] video1,video2;
  reg [9:0] x1,x2;
  reg text_lane1,region1,legacy1,border1,region2,cn2,ascii2,border2;
- reg scene1,scene2,red1,red2;
+ reg [1:0] hud1,hud2;reg dim1,dim2,sw2;reg [2:0] swc2;
  reg [3:0] row1,col1,col2;
  reg [7:0] legacy1_char;
  wire [7:0] code=text_lane1?text_data[15:8]:text_data[7:0];
@@ -151,6 +173,17 @@ module scene_text_overlay(
   endcase
  end
  wire [2:0] ascii_column=3'd4-col1[3:1];
+ // Swatch and alert colours (the hazard layer's palette, and the stage's alert level).
+ reg [23:0] swatch_rgb,alert_rgb;
+ always @*begin
+  case(swc2)
+   3'd0:swatch_rgb=24'hd82020;3'd1:swatch_rgb=24'h20c848;3'd2:swatch_rgb=24'h00ff00;3'd3:swatch_rgb=24'h8c6a3c;
+   3'd4:swatch_rgb=24'hffd000;3'd5:swatch_rgb=24'he83020;3'd6:swatch_rgb=24'h8e8a84;default:swatch_rgb=24'hc8d2dc;
+  endcase
+  case(warn_q?2'd3:stage_q)
+   2'd0:alert_rgb=24'h2080ff;2'd1:alert_rgb=24'hffd000;2'd2:alert_rgb=24'hff8000;default:alert_rgb=24'hff2020;
+  endcase
+ end
  assign font_addr={legacy1?legacy1_char[6:0]:code[6:0],row1};
  // Original UART IDs 80..8c map to font slots 0..12.
  wire [15:0] font_row={font_data[7:0],font_data[15:8]};
@@ -158,10 +191,13 @@ module scene_text_overlay(
   if(rst)begin
    video1<=0;video2<=0;x1<=0;x2<=0;text_lane1<=0;region1<=0;legacy1<=0;
    row1<=0;col1<=0;legacy1_char<=0;border1<=0;region2<=0;cn2<=0;ascii2<=0;border2<=0;col2<=0;
-   hs_out<=0;vs_out<=0;de_out<=0;x_out<=0;rgb_out<=0;scene1<=0;scene2<=0;red1<=0;red2<=0;
+   hs_out<=0;vs_out<=0;de_out<=0;x_out<=0;rgb_out<=0;
+   hud1<=0;hud2<=0;dim1<=0;dim2<=0;sw2<=0;swc2<=0;
   end else begin
+   hud1<=hud;hud2<=hud1;dim1<=dim;dim2<=dim1;
+   sw2<=LEGEND_ENABLE && region1 && code[7:3]==5'b11100 && col1>=2 && col1<14 && row1>=2 && row1<14 && (code[2:0]!=3'd2 || frames[5]);
+   swc2<=code[2:0];
    video1<={hs,vs,de,rgb_in};x1<=pixel_x;text_lane1<=render_addr[0];region1<=region;
-   scene1<=region;red1<=warning;scene2<=scene1;red2<=red1;
    legacy1<=!region && legacy_region && font_available;
    legacy1_char<=legacy_char-8'h80;
    row1<=region?row:legacy_row;col1<=region?local_x[3:0]:legacy_col;border1<=border;
@@ -169,8 +205,10 @@ module scene_text_overlay(
    region2<=region1 || legacy1;cn2<=legacy1 || code<128;
    ascii2<=region1 && code>=240 && col1[3:1]<5 && row1[3:1]<7 && ascii_pixels[ascii_column];
    {hs_out,vs_out,de_out}<=video2[26:24];x_out<=x2;
-   rgb_out<=border2?24'hff0000:region2 && ((cn2 && font_row[~col2]) || ascii2)?
-     (scene2?(red2?24'hff0000:24'h000000):24'hffffff):video2[23:0];
+   rgb_out<=border2?24'hff2020:
+     region2 && ((cn2 && font_row[~col2]) || ascii2)?24'hffffff:
+     sw2?swatch_rgb:hud2[1]?alert_rgb:(hud2==2'd1)?24'h404040:
+     dim2?{1'b0,video2[23:17],1'b0,video2[15:9],1'b0,video2[7:1]}:video2[23:0];
   end
  end
 endmodule
@@ -180,7 +218,7 @@ endmodule
 // this RAM port; legacy TX parsing/rendering stays in scene_text_overlay.
 module publicity_subtitle_overlay(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
- input text_valid,input [12:0] text_bytes,input enable,playing,restart,
+ input text_valid,input [12:0] text_bytes,input resource_generation,input enable,playing,restart,
  input [1:0] page,output [10:0] text_addr,input [15:0] text_data,
  output reg hs_out,vs_out,de_out,output reg [9:0] x_out,output reg [23:0] rgb_out
 );
@@ -188,18 +226,18 @@ module publicity_subtitle_overlay(
  osd_pixel_position pos(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),
   .frame_start(frame_start),.first_active(first_active));
  localparam IDLE=0,REQ=1,WORD=2,CHECK=3,READY=4,BAD=5;
- reg [2:0] parser;reg [10:0] cursor;reg bad;reg [1:0] parse_page;
+ reg [2:0] parser;reg [10:0] cursor;reg bad;reg [1:0] parse_page;reg parse_generation;
  reg [11:0] offset,descriptor_offset;reg [7:0] length,descriptor_length;
  reg [9:0] step_q8;reg [2:0] field;reg [1:0] descriptor;
  wire [12:0] segment_end={1'b0,descriptor_offset}+{4'd0,descriptor_length,1'b0};
  always @(posedge clk or posedge rst)begin
-  if(rst)begin parser<=IDLE;cursor<=0;bad<=0;parse_page<=0;offset<=0;length<=0;
+  if(rst)begin parser<=IDLE;cursor<=0;bad<=0;parse_page<=0;parse_generation<=0;offset<=0;length<=0;
    step_q8<=0;descriptor_offset<=0;descriptor_length<=0;field<=0;descriptor<=0;end
   else if(!text_valid)begin parser<=IDLE;cursor<=0;bad<=0;end
-  else if(parser!=IDLE && page!=parse_page)parser<=IDLE;
+  else if(parser!=IDLE && (page!=parse_page || resource_generation!=parse_generation))parser<=IDLE;
   else case(parser)
    IDLE:begin
-    parser<=REQ;cursor<=0;parse_page<=page;field<=0;descriptor<=0;
+    parser<=REQ;cursor<=0;parse_page<=page;parse_generation<=resource_generation;field<=0;descriptor<=0;
     bad<=text_bytes<44 || text_bytes>4096 || text_bytes[0];
    end
    REQ:parser<=WORD;

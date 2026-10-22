@@ -1,0 +1,13 @@
+{
+  "candidate": "v0.25.0-s5-local.6",
+  "source_commit": "ff95f7a",
+  "build": "lut25_hud6_td_s13",
+  "seed": 13,
+  "bit_sha256": "420cd3140099282b6f1f03abba1e5466edf017636d6e3d70e674027e03010104",
+  "bit_bytes": 675020,
+  "lut": 16765,
+  "registers": 10028,
+  "setup_ns": 0.168,
+  "hold_ns": 0.011,
+  "board": "pending"
+}

@@ -1,0 +1,548 @@
+{
+  "format": "48 kHz mono s16le raw PCM; TEXT.BIN v1 (10 segments)",
+  "audio": "reference-project MiniMax narration at t*1600 samples; SND4 adds the v0.18 M6 siren at gain 0.3, looped",
+  "rtl_and_bit_changed": false,
+  "scenes": {
+    "landslide_village": {
+      "village": "青石坡村",
+      "warning": "红色预警!立即横向撤离滑坡区!",
+      "font_glyphs": 76,
+      "text_bytes": 221,
+      "stages": [
+        {
+          "title": "阶段1 致因:强降雨",
+          "subtitle": "持续强降雨，山坡吸饱了水",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 193.0,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 109983,
+              "source": "landslide_s1_t000.wav",
+              "text": "持续强降雨，山坡吸饱了水。"
+            },
+            {
+              "t": 100,
+              "start": 160000,
+              "samples": 148790,
+              "source": "landslide_s1_t100.wav",
+              "text": "黄色虚线框出的是滑坡隐患坡体。"
+            }
+          ]
+        },
+        {
+          "title": "阶段2 发生:坡体下滑",
+          "subtitle": "坡体整体下滑，注意落石",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 207.3,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 58199,
+              "source": "landslide_s2_t000.wav",
+              "text": "坡顶出现裂缝。"
+            },
+            {
+              "t": 65,
+              "start": 104000,
+              "samples": 76734,
+              "source": "landslide_s2_t065.wav",
+              "text": "坡体开始整体下滑！"
+            },
+            {
+              "t": 140,
+              "start": 224000,
+              "samples": 107664,
+              "source": "landslide_s2_t140.wav",
+              "text": "坡脚扬起尘土，注意落石！"
+            }
+          ]
+        },
+        {
+          "title": "阶段3 后果:掩埋房屋",
+          "subtitle": "滑坡掩埋了坡脚房屋和道路",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 196.2,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 144891,
+              "source": "landslide_s3_t000.wav",
+              "text": "滑坡堆积掩埋了坡脚的房屋和道路。"
+            },
+            {
+              "t": 130,
+              "start": 208000,
+              "samples": 105855,
+              "source": "landslide_s3_t130.wav",
+              "text": "坡体仍可能继续垮塌。"
+            }
+          ]
+        },
+        {
+          "title": "阶段4 撤离:横向离开",
+          "subtitle": "横向离开滑坡区，不要过桥",
+          "notes": [
+            "base SND4.PCM gain 0.3 looped"
+          ],
+          "seconds": 8.5,
+          "speech_end_t": 197.8,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 103458,
+              "source": "landslide_s4_t000.wav",
+              "text": "立即撤离！横向离开滑坡区。"
+            },
+            {
+              "t": 110,
+              "start": 176000,
+              "samples": 140496,
+              "source": "landslide_s4_t110.wav",
+              "text": "沿绿色路线到东侧避险点，不要过桥。"
+            }
+          ]
+        }
+      ],
+      "files": {
+        "FONT.BIN": {
+          "bytes": 2432,
+          "sha256": "7d15281b05f318db86f83397d64b5f4f8abcdd729f086c8df9d29a35ffa7c7a1"
+        },
+        "TEXT.BIN": {
+          "bytes": 221,
+          "sha256": "3e205f4b45aee488ae5a471a61db5ced0131b464c2b0fb1f49daea0b50b84fd5"
+        },
+        "SND1.PCM": {
+          "bytes": 816000,
+          "sha256": "365e4ff442cb9db7e95c1902ce281bc18d4cf8578b662ddb9a3b6132393752a9"
+        },
+        "SND2.PCM": {
+          "bytes": 816000,
+          "sha256": "30a360a6fac0e5cc93ec21d13f93388ed89a5acd1b3dca4017171839094c4648"
+        },
+        "SND3.PCM": {
+          "bytes": 816000,
+          "sha256": "538ceb831690168254861d36a99ee0cb4779b94f5c0c51b0a482ccbacc78e811"
+        },
+        "SND4.PCM": {
+          "bytes": 816000,
+          "sha256": "1439fc72ece59a799ad2d998fcfe90e19a90d1bebb7a0e23705bf9e8b5b6756c"
+        }
+      }
+    },
+    "debris_village": {
+      "village": "黑石沟村",
+      "warning": "红色预警!立即向沟道两侧高处转移!",
+      "font_glyphs": 80,
+      "text_bytes": 224,
+      "stages": [
+        {
+          "title": "阶段1 致因:暴雨汇流",
+          "subtitle": "暴雨汇流，沟道堆满松散土石",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 207.4,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 134069,
+              "source": "debris_s1_t000.wav",
+              "text": "暴雨汇流，沟道里堆满松散土石。"
+            },
+            {
+              "t": 110,
+              "start": 176000,
+              "samples": 155799,
+              "source": "debris_s1_t110.wav",
+              "text": "黄色虚线框出的是泥石流物源区。"
+            }
+          ]
+        },
+        {
+          "title": "阶段2 发生:泥石流涌下",
+          "subtitle": "泥石流沿沟道涌下来了",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 206.6,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 86168,
+              "source": "debris_s2_t000.wav",
+              "text": "泥石流沿沟道涌下来了！"
+            },
+            {
+              "t": 110,
+              "start": 176000,
+              "samples": 154569,
+              "source": "debris_s2_t110.wav",
+              "text": "泥浆裹着石块，一阵阵向下游推进。"
+            }
+          ]
+        },
+        {
+          "title": "阶段3 后果:沟口堆积",
+          "subtitle": "泥石流冲出沟口，掩埋房屋",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 205.1,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 129071,
+              "source": "debris_s3_t000.wav",
+              "text": "泥石流冲出沟口，堆积成扇形。"
+            },
+            {
+              "t": 120,
+              "start": 192000,
+              "samples": 136155,
+              "source": "debris_s3_t120.wav",
+              "text": "道路、石桥和沟口房屋被掩埋。"
+            }
+          ]
+        },
+        {
+          "title": "阶段4 撤离:向两侧高处",
+          "subtitle": "向两侧高处转移，不横穿沟口",
+          "notes": [
+            "base SND4.PCM gain 0.3 looped"
+          ],
+          "seconds": 8.5,
+          "speech_end_t": 194.8,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 122442,
+              "source": "debris_s4_t000.wav",
+              "text": "立即撤离！向沟道两侧的高处转移。"
+            },
+            {
+              "t": 120,
+              "start": 192000,
+              "samples": 119747,
+              "source": "debris_s4_t120.wav",
+              "text": "不要顺着沟跑，不要横穿沟口。"
+            }
+          ]
+        }
+      ],
+      "files": {
+        "FONT.BIN": {
+          "bytes": 2560,
+          "sha256": "dfd2edbe943d5b3aac50f5f47947c8112bd6349447bcc2703e77a4f4438b416b"
+        },
+        "TEXT.BIN": {
+          "bytes": 224,
+          "sha256": "4df9f30bbe6e84a5cfb0b710b1820abbc45589df1ed8e0afa74261e1b60aaac9"
+        },
+        "SND1.PCM": {
+          "bytes": 816000,
+          "sha256": "70c8a762e9244e903762e86415071962069b0118a2786433dacb59e0b6513cc4"
+        },
+        "SND2.PCM": {
+          "bytes": 816000,
+          "sha256": "221a36b62256db863cac3fb4a945e0fe953f3c288ab7e0b83a56f776e6cb5fb6"
+        },
+        "SND3.PCM": {
+          "bytes": 816000,
+          "sha256": "704fe1721434c98f11d10810c3eaada5a1ba01602aa9458e7b9394c2cbff934a"
+        },
+        "SND4.PCM": {
+          "bytes": 816000,
+          "sha256": "169ccc9ecd791a90d195b1488e29bc1d6083b0586da089982dc244ed07b91f0c"
+        }
+      }
+    },
+    "flood_village": {
+      "village": "河湾村",
+      "warning": "红色预警!立即沿本岸小路上山!",
+      "font_glyphs": 78,
+      "text_bytes": 215,
+      "stages": [
+        {
+          "title": "阶段1 致因:河水上涨",
+          "subtitle": "上游强降雨，河水快速上涨",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 206.0,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 115208,
+              "source": "flood_s1_t000.wav",
+              "text": "上游强降雨，河水快速上涨。"
+            },
+            {
+              "t": 110,
+              "start": 176000,
+              "samples": 153660,
+              "source": "flood_s1_t110.wav",
+              "text": "黄色虚线是洪水可能淹到的范围。"
+            }
+          ]
+        },
+        {
+          "title": "阶段2 发生:洪峰漫岸",
+          "subtitle": "洪峰漫过河堤，冲进农田",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 190.6,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 26994,
+              "source": "flood_s2_t000.wav",
+              "text": "洪峰来了！"
+            },
+            {
+              "t": 30,
+              "start": 48000,
+              "samples": 118118,
+              "source": "flood_s2_t030.wav",
+              "text": "河水漫过河堤，冲进农田。"
+            },
+            {
+              "t": 150,
+              "start": 240000,
+              "samples": 65013,
+              "source": "flood_s2_t150.wav",
+              "text": "洪水逼近村子。"
+            }
+          ]
+        },
+        {
+          "title": "阶段3 后果:低地被淹",
+          "subtitle": "近岸低地被淹，离河越近水越深",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 165.2,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 114897,
+              "source": "flood_s3_t000.wav",
+              "text": "河道和近岸低地被洪水淹没。"
+            },
+            {
+              "t": 110,
+              "start": 176000,
+              "samples": 88245,
+              "source": "flood_s3_t110.wav",
+              "text": "离河越近，水越深。"
+            }
+          ]
+        },
+        {
+          "title": "阶段4 撤离:沿小路上山",
+          "subtitle": "沿本岸小路上山，不要过桥",
+          "notes": [
+            "base SND4.PCM gain 0.3 looped"
+          ],
+          "seconds": 8.5,
+          "speech_end_t": 167.2,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 106676,
+              "source": "flood_s4_t000.wav",
+              "text": "立即撤离！沿本岸小路上山。"
+            },
+            {
+              "t": 110,
+              "start": 176000,
+              "samples": 91529,
+              "source": "flood_s4_t110.wav",
+              "text": "不要过桥，不要沿河走。"
+            }
+          ]
+        }
+      ],
+      "files": {
+        "FONT.BIN": {
+          "bytes": 2496,
+          "sha256": "d4ab470ca087405569afc4a559e5ebcdbcdf77617a66b9bb78ac8791ccd9de08"
+        },
+        "TEXT.BIN": {
+          "bytes": 215,
+          "sha256": "1e5f5e794f25e6dd6cafbaa6d672ac8c7abe2254cd129485320bf795a8f387d9"
+        },
+        "SND1.PCM": {
+          "bytes": 816000,
+          "sha256": "0157fffc2010bb6b9fc4161ce65cd9056934c1586964fc81bb1b79c5d5a1963b"
+        },
+        "SND2.PCM": {
+          "bytes": 816000,
+          "sha256": "c5dd2e6626429dcf1ac4335093641dace47e54dfc16b7ac8ed691863679f0d74"
+        },
+        "SND3.PCM": {
+          "bytes": 816000,
+          "sha256": "debab57b770160d65b4a6631066c5512229b95898e299f3be3d4142c06af967f"
+        },
+        "SND4.PCM": {
+          "bytes": 816000,
+          "sha256": "1cc2b1d58dbefab33bec76424efbf35e8ab11fd769961893854fdbf2eb42254d"
+        }
+      }
+    },
+    "quake_village": {
+      "village": "断岭村",
+      "warning": "地震预警!立即到空旷平地避险!",
+      "font_glyphs": 70,
+      "text_bytes": 209,
+      "stages": [
+        {
+          "title": "阶段1 致因:断层活动",
+          "subtitle": "断层活动，主震后余震不断",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 232.7,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 93551,
+              "source": "quake_s1_t000.wav",
+              "text": "断层附近开始出现小地震。"
+            },
+            {
+              "t": 96,
+              "start": 153600,
+              "samples": 124715,
+              "source": "quake_s1_t096.wav",
+              "text": "主震发生！地震波向四周扩散。"
+            },
+            {
+              "t": 185,
+              "start": 296000,
+              "samples": 76266,
+              "source": "quake_s1_t185.wav",
+              "text": "余震沿断层陆续发生。"
+            }
+          ]
+        },
+        {
+          "title": "阶段2 发生:强烈晃动",
+          "subtitle": "强烈晃动，就近躲避",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 215.1,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 46947,
+              "source": "quake_s2_t000.wav",
+              "text": "地震波正在传来。"
+            },
+            {
+              "t": 40,
+              "start": 64000,
+              "samples": 74376,
+              "source": "quake_s2_t040.wav",
+              "text": "强烈晃动！就近躲避。"
+            },
+            {
+              "t": 130,
+              "start": 208000,
+              "samples": 136106,
+              "source": "quake_s2_t130.wav",
+              "text": "墙体开裂，房屋倒塌，注意落石。"
+            }
+          ]
+        },
+        {
+          "title": "阶段3 后果:崩塌开裂",
+          "subtitle": "岩壁崩塌，地面沿断层开裂",
+          "notes": [],
+          "seconds": 8.5,
+          "speech_end_t": 168.4,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 135534,
+              "source": "quake_s3_t000.wav",
+              "text": "岩壁崩塌，碎石掩埋了坡脚房屋。"
+            },
+            {
+              "t": 120,
+              "start": 192000,
+              "samples": 77484,
+              "source": "quake_s3_t120.wav",
+              "text": "地面沿断层裂开。"
+            }
+          ]
+        },
+        {
+          "title": "阶段4 撤离:到空旷平地",
+          "subtitle": "震动停止后到空旷平地避险",
+          "notes": [
+            "base SND4.PCM gain 0.3 looped"
+          ],
+          "seconds": 8.5,
+          "speech_end_t": 208.6,
+          "lines": [
+            {
+              "t": 0,
+              "start": 0,
+              "samples": 132599,
+              "source": "quake_s4_t000.wav",
+              "text": "震动停止后，迅速离开建筑和山坡。"
+            },
+            {
+              "t": 120,
+              "start": 192000,
+              "samples": 141744,
+              "source": "quake_s4_t120.wav",
+              "text": "到晒谷场和操场等空旷平地避险。"
+            }
+          ]
+        }
+      ],
+      "files": {
+        "FONT.BIN": {
+          "bytes": 2240,
+          "sha256": "c0ab42206cc9443fe2b706711a366de8b85a46c9bbef57589c49852f94bb6fbc"
+        },
+        "TEXT.BIN": {
+          "bytes": 209,
+          "sha256": "aad84926adf7e21455f78ab2cb7a41ce22c7ee6380e71231c6991d6d05049230"
+        },
+        "SND1.PCM": {
+          "bytes": 816000,
+          "sha256": "77f509a213d5c333119eeb51d4c7f9dadce60ac2bdab40d97f3bc5e671b4f70b"
+        },
+        "SND2.PCM": {
+          "bytes": 816000,
+          "sha256": "459cd1203b8c4021563aca626b420eb063ba3867a622b644a606a34e6d5b991b"
+        },
+        "SND3.PCM": {
+          "bytes": 816000,
+          "sha256": "d1228b3a346b929cf45b5a693c7d8f8bf1ffd346cf14001cd790bd0e45ff75de"
+        },
+        "SND4.PCM": {
+          "bytes": 816000,
+          "sha256": "e4cbc829adc8a63792c6b3c73b6354d391d83903d7339fb1600a36dda13b3721"
+        }
+      }
+    }
+  },
+  "status": "prepared; card write pending"
+}

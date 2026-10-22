@@ -1,0 +1,4 @@
+PASS debris_village_to_flood_village
+PASS flood_village_to_quake_village
+PASS landslide_village_to_debris_village
+PASS quake_village_to_landslide_village

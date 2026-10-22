@@ -39,3 +39,5 @@ __pycache__/
 /tools/scenes/classroom_audio/
 /tools/scenes/m6_demo/generated/
 /tools/scenes/flood_village/generated/
+# Scene annotation tool exe: a build product (tools/mountain_port/build_annotate_exe.py).
+/tools/mountain_port/annotate_scene.exe
