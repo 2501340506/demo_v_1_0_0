@@ -1,14 +1,14 @@
 # 场景包工具使用说明（v0.17.0 M2，图像部分）
 
-`tools/make_scene_pack.py` 按 `scene.yaml` 生成一张场景卡的 PIC1–4.BMP，以及 `hazard_layer` 的参考图像。音频（SND1–4）在 M4 接入，字库和文本（FONT.BIN/TEXT.BIN）在 M5 接入。
+`tools/mountain_port/make_scene_pack.py` 按 `scene.yaml` 生成一张场景卡的 PIC1–4.BMP、菜单缩略图 THUMB.BMP，以及 `hazard_layer` 的参考图像；加 `--audio` 时再生成各阶段音频 SND1–4.PCM（见“阶段音频”一节）；加 `--text` 时再生成字库和文本 FONT.BIN/TEXT.BIN（见“场景文字”一节）。人工标注用图形工具 `annotate_scene`，见文末。
 
 设计依据：[02_技术实现.md](../../docs/选题方案/02_技术实现.md) §2.3、§2.4、§4.2、§5。
 
 ## 运行
 
 ```
-py -I tools/scenes/demo_village/draw_demo_village.py        # 只有示意村需要：重画底图、DEM 和手绘 T 图
-py -I tools/make_scene_pack.py tools/scenes/demo_village/scene.yaml
+py -I tools/mountain_port/scenes/demo_village/draw_demo_village.py        # 只有示意村需要：重画底图、DEM 和手绘 T 图
+py -I tools/mountain_port/make_scene_pack.py tools/mountain_port/scenes/demo_village/scene.yaml
 ```
 
 - 依赖：Python 3、Pillow、numpy、PyYAML。不依赖 scipy，距离变换由工具自己实现，结果不受环境影响。
@@ -26,6 +26,34 @@ py -I tools/make_scene_pack.py tools/scenes/demo_village/scene.yaml
 | `overview.png` | 目视总览，半尺寸。每行是一个阶段，各列依次为：t=0 亮相、t=120 亮相、t=239 亮相、t=239 暗相、T 图 |
 
 每个 BMP 写完后都会立即读回自检。自检按 `bmp_header_check.v` 的条件检查：`BM`、文件长度、dib≥40、planes=1、bitcount=32、compression=0、尺寸、尺寸范围 ≤1920×1080、像素区边界。然后逐像素比较 RGB 和 T 是否与源数据一致。任何一项不通过，工具就报错退出。
+
+## 阶段音频 SND1–4（`--audio`）
+
+```
+py -I -X utf8 tools/mountain_port/make_scene_pack.py tools/mountain_port/scenes/flood_village/scene.yaml --audio
+```
+
+- 每个阶段可写 `sound:`（底音：任意 ffmpeg 能读的文件，或板子格式的 `.PCM`）、`sound_gain:`（底音音量倍数）、`sound_loop: true`（底音铺满整个阶段）和/或 `narration:`（旁白句子列表，`{t: 时刻, text: 文字}`，t 用 0–239 时间轴）。两者都没有的阶段不生成 SND 文件，板上该阶段播放卡根目录的 BGM.PCM。
+- 板上推演时间 t 每播放 1600 个样本加 1（1× 速度，48 kHz 下每秒 30），所以一句旁白放在样本 t×1600 处，说话时刻就和画面上 t 对应的效果对齐。句子之间如果重叠，后一句顺延并在输出里注明。音轨至少到 t=239 再加 0.5 秒（8.5 秒）。
+- 旁白句子可加 `file:`（相对 scene.yaml 的录音，例如 `{t: 65, text: 坡体开始整体下滑！, file: voice/landslide_s2_t065.wav}`）：该句改用这个文件，`text` 仍可作字幕参考。文件转成 48 kHz 单声道后与语音同样处理：去掉前后静音（保留 20 ms）、峰值归一到约 −1 dBFS，第一个字从 t×1600 样本开始。文件不存在时工具报错退出。
+- 没有 `file:` 的句子用 Windows 自带的中文语音（SAPI，Microsoft Huihui）经 PowerShell 合成。没有中文语音或加 `--no-tts` 时，每句换成句首的 0.15 秒提示音，时间关系不变。合成结果取决于本机的语音引擎，不保证逐字节可复现。
+- 输出：`sd/SND1.PCM`…`SND4.PCM`（放进卡上对应的场景文件夹）和 `audio/SNDn.wav`（试听用）。
+- 实现在 `tools/mountain_port/scene_audio.py`（从参考项目移植）。录音转换用 `tools/make_audio_corpus.py` 的 `convert()`；48 kHz 单声道 16 位的 WAV 直接取数据，不需要 ffmpeg。
+- 四张 v3 卡（滑坡、泥石流、山洪、地震）的 36 句旁白是 MiniMax 生成的配音（`*_village/voice/`，文件名为 `卡_s阶段_t时刻.wav`），每句都在下一句开始前说完。第 4 阶段另垫了 v0.18 M6 的循环警报声（`sound: .../geohazard_release/cards/demo/card/SND4.PCM`，`sound_gain: 0.3`）；预警模式循环播放的就是第 4 阶段的音轨。
+- 自动播放（AUTO）时板子等本阶段 SND 读完一遍才换阶段（v0.25 S3），所以音轨比 8.5 秒长，阶段就按音轨长度走。
+
+## 场景文字 FONT.BIN / TEXT.BIN（`--text`）
+
+```
+py -I -X utf8 tools/mountain_port/make_scene_pack.py tools/mountain_port/scenes/landslide_village/scene.yaml --text --audio
+```
+
+- scene.yaml 顶层 `village:`（村名）、`warning:`（预警语）；每个阶段 `title:`（标题）、`subtitle:`（底部滚动字幕）。**六项缺一不可**（村名、预警语、四个阶段各 `title` 和 `subtitle`），缺了 `--text` 会报错退出。
+- 显示位置（`scene_text_overlay`）：标题在画面上方，村名在标题下方，二者只在正常播放时显示；字幕在画面下方，每帧向左滚 1 个像素；预警（KEY1）时只显示居中的红色预警语。
+- 限制（`make_card_narration.text_spec` 检查）：标题、村名、预警语 ≤19 字；字幕 ≤15 字（一阶段 8 秒内刚好能完整滚入）；整张卡不同的字形最多 128 个，其中前 13 个固定是板上原有的 case 字库字形（米醋电子工作室忧郁胆肥嘟的）。
+- 数字、`: . - / !`（含全角的 ０–９ ：！ ． － ／ 和全角空格）用 5×7 小字显示，不占字库；汉字和全角标点（，。？等）作为字形放进 FONT.BIN，用宋体 16px 渲染。**不支持英文字母和半角 `?`。**
+- FONT.BIN：每字 32 字节，第 r 行为字节 2r（左 8 点）和 2r+1（右 8 点），高位在左。TEXT.BIN v1：`"TX"`、版本 1、段数 10，随后 10 个描述符 `{起始偏移低字节, 高字节, 长度, 类型}`，字符从第 44 字节起。段号固定：0 标题 1、1 字幕 1、2 标题 2、3 字幕 2、……、6 标题 4、7 字幕 4、8 预警语、9 村名。字符码：0x00–0x7F 字形序号，0xF0–0xF9 数字，0xFA 空格、0xFB `:`、0xFC `.`、0xFD `-`、0xFE `/`、0xFF `!`。（A 项目的 14 段版本还有图例段，本项目要等 v0.25 S5。）
+- `tools/mountain_port/complete_card_resources.py` 与 `card_resources.json` 是 v0.19 的补卡脚本，留着复现 v0.19 的卡；v0.25 的卡用 `make_card_narration.py`（`prepare`/`install`，一次处理四张卡）。
 
 ## scene.yaml
 
@@ -123,3 +151,16 @@ blend k（k 个 1/4 的颜色 c），每个通道：
   - 泥石流：沟道及沟口堆积扇；向沟道两侧的高处撤离，不顺沟、不横穿沟口。
   - 地震：陡坡崩塌落石区、建筑密集区和临河陡岸；避险点选开阔平地，远离建筑和山坡。
 - 工具只能检查重叠，路线是否合理（是否沿真实道路、方向是否背离灾害源、是否需要穿越其他危险地形）要逐张图判断，并在 scene.yaml 注释中写明取舍理由。
+
+## 点选标注工具 annotate_scene.py（format 3）
+
+人工制作场景卡用的图形界面，不用手写坐标。用法、画图操作和卡文字、旁白、安装到 SD 卡，见 [场景标注工具使用说明.md](../../../docs/场景标注工具使用说明.md)，第一次用先做 [滑坡卡制作教程](../../../docs/滑坡卡制作教程.md)。
+
+```
+py -I tools/mountain_port/annotate_scene.py                                     # 文件 → 新建场景 / 打开
+py -I tools/mountain_port/annotate_scene.py tools/mountain_port/scenes/flood_village/scene.yaml
+py -I tools/mountain_port/annotate_scene.py --install-card 场景目录/scene.yaml 卡根目录    # 不开窗口，装进卡
+py -I tools/mountain_port/build_annotate_exe.py                                  # 打包成 tools/mountain_port/annotate_scene.exe
+```
+
+exe 不需要安装 Python，“生成场景包”由 exe 自己完成，输出与 `make_scene_pack.py --gif --text --audio` 逐字节相同；exe 是构建产物，约 31 MB，不入库。工具只支持 format 3、640×480、正好 4 个阶段的场景；工具里画不出来的来源类型（rockfall、crack、quakes 等）会原样保留，T 图和动画中照常显示。

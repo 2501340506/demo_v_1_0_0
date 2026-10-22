@@ -98,6 +98,15 @@
 
 验证：在 Windows 上按教程从头做一张滑坡卡，用 SW3 选中后在板上播放。
 
+实施（2026-10-22）：
+- 工具放在 `tools/mountain_port/annotate_scene.py`（import 本项目的 `hazard_v3`、`make_scene_pack`）。“保存并生成场景包”按卡文字和旁白是否填全，自动带上 `--text`、`--audio`（`--gif` 照旧）；THUMB.BMP 由 `make_scene_pack` 生成 PIC1 时一并写出，所以不必另外调 `make_menu_thumbnails`。
+- 新增 文件 → 卡文字与旁白…（填村名、预警语、标题、字幕，检查和生成用同一套函数）和 文件 → 安装到 SD 卡…（按灾害类型放进四个固定文件夹，先备份被覆盖和过期的文件，写后读回，PIC 头与文件夹不符则拒绝）。无窗口形式：`annotate_scene.py --install-card`。
+- `scene_text.py` 加了 `repo_root()`（exe 从自带的 `osd_font_cn_16x16.v` 取字模）和宋体查找（`simsun.ttc` 找不到时给出明确报错），已有输出逐字节不变。
+- `build_annotate_exe.py` 打包 exe（约 31 MB，不入库）；exe 生成的 11 个文件与 Python 版逐字节一致。
+- 文档：`docs/场景标注工具使用说明.md`、`docs/滑坡卡制作教程.md`、`docs/images/landslide_tutorial/`（20 张图）、`tools/mountain_port/scenes/README.md` 新增“阶段音频”“场景文字”两节，路径改为本项目，并说明 SW3 菜单四个固定格子。
+- 测试：`diagnostics/annotate_tool/test_annotate_tool.py`（卡文字检查、安装的备份与拒绝、窗口对话框，`ANNOTATE_SLOW=1` 时从窗口完整生成一次）。
+- 没做：教程里“从头做一张滑坡卡”的人工操作，需要有人在窗口里按步骤点一遍。
+
 ### S5 场景 OSD 增强（最后做，有 LUT 门槛）
 
 1. **新显示项**：在 `scene/scene_text_overlay.v` 中加入 A `scene_osd.v` 的三项：
