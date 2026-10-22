@@ -15,7 +15,7 @@
 
 | A 的功能 | 本项目现状 | 处理 |
 |---|---|---|
-| 四张灾害卡的真人旁白：`tools/scene_audio.py`，52 个 MiniMax 录音 wav | `mountain_port` 只有 BMP；s2-card.1 的 SND 只有提示音和报警 | S2 移植 |
+| 四张灾害卡的真人旁白：`tools/scene_audio.py`，36 个 MiniMax 录音 wav | `mountain_port` 只有 BMP；s2-card.1 的 SND 只有提示音和报警 | S2 移植 |
 | `scene.yaml` 的 village、warning 和各阶段 title/legend/narration | `tools/mountain_port/scenes/*/scene.yaml` 每张卡少 22–24 行 | S2 合并 |
 | `make_scene_pack.py` 的 `--audio`/`--text` | `mountain_port/make_scene_pack.py` 删掉了这两项（约 18 行差异） | S2 恢复 |
 | 共享 1 ms tick：`mode_key_control` 486→209 LUT（2da0507） | 每个按键各有计数器 | S1 |
@@ -71,6 +71,7 @@
    - 预警语按村名定制。
    - 放宽 `complete_card_resources.py` 中 `validate_text` 对 `'立即撤离'` 的断言，并让 `card_resources.json` 从 yaml 取文字。
    - 编码前检查字数和字形数，超限直接报错，不写文件。
+   - 实施（2026-10-22）：字幕改由新脚本 `tools/mountain_port/make_card_narration.py` 从 yaml 读取并检查；`complete_card_resources.py` 及 `card_resources.json` 保留原样，用于复现 v0.19 包。
 6. **产出卡**：`releases/v0.25.0/s2-card.1`。四个 `情景模式/*_village` 目录的 FONT/TEXT/SND1–4 都要更新。PIC 和 THUMB.BMP 逐字节不变，不覆盖已有输出。
 
 验证：

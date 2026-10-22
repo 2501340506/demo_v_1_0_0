@@ -9,6 +9,8 @@ module tb_m6_text;
  wire [8:0] y;wire fs,first;
  reg [7:0] escape_code=0,escape_char=0;reg [3:0] escape_row=0;
  wire [4:0] escape_pixels;
+ // Independent 5x7 rows of the sixteen TEXT escapes, captured from osd_font_5x7.
+ reg [4:0] escape_rows[0:15][0:7];
  osd_font_5x7 escape_reference(.character(escape_char),.row(escape_row[3:1]),.pixels(escape_pixels));
  osd_pixel_position pos(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),.frame_start(fs),.first_active(first));
  wire legacy=!en && de && y>=200 && y<216 && x>=8 && x<216;
@@ -34,7 +36,8 @@ module tb_m6_text;
    if(en && !warn && py>=416 && py<448)begin segment=stage*2+1;row=(py-416)/2;tx=(px+step-632)/2;if(px+step<632)tx=-1;end
    if(en && warn)begin
     segment=8;
-    at=blink?4:2;
+    // 4x while blinking only for at most 9 characters; above 19, 1x.
+    at=tm[6+8*4]>19?1:blink && tm[6+8*4]<=9?4:2;
     offset=(640-tm[6+8*4]*16*at)/2;
     if(py>=240-8*at && py<240+8*at && px>=offset)begin tx=(px-offset)/at;row=(py-(240-8*at))/at;end
     else segment=-1;
@@ -42,8 +45,8 @@ module tb_m6_text;
    if(segment>=0 && px>=8 && px<632 && tx>=0 && tx<tm[6+segment*4]*16)begin
     offset=tm[4+segment*4]+256*tm[5+segment*4];code=tm[offset+tx/16];
     if(code<128)begin at=code*32+row*2+(tx%16)/8;hit=(fm[at]>>(7-tx%8))&1;end
-    // Demo's only ASCII is '!': explicit independent 5x7 rows below.
-    else if(code==255 && tx%16<10 && row<14)hit=(tx%16)/2==2 && (row/2<4 || row/2==5);
+    // Escapes F0-FF: 5x7 glyph doubled in the left 10x14 of the cell.
+    else if(code>=240 && tx%16<10 && row<14)hit=escape_rows[code-240][row/2][4-(tx%16)/2];
    end
    if(legacy)begin at=((px-8)/16)*32+(py-200)*2+((px-8)%16)/8;hit=(fm[at]>>(7-(px-8)%8))&1;end
    if(hit)reference=legacy?24'hffffff:warn?24'hff0000:24'h000000;
@@ -90,6 +93,7 @@ module tb_m6_text;
    for(integer er=0;er<8;er++)begin
     escape_row=er*2;#1;
     if(dut.ascii_pixels!==escape_pixels)$fatal(1,"escape font mismatch code=%h row=%d",escape_code,er);
+    escape_rows[ec][er]=escape_pixels;
    end
   end
   release dut.code;release dut.row1;

@@ -15,6 +15,10 @@ each stage `hazard` and `role` (written to BMP header bytes 6-7) and each
 source a `region`; T becomes region<<6 | time/4, 255 for no layer. Extra
 source types: polygon (filled), outline (polygon border), mask, all at t0.
 --gif writes one animated preview per stage (every 2nd frame, 8 s loop).
+--audio also writes SND1-4.PCM from each stage's sound/narration
+(tools/mountain_port/scene_audio.py); --no-tts replaces unrecorded speech by
+timing beeps. --text also writes FONT.BIN and TEXT.BIN v1 from village,
+warning and each stage's title/subtitle (tools/scene_text.py).
 """
 from pathlib import Path
 import argparse, heapq, math, struct, sys
@@ -602,6 +606,9 @@ def main():
     ap.add_argument('scene', help='scene.yaml')
     ap.add_argument('--out', help='output directory (default: scene "output", relative to the yaml)')
     ap.add_argument('--gif', action='store_true', help='format 3: also write gif/PICn.gif previews')
+    ap.add_argument('--audio', action='store_true', help='also write SND1-4.PCM from stage sound/narration')
+    ap.add_argument('--no-tts', action='store_true', help='with --audio: beeps instead of SAPI speech')
+    ap.add_argument('--text', action='store_true', help='also write FONT.BIN and TEXT.BIN (scene OSD text)')
     a = ap.parse_args()
     scene_path = Path(a.scene)
     base_dir = scene_path.parent
@@ -666,6 +673,18 @@ def main():
                   f'{int(cov.sum())} hazard px ({tr}), {int((T == T_SPOT).sum())} refuge px')
     overview(rows, out / 'overview.png')
     print(f'{out / "overview.png"}: columns t=0 on, t=120 on, t=239 on, t=239 off, T map')
+    if a.audio:
+        import scene_audio
+        scene_audio.write_stage_audio(cfg, base_dir, out, tts=not a.no_tts)
+    if a.text:
+        from make_card_narration import text_spec, validate_text
+        from scene_text import encode_text
+        spec = text_spec(cfg, str(scene_path))
+        font, text, meta = encode_text(spec, stages)
+        validate_text(font, text, meta, spec)
+        (out / 'sd' / 'FONT.BIN').write_bytes(font)
+        (out / 'sd' / 'TEXT.BIN').write_bytes(text)
+        print(f'{out / "sd"}: FONT.BIN {len(font)} bytes ({len(font) // 32} glyphs), TEXT.BIN {len(text)} bytes')
 
 
 if __name__ == '__main__':

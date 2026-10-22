@@ -7,6 +7,8 @@ format: 3
 size: [640, 480]
 base: pic1.png
 output: out
+village: 青石坡村                          # M5 OSD：预警模式标题（TEXT 段 0）
+warning: 红色预警！立即横向撤离滑坡区！   # M5 OSD：预警模式字幕（TEXT 段 9）
 
 stages:
   - name: 致因：持续强降雨，坡体饱水
@@ -14,6 +16,12 @@ stages:
     image: pic1.png
     hazard: landslide
     role: cause
+    title: 阶段1 致因：强降雨                # M5 OSD 标题（≤16 格）
+    subtitle: 持续强降雨，山坡吸饱了水  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
+    legend: [[zone, 滑坡隐患区], [rain, 强降雨]]
+    narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
+      - {t: 0, text: 持续强降雨，山坡吸饱了水。, file: voice/landslide_s1_t000.wav}
+      - {t: 100, text: 黄色虚线框出的是滑坡隐患坡体。, file: voice/landslide_s1_t100.wav}
     sources:
       - {type: outline, region: 0, width: 3, points: [[300, 118], [360, 100], [420, 110], [445, 170], [452, 240], [445, 285], [300, 288], [282, 235], [288, 170]]}
 
@@ -29,6 +37,13 @@ stages:
     image: pic2.png
     hazard: landslide
     role: onset
+    title: 阶段2 发生：坡体下滑                # M5 OSD 标题（≤16 格）
+    subtitle: 坡体整体下滑，注意落石  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
+    legend: [[mud, 滑坡体], [rock, 落石]]
+    narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
+      - {t: 0, text: 坡顶出现裂缝。, file: voice/landslide_s2_t000.wav}
+      - {t: 65, text: 坡体开始整体下滑！, file: voice/landslide_s2_t065.wav}
+      - {t: 140, text: 坡脚扬起尘土，注意落石！, file: voice/landslide_s2_t140.wav}
     sources:
       - type: dust                          # 坡脚扬尘：t≥196 自坡脚向上扩散
         region: 1
@@ -130,6 +145,12 @@ stages:
     image: pic3.png
     hazard: landslide
     role: aftermath
+    title: 阶段3 后果：掩埋房屋                # M5 OSD 标题（≤16 格）
+    subtitle: 滑坡掩埋了坡脚房屋和道路  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
+    legend: [[mud, 堆积掩埋区]]
+    narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
+      - {t: 0, text: 滑坡堆积掩埋了坡脚的房屋和道路。, file: voice/landslide_s3_t000.wav}
+      - {t: 130, text: 坡体仍可能继续垮塌。, file: voice/landslide_s3_t130.wav}
     sources:
       - type: seeds                         # 堆积体：从坡脚中部向下、向两侧扩展
         region: 0
@@ -147,6 +168,15 @@ stages:
     image: pic4.png
     hazard: landslide
     role: evacuation
+    sound: ../../../publicity/geohazard_release/cards/demo/card/SND4.PCM  # v0.25：v0.18 M6 循环警报，压低垫在撤离旁白下；预警模式循环播放 SND4
+    sound_gain: 0.3
+    sound_loop: true
+    title: 阶段4 撤离：横向离开                # M5 OSD 标题（≤16 格）
+    subtitle: 横向离开滑坡区，不要过桥  # v0.25 场景字幕（≤15 字，8 秒内可完整滚入）；旁白全文见 narration
+    legend: [[danger, 危险区], [route, 撤离路线], [refuge, 避险点]]
+    narration:                              # M4 旁白，t 为 0–239 时间轴（1× 下每秒 30）
+      - {t: 0, text: 立即撤离！横向离开滑坡区。, file: voice/landslide_s4_t000.wav}
+      - {t: 110, text: 沿绿色路线到东侧避险点，不要过桥。, file: voice/landslide_s4_t110.wav}
     sources:
       - {type: polygon, region: 1, points: [[288, 25], [410, 25], [422, 90], [436, 160], [452, 230], [466, 300], [474, 336], [282, 336], [278, 260], [280, 160]]}
       - type: polyline

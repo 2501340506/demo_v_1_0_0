@@ -5,6 +5,14 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ESCAPES = "0123456789 :.-/!"
+# Full-width forms of the escaped characters use the same codes.
+FULLWIDTH = {chr(0xFF10 + d): str(d) for d in range(10)}
+FULLWIDTH.update({"：": ":", "．": ".", "－": "-", "／": "/", "！": "!", "　": " "})
+
+
+def glyph_char(c):
+    """CJK ideographs and CJK/full-width punctuation are drawn as glyphs."""
+    return 0x3400 <= ord(c) <= 0x9fff or 0x3000 <= ord(c) <= 0x303f or 0xff00 <= ord(c) <= 0xffef
 
 
 def encode_text(spec, stages):
@@ -12,10 +20,12 @@ def encode_text(spec, stages):
         raise ValueError("text must be a mapping")
     titles = spec.get("titles", [s["name"] for s in stages])
     subtitles = spec.get("subtitles", [])
+    normal = lambda s: "".join(FULLWIDTH.get(c, c) for c in s) if isinstance(s, str) else s
+    titles, subtitles = [normal(s) for s in titles], [normal(s) for s in subtitles]
     if len(titles) != 4 or len(subtitles) != 4:
         raise ValueError("text needs four titles and four subtitles")
     segments = [v for pair in zip(titles, subtitles) for v in pair]
-    segments += [spec.get("warning", ""), spec.get("village", "")]
+    segments += [normal(spec.get("warning", "")), normal(spec.get("village", ""))]
     if any(not isinstance(s, str) or len(s) > 31 for s in segments):
         raise ValueError("each text segment must contain at most 31 characters")
     # Preserve all original bit patterns, including the older hand drawn glyphs.
@@ -29,8 +39,8 @@ def encode_text(spec, stages):
     new_chars = list(dict.fromkeys(c for s in segments for c in s if c not in ESCAPES and c not in slots))
     if len(new_chars) + 13 > 128:
         raise ValueError("FONT exceeds 128 glyphs")
-    if any(not (0x3400 <= ord(c) <= 0x9fff) for c in new_chars):
-        raise ValueError("text supports CJK characters and 0123456789 :.-/! only")
+    if any(not glyph_char(c) for c in new_chars):
+        raise ValueError("text supports CJK characters, CJK punctuation and 0123456789 :.-/! only")
     face_path = Path(spec.get("font", "C:/Windows/Fonts/simsun.ttc"))
     face = ImageFont.truetype(str(face_path), 16) if new_chars else None
     for i, character in enumerate(new_chars, 13):
