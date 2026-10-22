@@ -1,4 +1,13 @@
-# 当前交接：v0.27.0 SW4 独立调节面板 S1 候选待板测（2026-10-23）
+# 当前交接：v0.27.0 调节面板 s1-local.2 待板测（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。s1-local.1 板测：OSD/SCROLL 在情景、宣讲画面无效；用户要求去掉 SW1/SW2 的 01/10 调节模式、音量到 200%。[s1-local.2](releases/v0.27.0/s1-local.2/README.md)（源码 `3fc0e2a`，Seed 47）已全部改好：17464 LUT，Setup +0.136 ns / **Hold +0.003 ns**。卡不用换。
+- 已完成：`scene_text_overlay` 加 `hud_enable`/`subtitle_enable`，宣讲旁白 enable 接 SCROLL；`switch_mode` 把 01/10 映射为 00，`media_adjust_control` 去掉模式调节分支，参数 OSD 只剩 SPEED；`pcm_master_volume` 21 档 + 削顶，邮箱 39 位（音量高位在 bit 38）。新增 `run_scene_gates.ps1`；`tb_osd_render` 加 `+HUD`/`+SUB`；`run_s5_overlay.ps1` 一个变异的匹配串跟着源码改了。
+- 卡住的问题：时序余量小。5 个种子只有 47 过（7/21/43 Hold −0.002～−0.020，13 Setup −1.578），都在 SD 域原有逻辑。板上如有偶发异常，再加种子（3、5、11、29…）。
+- 下一步：等 s1-local.2 板测。
+
+## 历史交接
+
+### v0.27.0 SW4 独立调节面板 s1-local.1（2026-10-23）
 
 - 当前状态：分支 `feature/adjust-panel`（从 main 39167c2 拉出，v0.26.0-s1-local.1 板测通过后合入 main）。[s1-local.1](releases/v0.27.0/s1-local.1/README.md) 已固定：SW4（C5）拨上滑出两栏调节面板，10 个条目。17560 LUT（89.59%），Setup +0.111 ns / Hold +0.075 ns。卡不用换。[计划](docs/独立调节面板v0.27分阶段计划.md)。
 - 已完成：引脚和顶层端口；面板按键（独立去抖+手势，KEY4 长按 1 s）；控制和 38 位邮箱；面板显示；波形高度/渐变、OSD/滚动/淡入的运行时门控；新增 `diagnostics/adjust_panel/run_unit.ps1`（含 RTL 渲染 BMP 预览）；回归和 sd_pin_boot、复位审计；5 个种子构建（13、21 通过）。
