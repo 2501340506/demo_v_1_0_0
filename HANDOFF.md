@@ -1,4 +1,13 @@
-# 当前交接：v0.27.0 调节面板 s1-local.3 待板测（2026-10-23）
+# 当前交接：v0.27.0 调节面板 s1-local.4 待板测（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。[s1-local.4](releases/v0.27.0/s1-local.4/README.md)（源码 `0ad133c`，Seed 11）= s1-local.3 + 去掉场景左上角 SPEED。17617 LUT，Setup +0.116 / Hold +0.038 ns。s1-local.2、.3 都没收到板测反馈，这一版要把三轮改动一起测。
+- 已完成：`adjust_osd_overlay` 只剩 BCD 转换（`rgb_out=rgb_in`、`active=0`），端口保留；`tb_m5_ui` 改查直通、`tb_adjust_osd` 改读 BCD 输出。
+- 卡住的问题：无。遗留：`mountain_scene/run_m5_unit.ps1` 里的 `tb_m5_scan` 连着读卡模块已删端口（和 HANDOFF 早先列出的旧测试台同类）。
+- 下一步：等 s1-local.4 板测。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.3（2026-10-23）
 
 - 当前状态：分支 `feature/adjust-panel`。[s1-local.3](releases/v0.27.0/s1-local.3/README.md)（源码 `edcb6c0`，Seed 11）：面板加“场景 → 速度”，全部文字改中文（标题“参数调节”居中、去 SW4，底部“K1↑ K2↓ K4编辑/返回”）。17594 LUT（89.77%），Setup +0.113 / Hold +0.012 ns。s1-local.2 没收到板测反馈。
 - 已完成：`media_adjust_control` 加速度条目（6）并重新编号（共 11 项），只发 up/down/default 脉冲；`scene_speed_request`（同文件）按 `scenario_fsm` 的当前速度闭环发它原有的换档键，最多 3 次；面板字模由 `tools/make_panel_font.py` 生成 `panel_font_rom.v`（1024×16，2 块 BRAM9K）并把字符串写进 `adjust_osd_overlay.v` 标记块，8 px 半格排版。`TD_project/demo.al` 加了 `panel_font_rom.v`。

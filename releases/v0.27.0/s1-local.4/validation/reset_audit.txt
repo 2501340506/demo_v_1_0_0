@@ -1,0 +1,24 @@
+== u_adjust_panel
+    75 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[1]_syn_4
+     6 sr  \u_reset_mem/release_pipe [2]  <- .q of u_master_volume/in_left[2]_syn_6
+== u_parameter_osd
+    33 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[1]_syn_4
+== u_adjust_control
+    19 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/scan_state_b[0]_syn_33
+== u_adjust_cdc
+    28 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[1]_syn_4
+    17 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/scan_state_b[0]_syn_33
+== u_master_volume
+    23 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[1]_syn_4
+     7 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/scan_state_b[0]_syn_33
+     2 sr  reset_request  <- .f of u_osd_status_cdc/ack_sync_reg[1]_syn_4
+     1 sr  \u_reset_panel/release_pipe [2]  <- .q of u_master_volume/in_left[5]_syn_7
+     1 sr  \u_reset_mem/release_pipe [2]  <- .q of u_master_volume/in_left[2]_syn_6
+== sd_card_bmp_m0/u_panel_keys
+    32 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/scan_state_b[0]_syn_33
+     4 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[1]_syn_4
+== sd_card_bmp_m0/g_scenario$panel_speed
+     6 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/scan_state_b[0]_syn_33
+== u_panel_switch
+    12 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/scan_state_b[0]_syn_33
+     1 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[1]_syn_4
