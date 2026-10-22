@@ -2,7 +2,7 @@
 module tb_audio_stream;
  reg clk=0,rd=0;always #5 clk=~clk;always #19 rd=~rd;
  reg rst=1,enable=0,found=1,images=1,inject=0;reg [31:0] size=1202;
- wire pen,byte_valid;wire [7:0] byte_data,err;wire [31:0] loops;
+ wire pass_done;wire pen,byte_valid;wire [7:0] byte_data,err;wire [31:0] loops;
  wire stop,player_stop,permit,low,fr,sv,active,overrun;wire signed [15:0] left,right;wire [31:0] uf;
  wire ar,ab,av,ad;wire [31:0] al;wire [7:0] ae,data;wire [8:0] idx;
  reg pr=0;wire pb,pv,pd;wire [7:0] pe;
@@ -11,7 +11,7 @@ module tb_audio_stream;
  fat32_pcm_stream source(.clk(clk),.rst_n(!rst),.enable(enable),.audio_found(found),.first_cluster(32'd10),.file_size(size),
  .sectors_per_cluster(8'd1),.fat_start_lba(32'd1),.data_start_lba(32'd100),.max_cluster(32'd100),
  .sector_permit(permit),.player_stopped(player_stop),.player_ready(fr),.player_enable(pen),.file_valid(byte_valid),.file_byte(byte_data),
- .stopped(stop),.error_code(err),.loop_count(loops),.sector_req(ar),.sector_lba(al),.sector_busy(ab),.sector_valid(av),
+ .stopped(stop),.error_code(err),.loop_count(loops),.pass_done(pass_done),.sector_req(ar),.sector_lba(al),.sector_busy(ab),.sector_valid(av),
  .sector_done(ad),.sector_byte(data),.sector_error(ae),.sector_index(idx));
  pcm_stream_player #(.ADDR_WIDTH(9),.CLOCK_HZ(1000000),.SAMPLE_HZ(48000),.PREFILL(256),.LOW_WATER(128),.HIGH_WATER(384)) player(
  .wr_clk(clk),.wr_rst_n(!rst),.play_enable(pen),.file_valid(byte_valid),.file_byte(byte_data),.file_ready(fr),
@@ -52,8 +52,10 @@ module tb_audio_stream;
   end
  end
  integer received=0,check_mode=1;reg signed [15:0] expected;
+ // pass_done is the one-bit form of loop_count!=0, cleared with it at every session start.
+ always @(negedge clk)if(!rst && pass_done!==(loops!=0))$fatal(1,"pass_done %b but loop_count %0d",pass_done,loops);
  always @(posedge clk)if(!rst)begin
-  if(byte_valid && !fr && source.state==2)$fatal(1,"sector reservation failed at level %0d",level);
+  if(byte_valid && !fr && source.core.state==2)$fatal(1,"sector reservation failed at level %0d",level);
   if(pd)begin pictures++;if(pe)$fatal(1,"picture error");end
   if(pv && data!=8'ha5)$fatal(1,"audio bytes leaked to picture");
  end
@@ -90,5 +92,5 @@ module tb_audio_stream;
   wait(received>=602);
   $display("PASS audio stream: fragmented 1202-byte loops, concurrent pictures=%0d, short-file prefill, mid-sector stop/restart, error fallback, odd/empty/missing",pictures);$finish;
  end
- initial begin #50000000;$fatal(1,"stream watchdog received=%0d loops=%0d state=%0d",received,loops,source.state);end
+ initial begin #50000000;$fatal(1,"stream watchdog received=%0d loops=%0d state=%0d",received,loops,source.core.state);end
 endmodule

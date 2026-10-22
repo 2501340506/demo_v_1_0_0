@@ -163,6 +163,7 @@ wire [3:0] selected_audio_index;
 wire selected_audio_found,scene_stream_run;
 wire [31:0] selected_audio_cluster,selected_audio_size;
 wire [7:0] audio_stream_error;
+wire audio_pass_done;
 wire public_audio_request,public_fade,public_auto,public_offer,public_accept;
 wire [1:0] public_page;
 wire [2:0] public_voice_status;
@@ -309,7 +310,7 @@ generate if(AUDIO_ENABLE)begin: g_audio
  .max_cluster(audio_max_cluster),
  .sector_permit(sector_permit),.player_stopped(player_stopped),.player_ready(file_ready),
  .player_enable(player_enable),.file_valid(file_valid),.file_byte(file_byte),
- .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),.sector_busy(response_busy),
+ .stopped(audio_stopped),.error_code(audio_stream_error),.loop_count(),.pass_done(audio_pass_done),.sector_busy(response_busy),
  .source_request(pcm_source_request),.source_response(pcm_source_response));
  if(!SCENE_ENABLE)begin:g_pcm_source
   fat32_source_streamer #(.MAX_VISITED_CLUSTERS(8388608),.DATA_GATE_ENABLE(1)) source(
@@ -331,7 +332,7 @@ end else begin: g_no_audio
  assign audio_stopped=1'b1;assign a_req=1'b0;assign a_lba=0;assign a_urgent=0;
  assign pcm_source_request=0;assign pcm_source_response=0;
  assign bgm_valid=0;assign bgm_active=0;assign bgm_left=0;assign bgm_right=0;
- assign audio_stream_error=0;assign voice_done=0;assign voice_done_id=0;
+ assign audio_stream_error=0;assign audio_pass_done=0;assign voice_done=0;assign voice_done_id=0;
 end endgenerate
 always @(posedge clk or posedge rst) begin
  if(rst) begin
@@ -692,7 +693,9 @@ generate if(SCENE_ENABLE)begin:g_scenario
  scene_event_cdc events(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
   .sample_accept(bgm_valid && bgm_ready),.frame_start(transition_frame_start),
   .clk(clk),.rst(rst),.sample_tick(sample_tick),.frame_tick(frame_tick));
- scenario_fsm #(.PRESERVE_SPEED(PUBLICITY_ENABLE),.UI_GATE(PUBLICITY_ENABLE),.PREVIEW_SELECT(PUBLICITY_ENABLE),.MENU_ENABLE(MENU_ENABLE)) control(.pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto && (!PUBLICITY_ENABLE || !controls_blocked)),
+ // AUTO waits while this stage's SND narration has not been read through once.
+ wire narration_hold;
+ scenario_fsm #(.PRESERVE_SPEED(PUBLICITY_ENABLE),.UI_GATE(PUBLICITY_ENABLE),.PREVIEW_SELECT(PUBLICITY_ENABLE),.MENU_ENABLE(MENU_ENABLE),.NARRATION_GATE(1)) control(.narration_hold(narration_hold),.pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto && (!PUBLICITY_ENABLE || !controls_blocked)),
   .ui_play(effective_mode==0 && !controls_blocked),
   .select_request(preview_offer && scene_preview && !controls_blocked),.select_stage(preview_target),.select_ready(scene_select_ready),
   .scene_ready(first_image_committed && image_count==4 && !scan_busy),
@@ -711,6 +714,7 @@ generate if(SCENE_ENABLE)begin:g_scenario
   .selected_scene(selected_audio_scene),.selected_stage(selected_audio_stage),.ready(common_audio_ready));
  assign audio_ready=common_audio_ready && !public_audio_request;
  wire use_snd=selected_scene && snd_valid[selected_stage];
+ assign narration_hold=use_snd && scene_audio_running && !audio_pass_done;
  assign selected_audio_found=selected_publicity?voi_valid[selected_stage]:(use_snd || audio_found);
  assign selected_audio_index=selected_publicity?{2'b10,selected_stage}:use_snd?{2'b01,selected_stage}:4'd0;
  assign scenario_state={layer_enable,alert_level,stage,t_now};

@@ -1,6 +1,9 @@
 // SD-domain scene controller. PCM ticks are lossless playback events from CDC.
-module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, MENU_ENABLE=0)(
+module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, MENU_ENABLE=0, NARRATION_GATE=0)(
  input pause,restart,
+ // narration_hold: the stage's narration is still playing; AUTO waits for it
+ // (only with NARRATION_GATE). Keys and warning mode are not affected.
+ input narration_hold,
  input clk,rst,enable,scene_ready,key_next,key_mode,key_speed,
  input sample_tick,audio_running,frame_start,muted,auto_enable,
  input request_ready,picture_done,picture_failed,transition_idle,audio_ready,
@@ -31,8 +34,9 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, M
  // Decode the sample counter independently of the stage/output mux tree.
  // Pause holds the counter; navigation paths leave it unchanged until the
  // following non-RUN cycle resets it, exactly as the original controller.
+ wire auto_go = auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start && !(NARRATION_GATE && narration_hold);
  wire sample_navigation = (select_ready && select_request) || key_mode ||
-      (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start)));
+      (!warn_mode && (key_next || auto_go));
  wire sample_window = enable && scene_ready && !sample_navigation;
  wire sample_time_window = !warn_mode && t_now < 239;
  wire sample_changed = audio_running != running_q;
@@ -69,7 +73,7 @@ module scenario_fsm #(parameter PRESERVE_SPEED=0, UI_GATE=0, PREVIEW_SELECT=0, M
      if(!enable || !scene_ready)state<=EXIT_FADE;
      else if(select_ready && select_request)begin
       target<=select_stage;target_warn<=0;sent<=0;state<=PICTURE;
-     end else if(key_mode || (!warn_mode && (key_next || (auto_enable && (!UI_GATE || ui_play) && terminal_frame && frame_start))))begin
+     end else if(key_mode || (!warn_mode && (key_next || auto_go)))begin
       target<=key_mode?(warn_mode?2'd0:2'd3):stage+2'd1;
       target_warn<=key_mode?!warn_mode:warn_mode;sent<=0;state<=PICTURE;
      end else if(key_speed)begin speed<=speed==2?2'd0:speed+2'd1;half_frame<=0;end
