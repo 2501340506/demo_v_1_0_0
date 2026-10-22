@@ -221,6 +221,7 @@ endmodule
 module publicity_subtitle_overlay(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input text_valid,input [12:0] text_bytes,input resource_generation,input enable,playing,restart,
+ input done,   // v0.27: the voice has finished; let the passage scroll off
  input [1:0] page,output [10:0] text_addr,input [15:0] text_data,
  output reg hs_out,vs_out,de_out,output reg [9:0] x_out,output reg [23:0] rgb_out
 );
@@ -284,7 +285,11 @@ module publicity_subtitle_overlay(
   else begin
    playing_q<=playing;page_q<=page;
    if(!text_valid || page!=page_q || restart || (playing && !playing_q))phase<=0;
-   else if(frame_start && enable && playing && parser==READY)begin
+   // v0.27: advance on every voice frame even while the line is hidden (SCROLL
+   // off, preview, picture not committed yet), so it stays in step with the
+   // voice; after the voice ends, finish the pass instead of freezing the
+   // unscrolled rest on screen (it was timed to end just before the voice).
+   else if(frame_start && (playing || (done && phase!=0)) && parser==READY)begin
     if(next_phase>=scroll_end)phase<=scroll_end;else phase<=next_phase;
    end
   end

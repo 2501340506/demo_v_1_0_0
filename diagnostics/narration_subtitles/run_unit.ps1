@@ -6,9 +6,9 @@ if(Test-Path $out){throw 'Choose a fresh RunName'}
 New-Item -ItemType Directory $out | Out-Null
 & py -I -X utf8 "$root/tools/publicity/make_narration_subtitles.py" --out $out
 if($LASTEXITCODE){throw 'Vectors failed'}
-$sim='F:/modelsim/win64';$lib="$out/work".Replace('\','/')
+$sim='d:/modelsim/win64';$lib="$out/work".Replace('\','/')
 & "$sim/vlib.exe" $lib *> "$out/library.log"
-$vendor=Get-ChildItem 'E:/TD/sim_release/eg4/*.v','E:/TD/sim_release/common/*.v' | ForEach-Object {$_.FullName}
+$vendor=Get-ChildItem 'd:/TD/anlogic/TD6.2.1/sim_release/eg4/*.v','d:/TD/anlogic/TD6.2.1/sim_release/common/*.v' | ForEach-Object {$_.FullName}
 & "$sim/vlog.exe" -work $lib @vendor *> "$out/vendor.log"
 if($LASTEXITCODE){throw 'Vendor compile failed'}
 & "$sim/vlog.exe" -sv -work $lib "$root/user_source/hdl_source/scene/scene_bram32k.v" "$root/user_source/hdl_source/scene/scene_text_overlay.v" "$root/user_source/hdl_source/osd/osd_pixel_position.v" "$PSScriptRoot/tb_narration.sv" *> "$out/compile.log"

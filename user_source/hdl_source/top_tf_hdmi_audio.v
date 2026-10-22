@@ -746,7 +746,7 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
   publicity_subtitle_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
    .pixel_x(ring_x),.rgb_in(band_rgb),.text_valid(resources_pixel[21] && publicity_selected),
    .text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1] && scroll_on_frame),
-   .playing(app_status_pixel[14:12]==3'd2),.restart(audio_update),.page(audio_image),
+   .playing(app_status_pixel[14:12]==3'd2),.done(app_status_pixel[14:12]==3'd3),.restart(audio_update),.page(audio_image),
    .text_addr(narration_addr),.text_data(text_data),
    .hs_out(narration_hs),.vs_out(narration_vs),.de_out(narration_de),.x_out(narration_x),.rgb_out(narration_rgb));
  end else begin:g_no_narration
