@@ -684,8 +684,19 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  assign {final_hs,final_vs,final_de,final_x,final_content_rgb}=publicity_delay[2]?
   {narration_hs,narration_vs,narration_de,narration_x,narration_rgb}:
   {scene_hs,scene_vs,scene_de,scene_x,scene_rgb};
+ // A FONT/TEXT load takes a few ms, often less than a frame, and the mailbox below
+ // only samples once per frame: the pixel side may never see valid drop between
+ // two cards. This bit toggles on every completed load so the text parsers always
+ // re-read the new TEXT.BIN instead of keeping the old card's offsets.
+ reg resource_generation,resources_ready_q;
+ always @(posedge sd_card_clk or posedge rst_sd)
+  if(rst_sd)begin resource_generation<=0;resources_ready_q<=0;end
+  else begin
+   resources_ready_q<=font_valid_src && text_valid_src;
+   if(font_valid_src && text_valid_src && !resources_ready_q)resource_generation<=!resource_generation;
+  end
  media_adjust_cdc resource_cdc(.src_clk(sd_card_clk),.src_rst(rst_sd),
-  .src_state({1'b0,font_valid_src,text_valid_src,font_count_src,text_bytes_src}),
+  .src_state({resource_generation,font_valid_src,text_valid_src,font_count_src,text_bytes_src}),
   .dst_clk(video_clk),.dst_rst(rst_video),.frame_start(sub_frame_start),.frame_state(resources_pixel));
  scene_bram32k font_ram(.wr_clk(sd_card_clk),.wr_en(bin_wr_en && !bin_wr_text),
   .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(font_addr),.rd_data(font_data));
@@ -693,7 +704,7 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
   .wr_addr(bin_wr_addr),.wr_data(bin_wr_data),.rd_clk(video_clk),.rd_addr(text_addr),.rd_data(text_data));
  scene_text_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
   .pixel_x(ring_x),.rgb_in(band_rgb),.font_valid(resources_pixel[22]),.text_valid(resources_pixel[21] && !publicity_selected),
-  .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),
+  .font_count(resources_pixel[20:13]),.text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),
   .scene_enable(OSD_ENABLE && scene_enable && !preview_after_ring[1] && (!PUBLICITY_ENABLE || pixel_identity[1:0]==2)),.warn_mode(scene_meta_pixel[16]),.stage(scene_stage),.t_now(scene_time),
   .legacy_region(legacy_font_region),.legacy_char(legacy_font_char),.legacy_row(legacy_font_row),.legacy_col(legacy_font_col),
   .font_available(font_available),.scene_text_active(scene_text_active),
@@ -702,7 +713,7 @@ generate if(SCENE_DEMO_ENABLE)begin:g_scene_text
  if(PUBLICITY_ENABLE)begin:g_narration
   publicity_subtitle_overlay overlay(.clk(video_clk),.rst(rst_video),.hs(ring_hs),.vs(ring_vs),.de(ring_de),
    .pixel_x(ring_x),.rgb_in(band_rgb),.text_valid(resources_pixel[21] && publicity_selected),
-   .text_bytes(resources_pixel[12:0]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1]),
+   .text_bytes(resources_pixel[12:0]),.resource_generation(resources_pixel[23]),.enable(OSD_ENABLE && publicity_selected && !preview_after_ring[1]),
    .playing(app_status_pixel[14:12]==3'd2),.restart(audio_update),.page(audio_image),
    .text_addr(narration_addr),.text_data(text_data),
    .hs_out(narration_hs),.vs_out(narration_vs),.de_out(narration_de),.x_out(narration_x),.rgb_out(narration_rgb));

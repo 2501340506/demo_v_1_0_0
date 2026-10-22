@@ -16,6 +16,8 @@
 module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
  input font_valid,text_valid,input [7:0] font_count,input [12:0] text_bytes,
+ // Toggles on every completed FONT/TEXT load: re-parse even if valid never dropped.
+ input resource_generation,
  input scene_enable,warn_mode,input [1:0] stage,input [7:0] t_now,
  input legacy_region,input [7:0] legacy_char,input [3:0] legacy_row,legacy_col,
  output font_available,scene_text_active,
@@ -31,7 +33,7 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  reg [11:0] title_offset,subtitle_offset,village_offset,legend_offset;
  reg [7:0] title_length,subtitle_length,village_length,legend_length,descriptor_length;
  reg wide;       // TEXT.BIN has 14 segments (legends)
- reg [1:0] parse_stage;reg parse_warning;
+ reg [1:0] parse_stage;reg parse_warning,parse_generation;
  localparam IDLE=0,REQ=1,BYTE=2,CHECK=3,READY=4,BAD=5;
  reg [2:0] parser;
  reg [11:0] cursor;reg bad;
@@ -45,12 +47,12 @@ module scene_text_overlay #(parameter BAR_ENABLE=1, LEGEND_ENABLE=1)(
  // A bad TEXT file does not disable a successfully loaded FONT for UART OSD.
  always @(posedge clk or posedge rst)begin
   if(rst)begin parser<=IDLE;cursor<=0;bad<=0;low_offset<=0;high_offset<=0;
-   parse_stage<=0;parse_warning<=0;title_offset<=0;subtitle_offset<=0;village_offset<=0;legend_offset<=0;
+   parse_stage<=0;parse_warning<=0;parse_generation<=0;title_offset<=0;subtitle_offset<=0;village_offset<=0;legend_offset<=0;
    title_length<=0;subtitle_length<=0;village_length<=0;legend_length<=0;descriptor_length<=0;wide<=0;end
   else if(!font_available || !text_valid)begin parser<=IDLE;cursor<=0;bad<=0;end
-  else if(parser!=IDLE && (stage!=parse_stage || warn_mode!=parse_warning))parser<=IDLE;
+  else if(parser!=IDLE && (stage!=parse_stage || warn_mode!=parse_warning || resource_generation!=parse_generation))parser<=IDLE;
   else case(parser)
-   IDLE:begin cursor<=0;bad<=text_bytes<44 || text_bytes>4096;parse_stage<=stage;parse_warning<=warn_mode;legend_length<=0;parser<=REQ;end
+   IDLE:begin cursor<=0;bad<=text_bytes<44 || text_bytes>4096;parse_stage<=stage;parse_warning<=warn_mode;parse_generation<=resource_generation;legend_length<=0;parser<=REQ;end
    REQ:parser<=BYTE;
    BYTE:begin
     case(cursor)
@@ -216,7 +218,7 @@ endmodule
 // this RAM port; legacy TX parsing/rendering stays in scene_text_overlay.
 module publicity_subtitle_overlay(
  input clk,rst,hs,vs,de,input [9:0] pixel_x,input [23:0] rgb_in,
- input text_valid,input [12:0] text_bytes,input enable,playing,restart,
+ input text_valid,input [12:0] text_bytes,input resource_generation,input enable,playing,restart,
  input [1:0] page,output [10:0] text_addr,input [15:0] text_data,
  output reg hs_out,vs_out,de_out,output reg [9:0] x_out,output reg [23:0] rgb_out
 );
@@ -224,18 +226,18 @@ module publicity_subtitle_overlay(
  osd_pixel_position pos(.clk(clk),.rst(rst),.vs(vs),.de(de),.line_y(y),
   .frame_start(frame_start),.first_active(first_active));
  localparam IDLE=0,REQ=1,WORD=2,CHECK=3,READY=4,BAD=5;
- reg [2:0] parser;reg [10:0] cursor;reg bad;reg [1:0] parse_page;
+ reg [2:0] parser;reg [10:0] cursor;reg bad;reg [1:0] parse_page;reg parse_generation;
  reg [11:0] offset,descriptor_offset;reg [7:0] length,descriptor_length;
  reg [9:0] step_q8;reg [2:0] field;reg [1:0] descriptor;
  wire [12:0] segment_end={1'b0,descriptor_offset}+{4'd0,descriptor_length,1'b0};
  always @(posedge clk or posedge rst)begin
-  if(rst)begin parser<=IDLE;cursor<=0;bad<=0;parse_page<=0;offset<=0;length<=0;
+  if(rst)begin parser<=IDLE;cursor<=0;bad<=0;parse_page<=0;parse_generation<=0;offset<=0;length<=0;
    step_q8<=0;descriptor_offset<=0;descriptor_length<=0;field<=0;descriptor<=0;end
   else if(!text_valid)begin parser<=IDLE;cursor<=0;bad<=0;end
-  else if(parser!=IDLE && page!=parse_page)parser<=IDLE;
+  else if(parser!=IDLE && (page!=parse_page || resource_generation!=parse_generation))parser<=IDLE;
   else case(parser)
    IDLE:begin
-    parser<=REQ;cursor<=0;parse_page<=page;field<=0;descriptor<=0;
+    parser<=REQ;cursor<=0;parse_page<=page;parse_generation<=resource_generation;field<=0;descriptor<=0;
     bad<=text_bytes<44 || text_bytes>4096 || text_bytes[0];
    end
    REQ:parser<=WORD;

@@ -14,7 +14,7 @@ module tb_osd_render;
  scene_bram32k tr(.wr_clk(wr_clk),.wr_en(wen && kind),.wr_addr(wa),.wr_data(wd),.rd_clk(clk),.rd_addr(ta),.rd_data(td));
  wire [23:0] pic=(de && y<480 && x<640)?bg[y*640+x]:24'h000000;
  scene_text_overlay dut(.clk(clk),.rst(rst),.hs(hs),.vs(vs),.de(de),.pixel_x(x),.rgb_in(pic),
-  .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.scene_enable(en),.warn_mode(warn),.stage(stage),.t_now(tnow),
+  .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.resource_generation(1'b0),.scene_enable(en),.warn_mode(warn),.stage(stage),.t_now(tnow),
   .legacy_region(1'b0),.legacy_char(8'd0),.legacy_row(4'd0),.legacy_col(4'd0),
   .font_available(available),.scene_text_active(active),.text_addr(ta),.text_data(td),.font_addr(fa),.font_data(fd),
   .hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb));

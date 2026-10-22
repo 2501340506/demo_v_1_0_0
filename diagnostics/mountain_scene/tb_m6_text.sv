@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 module tb_m6_text;
  reg clk=0,wr_clk=0;always #5 clk=~clk;always #7 wr_clk=~wr_clk;
- reg rst=1,hs=1,vs=1,de=0,wen=0,kind=0,fv=0,tv=0,en=0,warn=0;
+ reg rst=1,hs=1,vs=1,de=0,wen=0,kind=0,fv=0,tv=0,en=0,warn=0,gen=0;
  reg [1:0] stage=0;reg [7:0] tnow=0;reg slow=0;reg [9:0] x=0;reg [11:0] wa=0;reg [7:0] wd=0;
- reg [7:0] fm[0:4095],tm[0:4095];integer fbytes,tbytes,checks=0;
+ reg [7:0] fm[0:4095],tm[0:4095];integer fbytes,tbytes,checks=0,switch_card=0;bit switched=0;
  wire [10:0] fa,ta;wire [15:0] fd,td;wire ho,vo,deo,available,active;
  wire [9:0] xo;wire [23:0] rgb;
  wire [8:0] y;wire fs,first;
@@ -18,7 +18,7 @@ module tb_m6_text;
  scene_bram32k fr(.wr_clk(wr_clk),.wr_en(wen && !kind),.wr_addr(wa),.wr_data(wd),.rd_clk(clk),.rd_addr(fa),.rd_data(fd));
  scene_bram32k tr(.wr_clk(wr_clk),.wr_en(wen && kind),.wr_addr(wa),.wr_data(wd),.rd_clk(clk),.rd_addr(ta),.rd_data(td));
  scene_text_overlay dut(.clk(clk),.rst(rst),.hs(hs),.vs(vs),.de(de),.pixel_x(x),.rgb_in(24'h123456),
-  .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.scene_enable(en),.warn_mode(warn),.stage(stage),.t_now(tnow),
+  .font_valid(fv),.text_valid(tv),.font_count(8'(fbytes/32)),.text_bytes(13'(tbytes)),.resource_generation(gen),.scene_enable(en),.warn_mode(warn),.stage(stage),.t_now(tnow),
   .legacy_region(legacy),.legacy_char(lc),.legacy_row(4'(y-200)),.legacy_col(4'(x-8)),
   .font_available(available),.scene_text_active(active),.text_addr(ta),.text_data(td),.font_addr(fa),.font_data(fd),
   .hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb));
@@ -134,6 +134,24 @@ module tb_m6_text;
   warn=1;tnow=8'd239;frame(0);force dut.scroll=300;frame(300);release dut.scroll;
   blink=1;force dut.frames=16;force dut.scroll=500;frame(500);release dut.scroll;
   force dut.frames=0;
+  // Card switch as on the board: the first card is showing stage 1 and has been parsed; the
+  // SW3 menu picks another scene, which also starts at stage 1, so the stage does not change.
+  // Its FONT/TEXT arrive while valid stays high (the load is shorter than a frame, so the
+  // pixel side never sees valid drop); only resource_generation toggles. From the first frame
+  // after the load every pixel, the legend line included, must come from the new card.
+  warn=0;blink=0;force dut.frames=0;
+  if($value$plusargs("SWITCH=%d",switch_card) && switch_card)begin
+   en=1;stage=0;warn=0;tnow=8'd239;force dut.frames=32;slow=1;
+   force dut.scroll=624;frame(624);release dut.scroll;           // first card, stage 1
+   if(dut.parser!=4)$fatal(1,"first card not parsed before the switch");
+   $readmemh("font2.hex",fm);$readmemh("text2.hex",tm);
+   if(!$value$plusargs("F2_BYTES=%d",fbytes) || !$value$plusargs("T2_BYTES=%d",tbytes))$fatal(1,"sizes2");
+   load(0,fbytes);load(1,tbytes);gen=!gen;
+   repeat(9000)@(negedge clk);
+   force dut.scroll=624;frame(624);release dut.scroll;           // second card, still stage 1
+   for(integer s=1;s<4;s++)begin stage=s;force dut.scroll=624;frame(624);release dut.scroll;end
+   slow=0;force dut.frames=0;switched=1;
+  end
   en=0;warn=0;blink=0;frame(0);
   invalid_file(0,0);invalid_file(2,2);invalid_file(3,9);invalid_file(6,8'd255);
   invalid_file(4,0);invalid_file(5,16);invalid_file(7,3);invalid_file(tbytes-2,8'h80);
@@ -141,6 +159,7 @@ module tb_m6_text;
   invalid_file(tbytes-2,8'he8);invalid_file(3,11);
   load(1,tbytes);tv=1;repeat(9000)@(negedge clk);if(dut.parser!=4)$fatal(1,"reload failed");
   fv=0;repeat(5)@(negedge clk);if(available || active)$fatal(1,"absent font fallback");
+  if(switched)$display("PASS card switch: second card's FONT/TEXT re-parsed without a valid drop, all four stages checked");
   $display("PASS M6 text: %0d pixel/bundle comparisons, four stage titles, village, scrolling, warning, 13 legacy glyphs, malformed/reload/missing resources; actual EG4 BRAM32k",checks);$finish;
  end
  initial begin #150000000;$fatal(1,"text watchdog");end
