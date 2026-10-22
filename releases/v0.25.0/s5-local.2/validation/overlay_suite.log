@@ -1,0 +1,20 @@
+PASS legend card landslide_village
+PASS legend card debris_village
+PASS legend card flood_village
+PASS legend card quake_village
+PASS 10-segment card landslide_village
+PASS 10-segment card debris_village
+PASS 10-segment card flood_village
+PASS 10-segment card quake_village
+PASS overlay lockstep: 14 frames, 4384070 clocks, HUD and legend off equal the S3 overlay
+DETECTED fill_off_by_one
+DETECTED bar_row
+DETECTED block_corner
+DETECTED legend_row
+DETECTED swatch_inset
+DETECTED refuge_blink
+DETECTED swatch_colour
+DETECTED alert_colour
+DETECTED wide_ignored
+DETECTED legend_stage
+DETECTED swatch_codes_rejected
