@@ -1,0 +1,12 @@
+{
+  "candidate": "v0.26.0-s1-local.1",
+  "source_commit": "ae2ab98",
+  "build": "sym26_td_s7",
+  "seed": 7,
+  "bit_bytes": 675020,
+  "lut": 16730,
+  "registers": 10056,
+  "setup_ns": 0.145,
+  "hold_ns": 0.003,
+  "board": "pending"
+}
