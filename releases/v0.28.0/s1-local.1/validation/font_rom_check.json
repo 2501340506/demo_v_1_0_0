@@ -1,0 +1,9 @@
+{
+  "netlist": "diagnostics\\output\\v28_td_s17\\timing_audit\\physical_audit.v",
+  "method": "decode mapped EG_PHY_BRAM INIT/INITP, compare all 21 bits per row",
+  "bram_instances": 17,
+  "glyphs": 292,
+  "font_size": 21,
+  "rows_compared": 6132,
+  "passed": true
+}

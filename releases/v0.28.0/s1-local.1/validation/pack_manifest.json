@@ -1,0 +1,189 @@
+{
+  "tool_version": 1,
+  "config_version": 1,
+  "name": "识征兆，会避险",
+  "content_version": "v28-content.1-2026-10-23",
+  "content_review": "pending_human_review",
+  "formal_narration": false,
+  "image_format": "640x480 RGB888 bottom-up BMP BI_RGB; 24bpp",
+  "audio_format": "48000Hz mono signed s16le raw PCM (no WAV header)",
+  "minimum_display_seconds_target": 5,
+  "hardware_support": "needs v0.28 bit (292-glyph narration font ROM)",
+  "layout": {
+    "size": [
+      640,
+      480
+    ],
+    "top_reserved": [
+      0,
+      0,
+      640,
+      60
+    ],
+    "audio_reserved": [
+      0,
+      420,
+      640,
+      480
+    ],
+    "title_font_px": 30,
+    "body_font_px": 16,
+    "note": "640x480；AI 漫画插画铺满 + 代码标注；MiniMax 配音；y420-479 留给字幕和波形。"
+  },
+  "pages": [
+    {
+      "id": 1,
+      "title": "滑坡：别往下跑，横着跑",
+      "image_input": "inputs/page1.png",
+      "bmp": "EDU1.BMP",
+      "bmp_bytes": 921654,
+      "preview": "previews/EDU1.png",
+      "script_input": "scripts/page1.txt",
+      "script": "2025年5月22日，陕西清涧一家敬老院，管理员发现后山掉土块、坡体松动，马上上报。十七人五分钟撤完，六分钟后，滑坡掩埋了食堂和大门，无人伤亡。滑坡，就是山坡上的土石整体往下滑。要留意这些征兆：坡上裂缝变宽，墙和地面开裂，树木歪斜，坡脚冒出浑水。一旦发现，立即撤离，横向离开滑坡区，不要顺着坡往下跑，也不要回屋拿东西。记住口诀：裂缝鼓包树歪斜，横向快跑莫往下。",
+      "source_refs": [
+        {
+          "path": "sources/S11.md",
+          "record": "# S11：陕西清涧\"5·22\"恒德盛敬老院滑坡避险（2025）\n- 出处：自然资源部地质勘查管理司 2025 年度全国地质灾害成功避险十大典型案例（2026-05-12 公布）。\n- 转载：https://www.zhonghongwang.com/show-258-460492-1.html ；http://yn.people.com.cn/n2/2026/0513/c378439-41578639.html\n- 核对日期：2026-10-23（转载稿，部官网原文待补）。\n- 采用事实：11:30 群测群防员发现西侧山坡土块滚落、坡体松动并上报；11:35 许 13 名老人和 4 名工作人员全部撤离；11:41 左右滑坡加速，掩埋食堂和大门；无人员伤亡。\n- 旁白转述：\"十七人五分钟撤完，六分钟后滑坡\"。"
+        }
+      ],
+      "audio_input": "inputs/narration1.wav",
+      "audio_status": "narration_unreviewed",
+      "pcm": "VOI1.PCM",
+      "pcm_bytes": 4172152,
+      "pcm_samples": 2086076,
+      "duration_seconds": 43.459916666666665,
+      "audio_matches_script": null,
+      "note": "Narration requires full listening review against the script."
+    },
+    {
+      "id": 2,
+      "title": "泥石流：往两侧高处跑",
+      "image_input": "inputs/page2.png",
+      "bmp": "EDU2.BMP",
+      "bmp_bytes": 921654,
+      "preview": "previews/EDU2.png",
+      "script_input": "scripts/page2.txt",
+      "script": "2026年8月26日，西藏吉隆口岸，冰川崩塌引发泥石流，六七分钟冲出二十多公里，造成重大伤亡。泥石流来得太快，看见再跑往往来不及。2025年8月13日，云南峨山一位村民发现屋后冲沟冲出砂石，马上报告，二十分钟后泥石流暴发，四百六十二人已全部撤离。沟里传来火车一样的轰鸣，沟水突然断流或猛涨变浑，都是危险信号。要向沟道两侧的高处跑，不要顺着沟跑，不要横穿沟口。口诀：沟响水断要警惕，两侧高处是生路。",
+      "source_refs": [
+        {
+          "path": "sources/S12.md",
+          "record": "# S12：西藏吉隆\"8·26\"泥石流（2026，警示案例）\n- 出处：新华网、新民网数据新闻、维基百科条目（汇总官方通报）。\n- https://www.xinmin.cn/2026jilong826/jilong-826.html ；https://zh.wikipedia.org/wiki/2026年中尼边境泥石流灾害\n- 核对日期：2026-10-23。\n- 采用事实：尼泊尔境内冰川断裂引发冰岩崩，转为泥石流，约 6–7 分钟冲击约 22 公里到达吉隆口岸，造成重大伤亡。\n- 旁白只用\"冰川崩塌引发泥石流，六七分钟冲出二十多公里，造成重大伤亡\"，不引用具体伤亡数字（各来源截止时间不一致）。\n- 注意：事件时间近、伤亡惨重，宣讲语气保持克制；如场合不宜，可整句删去，只保留 S13。"
+        },
+        {
+          "path": "sources/S13.md",
+          "record": "# S13：云南峨山\"8·13\"法土山组泥石流避险（2025）\n- 出处：2025 年度全国地质灾害成功避险十大典型案例；峨山县人民政府。\n- http://yn.people.com.cn/n2/2026/0513/c378439-41578639.html ；https://www.yxes.gov.cn/es/bmgzdt9789/20260522/1663646.html\n- 核对日期：2026-10-23。\n- 采用事实：6:10 左右村民巡查屋后排水沟，发现后山冲沟冲出砂石并报告；6:30 泥石流暴发，受威胁 102 户 462 人已全部撤离。"
+        }
+      ],
+      "audio_input": "inputs/narration2.wav",
+      "audio_status": "narration_unreviewed",
+      "pcm": "VOI2.PCM",
+      "pcm_bytes": 4206266,
+      "pcm_samples": 2103133,
+      "duration_seconds": 43.81527083333334,
+      "audio_matches_script": null,
+      "note": "Narration requires full listening review against the script."
+    },
+    {
+      "id": 3,
+      "title": "山洪：上高处，不过桥",
+      "image_input": "inputs/page3.png",
+      "bmp": "EDU3.BMP",
+      "bmp_bytes": 921654,
+      "preview": "previews/EDU3.png",
+      "script_input": "scripts/page3.txt",
+      "script": "2025年6月19日，重庆酉阳，信息员发现河堤险情，村里用电话、广播、敲锣和上门叫人，八百二十五名群众就近转移。十三分钟后，洪水漫过河堤，六十六栋房屋被淹，却无一人伤亡。山洪，是山区暴雨后河水暴涨，来得急、冲力大。上游连降大雨，河水突然变浑上涨，水声变大，就要马上行动。沿本岸小路就近上山，不要过桥，不要沿河走，不要涉水，更不要开车冲过漫水路。口诀：河水浑涨快上山，不过桥来不沿河。",
+      "source_refs": [
+        {
+          "path": "sources/S14.md",
+          "record": "# S14：重庆酉阳洪涝避险（应急管理部 2025 年度全国 10 个成功避险典型案例 · 案例5）\n- 出处：应急管理部 2026-08 发布；转载全文 https://www.xinxing.gov.cn/yfxxyjgl/gkmlpt/content/2/2030/post_2030185.html\n- 核对日期：2026-10-23。\n- 采用事实：2025-06-19 16时至20日2时，酉阳县大溪镇、五福镇信息报送员发现河堤决堤等险情；镇村两级利用移动电话、广播、敲锣打鼓及上门叫应发布转移信息，组织河堤两旁低洼地带 825 名群众就近转移；13 分钟后洪水漫过河堤，66 栋房屋被淹，无人员伤亡。"
+        }
+      ],
+      "audio_input": "inputs/narration3.wav",
+      "audio_status": "narration_unreviewed",
+      "pcm": "VOI3.PCM",
+      "pcm_bytes": 4276374,
+      "pcm_samples": 2138187,
+      "duration_seconds": 44.5455625,
+      "audio_matches_script": null,
+      "note": "Narration requires full listening review against the script."
+    },
+    {
+      "id": 4,
+      "title": "地震：震时躲，震后撤",
+      "image_input": "inputs/page4.png",
+      "bmp": "EDU4.BMP",
+      "bmp_bytes": 921654,
+      "preview": "previews/EDU4.png",
+      "script_input": "scripts/page4.txt",
+      "script": "2008年5月12日，四川汶川发生8.0级大地震，近七万人遇难。从第二年起，每年5月12日成为全国防灾减灾日。听到地震预警或感到强烈晃动，在室内要就近躲到结实的桌子旁或内墙角，蹲下、护头、抓牢；不要跳楼，不要乘电梯。晃动停止后，迅速撤到空旷平地，远离房屋和山坡，小心余震引发崩塌和滑坡。口诀：震时就近躲，震后快撤离。最后请记住：发现征兆早报告，听到预警马上跑，听从村里安排，生命第一。",
+      "source_refs": [
+        {
+          "path": "sources/S15.md",
+          "record": "# S15：汶川地震与全国防灾减灾日\n- 2008-05-12 四川汶川 8.0 级地震，遇难 69227 人（国务院新闻办公布数据；PPT首选1/01 亦引用）。\n- 经国务院批准，自 2009 年起每年 5 月 12 日为全国防灾减灾日（PPT首选1/22、32）。\n- 避震要点（就近躲避、护头、不跳楼不乘电梯、震后到空旷处）与应急管理部地震避险科普一致；与情景卡 quake_village 撤离台词一致。\n- 待补：应急管理部/中国地震局官网原文链接。"
+        }
+      ],
+      "audio_input": "inputs/narration4.wav",
+      "audio_status": "narration_unreviewed",
+      "pcm": "VOI4.PCM",
+      "pcm_bytes": 4322686,
+      "pcm_samples": 2161343,
+      "duration_seconds": 45.02797916666667,
+      "audio_matches_script": null,
+      "note": "Narration requires full listening review against the script."
+    }
+  ],
+  "files": [
+    {
+      "path": "EDU1.BMP",
+      "bytes": 921654
+    },
+    {
+      "path": "EDU2.BMP",
+      "bytes": 921654
+    },
+    {
+      "path": "EDU3.BMP",
+      "bytes": 921654
+    },
+    {
+      "path": "EDU4.BMP",
+      "bytes": 921654
+    },
+    {
+      "path": "VOI1.PCM",
+      "bytes": 4172152
+    },
+    {
+      "path": "VOI2.PCM",
+      "bytes": 4206266
+    },
+    {
+      "path": "VOI3.PCM",
+      "bytes": 4276374
+    },
+    {
+      "path": "VOI4.PCM",
+      "bytes": 4322686
+    },
+    {
+      "path": "previews/EDU1.png",
+      "bytes": 499403
+    },
+    {
+      "path": "previews/EDU2.png",
+      "bytes": 574486
+    },
+    {
+      "path": "previews/EDU3.png",
+      "bytes": 589397
+    },
+    {
+      "path": "previews/EDU4.png",
+      "bytes": 423540
+    },
+    {
+      "path": "previews/overview.png",
+      "bytes": 2106984
+    }
+  ]
+}

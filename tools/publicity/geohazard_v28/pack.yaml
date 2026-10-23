@@ -1,0 +1,40 @@
+version: 1
+name: 识征兆，会避险
+content_version: v28-content.1-2026-10-23
+layout:
+  size: [640, 480]
+  top_reserved: [0, 0, 640, 60]
+  audio_reserved: [0, 420, 640, 480]
+  title_font_px: 30
+  body_font_px: 16
+  note: 640x480；AI 漫画插画铺满 + 代码标注；MiniMax 配音；y420-479 留给字幕和波形。
+pages:
+- id: 1
+  title: 滑坡：别往下跑，横着跑
+  image: inputs/page1.png
+  audio: inputs/narration1.wav
+  audio_status: narration_unreviewed
+  script: scripts/page1.txt
+  source_refs: [sources/S11.md]
+- id: 2
+  title: 泥石流：往两侧高处跑
+  image: inputs/page2.png
+  audio: inputs/narration2.wav
+  audio_status: narration_unreviewed
+  script: scripts/page2.txt
+  source_refs: [sources/S12.md, sources/S13.md]
+- id: 3
+  title: 山洪：上高处，不过桥
+  image: inputs/page3.png
+  audio: inputs/narration3.wav
+  audio_status: narration_unreviewed
+  script: scripts/page3.txt
+  source_refs: [sources/S14.md]
+- id: 4
+  title: 地震：震时躲，震后撤
+  image: inputs/page4.png
+  audio: inputs/narration4.wav
+  audio_status: narration_unreviewed
+  script: scripts/page4.txt
+  source_refs: [sources/S15.md]
+hardware_support: needs v0.28 bit (292-glyph narration font ROM)

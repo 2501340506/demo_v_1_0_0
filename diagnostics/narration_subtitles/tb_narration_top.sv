@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+`include "narration_params.svh"
 // Production 18-clock path with real byte-written TEXT BRAM and glyph ROM.
 // SD/SDRAM are isolated, so this is not a physical-card/board test.
 module tb_narration_top;
@@ -6,7 +7,7 @@ module tb_narration_top;
  reg hs=1,vs=1,de=0,valid=1,audio=1,wen=0;
  reg [9:0] x=0;reg [8:0] y=0;reg [5:0] identity=1;
  reg [1:0] page=0;reg [31:0] desc=0;reg [11:0] wa;reg [7:0] wd;
- reg [15:0] words[0:620];reg [20:0] font[0:5795];
+ reg [15:0] words[0:`NARR_WORDS-1];reg [20:0] font[0:`NARR_ROWS-1];
  top dut(.clk(clk),.rst_n(!rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),
  .sw1(1'b0),.sw2(1'b0),.sw3(1'b0),.sw4(1'b0),.sd_miso(1'b1),.uart_rx(1'b1));
  top #(.OSD_ENABLE(0)) ref_dut(.clk(clk),.rst_n(!rst),.key1(1'b1),.key2(1'b1),.key4(1'b1),
@@ -21,7 +22,7 @@ module tb_narration_top;
  force D.brightness_frame=128;force D.contrast_frame=128; \
  force D.transition_level=16;force D.transition_wipe=0;force D.ring_bar_height=28; \
  force D.bin_wr_en=wen;force D.bin_wr_text=1;force D.bin_wr_addr=wa;force D.bin_wr_data=wd; \
- force D.resources_pixel=24'h2004da;force D.app_status_pixel=24'h002000;
+ force D.resources_pixel=24'h200000|24'd`NARR_BYTES;force D.app_status_pixel=24'h002000;
  integer phase=0;
  initial begin
   `DRIVE(dut)
@@ -50,7 +51,7 @@ module tb_narration_top;
   $readmemh("text_words.hex",words);$readmemh("font_rows.hex",font);
   for(i=0;i<=18;i++)check[i]=0;
   repeat(10)@(negedge pix);
-  for(integer b=0;b<1242;b++)begin wa=b;wd=b%2?words[b/2][15:8]:words[b/2][7:0];wen=1;@(negedge pix);end
+  for(integer b=0;b<`NARR_BYTES;b++)begin wa=b;wd=b%2?words[b/2][15:8]:words[b/2][7:0];wen=1;@(negedge pix);end
   wen=0;rst=0;repeat(2500)@(negedge pix);
   for(integer f=0;f<8;f++)begin
    case_id=f;identity=1;desc=0;page=f%4;phase=(624+f*21)*256;

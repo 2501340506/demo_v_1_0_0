@@ -29,11 +29,12 @@ def check(netlist,reference,out):
             assert not coverage[start+address]&mask
             restored[start+address]|=value<<bit;coverage[start+address]|=mask
     expected=[int(row,16) for row in reference.read_text(encoding='ascii').splitlines()]
-    assert len(expected)==276*rom_width
+    assert expected and len(expected)%rom_width==0
+    glyphs=len(expected)//rom_width
     for address,value in enumerate(expected):
         assert coverage[address]==(1<<rom_width)-1 and restored[address]==value,(address,hex(restored[address]),hex(value))
     report=dict(netlist=str(netlist),method=f'decode mapped EG_PHY_BRAM INIT/INITP, compare all {rom_width} bits per row',
-                bram_instances=len(blocks),glyphs=276,font_size=rom_width,rows_compared=len(expected),passed=True)
+                bram_instances=len(blocks),glyphs=glyphs,font_size=rom_width,rows_compared=len(expected),passed=True)
     out.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print('PASS mapped font:',len(blocks),'BRAMs;',len(expected),'rows byte/bit exact')
 

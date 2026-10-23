@@ -1,0 +1,22 @@
+{
+  "candidate": "v0.28.0-s1-local.1",
+  "source_commit": "6c598f4",
+  "build": "v28_td_s17",
+  "seed": 17,
+  "lut": 17571,
+  "setup_ns": 0.08,
+  "hold_ns": 0.027,
+  "board": "passed 2026-10-23 (user: 板测功能通过)",
+  "sha256": {
+    "demo.bit": "c3d4212843a79227c6b556fa0cb1782a007ac739af54fe2ca3eac6ae4e83dffc",
+    "card/宣讲模式/EDU1.BMP": "21640b64ac0936430edbda32a8a5f9413ff668412c874339d2718efbeaf86c1a",
+    "card/宣讲模式/EDU2.BMP": "3a5e39c6583f691af8a2feecee2702e7b9a74d9237f57731864bca4ee59a2ea8",
+    "card/宣讲模式/EDU3.BMP": "8d768e722bc32357473922f63711880eaf8d51018ebfb94e08d3562039f6ba78",
+    "card/宣讲模式/EDU4.BMP": "5e756bced21ed8f5edd7bde985cdcdedd0f607b12b3fe4e9f0da9c64ef67ae2d",
+    "card/宣讲模式/TEXT.BIN": "f7e3ce444c65b141bd7c4989debf417459f92894247fb8041dcc328b163d70ee",
+    "card/宣讲模式/VOI1.PCM": "88841f57ab9f02087435cb50b7acde05c48ba09fa65a17012c210bb76f3c019b",
+    "card/宣讲模式/VOI2.PCM": "68007d9753e99d4df72132f6ccae11a4151a80d87e95c522b8cae76b2ae6f77e",
+    "card/宣讲模式/VOI3.PCM": "86189b2a3d073a53dea9807c9f478eca8d66b6d838d70a850b857e554e9f5b0c",
+    "card/宣讲模式/VOI4.PCM": "d62b652233423e1b9baf6db1bbccd79a8d77ed94d23ae93406992fcb5266f1e8"
+  }
+}

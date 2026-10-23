@@ -1,4 +1,4 @@
-param([string]$RunName='bottom_wave_integration01',[switch]$Narration)
+param([string]$RunName='bottom_wave_integration01',[switch]$Narration,[string]$Base='',[string]$Pcm='',[string]$Python='')
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..')).Replace('\','/')
 $out="$root/diagnostics/output/$RunName"
@@ -13,14 +13,16 @@ foreach($layout in @('legacy','publicity')){
 Copy-Item "$root/diagnostics/osd/cn_reference_rows.hex" "$out/cn_reference_rows.hex"
 $extra=@();$tests=@('tb_wave_top','tb_layout_legacy','tb_layout_publicity')
 if($Narration){
- & py -I -X utf8 "$root/tools/publicity/make_narration_subtitles.py" --out $out
+ $gen=@('--out',$out);if($Base){$gen+=@('--base',$Base)};if($Pcm){$gen+=@('--pcm',$Pcm,'--preview',$Pcm)}
+ if(!$Python){$Python="$env:USERPROFILE/scoop/apps/python/current/python.exe"}  # needs Pillow
+ & $Python -I -X utf8 "$root/tools/publicity/make_narration_subtitles.py" @gen
  if($LASTEXITCODE){throw 'Narration vectors failed'}
  $extra=@("$root/diagnostics/narration_subtitles/tb_narration_top.sv")
  $tests+=@('tb_narration_top')
 }
-$sim='F:/modelsim/win64';$lib="$out/work"
+$sim='D:/modelsim/win64';$lib="$out/work"
 & "$sim/vlib.exe" $lib *> "$out/library.log"
-$vendor=Get-ChildItem 'E:/TD/sim_release/eg4/*.v','E:/TD/sim_release/common/*.v' | ForEach-Object {$_.FullName}
+$vendor=Get-ChildItem 'D:/TD/anlogic/TD6.2.1/sim_release/eg4/*.v','D:/TD/anlogic/TD6.2.1/sim_release/common/*.v' | ForEach-Object {$_.FullName}
 & "$sim/vlog.exe" -work $lib @vendor *> "$out/vendor.log"
 if($LASTEXITCODE){throw 'vendor compile'}
 Push-Location "$root/TD_project"
@@ -32,7 +34,7 @@ try {
  & "$sim/vlog.exe" -work $lib '../user_source/ip_source/s3_single_pll/sys_pll_s3.v' *> "$out/pll.log"
  & "$sim/vlog.exe" -work $lib '+incdir+../user_source/hdl_source/include' @enc *> "$out/encrypted.log"
  if($LASTEXITCODE){throw 'encrypted compile'}
- & "$sim/vlog.exe" -sv '+define+SIMULATION' -work $lib '+incdir+../user_source/hdl_source/include' @plain "$root/diagnostics/single_pll/sdram_bl4_model.sv" "$PSScriptRoot/tb_wave_top.sv" "$out/tb_layout_legacy.sv" "$out/tb_layout_publicity.sv" @extra *> "$out/compile.log"
+ & "$sim/vlog.exe" -sv '+define+SIMULATION' -work $lib '+incdir+../user_source/hdl_source/include' "+incdir+$out" @plain "$root/diagnostics/single_pll/sdram_bl4_model.sv" "$PSScriptRoot/tb_wave_top.sv" "$out/tb_layout_legacy.sv" "$out/tb_layout_publicity.sv" @extra *> "$out/compile.log"
  if($LASTEXITCODE){throw 'compile failed'}
 }finally{Pop-Location}
 Push-Location $out
