@@ -5,3 +5,4 @@ tools/publicity/geohazard_basics/generated/** -text
 tools/publicity/geohazard_release/inputs/** -text whitespace=cr-at-eol
 tools/publicity/geohazard_release/generated/** -text whitespace=cr-at-eol
 tools/publicity/geohazard_release/cards/** -text whitespace=cr-at-eol
+tools/publicity/geohazard_v28/inputs/** -text whitespace=cr-at-eol

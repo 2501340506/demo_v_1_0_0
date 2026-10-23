@@ -7,6 +7,7 @@ The video clock is 25 MHz and each frame is 800*525 clocks.
 import argparse
 import json
 import math
+import re
 import struct
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
@@ -17,12 +18,18 @@ FONT_SIZE = 21  # round(16 * 1.30): 20.8 pixels -> 21 physical pixels
 CAPTION_TOP = 422
 
 
-def generate(out, update_rtl=False):
-    base = ROOT / 'tools/publicity/geohazard_release'
+GLYPHS_RE = re.compile(r"localparam \[8:0\] GLYPHS=9'd\d+;")
+MAX_GLYPHS = 8192 // FONT_SIZE  # 13-bit ROM address
+
+
+def generate(out, update_rtl=False, base=ROOT / 'tools/publicity/geohazard_release', pcm_dir=None, preview_dir=None):
+    base = Path(base)
+    pcm_dir = Path(pcm_dir) if pcm_dir else base / 'generated'
+    preview_dir = Path(preview_dir) if preview_dir else ROOT / 'releases/v0.20.0/s1-local.1/card'
     scripts = [(base / f'scripts/page{i}.txt').read_text(encoding='utf-8').strip()
                for i in range(1, 5)]
     glyphs = list(dict.fromkeys(''.join(scripts)))
-    assert len(glyphs) == 276
+    assert 0 < len(glyphs) <= MAX_GLYPHS, len(glyphs)
     face = ImageFont.truetype('C:/Windows/Fonts/simsun.ttc', FONT_SIZE)
     rows = []
     for char in glyphs:
@@ -36,7 +43,7 @@ def generate(out, update_rtl=False):
     offset = 44
     pages = []
     for i, (script, ids) in enumerate(zip(scripts, codes), 1):
-        pcm = base / f'generated/VOI{i}.PCM'
+        pcm = pcm_dir / f'VOI{i}.PCM'
         samples = pcm.stat().st_size // 2
         # Integer arithmetic: enough frames for the full PCM duration.
         frames = (samples * 25000000 + 48000*420000-1) // (48000*420000)
@@ -61,6 +68,10 @@ def generate(out, update_rtl=False):
     (out/'card').mkdir(exist_ok=True)
     (out/'card/TEXT.BIN').write_bytes(text)
     (out/'text_words.hex').write_text(''.join(f'{v[0]:04x}\n' for v in struct.iter_unpack('<H', text)), encoding='ascii')
+    (out/'narration_params.svh').write_text(
+        f"`define NARR_GLYPHS {len(glyphs)}\n`define NARR_CHARS {sum(map(len, scripts))}\n"
+        f"`define NARR_BYTES {len(text)}\n`define NARR_WORDS {len(text)//2}\n`define NARR_ROWS {len(rows)}\n",
+        encoding='ascii')
     (out/'font_rows.hex').write_text(''.join(f'{v:06x}\n' for v in rows), encoding='ascii')
     manifest = dict(format='PS1', text_bytes=len(text), glyphs=''.join(glyphs),
                     font='SimSun 21px (0,0), rendered glyphs only',
@@ -78,7 +89,7 @@ def generate(out, update_rtl=False):
     (out/'font_rom.v').write_text(rom, encoding='ascii')
     (out/'preview').mkdir(exist_ok=True)
     for page in pages:
-        im = Image.open(ROOT/f"releases/v0.20.0/s1-local.1/card/EDU{page['page']}.BMP").convert('RGB')
+        im = Image.open(preview_dir/f"EDU{page['page']}.BMP").convert('RGB')
         draw = ImageDraw.Draw(im)
         phase = (20*25000000//420000)*page['step_q8']//256
         for x in range(8,632):
@@ -94,6 +105,8 @@ def generate(out, update_rtl=False):
     if update_rtl:
         rtl = ROOT/'user_source/hdl_source/scene/scene_text_overlay.v'
         original = rtl.read_text(encoding='utf-8').split(MARKER)[0]
+        assert len(GLYPHS_RE.findall(original)) == 1
+        original = GLYPHS_RE.sub(f"localparam [8:0] GLYPHS=9'd{len(glyphs)};", original)
         rtl.write_text(original+rom, encoding='utf-8')
     print(f'PASS PS1: {len(text)} bytes, {len(glyphs)} glyphs, {sum(map(len,scripts))} characters')
     return manifest
@@ -103,5 +116,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', required=True, type=Path)
     parser.add_argument('--update-rtl', action='store_true')
+    parser.add_argument('--base', type=Path, default=ROOT / 'tools/publicity/geohazard_release',
+                        help='content folder with scripts/page1-4.txt')
+    parser.add_argument('--pcm', type=Path, help='folder with VOI1-4.PCM (default BASE/generated)')
+    parser.add_argument('--preview', type=Path, help='folder with EDU1-4.BMP for previews')
     args = parser.parse_args()
-    generate(args.out, args.update_rtl)
+    generate(args.out, args.update_rtl, args.base, args.pcm, args.preview)

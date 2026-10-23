@@ -1,14 +1,15 @@
 `timescale 1ns/1ps
+`include "narration_params.svh"
 module tb_narration;
  reg clk=0,wr_clk=0;always #5 clk=~clk;always #7 wr_clk=~wr_clk;
  reg rst=1,hs=1,vs=1,de=0,tv=0,en=0,playing=0,restart=0,wen=0,done=0;
  reg [1:0] page=0;reg [9:0] x=0;reg [11:0] wa;reg [7:0] wd;
- reg [15:0] words[0:620];reg [20:0] font[0:5795];
+ reg [15:0] words[0:`NARR_WORDS-1];reg [20:0] font[0:`NARR_ROWS-1];
  wire [10:0] ta;wire [15:0] td;wire ho,vo,deo;wire [9:0] xo;wire [23:0] rgb;
  scene_bram32k ram(.wr_clk(wr_clk),.wr_en(wen),.wr_addr(wa),.wr_data(wd),
   .rd_clk(clk),.rd_addr(ta),.rd_data(td));
  publicity_subtitle_overlay dut(.clk(clk),.rst(rst),.hs(hs),.vs(vs),.de(de),.pixel_x(x),.rgb_in(24'h789abc),
-  .text_valid(tv),.text_bytes(13'd1242),.resource_generation(1'b0),.enable(en),.playing(playing),.restart(restart),.done(done),.page(page),
+  .text_valid(tv),.text_bytes(13'd`NARR_BYTES),.resource_generation(1'b0),.enable(en),.playing(playing),.restart(restart),.done(done),.page(page),
   .text_addr(ta),.text_data(td),.hs_out(ho),.vs_out(vo),.de_out(deo),.x_out(xo),.rgb_out(rgb));
  integer py=0,scroll=0,checks=0,ink=0,visible_chars=0;
  bit compare=0;
@@ -81,7 +82,7 @@ module tb_narration;
  initial begin
   $readmemh("text_words.hex",words);$readmemh("font_rows.hex",font);
   repeat(6)@(negedge clk);rst=0;
-  for(integer i=0;i<621;i++)write_word(i,words[i]);
+  for(integer i=0;i<`NARR_WORDS;i++)write_word(i,words[i]);
   tv=1;wait_ready();
   for(integer p=0;p<4;p++)begin
    page=p;en=1;playing=0;wait_ready();
@@ -146,10 +147,10 @@ module tb_narration;
   playing=0;en=0;restart=1;@(negedge clk);restart=0;
   invalid(0,16'h5854);invalid(1,16'h0402);invalid(2,16'd45);
   invalid(3,16'd256);invalid(4,16'd0);invalid(5,16'd0);invalid(6,16'd128);
-  invalid(22,16'd276);invalid(17,16'd1240);
+  invalid(22,16'd`NARR_GLYPHS);invalid(17,16'd`NARR_BYTES-16'd2);
   tv=0;en=1;pixels(624);en=0;
-  if(visible_chars!=599 || ink<1000 || checks<1000000)$fatal(1,"coverage counters");
-  $display("PASS narration: %0d pixel/timing checks, %0d black Song 21px ink pixels; all 599 characters/276 glyphs; transparent background/no band, four full-duration scrolls, pause/replay/commit, short-voice tail scroll and hidden-frame sync, 9 invalid resources, hidden/invalid bypass, wave gap",checks,ink);
+  if(visible_chars!=`NARR_CHARS || ink<1000 || checks<1000000)$fatal(1,"coverage counters");
+  $display("PASS narration: %0d pixel/timing checks, %0d black Song 21px ink pixels; all %0d characters/%0d glyphs; transparent background/no band, four full-duration scrolls, pause/replay/commit, short-voice tail scroll and hidden-frame sync, 9 invalid resources, hidden/invalid bypass, wave gap",checks,ink,`NARR_CHARS,`NARR_GLYPHS);
   $finish;
  end
  initial begin #100000000;$fatal(1,"watchdog");end

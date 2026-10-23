@@ -1,0 +1,59 @@
+version: 1
+edition: v0.28 content.0 · 2026-10-23 (S0 草稿，待审)
+style:
+  audience: 山村群众 + 中小学课堂
+  illustration: 温暖扁平/半写实插画，山村实景（农房、沟谷、梯田、村道、广播喇叭）
+  layout: 顶栏标题 y0-59；左插画 x16-330 y70-400；右三卡 x340-624；y400-446 浅色字幕底；y448-479 波形
+pages:
+- id: 1
+  hazard: landslide
+  color: '#C8952A'
+  title: 滑坡：别往下跑，横着跑
+  illustration: page1.png  # --art 目录下，AI 生成，不入库
+  cards:
+    看征兆: [坡上裂缝变宽, 墙地开裂、树木歪斜]
+    往哪跑: [横向离开滑坡区]
+    不要做: [不顺坡往下跑, 不回屋拿东西]
+  case_lines: [2025·陕西清涧 敬老院, 发现坡体松动，5分钟撤完17人, 6分钟后滑坡，无人伤亡]
+  rhyme: 裂缝鼓包树歪斜，横向快跑莫往下
+  scene_link: landslide_village
+  source_refs: [sources/S11.md, sources/S01.md]
+- id: 2
+  hazard: debris
+  color: '#B0602A'
+  title: 泥石流：往两侧高处跑
+  illustration: page2.png  # --art 目录下，AI 生成，不入库
+  cards:
+    看征兆: [沟里轰鸣像火车, 沟水断流或猛涨变浑]
+    往哪跑: [向沟道两侧高处]
+    不要做: [不顺沟跑, 不横穿沟口]
+  case_lines: [2025·云南峨山 法土山组, 村民发现冲沟冲出砂石即报告, 20分钟后暴发，462人已撤离]
+  rhyme: 沟响水断要警惕，两侧高处是生路
+  scene_link: debris_village
+  source_refs: [sources/S12.md, sources/S13.md, sources/S02.md]
+- id: 3
+  hazard: flood
+  color: '#2080FF'
+  title: 山洪：上高处，不过桥
+  illustration: page3.png  # --art 目录下，AI 生成，不入库
+  cards:
+    看征兆: [上游连降大雨, 河水变浑上涨]
+    往哪跑: [沿本岸小路上山]
+    不要做: [不过桥、不沿河, 不涉水、不开车冲水]
+  case_lines: [2025·重庆酉阳 大溪镇, 广播敲锣上门叫，825人转移, 13分钟后洪水漫堤，无人伤亡]
+  rhyme: 河水浑涨快上山，不过桥来不沿河
+  scene_link: flood_village
+  source_refs: [sources/S14.md, sources/S01.md]
+- id: 4
+  hazard: quake
+  color: '#E02020'
+  title: 地震：震时躲，震后撤
+  illustration: page4.png  # --art 目录下，AI 生成，不入库
+  cards:
+    看征兆: [地震预警响, 强烈晃动]
+    往哪跑: [震后到空旷平地]
+    不要做: [不跳楼、不乘电梯, 不靠近山坡]
+  case_lines: [2008·四川汶川 8.0级地震, 近七万人遇难, 每年5月12日为全国防灾减灾日]
+  rhyme: 震时就近躲，震后快撤离
+  scene_link: quake_village
+  source_refs: [sources/S15.md]

@@ -1,0 +1,34 @@
+{
+  "engine": "MiniMax (user-generated, web)",
+  "shaping": "scene_audio.shape: trim 20 ms, peak 29000",
+  "pages": [
+    {
+      "page": 1,
+      "source": "滑坡.mp3",
+      "source_seconds": 44.191,
+      "seconds": 43.46,
+      "peak": 29000
+    },
+    {
+      "page": 2,
+      "source": "泥石流.wav",
+      "source_seconds": 44.263,
+      "seconds": 43.815,
+      "peak": 29000
+    },
+    {
+      "page": 3,
+      "source": "山洪.wav",
+      "source_seconds": 45.019,
+      "seconds": 44.546,
+      "peak": 29000
+    },
+    {
+      "page": 4,
+      "source": "地震.wav",
+      "source_seconds": 45.523,
+      "seconds": 45.028,
+      "peak": 29000
+    }
+  ]
+}
