@@ -5,7 +5,7 @@ module tb_ring_gate;
  wire [6:0] a,b;wire ah,av,ad,bh,bv,bd;wire [9:0] ax,bx;wire [23:0] ar,br;
  audio_ring_overlay gate(.clk(clk),.rst(rst),.hs(1'b1),.vs(1'b1),.de(1'b1),.enable(1'b1),
  .pixel_x(x),.pixel_y(y),.rgb_in(24'h123456),.bar_height(height),.bar_index(a),
- .hs_out(ah),.vs_out(av),.de_out(ad),.x_out(ax),.rgb_out(ar));
+ .hs_out(ah),.vs_out(av),.de_out(ad),.x_out(ax),.rgb_out(ar),.wash_level(2'd2));
  ring_overlay_reference refdut(clk,rst,1'b1,1'b1,1'b1,1'b1,x,y,24'h123456,height,b,bh,bv,bd,bx,br);
  integer px,py,h,n=0;
  initial begin

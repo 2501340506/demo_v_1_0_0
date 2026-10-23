@@ -41,6 +41,9 @@ module sd_card_bmp #(
     input                       key4,
     input [1:0]                 mode,
     output adjust_decrease,adjust_increase,adjust_restore,adjust_select,
+    input panel,                // v0.27 SW4, debounced
+    output reg panel_owns,output panel_hold,
+    input panel_speed_up,panel_speed_down,panel_speed_default, // v0.27 panel SCENE SPEED
     output     [3:0]            state_code,
     output [63:0]               sd_debug,
     output reg [57:0]          diagnostics,
@@ -646,14 +649,30 @@ media_frame_cache_control #(.PAUSE_ENABLE(MENU_ENABLE),.STRICT_FIRST_ENABLE(MENU
  .retry_event(retry_event),
  .cache_complete_image(cache_complete_image),.cache_hit_image(cache_hit_image),.failed_image(failed_image)
 );
+// v0.27 adjust panel: SW4 takes the keys unless the menu holds them; the
+// menu then keeps them until it exits. Main paths see released keys.
+wire panel_decrease,panel_increase,panel_restore,panel_select;
+always @(posedge clk or posedge rst)
+ if(rst)panel_owns<=0;
+ else if(panel && !menu_blocked)panel_owns<=1;
+ else if(!panel)panel_owns<=0;
+wire key1_main=key1 || panel_owns,key2_main=key2 || panel_owns,key4_main=key4 || panel_owns;
+adjust_panel_keys #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_panel_keys(.clk(clk),.rst(rst),.active(panel_owns),
+ .key1(key1),.key2(key2),.key4(key4),.decrease(panel_decrease),.increase(panel_increase),
+ .restore(panel_restore),.select_next(panel_select),.hold_select(panel_hold));
+// SW1/SW2 01/10 no longer adjust (they map to 00); only the panel does.
+assign adjust_decrease=panel_decrease;
+assign adjust_increase=panel_increase;
+assign adjust_restore=panel_restore;
+assign adjust_select=panel_select;
 mode_key_control #(.PREVIEW_ENABLE(PREVIEW_ENABLE),.SCENE_ENABLE(SCENE_ENABLE),.PUBLICITY_ENABLE(PUBLICITY_ENABLE),.CLK_FREQ_HZ(CLK_FREQ_HZ)) u_mode_key_control(
- .clk(clk),.rst(rst),.enable(!scan_busy && !menu_blocked && (!app_controls_blocked || application_error)),.key1(key1),.key2(key2),.key4(key4),.mode(effective_mode),
+ .clk(clk),.rst(rst),.enable(!scan_busy && !menu_blocked && (!app_controls_blocked || application_error)),.key1(key1_main),.key2(key2_main),.key4(key4_main),.mode(effective_mode),
  .scene_active(app_scene_enable),.application_busy(menu_blocked || (app_controls_blocked && !application_error)),.application_toggle(application_toggle),
  .rescan_event(rescan_raw),.next_event(media_next_request),.previous_event(media_previous_request),
  .auto_toggle_event(media_auto_toggle_request),.manual_activity(manual_activity),
  .scene_allowed(first_image_committed && image_count==4 && !scan_busy),
  .scene_mode(scene_mode),.scene_next(scene_next),.scene_warn(scene_warn),.scene_speed(scene_speed),
- .adjust_decrease(adjust_decrease),.adjust_increase(adjust_increase),.adjust_restore(adjust_restore),.adjust_select(adjust_select)
+ .adjust_decrease(),.adjust_increase(),.adjust_restore(),.adjust_select()
 );
 media_player_control #(.AUTO_PLAY_CYCLES((CLK_FREQ_HZ/1000)*AUTO_PLAY_MS),.UI_GATE(PUBLICITY_ENABLE),.PAUSE_ENABLE(MENU_ENABLE)) u_media_player_control(
  // UI ownership extends through pending requests and key-release handover.
@@ -695,11 +714,14 @@ generate if(SCENE_ENABLE)begin:g_scenario
   .clk(clk),.rst(rst),.sample_tick(sample_tick),.frame_tick(frame_tick));
  // AUTO waits while this stage's SND narration has not been read through once.
  wire narration_hold;
+ wire panel_speed_step;
+ scene_speed_request panel_speed(.clk(clk),.rst(rst),.up(panel_speed_up),.down(panel_speed_down),
+  .restore(panel_speed_default),.speed(speed),.step(panel_speed_step));
  scenario_fsm #(.PRESERVE_SPEED(PUBLICITY_ENABLE),.UI_GATE(PUBLICITY_ENABLE),.PREVIEW_SELECT(PUBLICITY_ENABLE),.MENU_ENABLE(MENU_ENABLE),.NARRATION_GATE(1)) control(.narration_hold(narration_hold),.pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),.enable(scene_mode),.auto_enable(scene_auto && (!PUBLICITY_ENABLE || !controls_blocked)),
   .ui_play(effective_mode==0 && !controls_blocked),
   .select_request(preview_offer && scene_preview && !controls_blocked),.select_stage(preview_target),.select_ready(scene_select_ready),
   .scene_ready(first_image_committed && image_count==4 && !scan_busy),
-  .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed),
+  .key_next(scene_next),.key_mode(scene_warn),.key_speed(scene_speed || panel_speed_step),
   .sample_tick(sample_tick),.audio_running(scene_audio_running),.frame_start(frame_tick),.muted(scene_muted_sd),
   .request_ready(scene_request_accept),.picture_done(cache_display_ack),.picture_failed(request_failed),
   .transition_idle(!transition_busy),.audio_ready(audio_ready),.stage(stage),.speed(speed),.warn_mode(warn_mode),
@@ -938,7 +960,7 @@ assign safe_menu_idle=scan_state==SC_IDLE && menu_reader_idle && !scan_request &
  (!application_busy || application_error);
 generate if(MENU_ENABLE)begin:g_menu
  disaster_menu_control #(.CLK_FREQ_HZ(CLK_FREQ_HZ)) ui(
-  .clk(clk),.rst(rst),.sw3(sw3),.key1(key1),.key2(key2),.key4(key4),.switch_mode(mode),
+  .clk(clk),.rst(rst),.sw3(sw3),.key1(key1_main),.key2(key2_main),.key4(key4_main),.switch_mode(mode),
   .safe_idle(safe_menu_idle),.backend_ready(menu_ready),.rejected(menu_rejected),.exit_done(menu_exit),.scene_valid(menu_valid),
   .pending(menu_pending),.active(menu_active),.enter(menu_enter),.confirm(menu_confirm),.cancel(menu_cancel),
   .focus(menu_focus),.blocked(menu_blocked),.effective_mode(effective_mode));

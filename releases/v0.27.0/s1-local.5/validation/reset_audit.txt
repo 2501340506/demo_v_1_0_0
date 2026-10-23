@@ -1,0 +1,30 @@
+== g_scene_text$g_narration$overlay
+   130 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+     4 sr  \u_reset_mem/release_pipe [2]  <- .q of u_reset_mem/release_pipe_reg[1]_syn_4
+     2 sr  \u_frame_reader/read_buf/ram_inst/rsta  <- .f of u_hazard/modern/sr_reg[200]_syn_4
+     2 sr  \u_frame_loader/full_writer/App_wr_din_n  <- .f of g_scene_text$g_narration$overlay/rgb_out_b[22]_syn_228
+     1 sr  \u_frame_reader/read_buf/ram_inst/rstb  <- .q of u_frame_reader/read_buf/asy_r_rst1_reg_syn_5
+     1 sr  \u_frame_loader/thumb_writer/App_wr_din_n  <- .f of u_hazard/modern/ec[3]_syn_139
+== u_adjust_panel
+   101 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+     5 sr  \u_reset_mem/release_pipe [2]  <- .q of u_reset_mem/release_pipe_reg[1]_syn_4
+== u_parameter_osd
+    36 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+== u_adjust_control
+    18 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/g_scenario$control/terminal_frame_reg_syn_54
+     5 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+== u_adjust_cdc
+    28 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+    19 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/g_scenario$control/terminal_frame_reg_syn_54
+== u_master_volume
+    36 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+     7 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/g_scenario$control/terminal_frame_reg_syn_54
+     6 sr  \u_reset_mem/release_pipe [2]  <- .q of u_reset_mem/release_pipe_reg[1]_syn_4
+== sd_card_bmp_m0/u_panel_keys
+    28 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/g_scenario$control/terminal_frame_reg_syn_54
+     3 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4
+== sd_card_bmp_m0/g_scenario$panel_speed
+     4 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/g_scenario$control/terminal_frame_reg_syn_54
+== u_panel_switch
+    12 sr  \u_reset_sd/release_pipe [2]  <- .q of sd_card_bmp_m0/g_scenario$control/terminal_frame_reg_syn_54
+     1 sr  \u_reset_video/release_pipe [2]  <- .q of u_reset_video/release_pipe_reg[2]_syn_4

@@ -23,10 +23,8 @@ module tb_m5_ui;
    for(integer yy=0;yy<55;yy++)begin
     for(integer xx=0;xx<320;xx++)begin
      @(negedge clk);de=1;x=xx;#1;
-     if(en && yy==32 && xx>=8 && xx<152)begin
-      if(xx>=120 && xx<136 && osd.character!==(speed==0?"1":speed==1?"2":"4"))$fatal(1,"speed character");
-      if(osd.active && rgb!==24'hffff00)$fatal(1,"speed highlight");pixels++;
-     end
+     // v0.27: the SPEED line is removed; the overlay passes every scene pixel through.
+     if(en && (rgb!==24'h204060 || osd.active))$fatal(1,"scene pixel changed");if(en)pixels++;
      if(!en && rgb!==24'h204060)$fatal(1,"scene exit bypass");
     end
     @(negedge clk);de=0;
@@ -39,7 +37,7 @@ module tb_m5_ui;
   warn=1;repeat(2)@(negedge clk);display_check(8'h88);
   state=15;repeat(2)@(negedge clk);display_check(8'h8e);
   state=1;en=0;repeat(2)@(negedge clk);display_check(8'h79);frame();
-  $display("PASS M5 UI: %0d physical segment samples, stages 1..4/A/error priority/legacy auto point, %0d speed text pixels at 1X/2X/4X, scene exit",digits,pixels);$finish;
+  $display("PASS M5 UI: %0d physical segment samples, stages 1..4/A/error priority/legacy auto point, %0d scene pixels untouched (SPEED line removed), scene exit",digits,pixels);$finish;
  end
  initial begin #3000000;$fatal(1,"UI watchdog");end
 endmodule

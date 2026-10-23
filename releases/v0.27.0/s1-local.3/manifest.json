@@ -1,0 +1,12 @@
+{
+  "candidate": "v0.27.0-s1-local.3",
+  "source_commit": "edcb6c0",
+  "build": "adj27d_td_s11",
+  "seed": 11,
+  "bit_bytes": 677348,
+  "lut": 17594,
+  "registers": 10272,
+  "setup_ns": 0.113,
+  "hold_ns": 0.012,
+  "board": "pending"
+}

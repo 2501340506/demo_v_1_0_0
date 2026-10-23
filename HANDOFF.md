@@ -1,4 +1,62 @@
-# 当前交接：v0.26.0 对称音频波形 S1 候选待板测（2026-10-22）
+# 当前交接：v0.27.0 SW4 独立调节面板正式版完成，已合并 main 并推送（2026-10-23）
+
+- 当前状态：[v0.27.0 正式版](releases/v0.27.0/README.md) 复用板测通过的 s1-local.5 bit（逐字节一致，SHA-256 `5b0d59f3…6b2`），17543 LUT（89.51%），Setup +0.106 / Hold +0.054 ns。卡不用换。`feature/adjust-panel` 已合并 main，打了 `v0.27.0` 标签，main、功能分支和 v0.26/v0.27 的标签已推送到 origin。[归档](docs/history/2026-10-23/adjust-panel-v0.27/README.md)。
+- 已完成：SW4 面板（11 项，中文，字模在 BRAM）、场景速度、状态栏/字幕开关接到三种画面、音量 200%、去掉 SW1/SW2 的 01/10 调节和场景 SPEED 字样、宣讲第 1 页字幕残留修复。v0.26 没有单独出正式版。
+- 卡住的问题：无。遗留：LUT 89.5%；SD 时钟域时序余量小（每轮 7 个种子约 1 个过）；几个旧测试台在 main 上本来就跑不过（见正式版说明“限制”）。
+- 下一步：以 v0.27.0 为基线。新候选至少跑 `adjust_panel/run_unit.ps1`、`run_scene_gates.ps1`、`narration_subtitles/run_unit.ps1`、`lut24/run_sd_pin_boot.ps1` 和复位审计，并行 7 个种子。
+- 踩坑：见下面 s1-local.3～.5 各条（面板字模生成、`demo.al` 要提交、旁白结尾余量只有 1～7 帧等）。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.5 板测通过（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。[s1-local.5](releases/v0.27.0/s1-local.5/README.md)（源码 `4a27188`，Seed 11）= s1-local.4 + 宣讲旁白字幕残留修复。17543 LUT，Setup +0.106 / Hold +0.054 ns。
+- 已完成：`publicity_subtitle_overlay` 加 `done` 输入（top 接 `app_status_pixel[14:12]==3`）；滚动条件由 `enable && playing && READY` 改为 `(playing || (done && phase!=0)) && READY`。`tb_narration` 加短语音尾滚和隐藏帧同步两项；`narration_subtitles/run_unit.ps1` 仿真器路径更新。
+- 卡住的问题：无。第 1 页实际丢了几帧没有在板上测量，"开头丢帧"的原因和现象、余量数据一致，但修复不依赖丢多少帧。
+- 下一步：s1-local.5 板测通过（用户反馈“功能正常”，没有逐项结果）。正式版 v0.27.0、合并 main、推送等用户确认。
+- 踩坑：宣讲旁白的每页滚动速度由 `tools/publicity/make_narration_subtitles.py` 按语音长度算，结尾只留 1～7 帧余量；任何让滚动少走的条件都会在结尾留下残字。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.4（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。[s1-local.4](releases/v0.27.0/s1-local.4/README.md)（源码 `0ad133c`，Seed 11）= s1-local.3 + 去掉场景左上角 SPEED。17617 LUT，Setup +0.116 / Hold +0.038 ns。s1-local.2、.3 都没收到板测反馈，这一版要把三轮改动一起测。
+- 已完成：`adjust_osd_overlay` 只剩 BCD 转换（`rgb_out=rgb_in`、`active=0`），端口保留；`tb_m5_ui` 改查直通、`tb_adjust_osd` 改读 BCD 输出。
+- 卡住的问题：无。遗留：`mountain_scene/run_m5_unit.ps1` 里的 `tb_m5_scan` 连着读卡模块已删端口（和 HANDOFF 早先列出的旧测试台同类）。
+- 下一步：等 s1-local.4 板测。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.3（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。[s1-local.3](releases/v0.27.0/s1-local.3/README.md)（源码 `edcb6c0`，Seed 11）：面板加“场景 → 速度”，全部文字改中文（标题“参数调节”居中、去 SW4，底部“K1↑ K2↓ K4编辑/返回”）。17594 LUT（89.77%），Setup +0.113 / Hold +0.012 ns。s1-local.2 没收到板测反馈。
+- 已完成：`media_adjust_control` 加速度条目（6）并重新编号（共 11 项），只发 up/down/default 脉冲；`scene_speed_request`（同文件）按 `scenario_fsm` 的当前速度闭环发它原有的换档键，最多 3 次；面板字模由 `tools/make_panel_font.py` 生成 `panel_font_rom.v`（1024×16，2 块 BRAM9K）并把字符串写进 `adjust_osd_overlay.v` 标记块，8 px 半格排版。`TD_project/demo.al` 加了 `panel_font_rom.v`。
+- 卡住的问题：无。7 个种子只有 11 过。
+- 下一步：等 s1-local.3 板测。若要再省 LUT：字符串表也放进 BRAM（报表里 `font` 下 325 LUT 实际是取字选择逻辑）。
+- 踩坑：改面板文字要跑 `make_panel_font.py`（需带 Pillow 的 `~/scoop/apps/python/current/python.exe`，`Python313` 那个没有 Pillow），新增 .v 文件要加进 `demo.al` 并提交，`run_td.ps1` 用的是已提交的工程文件；Git Bash 里含中文的长 heredoc 会被解析坏，长文件用 Write 工具写；`$display` 里的 `%` 要写成 `%%`；`v>19'sd32767?` 这类写法 `?` 紧贴十进制常数会被当成 Z 位，要加空格。
+
+## 历史交接
+
+### v0.27.0 调节面板 s1-local.2（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`。s1-local.1 板测：OSD/SCROLL 在情景、宣讲画面无效；用户要求去掉 SW1/SW2 的 01/10 调节模式、音量到 200%。[s1-local.2](releases/v0.27.0/s1-local.2/README.md)（源码 `3fc0e2a`，Seed 47）已全部改好：17464 LUT，Setup +0.136 ns / **Hold +0.003 ns**。卡不用换。
+- 已完成：`scene_text_overlay` 加 `hud_enable`/`subtitle_enable`，宣讲旁白 enable 接 SCROLL；`switch_mode` 把 01/10 映射为 00，`media_adjust_control` 去掉模式调节分支，参数 OSD 只剩 SPEED；`pcm_master_volume` 21 档 + 削顶，邮箱 39 位（音量高位在 bit 38）。新增 `run_scene_gates.ps1`；`tb_osd_render` 加 `+HUD`/`+SUB`；`run_s5_overlay.ps1` 一个变异的匹配串跟着源码改了。
+- 卡住的问题：时序余量小。5 个种子只有 47 过（7/21/43 Hold −0.002～−0.020，13 Setup −1.578），都在 SD 域原有逻辑。板上如有偶发异常，再加种子（3、5、11、29…）。
+- 下一步：等 s1-local.2 板测。
+
+## 历史交接
+
+### v0.27.0 SW4 独立调节面板 s1-local.1（2026-10-23）
+
+- 当前状态：分支 `feature/adjust-panel`（从 main 39167c2 拉出，v0.26.0-s1-local.1 板测通过后合入 main）。[s1-local.1](releases/v0.27.0/s1-local.1/README.md) 已固定：SW4（C5）拨上滑出两栏调节面板，10 个条目。17560 LUT（89.59%），Setup +0.111 ns / Hold +0.075 ns。卡不用换。[计划](docs/独立调节面板v0.27分阶段计划.md)。
+- 已完成：引脚和顶层端口；面板按键（独立去抖+手势，KEY4 长按 1 s）；控制和 38 位邮箱；面板显示；波形高度/渐变、OSD/滚动/淡入的运行时门控；新增 `diagnostics/adjust_panel/run_unit.ps1`（含 RTL 渲染 BMP 预览）；回归和 sd_pin_boot、复位审计；5 个种子构建（13、21 通过）。
+- 卡住的问题：无。等用户上板。备选 Seed 21（+0.112 / +0.011），产物在 `diagnostics/output/adj27_td2_s21`。
+- 下一步：用户板测通过后记录 board、打标签；正式版和合并 main 等用户确认。LUT 已到 89.6%，再加功能前先考虑裁减面板（去掉滑入动画、数值条乘法、字符串多路选择）。
+- 踩坑：`media_adjust_control`、`audio_ring_overlay` 很多测试台按位置连端口，新端口只能加在末尾；`sd_card_bmp` 的测试台大多不接新输入，`panel_owns` 写成“panel 为 1 才置位”，悬空的 z/x 会一直保持复位值 0；runner 里 `-notmatch Warning` 会把未接端口的告警判失败，不用的输出要显式写 `.hold_select()`；task 的 `inout` 参数要到返回时才写回，不能用来在 task 里发脉冲；本机没有 `python3`/`py`，用 `/c/Users/熊俊逸/AppData/Local/Programs/Python/Python313/python.exe`；复位审计按 slice 宏名归类，会把同一 slice 里别的模块的寄存器算进来，要看寄存器 `.q` 和 `SRMODE` 再下结论。
+
+## 历史交接
+
+### v0.26.0 对称音频波形 S1 候选，板测通过并合入 main（2026-10-23）
 
 - 当前状态：分支 `feature/symmetric-waveform`。[s1-local.1](releases/v0.26.0/s1-local.1/README.md) 已固定：宣讲底部波形改为白色、中线对称、中间高两边低，下面加蓝色渐变。16730 LUT，Setup +0.145 ns / Hold +0.003 ns。卡不用换。[计划](docs/对称音频波形v0.26分阶段计划.md)。
 - 已完成：overlay RTL；电平模块历史改为 40 条、左右共用；单元测试和 top 集成逐像素测试；4 个种子构建（7、43 通过）；sd_pin_boot 和复位审计，两项都和 v0.25 一致。

@@ -66,3 +66,4 @@ set_pin_assignment	{ seg_sel[5] }	{ LOCATION = D11; IOSTANDARD = LVCMOS33; DRIVE
 set_pin_assignment { uart_rx } { LOCATION = F12; IOSTANDARD = LVCMOS33; PULLTYPE = PULLUP; }
 
 set_pin_assignment { sw3 } { LOCATION = C6; IOSTANDARD = LVCMOS33; PULLTYPE = NONE; }
+set_pin_assignment { sw4 } { LOCATION = C5; IOSTANDARD = LVCMOS33; PULLTYPE = NONE; }

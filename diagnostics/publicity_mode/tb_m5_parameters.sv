@@ -8,7 +8,7 @@ module tb_m5_parameters;
  .adjust_decrease(dec),.adjust_increase(inc),.adjust_restore(res),.adjust_select(sel),
  .scene_allowed(1'b1),.scene_active(scene),.application_busy(busy),.scene_mode(),.scene_next(sn),.scene_warn(sw),.scene_speed(ss),.application_toggle(app));
  wire [7:0] b,c;wire [3:0] v;wire [1:0] selected;
- media_adjust_control ctl(clk,rst,mode,dec,inc,res,sel,b,c,v,selected);
+ media_adjust_control ctl(clk,rst,mode,dec,inc,res,sel,b,c,v,selected,1'b0,1'b0);
  integer scans=0,autos=0,pictures=0,scenes=0,apps=0,j,q;
  always @(posedge clk)begin if(scan)scans++;if(auto_e)autos++;if(nxt||prev)pictures++;if(sn||sw||ss)scenes++;if(app)apps++;end
  task ticks(input integer t);repeat(t)@(negedge clk);endtask

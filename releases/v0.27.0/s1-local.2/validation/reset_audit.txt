@@ -1,0 +1,36 @@
+== u_audio_ring
+    53 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+     2 sr  \u_picture_adjust/center_b8_n1  <- .f of g_scene_text$publicity_delay_reg[1]_syn_4
+     2 sr  reset_request  <- .f of preview_after_ring_reg[0]_syn_4
+     1 sr  \u_picture_adjust/center_b7_n1  <- .f of u_hazard/side_in[3]_syn_4
+     1 sr  \u_picture_adjust/center_b6_n1  <- .f of g_scenario$frame_state/held_reg[12]_syn_4
+     1 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+== g_audio_vis
+    55 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+     5 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+     1 sr  \sd_card_bmp_m0/bmp_read_m0/scanner/rst_n_dup_6  <- .f of sd_card_bmp_m0/bmp_read_m0/scanner/directory_clusters_reg[33]_syn_4
+== u_adjust_panel
+    92 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+     6 sr  \u_reset_panel/release_pipe [2]  <- .q of g_scene_text$overlay/border_syn_8
+     2 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+== u_adjust_control
+    18 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+     4 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+== u_adjust_cdc
+    20 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+    12 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+== u_master_volume
+    33 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+     6 sr  \sd_card_bmp_m0/bmp_read_m0/rst_dup_20  <- .q of sd_card_bmp_m0/parser_rst_q_reg_syn_59
+     4 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+     1 sr  \sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/rst_dup_3  <- .q of sd_card_bmp_m0/sd_card_top_m0/sd_card_cmd_m0/mux79_syn_112
+== sd_card_bmp_m0/u_panel_keys
+    37 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+     8 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+== u_panel_switch
+    12 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44
+     1 sr  \u_reset_mem/release_pipe [2]  <- .q of u_audio_ring/mux5_syn_209
+== g_scene_text$overlay
+   146 sr  \u_reset_video/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_46
+     3 sr  reset_request  <- .f of preview_after_ring_reg[0]_syn_4
+     2 sr  \u_reset_sd/release_pipe [2]  <- .q of g_scene_text$overlay/dim_syn_44

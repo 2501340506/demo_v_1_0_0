@@ -18,7 +18,7 @@ module tb_ring_osd;
  reg valid=0;reg [1:0] id=0;integer frames=0,checks=0,ring_pixels=0;
  wire [23:0] background={x[7:0],y[7:0],8'h60};
  wire rh,rv,rd;wire [9:0] rx;wire [23:0] rr,result,reference;
- audio_ring_overlay ring(clk,rst,hs,vs,de,valid,x,y,background,5'd17, ,rh,rv,rd,rx,rr);
+ audio_ring_overlay ring(clk,rst,hs,vs,de,valid,x,y,background,5'd17, ,rh,rv,rd,rx,rr,2'd2);
  ring_osd_chain actual(clk,rst,rv,rd,rx,rr,id,valid,result);
  ring_osd_chain original(clk,rst,vs,de,x,background,id,valid,reference);
  reg [23:0] expected0,expected1;reg [8:0] y0,y1;

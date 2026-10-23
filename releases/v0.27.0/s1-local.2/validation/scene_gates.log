@@ -1,0 +1,9 @@
+ok   panel drawn when on
+ok   subtitle drawn when on
+ok   OSD off clears panel
+ok   OSD off clears legend
+ok   OSD off keeps subtitle
+ok   SCROLL off clears subtitle
+ok   SCROLL off keeps panel
+ok   SCROLL off keeps legend
+PASS scene gates adj27b_scene_gates

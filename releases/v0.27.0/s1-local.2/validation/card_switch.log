@@ -1,0 +1,4 @@
+PASS switch landslide_village -> debris_village
+PASS switch debris_village -> flood_village
+PASS switch flood_village -> quake_village
+PASS switch quake_village -> landslide_village

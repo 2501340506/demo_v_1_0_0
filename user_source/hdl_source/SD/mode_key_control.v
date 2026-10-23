@@ -109,7 +109,7 @@ module mode_key_control #(
     end
     adjust_key_gestures #(.TICK_ADJ(TICK_ADJ)) adjust_keys(
         .clk(clk),.rst(rst || (PUBLICITY_ENABLE && application_busy)),.ms_tick(ms_tick),.mode(mode),.stable1(stable1),.stable2(stable2),.stable4(stable4),
-        .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select));
+        .decrease(adjust_decrease),.increase(adjust_increase),.restore(adjust_restore),.select_next(adjust_select),.hold_select());
     // Register the media toggle to break mode -> preview -> cache request logic.
     generate if(PUBLICITY_ENABLE)begin:g_publicity
      reg application_event;
@@ -228,7 +228,8 @@ endmodule
 // Durations count ms ticks: 100 ms press window, 1 s KEY4 long press.
 module adjust_key_gestures #(parameter integer TICK_ADJ=0)(
  input clk,rst,ms_tick,input [1:0] mode,input stable1,stable2,stable4,
- output reg decrease,increase,restore,select_next
+ output reg decrease,increase,restore,select_next,
+ output reg hold_select // v0.27: KEY4 reached 1 s while still held
 );
  localparam WINDOW=100+2*TICK_ADJ;
  localparam LONG=1000+TICK_ADJ;
@@ -241,10 +242,10 @@ module adjust_key_gestures #(parameter integer TICK_ADJ=0)(
   if(rst)begin
    mode_q<=0;state<=0;armed<=0;s1_q<=1;s2_q<=1;s4_q<=1;
    key4_active<=0;count<=0;hold4<=0;
-   decrease<=0;increase<=0;restore<=0;select_next<=0;
+   decrease<=0;increase<=0;restore<=0;select_next<=0;hold_select<=0;
   end else begin
    mode_q<=mode;s1_q<=stable1;s2_q<=stable2;s4_q<=stable4;
-   decrease<=0;increase<=0;restore<=0;select_next<=0;
+   decrease<=0;increase<=0;restore<=0;select_next<=0;hold_select<=0;
    if(mode!=mode_q || !(mode==1 || mode==2))begin
     armed<=0;state<=0;count<=0;key4_active<=0;hold4<=0;
    end else if(!armed)begin
@@ -266,7 +267,12 @@ module adjust_key_gestures #(parameter integer TICK_ADJ=0)(
      3:if(stable1 && stable2)state<=0;
     endcase
     if(s4_q && !stable4)begin key4_active<=1;hold4<=1;end
-    else if(!stable4 && key4_active)begin if(hold4<LONG && ms_tick)hold4<=hold4+1'b1;end
+    else if(!stable4 && key4_active)begin
+     if(hold4<LONG && ms_tick)begin
+      hold4<=hold4+1'b1;
+      if(hold4==LONG-1 && state==0 && stable1 && stable2)hold_select<=1;
+     end
+    end
     else if(stable4 && key4_active)begin
      if(hold4<LONG && state==0 && stable1 && stable2)select_next<=1;
      key4_active<=0;hold4<=0;

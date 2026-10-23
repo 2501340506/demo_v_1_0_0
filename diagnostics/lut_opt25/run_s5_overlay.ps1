@@ -71,7 +71,7 @@ Mutant 'scroll_speed' "scroll<=scroll+13'd2;" "scroll<=scroll+13'd1;"
 Mutant 'glyph_colour' "((cn2 && font_row[~col2]) || ascii2)?24'hffffff:" "((cn2 && font_row[~col2]) || ascii2)?24'hfffffe:"
 Mutant 'warning_in_band' "descriptor==(parse_warning?4'd8:{1'b0,parse_stage,1'b1})" "descriptor=={1'b0,parse_stage,1'b1}"
 Mutant 'length_5bit' 'descriptor_length<=parse_byte;' "descriptor_length<={3'd0,parse_byte[4:0]};"
-Mutant 'warning_band_hidden' 'subtitle_band=BAR_ENABLE && scene_text_active && de' 'subtitle_band=BAR_ENABLE && scene_text_active && !warning && de'
+Mutant 'warning_band_hidden' 'subtitle_band=BAR_ENABLE && subtitle_enable && scene_text_active && de' 'subtitle_band=BAR_ENABLE && subtitle_enable && scene_text_active && !warning && de'
 Mutant 'swatch_inset' 'col1>=2 && col1<14 && row1>=2' 'col1>=1 && col1<14 && row1>=2'
 Mutant 'refuge_blink' "(code[2:0]!=3'd2 || frames[5])" "(code[2:0]!=3'd2 || frames[4])"
 Mutant 'swatch_colour' "3'd3:swatch_rgb=24'h8c6a3c" "3'd3:swatch_rgb=24'h8c6a3d"
