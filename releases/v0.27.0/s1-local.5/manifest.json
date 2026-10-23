@@ -8,5 +8,5 @@
   "registers": 10267,
   "setup_ns": 0.106,
   "hold_ns": 0.054,
-  "board": "pending"
+  "board": "pass (2026-10-23, user: 功能正常)"
 }
