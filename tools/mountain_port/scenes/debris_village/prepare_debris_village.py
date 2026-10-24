@@ -22,13 +22,15 @@ HERE = Path(__file__).resolve().parent
 W, H = 640, 480
 # PIC2 gully bed, left and right edge per row (y, x_left, x_right).
 BED2 = [(0, 296, 350), (80, 290, 364), (160, 282, 374), (240, 280, 384), (320, 270, 404),
-        (400, 250, 436), (440, 236, 474), (470, 232, 480)]
-# PIC1/3/4 gully bed above the mouth.
-BED1 = [(30, 328, 368), (120, 336, 388), (200, 348, 402), (270, 352, 412)]
-# PIC3/4 runout fan below the mouth (clockwise), then the channel past the bridge.
+        (400, 250, 436), (440, 236, 474), (462, 228, 488), (480, 220, 500)]   # over the road and bridge, off screen
+# PIC1/3/4 gully bed above the mouth: starts where the stream leaves the fog.
+BED1 = [(52, 340, 352), (80, 338, 362), (120, 340, 378), (160, 350, 388), (200, 356, 396),
+        (270, 360, 404)]
+# PIC3/4 runout fan below the mouth (clockwise), then everything below it past the
+# bridge down to the bottom edge.
 FAN = [(352, 266), (412, 266), (446, 282), (482, 302), (516, 326), (532, 360), (506, 396), (456, 414),
        (400, 418), (344, 412), (300, 400), (262, 382), (248, 348), (262, 314), (300, 286)]
-BELOW = [(392, 412), (440, 412), (448, 480), (396, 480)]
+BELOW = [(290, 396), (510, 392), (524, 436), (536, 480), (262, 480), (274, 436)]
 
 
 def bed_polygon(rows, grow=0):
@@ -60,13 +62,17 @@ def main():
         if abs(w * 3 - h * 4) > 4:
             raise SystemExit(f'PIC{n}.png is {w}x{h}, expected 4:3')
         im.resize((W, H), Image.LANCZOS).save(HERE / f'pic{n}.png')
+    make_masks()
+    print('prepared pic1-4, flow_mask, bank_mask, fan_mask, channel_mask')
+
+
+def make_masks():
     flow = ragged(poly_mask(bed_polygon(BED2, 4)), 3, 0.6, 8, 51)
     flow.save(HERE / 'flow_mask.png')
     bank = np.asarray(ragged(poly_mask(bed_polygon(BED2, 18)), 4, 0.9, 6, 53)) & ~np.asarray(flow)
     Image.fromarray(bank).save(HERE / 'bank_mask.png')
     ragged(poly_mask(FAN, BELOW), 8, 0.9, 16, 55).save(HERE / 'fan_mask.png')
     ragged(poly_mask(bed_polygon(BED1, 3)), 3, 0.5, 8, 57).save(HERE / 'channel_mask.png')
-    print('prepared pic1-4, flow_mask, bank_mask, fan_mask, channel_mask')
 
 
 if __name__ == '__main__':
