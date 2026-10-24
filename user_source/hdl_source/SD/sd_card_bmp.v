@@ -750,7 +750,7 @@ generate if(PUBLICITY_ENABLE)begin:g_publicity
  wire frame_tick;
  scene_event_cdc frames(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
   .sample_accept(1'b0),.frame_start(transition_frame_start),.clk(clk),.rst(rst),.sample_tick(),.frame_tick(frame_tick));
- publicity_voice_control #(.MENU_ENABLE(MENU_ENABLE)) voice(
+ publicity_voice_control #(.MENU_ENABLE(MENU_ENABLE),.BOOT_FRAMES(180)) voice(
   .pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),
   .enable((application_mode==1 && !app_stop_audio && !scan_busy) || public_commit),
   .commit(public_commit),.commit_page(cache_display_image),.page_pending(cache_display_request && scan_application==1),
@@ -1131,7 +1131,9 @@ endmodule
 
 // One request per actual display commit, including preview commits of the same
 // page. Completion identity is accepted only after the common stop/start ack.
-module publicity_voice_control #(parameter MIN_FRAMES=300, MENU_ENABLE=0)(
+// BOOT_FRAMES: after reset, hold the first request until HDMI has run this many
+// frames, so a slow monitor lock does not swallow the narration start.
+module publicity_voice_control #(parameter MIN_FRAMES=300, MENU_ENABLE=0, BOOT_FRAMES=0)(
  input pause,restart,
  input clk,rst,enable,commit,input [1:0] commit_page,
  input page_pending,busy,ui_play,frame_tick,toggle_auto,manual,offer_ready,
@@ -1150,6 +1152,8 @@ module publicity_voice_control #(parameter MIN_FRAMES=300, MENU_ENABLE=0)(
  reg [8:0] dwell_n;
  reg advanced_n,auto_enable_n,auto_armed;
  reg [2:0] status_n;
+ reg [7:0] boot_frames;
+ wire boot_done=boot_frames>=BOOT_FRAMES;
  wire terminal=status==0 || status==3 || status==4;
  assign voice_request=state==REQUEST;
  assign fade=enable && (page_pending || state==WAIT || state==REQUEST);
@@ -1174,7 +1178,7 @@ module publicity_voice_control #(parameter MIN_FRAMES=300, MENU_ENABLE=0)(
    if(auto_accept)advanced_n=1;
    if(commit)begin page_n=commit_page;state_n=WAIT;status_n=1;dwell_n=0;tail_frames_n=0;advanced_n=0;end
    else case(state)
-    WAIT:if(!busy && !audio_ready)state_n=REQUEST;
+    WAIT:if(!busy && !audio_ready && boot_done)state_n=REQUEST;
     REQUEST:if(audio_ready)begin
      identity_n=session_id;state_n=RUN;
      status_n=stream_error!=0?3'd4:!selected_found?3'd0:3'd2;
@@ -1189,8 +1193,9 @@ module publicity_voice_control #(parameter MIN_FRAMES=300, MENU_ENABLE=0)(
  end
  always @(posedge clk or posedge rst)begin
   if(rst)begin
-   state<=OFF;page<=0;identity<=0;dwell<=0;tail_frames<=0;advanced<=0;auto_enable<=0;status<=1;auto_armed<=0;
+   state<=OFF;page<=0;identity<=0;dwell<=0;tail_frames<=0;advanced<=0;auto_enable<=0;status<=1;auto_armed<=0;boot_frames<=0;
   end else begin
+   if(frame_tick && !boot_done)boot_frames<=boot_frames+1'b1;
    state<=state_n;page<=page_n;identity<=identity_n;dwell<=dwell_n;tail_frames<=tail_frames_n;
    advanced<=advanced_n;auto_enable<=auto_enable_n;status<=status_n;
    auto_armed<=state_n==RUN && auto_enable_n && !advanced_n && dwell_n>=MIN_FRAMES &&
