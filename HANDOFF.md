@@ -1,3 +1,22 @@
+# 当前交接：v0.30.0 开机加速正式版完成，已合并 main（2026-10-24）
+
+- **当前状态**：[v0.30.0 正式版](releases/v0.30.0/README.md)。复用板测通过的 s1-local.1 bit（v0.29.0 Seed 5 布线库重新 bitgen，`mclk_freq_div` 16 MHz，677358 字节，两份逐字节一致）。逻辑、时序、资源与 v0.29.0 相同：17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。卡不用换，必须烧 Flash。`feature/fast-boot` 已合并到 main，打了 `v0.30.0` 标签。[归档](docs/history/2026-10-24/fast-boot-v0.30/README.md)。
+- **已完成**：
+  - Flash 加载时钟 2.5 → 16 MHz（计算约 2.2 s → 0.34 s）；
+  - `run_td_build.ps1 -MclkFreq`（默认 16MHz）和 `diagnostics/fast_boot/run_bitgen.ps1`；
+  - 数码管计时诊断 `diagnostics/fast_boot/boot_time_seg.v`，实测复位释放到开始读图 12 ms、到出图 941 ms。
+- **结论**：开机慢主要是显示器识别 HDMI，用户确认换更好、更大的显示器反而更慢。固件侧剩余空间（SD 多块读约 0.25 s、首图逐行显示约 0.9 s）没有做。
+- **卡住的问题**：无。
+- **遗留**：Flash 加载时间未实测；SD 时钟域时序余量小（同 v0.29）。
+- **下一步**：以 v0.30.0 为基线。以后的完整构建用 `run_td_build.ps1` 默认就是 16 MHz 加载；若板上出现偶发不启动，先用 `-MclkFreq 10MHz` 排查。
+- **踩坑**：
+  - EG4 的参数名是 `mclk_freq_div`，不是 PH1 的 `mclk_freq`/`boot_mode`；`set_param bitgen` 不报错但不生效，必须 `bitgen -g`；
+  - JTAG 下载 SRAM 不经过 Flash 加载，这类改动只能烧 Flash 测；
+  - 传给 `td_commands_prompt.exe` 的 tcl 路径要用正斜杠；
+  - 诊断逻辑挂在 50 MHz 板时钟上会挤动布局，让原有 sd→clk 跨域 Hold 违例（4/4 种子），挂在 sd_card_clk 上就能过。
+
+## 历史交接
+
 # 当前交接：v0.30.0 开机加速 s1-local.1 板测通过，做计时诊断（2026-10-24）
 
 - **当前状态**：分支 `feature/fast-boot`（从 main `ffd8e69` 拉出）。[计划](docs/开机加速v0.30分阶段计划.md)，标签 `v0.30.0-plan.1`。[s1-local.1](releases/v0.30.0/s1-local.1/README.md)：v0.29.0 Seed 5 布线库只重新 bitgen，Flash 加载时钟 `mclk_freq_div` 从 TD 默认 2.5 MHz 改成 16 MHz，预计上电到出图快约 1.8 s（按位流大小计算，未实测）。逻辑、时序、资源与 v0.29.0 相同。
