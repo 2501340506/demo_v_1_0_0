@@ -1,3 +1,13 @@
+# 当前交接：v0.31.0 首启讲解延后 s1-local.1 待板测（2026-10-24）
+
+- **当前任务**：`feature/boot-narration-delay`。首启宣传讲解在显示器亮屏前开始，导致开头听不到。
+- **已完成**：`publicity_voice_control` 加 `BOOT_FRAMES=180`；专项与回归仿真通过；TD Seed 37 通过，候选 [s1-local.1](releases/v0.31.0/s1-local.1/README.md)。
+- **卡住的问题**：无。Seed 5 同选项 Setup -0.161 ns，未交付。
+- **下一步**：用户烧 Flash 冷启动板测；通过后建 `v0.31.0-s1-board.1` 并推送。回退 v0.30.0。
+- **踩坑**：`run_td_build.ps1` 默认不带 v0.29 选项且直接写 `TD_project/demo_Runs`，漏 `-HighAreaOptimization` 会 MSlice 超限；改为在 `diagnostics/output/v31iso_s*` 隔离副本中构建。`run_s2.ps1` 写死的 ModelSim/TD 路径与本机不同，需临时替换；本机无 `py` 启动器。
+
+# 历史交接
+
 # 当前交接：v0.30.0 开机加速正式版完成，已合并 main（2026-10-24）
 
 - **当前状态**：[v0.30.0 正式版](releases/v0.30.0/README.md)。复用板测通过的 s1-local.1 bit（v0.29.0 Seed 5 布线库重新 bitgen，`mclk_freq_div` 16 MHz，677358 字节，两份逐字节一致）。逻辑、时序、资源与 v0.29.0 相同：17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。卡不用换，必须烧 Flash。`feature/fast-boot` 已合并到 main，打了 `v0.30.0` 标签。[归档](docs/history/2026-10-24/fast-boot-v0.30/README.md)。

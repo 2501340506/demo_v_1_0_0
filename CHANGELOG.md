@@ -1,3 +1,9 @@
+# v0.31.0（进行中）
+
+## 候选
+
+- s1-local.1：首启宣传讲解等 HDMI 输出满 180 帧（约 3 s）再开始，避免显示器亮屏慢吞掉讲解开头；只改 `publicity_voice_control`。Seed 37，Setup +0.114 / Hold +0.004 ns，17615 LUT。待板测。[候选说明](releases/v0.31.0/s1-local.1/README.md)。
+
 # v0.30.0（2026-10-24）
 
 ## v0.30.0 正式版
