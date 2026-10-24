@@ -1,3 +1,22 @@
+# 当前交接：v0.29.0 场景底图与泥石流特效 s1-local.1 等板测（2026-10-24）
+
+- **当前状态**：分支 `feature/scene-art-debris-v029`。[s1-local.1](releases/v0.29.0/s1-local.1/README.md)（源码 `b712397`，Seed 5）。17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。[计划](docs/场景底图与泥石流特效v0.29分阶段计划.md)。
+- **已完成**：
+  - 地震 PIC3 房屋重绘；
+  - 泥石流 PIC1–4 掩膜和黄框重新对齐；
+  - `hazard_v3.slurry` 和 RTL 泥浆效果；
+  - sweep 和 card 逐位等价测试通过；
+  - TD 跑了 14 个种子，Seed 5、Seed 37 通过。
+- **卡住的问题**：无。
+- **下一步**：等上板反馈。要换 bit，以及卡上 `情景模式/debris_village/`、`quake_village/` 下的 10 个 BMP。
+- **踩坑**：
+  - `out/tmap/*_T.png` 是彩色预览图，不是原始 T 值。要做预览，用 `make_scene_pack.stage_t3` 取 T；
+  - micu-image 的 `save_dir` 只能放在 `Pictures/micu-out` 下面，输出尺寸也不一定等于请求的尺寸（请求 1024×768，实际给了 1448×1086），要自己缩放；
+  - 地震 PIC3 新底图的原始编辑结果只在 `Pictures/micu-out/q3_edit.png`，不入库。以后要是用原图重新跑 `prepare_quake_village.py`，会覆盖掉 `pic3.png`；
+  - 用 `bottom_waveform/run_td.ps1` 并行跑 7 个种子，第一批全部失败，第二批才有 2 个通过。
+
+## 历史交接
+
 # 当前交接：v0.28.0 宣讲模式科普内容重构正式版完成，已合并 main 并推送（2026-10-23）
 
 - **当前状态**：[v0.28.0 正式版](releases/v0.28.0/README.md) 复用板测通过的 s1-local.1 bit（源码 `6c598f4`，Seed 17，SHA-256 `c3d42128…e83dffc`）。17571 LUT（89.65%），Setup +0.080 / Hold +0.027 ns。卡上 `宣讲模式/` 的 9 个文件已换成新版，G 盘 TF 卡已写好并回读一致。`feature/publicity-content-v028` 已合并 main，打了 `v0.28.0` 标签并推送。
