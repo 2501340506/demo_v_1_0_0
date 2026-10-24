@@ -1,9 +1,10 @@
-# 当前交接：v0.30.0 开机加速 s1-local.1 待上板（2026-10-24）
+# 当前交接：v0.30.0 开机加速 s1-local.1 板测通过，做计时诊断（2026-10-24）
 
 - **当前状态**：分支 `feature/fast-boot`（从 main `ffd8e69` 拉出）。[计划](docs/开机加速v0.30分阶段计划.md)，标签 `v0.30.0-plan.1`。[s1-local.1](releases/v0.30.0/s1-local.1/README.md)：v0.29.0 Seed 5 布线库只重新 bitgen，Flash 加载时钟 `mclk_freq_div` 从 TD 默认 2.5 MHz 改成 16 MHz，预计上电到出图快约 1.8 s（按位流大小计算，未实测）。逻辑、时序、资源与 v0.29.0 相同。
 - **已完成**：核实 EG4 的配置时钟参数和可选值；新增 `diagnostics/fast_boot/run_bitgen.ps1`；`run_td_build.ps1` 加 `-MclkFreq`（默认 16MHz）。
-- **卡住的问题**：无。等用户烧 Flash 上板。
-- **下一步**：板测通过后记录 board、打标签并推送；再做 S2（SD 多块读 CMD18 + FAT 扇区缓存，首图约 0.7 s → 0.45–0.5 s）。
+- **板测**：s1-local.1 通过（烧 Flash，屏幕直接出画面，功能正常），已打 `v0.30.0-s1-board.1`。但用户感觉速度和 v0.29.0 一样，没有计时数据。
+- **卡住的问题**：预计快约 1.8 s，实际没感觉到，原因未查明。
+- **下一步**：做数码管计时诊断 bit（只放 diagnostics/output，不发布），分出 Flash 加载、SD/FAT、读图、显示器各段，再决定 S2。
 - **踩坑**：
   - EG4 的参数名是 `mclk_freq_div`，不是 PH1 的 `mclk_freq`/`boot_mode`；只认 2.5/5/7.5/10/12/14.5/16/29/36 MHz。
   - `set_param bitgen mclk_freq_div` 不报错但不起作用，必须 `bitgen -g {mclk_freq_div:16MHz}`。
