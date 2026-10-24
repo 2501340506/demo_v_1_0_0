@@ -750,7 +750,7 @@ generate if(PUBLICITY_ENABLE)begin:g_publicity
  wire frame_tick;
  scene_event_cdc frames(.pix_clk(transition_pix_clk),.pix_rst(transition_pix_rst),
   .sample_accept(1'b0),.frame_start(transition_frame_start),.clk(clk),.rst(rst),.sample_tick(),.frame_tick(frame_tick));
- publicity_voice_control #(.MENU_ENABLE(MENU_ENABLE),.BOOT_FRAMES(180)) voice(
+ publicity_voice_control #(.MENU_ENABLE(MENU_ENABLE),.BOOT_FRAMES(240)) voice(
   .pause(cache_pause),.restart(menu_resume),.clk(clk),.rst(rst),
   .enable((application_mode==1 && !app_stop_audio && !scan_busy) || public_commit),
   .commit(public_commit),.commit_page(cache_display_image),.page_pending(cache_display_request && scan_application==1),
