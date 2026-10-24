@@ -1,3 +1,17 @@
+# 当前交接：v0.30.0 开机加速 s1-local.1 待上板（2026-10-24）
+
+- **当前状态**：分支 `feature/fast-boot`（从 main `ffd8e69` 拉出）。[计划](docs/开机加速v0.30分阶段计划.md)，标签 `v0.30.0-plan.1`。[s1-local.1](releases/v0.30.0/s1-local.1/README.md)：v0.29.0 Seed 5 布线库只重新 bitgen，Flash 加载时钟 `mclk_freq_div` 从 TD 默认 2.5 MHz 改成 16 MHz，预计上电到出图快约 1.8 s（按位流大小计算，未实测）。逻辑、时序、资源与 v0.29.0 相同。
+- **已完成**：核实 EG4 的配置时钟参数和可选值；新增 `diagnostics/fast_boot/run_bitgen.ps1`；`run_td_build.ps1` 加 `-MclkFreq`（默认 16MHz）。
+- **卡住的问题**：无。等用户烧 Flash 上板。
+- **下一步**：板测通过后记录 board、打标签并推送；再做 S2（SD 多块读 CMD18 + FAT 扇区缓存，首图约 0.7 s → 0.45–0.5 s）。
+- **踩坑**：
+  - EG4 的参数名是 `mclk_freq_div`，不是 PH1 的 `mclk_freq`/`boot_mode`；只认 2.5/5/7.5/10/12/14.5/16/29/36 MHz。
+  - `set_param bitgen mclk_freq_div` 不报错但不起作用，必须 `bitgen -g {mclk_freq_div:16MHz}`。
+  - JTAG 下载 SRAM 不经过 Flash 加载，这项改动只能烧 Flash 后测。
+  - 传给 `td_commands_prompt.exe` 的 tcl 路径要用正斜杠，否则 Tcl 把反斜杠当转义，读不到文件并停在 `td >`。
+
+## 历史交接
+
 # 当前交接：v0.29.0 场景底图与泥石流特效正式版完成，已合并 main（2026-10-24）
 
 - **当前状态**：[v0.29.0 正式版](releases/v0.29.0/README.md)。复用板测通过的 s1-local.1 bit（源码 `b712397`，Seed 5，677348 字节，两份逐字节一致）。17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。G 盘 TF 卡上 `情景模式/` 的 10 个 BMP 已经写好，并回读核对一致。`feature/scene-art-debris-v029` 已合并到 main，打了 `v0.29.0` 标签。[归档](docs/history/2026-10-24/scene-art-debris-v0.29/README.md)。

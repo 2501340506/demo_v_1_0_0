@@ -1,3 +1,9 @@
+# v0.30.0（进行中）
+
+## 候选
+
+- s1-local.1：Flash 加载时钟 2.5 MHz（TD 默认）→ 16 MHz，只重新 bitgen，RTL 和布局布线与 v0.29.0 Seed 5 相同。预计上电到出图快约 1.8 s。只换 bit，必须烧 Flash。[候选说明](releases/v0.30.0/s1-local.1/README.md)。
+
 # v0.29.0（2026-10-24）
 
 ## v0.29.0 正式版
