@@ -3,8 +3,10 @@
 // (state_code 3), b = first visible frame (display_valid). Before the
 // first frame the right four digits run; afterwards the panel alternates
 // "A  nnnn" / "b  nnnn" every 2 s. Segment/digit enables are active low.
+// Clock it from sd_card_clk: adding flops to the 50 MHz pad clock shifted
+// placement and broke hold on existing sd->clk crossings (4/4 seeds).
 module boot_time_seg #(
-    parameter integer CLK_FREQ = 50_000_000
+    parameter integer CLK_FREQ = 100_000_000
 )(
     input        clk,
     input        rst_n,
