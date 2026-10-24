@@ -1,0 +1,32 @@
+# EG4 mclk_freq_div probe (Seed 7 routed db, TD 6.2.168116)
+## rejected
+BIT-8431 ERROR: Invalid parameter "mclk_freq"
+BIT-8431 ERROR: Invalid parameter "boot_mode"
+BIT-8432 ERROR: Invalid value "bogus" for parameter "mclk_freq_div"
+BIT-8431 ERROR: Invalid parameter "spi_mode"
+BIT-8431 ERROR: Invalid parameter "persist_spi"
+BIT-8431 ERROR: Invalid parameter "config_mode"
+BIT-8432 ERROR: Invalid value "3MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "4.5MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "6.5MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "8MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "9MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "13.5MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "14MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "15MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "20MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "24MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "26MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "30MHz" for parameter "mclk_freq_div"
+BIT-8432 ERROR: Invalid value "66MHz" for parameter "mclk_freq_div"
+## generated (size, body vs default bit excluding '# Date' line)
+d_10.bit 677358 diff
+d_12.bit 677358 diff
+d_14.5.bit 677358 diff
+d_16.bit 677358 diff
+d_2.5.bit 677348 same
+d_29.bit 677358 diff
+d_36.bit 677358 diff
+d_5.bit 677358 diff
+d_7.5.bit 677358 diff
+d_default.bit 677348 same

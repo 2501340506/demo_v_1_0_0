@@ -1,3 +1,41 @@
+# 当前交接：v0.30.0 开机加速正式版完成，已合并 main（2026-10-24）
+
+- **当前状态**：[v0.30.0 正式版](releases/v0.30.0/README.md)。复用板测通过的 s1-local.1 bit（v0.29.0 Seed 5 布线库重新 bitgen，`mclk_freq_div` 16 MHz，677358 字节，两份逐字节一致）。逻辑、时序、资源与 v0.29.0 相同：17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。卡不用换，必须烧 Flash。`feature/fast-boot` 已合并到 main，打了 `v0.30.0` 标签。[归档](docs/history/2026-10-24/fast-boot-v0.30/README.md)。
+- **已完成**：
+  - Flash 加载时钟 2.5 → 16 MHz（计算约 2.2 s → 0.34 s）；
+  - `run_td_build.ps1 -MclkFreq`（默认 16MHz）和 `diagnostics/fast_boot/run_bitgen.ps1`；
+  - 数码管计时诊断 `diagnostics/fast_boot/boot_time_seg.v`，实测复位释放到开始读图 12 ms、到出图 941 ms。
+- **结论**：开机慢主要是显示器识别 HDMI，用户确认换更好、更大的显示器反而更慢。固件侧剩余空间（SD 多块读约 0.25 s、首图逐行显示约 0.9 s）没有做。
+- **卡住的问题**：无。
+- **遗留**：Flash 加载时间未实测；SD 时钟域时序余量小（同 v0.29）。
+- **下一步**：以 v0.30.0 为基线。以后的完整构建用 `run_td_build.ps1` 默认就是 16 MHz 加载；若板上出现偶发不启动，先用 `-MclkFreq 10MHz` 排查。
+- **踩坑**：
+  - EG4 的参数名是 `mclk_freq_div`，不是 PH1 的 `mclk_freq`/`boot_mode`；`set_param bitgen` 不报错但不生效，必须 `bitgen -g`；
+  - JTAG 下载 SRAM 不经过 Flash 加载，这类改动只能烧 Flash 测；
+  - 传给 `td_commands_prompt.exe` 的 tcl 路径要用正斜杠；
+  - 诊断逻辑挂在 50 MHz 板时钟上会挤动布局，让原有 sd→clk 跨域 Hold 违例（4/4 种子），挂在 sd_card_clk 上就能过。
+
+## 历史交接
+
+# 当前交接：v0.30.0 开机加速 s1-local.1 板测通过，做计时诊断（2026-10-24）
+
+- **当前状态**：分支 `feature/fast-boot`（从 main `ffd8e69` 拉出）。[计划](docs/开机加速v0.30分阶段计划.md)，标签 `v0.30.0-plan.1`。[s1-local.1](releases/v0.30.0/s1-local.1/README.md)：v0.29.0 Seed 5 布线库只重新 bitgen，Flash 加载时钟 `mclk_freq_div` 从 TD 默认 2.5 MHz 改成 16 MHz，预计上电到出图快约 1.8 s（按位流大小计算，未实测）。逻辑、时序、资源与 v0.29.0 相同。
+- **已完成**：核实 EG4 的配置时钟参数和可选值；新增 `diagnostics/fast_boot/run_bitgen.ps1`；`run_td_build.ps1` 加 `-MclkFreq`（默认 16MHz）。
+- **板测**：s1-local.1 通过（烧 Flash，屏幕直接出画面，功能正常），已打 `v0.30.0-s1-board.1`。但用户感觉速度和 v0.29.0 一样，没有计时数据。
+- **卡住的问题**：预计快约 1.8 s，实际没感觉到，原因未查明。
+- **下一步**：做数码管计时诊断 bit（只放 diagnostics/output，不发布），分出 Flash 加载、SD/FAT、读图、显示器各段，再决定 S2。
+- **诊断 bit**：`diagnostics/output/fb30_diag_bit/boot_timer_diag_s11.bit`（v0.30 s1 源码 + `diagnostics/fast_boot/boot_time_seg.v` 替换数码管输出，sd_card_clk 计时，Seed 11，Setup +0.114 / Hold +0.011 ns，16 MHz 加载）。数码管：出图前右 4 位走毫秒、左 1 位是 state_code；出图后每 2 s 交替显示 `A nnnn`（开始读图）/`b nnnn`（出图），计时从复位释放开始，不含 FPGA 加载。等用户烧 Flash 读数。
+- **实测**：A = 12 ms，b = 941 ms（1 次，用户读数）。固件段不到 1 s，用户感觉的约 5 s 主要不在固件；剩下的是 FPGA 加载（16 MHz 约 0.34 s，未测）和显示器识别 HDMI（未测）。S2 最多省约 0.25 s。
+- **结论**：用户确认瓶颈是显示器识别 HDMI（换更好、更大的显示器反而更慢）。S2/S3 暂停，等用户决定结项还是继续。
+- **踩坑（诊断）**：计时器放在 50 MHz 板时钟上时 4 个种子全部 Hold −1.1～−1.5 ns（违例在原有 sd→clk 跨域路径，布局被挤动），改到 sd_card_clk 后 6 个种子里 11 通过。
+- **踩坑**：
+  - EG4 的参数名是 `mclk_freq_div`，不是 PH1 的 `mclk_freq`/`boot_mode`；只认 2.5/5/7.5/10/12/14.5/16/29/36 MHz。
+  - `set_param bitgen mclk_freq_div` 不报错但不起作用，必须 `bitgen -g {mclk_freq_div:16MHz}`。
+  - JTAG 下载 SRAM 不经过 Flash 加载，这项改动只能烧 Flash 后测。
+  - 传给 `td_commands_prompt.exe` 的 tcl 路径要用正斜杠，否则 Tcl 把反斜杠当转义，读不到文件并停在 `td >`。
+
+## 历史交接
+
 # 当前交接：v0.29.0 场景底图与泥石流特效正式版完成，已合并 main（2026-10-24）
 
 - **当前状态**：[v0.29.0 正式版](releases/v0.29.0/README.md)。复用板测通过的 s1-local.1 bit（源码 `b712397`，Seed 5，677348 字节，两份逐字节一致）。17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。G 盘 TF 卡上 `情景模式/` 的 10 个 BMP 已经写好，并回读核对一致。`feature/scene-art-debris-v029` 已合并到 main，打了 `v0.29.0` 标签。[归档](docs/history/2026-10-24/scene-art-debris-v0.29/README.md)。

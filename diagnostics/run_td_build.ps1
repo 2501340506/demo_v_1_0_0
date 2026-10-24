@@ -13,7 +13,10 @@ param(
     [ValidateRange(0,2147483647)][int]$PlacementSeed=0,
     [ValidateSet('medium','high','ultra')][string]$TimingOptimization = 'medium',
     [ValidateSet('auto','high','ultra')][string]$PostPlaceOptimization = 'auto',
-    [ValidateSet('auto','lower_pin_density','adaptive_pin_density','more_lut_pair')][string]$PackMode = 'auto'
+    [ValidateSet('auto','lower_pin_density','adaptive_pin_density','more_lut_pair')][string]$PackMode = 'auto',
+    # Flash load clock; DefaultFlow ignores set_param for it, so bitgen reruns with -g.
+    [ValidateSet('default','2.5MHz','5MHz','7.5MHz','10MHz','12MHz','14.5MHz','16MHz','29MHz','36MHz')]
+    [string]$MclkFreq = '16MHz'
 )
 $ErrorActionPreference = 'Stop'
 if ($PostRouteOptimization -and $DisablePostRouteOptimization) { throw 'Choose either high or disabled post-route optimization' }
@@ -95,4 +98,10 @@ foreach ($run in @('syn_1', 'phy_1')) {
         }
         Write-Output "PASS TD $run : $logPath"
     } finally { Pop-Location }
+}
+
+if ($MclkFreq -ne 'default') {
+    $phyDir = Join-Path $projectDir 'demo_Runs/phy_1'
+    & (Join-Path $PSScriptRoot 'fast_boot/run_bitgen.ps1') -DbPath (Join-Path $phyDir 'demo_pr.db') `
+        -OutBit (Join-Path $phyDir 'demo.bit') -MclkFreq $MclkFreq -TdRoot $TdRoot
 }
