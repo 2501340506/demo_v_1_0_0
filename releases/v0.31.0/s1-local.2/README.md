@@ -28,7 +28,7 @@
 | 整机控制器 case0 / 16 / 18 / 19 AUTO（25 MHz tone） | PASS |
 | TD Seed 3（v0.29 构建选项，HighAreaOptimization 等） | Setup +0.252 ns / Hold +0.011 ns，STNS/HTNS=0，17777 LUT（90.70%） |
 | TD 其余种子 37/5/11/17/23/59 | 不通过：均有 Hold 或 Setup 违例（sd_card_clk 域），未交付 |
-| 上板 | 待用户反馈 |
+| 上板 | 通过（2026-10-24，用户反馈“功能正常，首图音频效果满意”），见 [BOARD_RESULT.md](BOARD_RESULT.md) |
 
 整机仿真一帧只有 100 时钟，240 帧窗口很快过去；case19 只证明流程没被破坏，4 秒实际时长需上板确认。Hold 余量 0.011 ns 很小，与历史 SD 时钟域问题同类。
 

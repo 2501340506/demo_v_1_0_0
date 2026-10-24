@@ -2,8 +2,8 @@
 
 ## 候选
 
-- s1-local.2：`BOOT_FRAMES` 改为 240 帧（约 4 s，用户反馈 local.1 讲解仍早约 1 s）。Seed 3，Setup +0.252 / Hold +0.011 ns，17777 LUT（90.70%）；另 6 个种子时序不过未交付。待板测。[候选说明](releases/v0.31.0/s1-local.2/README.md)。
-- s1-local.1：首启宣传讲解等 HDMI 输出满 180 帧（约 3 s）再开始，避免显示器亮屏慢吞掉讲解开头；只改 `publicity_voice_control`。Seed 37，Setup +0.114 / Hold +0.004 ns，17615 LUT。待板测。[候选说明](releases/v0.31.0/s1-local.1/README.md)。
+- s1-local.2：`BOOT_FRAMES` 改为 240 帧（约 4 s，用户反馈 local.1 讲解仍早约 1 s）。Seed 3，Setup +0.252 / Hold +0.011 ns，17777 LUT（90.70%）；另 6 个种子时序不过未交付。板测通过（2026-10-24，功能正常，首图音频效果满意）。[候选说明](releases/v0.31.0/s1-local.2/README.md)。
+- s1-local.1：首启宣传讲解等 HDMI 输出满 180 帧（约 3 s）再开始，避免显示器亮屏慢吞掉讲解开头；只改 `publicity_voice_control`。Seed 37，Setup +0.114 / Hold +0.004 ns，17615 LUT。用户板测反馈讲解仍早约 1 s，未通过。[候选说明](releases/v0.31.0/s1-local.1/README.md)。
 
 # v0.30.0（2026-10-24）
 
