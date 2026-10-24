@@ -6,6 +6,7 @@
 - **卡住的问题**：预计快约 1.8 s，实际没感觉到，原因未查明。
 - **下一步**：做数码管计时诊断 bit（只放 diagnostics/output，不发布），分出 Flash 加载、SD/FAT、读图、显示器各段，再决定 S2。
 - **诊断 bit**：`diagnostics/output/fb30_diag_bit/boot_timer_diag_s11.bit`（v0.30 s1 源码 + `diagnostics/fast_boot/boot_time_seg.v` 替换数码管输出，sd_card_clk 计时，Seed 11，Setup +0.114 / Hold +0.011 ns，16 MHz 加载）。数码管：出图前右 4 位走毫秒、左 1 位是 state_code；出图后每 2 s 交替显示 `A nnnn`（开始读图）/`b nnnn`（出图），计时从复位释放开始，不含 FPGA 加载。等用户烧 Flash 读数。
+- **实测**：A = 12 ms，b = 941 ms（1 次，用户读数）。固件段不到 1 s，用户感觉的约 5 s 主要不在固件；剩下的是 FPGA 加载（16 MHz 约 0.34 s，未测）和显示器识别 HDMI（未测）。S2 最多省约 0.25 s。
 - **踩坑（诊断）**：计时器放在 50 MHz 板时钟上时 4 个种子全部 Hold −1.1～−1.5 ns（违例在原有 sd→clk 跨域路径，布局被挤动），改到 sd_card_clk 后 6 个种子里 11 通过。
 - **踩坑**：
   - EG4 的参数名是 `mclk_freq_div`，不是 PH1 的 `mclk_freq`/`boot_mode`；只认 2.5/5/7.5/10/12/14.5/16/29/36 MHz。
