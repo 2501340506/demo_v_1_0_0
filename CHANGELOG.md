@@ -1,4 +1,8 @@
-# v0.29.0（进行中）
+# v0.29.0（2026-10-24）
+
+## v0.29.0 正式版
+
+- 复用板测通过的 s1-local.1 bit（源码 `b712397`，Seed 5），两份逐字节一致，没有重新构建。17623 LUT（+52）、10281 寄存器、55 BRAM9K；Setup +0.164 ns、Hold +0.110 ns。卡上 `情景模式/` 里 debris_village、quake_village 的 10 个 BMP 要换。用户板测“功能均正常”。[正式版说明](releases/v0.29.0/README.md)、[归档](docs/history/2026-10-24/scene-art-debris-v0.29/README.md)。
 
 ## 候选
 
