@@ -2,7 +2,7 @@
 
 ## 候选
 
-- s1-local.1：地震 PIC3 房屋改为倒塌损坏并加灰尘；泥石流掩膜重新对齐（沟床源头、冲过小桥流出画面、桥下整片覆盖、PIC1 黄框）；泥石流特效由半透明泥色改为不透明浑浊泥浆，夹带石块。17623 LUT，Setup +0.164 ns / Hold +0.110 ns（Seed 5），尚未上板。要换 bit 和卡上 `情景模式/` 下 debris_village、quake_village 的 10 个 BMP。[候选说明](releases/v0.29.0/s1-local.1/README.md)。
+- s1-local.1：地震 PIC3 房屋改为倒塌损坏并加灰尘；泥石流掩膜重新对齐（沟床源头、冲过小桥流出画面、桥下整片覆盖、PIC1 黄框）；泥石流特效由半透明泥色改为不透明浑浊泥浆，夹带石块。17623 LUT，Setup +0.164 ns / Hold +0.110 ns（Seed 5），板测通过（2026-10-24，用户反馈“功能均正常”）。要换 bit 和卡上 `情景模式/` 下 debris_village、quake_village 的 10 个 BMP。[候选说明](releases/v0.29.0/s1-local.1/README.md)。
 
 # v0.28.0（2026-10-23）
 

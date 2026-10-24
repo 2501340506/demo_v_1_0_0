@@ -1,4 +1,4 @@
-# 当前交接：v0.29.0 场景底图与泥石流特效 s1-local.1 等板测（2026-10-24）
+# 当前交接：v0.29.0 场景底图与泥石流特效 s1-local.1 板测通过（2026-10-24）
 
 - **当前状态**：分支 `feature/scene-art-debris-v029`。[s1-local.1](releases/v0.29.0/s1-local.1/README.md)（源码 `b712397`，Seed 5）。17623 LUT（89.91%），Setup +0.164 / Hold +0.110 ns。[计划](docs/场景底图与泥石流特效v0.29分阶段计划.md)。
 - **已完成**：
@@ -8,7 +8,8 @@
   - sweep 和 card 逐位等价测试通过；
   - TD 跑了 14 个种子，Seed 5、Seed 37 通过。
 - **卡住的问题**：无。
-- **下一步**：等上板反馈。要换 bit，以及卡上 `情景模式/debris_village/`、`quake_village/` 下的 10 个 BMP。
+- **板测**：通过（用户反馈“功能均正常”，没有逐项结果）。G 盘已写入新卡，逐字节回读一致；旧的 10 个 BMP 备份在 `diagnostics/output/v29_card_backup_v28/`。
+- **下一步**：出正式版 v0.29.0，复用 s1-local.1 的 bit，然后合并 main。
 - **踩坑**：
   - `out/tmap/*_T.png` 是彩色预览图，不是原始 T 值。要做预览，用 `make_scene_pack.stage_t3` 取 T；
   - micu-image 的 `save_dir` 只能放在 `Pictures/micu-out` 下面，输出尺寸也不一定等于请求的尺寸（请求 1024×768，实际给了 1448×1086），要自己缩放；

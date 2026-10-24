@@ -1,6 +1,6 @@
 # v0.29.0 S1 候选 1：场景底图与泥石流特效（Seed 5）
 
-基线 v0.28.0。源码 `b712397`，分支 `feature/scene-art-debris-v029`。本地验证通过，**尚未上板**。
+基线 v0.28.0。源码 `b712397`，分支 `feature/scene-art-debris-v029`。**板测通过**（2026-10-24，用户反馈“功能均正常”，没有逐项结果）。
 
 ## 要换的文件
 
@@ -46,7 +46,8 @@
   - `hazard_layer_v3` 所在的 `video_clk`，Setup 余量是 +1.747 ns。
   - 报告：[validation/final_timing.rpt](validation/final_timing.rpt)
 - **资源**：17623 LUT（89.91%，比 v0.28 多 52），10281 寄存器，55 BRAM9K。`hazard_layer_v3` 占 1738 LUT。见 [validation/demo_phy.area](validation/demo_phy.area)。
-- **尚未验证**：上板。其余模块源码没改，这次没有重跑它们的单元测试。
+- **上板**：2026-10-24 通过。卡由本机写入 G 盘：先备份旧的 10 个 BMP 到 `diagnostics/output/v29_card_backup_v28/`，写入后逐字节回读一致。用户反馈“功能均正常”，没有提供逐项结果。
+- **没有重跑**：其余模块源码没改，这次没有重跑它们的单元测试。
 
 ## 上板要看的
 
