@@ -1,8 +1,8 @@
-# 当前交接：v0.31.0 首启讲解延后 s1-local.1 待板测（2026-10-24）
+# 当前交接：v0.31.0 首启讲解延后 s1-local.2 待板测（2026-10-24）
 
 - **当前任务**：`feature/boot-narration-delay`。首启宣传讲解在显示器亮屏前开始，导致开头听不到。
-- **已完成**：`publicity_voice_control` 加 `BOOT_FRAMES=180`；专项与回归仿真通过；TD Seed 37 通过，候选 [s1-local.1](releases/v0.31.0/s1-local.1/README.md)。
-- **卡住的问题**：无。Seed 5 同选项 Setup -0.161 ns，未交付。
+- **已完成**：`publicity_voice_control` 加 `BOOT_FRAMES=180`；专项与回归仿真通过；TD Seed 37 通过，local.1（180 帧）用户反馈讲解仍早约 1 s；改 240 帧，Seed 3 通过，候选 [s1-local.2](releases/v0.31.0/s1-local.2/README.md)。
+- **卡住的问题**：无。240 帧后 Seed 37/5/11/17/23/59 时序不过，sd_card_clk 余量随 LUT 小变化波动。
 - **下一步**：用户烧 Flash 冷启动板测；通过后建 `v0.31.0-s1-board.1` 并推送。回退 v0.30.0。
 - **踩坑**：`run_td_build.ps1` 默认不带 v0.29 选项且直接写 `TD_project/demo_Runs`，漏 `-HighAreaOptimization` 会 MSlice 超限；改为在 `diagnostics/output/v31iso_s*` 隔离副本中构建。`run_s2.ps1` 写死的 ModelSim/TD 路径与本机不同，需临时替换；本机无 `py` 启动器。
 
