@@ -4,6 +4,7 @@
 ## v0.31.0 正式版
 
 - 复用板测通过的 s1-local.2 bit（Seed 3），两份逐字节一致，没有重新构建。首启宣传讲解等 HDMI 输出满 240 帧（约 4 s）再开始。卡不用换，烧 Flash。[正式版说明](releases/v0.31.0/README.md)、[归档](docs/history/2026-10-24/boot-narration-v0.31/README.md)。
+
 ## 候选
 
 - s1-local.2：`BOOT_FRAMES` 改为 240 帧（约 4 s，用户反馈 local.1 讲解仍早约 1 s）。Seed 3，Setup +0.252 / Hold +0.011 ns，17777 LUT（90.70%）；另 6 个种子时序不过未交付。板测通过（2026-10-24，功能正常，首图音频效果满意）。[候选说明](releases/v0.31.0/s1-local.2/README.md)。

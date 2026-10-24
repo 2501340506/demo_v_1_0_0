@@ -1,6 +1,14 @@
 # 当前交接：v0.31.0 首启讲解延后正式版完成，已合并 main（2026-10-24）
 
-- **当前状态**：[v0.31.0 正式版](releases/v0.31.0/README.md)。复用板测通过的 s1-local.2 bit（Seed 3，677358 字节，逐字节一致）。17777 LUT（90.70# v0.31.0 首启讲解延后 s1-local.2 板测通过（2026-10-24）
+- **当前状态**：[v0.31.0 正式版](releases/v0.31.0/README.md)。复用板测通过的 s1-local.2 bit（Seed 3，677358 字节，逐字节一致）。17777 LUT（90.70%），Setup +0.252 / Hold +0.011 ns。卡不用换，烧 Flash。已合并 main，打 `v0.31.0` 标签。[归档](docs/history/2026-10-24/boot-narration-v0.31/README.md)。
+- **已完成**：`publicity_voice_control` 加 `BOOT_FRAMES=240`，首启讲解约 4 s 开始；用户板测“功能正常，首图音频效果满意”。
+- **卡住的问题**：无。
+- **下一步**：以 v0.31.0 为基线。`sd_card_clk` 域余量很紧（7 个种子仅 Seed 3 通过），建议单独做时序处理。
+- **踩坑**：TD 构建要带 v0.29 选项（`-HighAreaOptimization -PackMode more_lut_pair -HighFanoutOptimization -PlaceHoldFix -PostRouteOptimization -HighPlaceEffort -HighRouteEffort -TimingOptimization ultra -PostPlaceOptimization high`），并在 `diagnostics/output` 隔离副本中跑，避免写 `TD_project/demo_Runs`。
+
+# 历史交接
+
+# v0.31.0 首启讲解延后 s1-local.2 板测通过（2026-10-24）
 
 - **当前任务**：`feature/boot-narration-delay`。首启宣传讲解在显示器亮屏前开始，导致开头听不到。
 - **已完成**：`publicity_voice_control` 加 `BOOT_FRAMES=180`；专项与回归仿真通过；TD Seed 37 通过，local.1（180 帧）用户反馈讲解仍早约 1 s；改 240 帧，Seed 3 通过，候选 [s1-local.2](releases/v0.31.0/s1-local.2/README.md)。
