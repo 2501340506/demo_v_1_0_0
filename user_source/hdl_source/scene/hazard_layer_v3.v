@@ -252,7 +252,6 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
  wire hatch=((xy+(frame_cnt>>2))&10'd31)<10'd3;
  wire [7:0] tq={time_,2'b00};
  wire dash=((tq-frame_cnt[8:1])&8'd7)<8'd3;
- wire surge=((tq-frame_cnt[8:1])&8'd31)<8'd4;
  wire [5:0] p=frame_cnt[6:1];
  wire lead=(time_-p)==6'd0 || (time_-p-6'd32)==6'd0;
  wire puff=(p-time_)==6'd1 || (p+6'd32-time_)==6'd1;
@@ -265,7 +264,6 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
  wire [11:0] xf={2'b00,x}-{2'b00,frame_cnt};
  wire [9:0] yf={1'b0,y}-{1'b0,frame_cnt[9:1]};
  wire [8:0] yg={1'b0,y}+frame_cnt[9:1];
- wire [7:0] hc=hazard==FL ? hash8(xf[8:1],yf[8:1]) : hash8(x[7:0],yg[7:0]);
  // Value-noise parameters for the pixel's region (one set per pixel).
  reg [11:0] nu;reg [9:0] nv;reg [2:0] nsx,nsy;reg [7:0] nsalt;
  wire [11:0] x12={2'b00,x};
@@ -279,7 +277,13 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
             else begin nu=x12-{1'b0,frame_cnt,1'b0}-{2'b00,frame_cnt};nsx=3'd5;nsy=3'd2;nsalt=8'd17;end
    endcase
   end else if(hazard==EQ && role==AFTER && region==2'd0)begin nsx=3'd4;nsy=3'd4;nsalt=8'd61;end
+  else if(hazard==DF)begin   // slurry: onset y-2fc in 8 px cells, aftermath y-fc in 4 px cells
+   nv=role==ONSET ? {1'b0,y}-{frame_cnt[8:0],1'b0} : {1'b0,y}-frame_cnt;
+   nsx=role==ONSET ? 3'd3 : 3'd2;nsy=nsx;nsalt=8'd29;
+  end
  end
+ // Hash C: flood fleck, debris flow grit (on the slurry's moving grid), dust grain.
+ wire [7:0] hc=hazard==FL ? hash8(xf[8:1],yf[8:1]) : hazard==DF ? hash8(x[7:0],nv[7:0]) : hash8(x[7:0],yg[7:0]);
  wire [15:0] nu4={nu,4'b0000}>>nsx;
  wire [13:0] nv4={nv,4'b0000}>>nsy;
  wire [7:0] ncx=nu>>nsx;
@@ -293,12 +297,12 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
  wire [7:0] rk1=ru1[10:3]*8'd167+rv1[12:5]*8'd89+8'd53;
 
  reg [23:0] rgb1;reg [5:0] time1,age1;reg [1:0] reg1;
- reg v1,layer1,cov1,zone1,hatch1,dash1,surge1,lead1,puff1,sunk1,wave1;
+ reg v1,layer1,cov1,zone1,hatch1,dash1,lead1,puff1,sunk1,wave1;
  reg [7:0] ha1,hb1,hc1,h00,h10,h01,h11,rk0_1,rk1_1;reg [3:0] fx1,fy1;
  reg [3:0] rlu0,rlu1;reg [5:0] rlv0;reg [4:0] rlv1;
  always @(posedge clk)begin
   v1<=de && active_kind;rgb1<=rgb_in;time1<=time_;age1<=age;reg1<=region;
-  layer1<=layer;cov1<=covered;zone1<=zone_stripe;hatch1<=hatch;dash1<=dash;surge1<=surge;
+  layer1<=layer;cov1<=covered;zone1<=zone_stripe;hatch1<=hatch;dash1<=dash;
   lead1<=lead;puff1<=puff;sunk1<=sunk;wave1<=wave_front;
   ha1<=ha;hb1<=hb;hc1<=hc;fx1<=nu4[3:0];fy1<=nv4[3:0];
   h00<=hash8(ncx,ncy);h10<=hash8(ncx+8'd1,ncy);h01<=hash8(ncx,ncy+8'd1);h11<=hash8(ncx+8'd1,ncy+8'd1);
@@ -323,11 +327,11 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
  wire rain1=rh1<density && !rd1[5] && rd1<6'd6 && {1'b0,rlu1}+rd1[4:2]=={3'b000,rox1}+5'd1;
 
  reg [23:0] rgb2;reg [5:0] time2,age2;reg [1:0] reg2;
- reg v2,layer2,cov2,zone2,hatch2,dash2,surge2,lead2,puff2,sunk2,wave2,rain0_2,rain1_2;
+ reg v2,layer2,cov2,zone2,hatch2,dash2,lead2,puff2,sunk2,wave2,rain0_2,rain1_2;
  reg [7:0] ha2,hb2,hc2,na2,nb2;reg [3:0] fy2;
  always @(posedge clk)begin
   v2<=v1;rgb2<=rgb1;time2<=time1;age2<=age1;reg2<=reg1;layer2<=layer1;cov2<=cov1;
-  zone2<=zone1;hatch2<=hatch1;dash2<=dash1;surge2<=surge1;lead2<=lead1;puff2<=puff1;sunk2<=sunk1;wave2<=wave1;
+  zone2<=zone1;hatch2<=hatch1;dash2<=dash1;lead2<=lead1;puff2<=puff1;sunk2<=sunk1;wave2<=wave1;
   ha2<=ha1;hb2<=hb1;hc2<=hc1;na2<=na;nb2<=nb;fy2<=fy1;rain0_2<=rain0;rain1_2<=rain1;
  end
 
@@ -425,20 +429,20 @@ module hazard_layer_v3 #(parameter integer LATENCY=10)(   // fixed; documents th
     2'd2:if(layer2)begin eop=BLEND;ek=2'd2;ec=ha2<8'd24 ? STONE : n<8'd70 ? GAP : n<8'd150 ? TILE : WALL;end
     default:;
    endcase
-  end else if(hazard==DF && role==ONSET)begin
-   if(cov2 && reg2==2'd0)begin
+  end else if(hazard==DF)begin
+   // Slurry (hazard_v3.slurry): onset flow region 0; aftermath filled bed
+   // (region 1, whole layer) and fan (region 0, by time). Boulders on the
+   // noise peaks, then grit and flecks, then dark head / wet mud / slurry.
+   if(role==ONSET && cov2 && reg2==2'd1)begin eop=BLEND;ec=WET_MUD;ek=age2<6'd4 ? 2'd2 : 2'd1;end
+   else if(role==ONSET ? cov2 && reg2==2'd0 : role==AFTER && (cov2 && reg2==2'd0 || layer2 && reg2==2'd1))begin
     eop=BLEND;
-    if(age2<6'd3)begin ec=HEAD;ek=2'd3;end else begin ec=surge2 ? SURGE : SLURRY;ek=2'd2;end
-   end
-   if(cov2 && reg2==2'd1)begin eop=BLEND;ec=WET_MUD;ek=age2<6'd4 ? 2'd2 : 2'd1;end
-  end else if(hazard==DF && role==AFTER)begin
-   if(layer2 && reg2==2'd1)begin eop=BLEND;ec=SLURRY;ek=2'd2;end
-   if(cov2 && reg2==2'd0)begin
-    eop=BLEND;ek=2'd3;
-    if(hb2<8'd8)ec=BOULDER;
-    else if(ha2<8'd18)ec=STONE;
-    else if(age2<6'd10)ec=WET_MUD;
-    else begin ec=DEPOSIT;ek=time2[2] ? 2'd3 : 2'd2;end
+    if(n>=8'd226)begin ec=ROCK_LIGHT;ek=2'd2;end
+    else if(n>=8'd204)begin ec=BOULDER;ek=2'd2;end
+    else if(hc2<8'd10)begin ec=HEAD;ek=2'd3;end
+    else if(hc2<8'd18)begin ec=SURGE;ek=2'd2;end
+    else if(n>=8'd184 || reg2==2'd0 && age2<(role==ONSET ? 6'd4 : 6'd2))begin ec=HEAD;ek=2'd3;end
+    else if(n<8'd96)begin ec=WET_MUD;ek=2'd2;end
+    else begin ec=SLURRY;ek=2'd3;end
    end
   end else if(hazard==FL && role==ONSET)begin
    if(cov2)begin

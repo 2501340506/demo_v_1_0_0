@@ -105,6 +105,29 @@ def blend(a, c, k):
     return out.astype(np.uint8)
 
 
+def slurry(out, rgb, mud, head, x, y, shift, cell=3):
+    """Debris flow mud: smooth noise in 2^cell px cells sliding downstream by
+    shift px. The highest peaks are mud-coated boulders (irregular blobs,
+    pale core, darker rim, half the base still showing) wrapped in dark wet
+    mud; the rest is opaque slurry with half-blended wet patches where the
+    bed texture shows. A hash on the same moving grid adds sparse dark grit
+    and pale flecks. head marks the dark advancing front."""
+    v = (y - shift) & 1023
+    n = vnoise(x & 4095, v, cell, cell, 29)
+    g = hash8(x & 255, v & 255)
+    tone = np.where(head | (n >= 184), 0, np.where(n < 96, 2, 1))
+    tone = np.where(g < 10, 0, np.where(g < 18, 3, tone))
+    body = mud & (n < 204)
+    for i, c, k in ((0, HEAD, 3), (1, SLURRY, 3), (2, WET_MUD, 2), (3, SURGE, 2)):
+        m = body & (tone == i)
+        out[m] = blend(rgb[m], c, k)
+    rim = mud & (n >= 204) & (n < 226)
+    core = mud & (n >= 226)
+    out[rim] = blend(rgb[rim], BOULDER, 2)
+    out[core] = blend(rgb[core], ROCK_LIGHT, 2)
+    return out
+
+
 # Rain: drops live on a grid that moves down-left with the frame counter, so
 # every drop crosses the screen; a hash of the cell picks which cells hold a
 # drop and where. Two layers: near (long, fast, bright) and far (short, slow,
@@ -323,39 +346,19 @@ def render(rgb, T, hazard, role, t_now, fc, x=None, y=None):
         out[rub] = rubble(rgb[rub], x[rub], y[rub])
 
     elif hazard == 'debris_flow' and role == 'onset':
-        # Slurry coats the gully bed: a half blend keeps the bed's own boulders
-        # visible as stones carried in the mud. Surge fronts follow the
-        # arrival-time contours (gentle lobes) and move downstream; the head
-        # is a darker, denser band.
         flow = covered & (region == DF_FLOW)
-        head = flow & (age < 3)
-        body = flow & ~head
-        surge = body & ((((time << 2) - (fc >> 1)) & 31) < 4)
-        out[body & ~surge] = blend(rgb[body & ~surge], SLURRY, 2)
-        out[surge] = blend(rgb[surge], SURGE, 2)
-        out[head] = blend(rgb[head], HEAD, 3)
+        out = slurry(out, rgb, flow, flow & (age < 4), x, y, 2 * fc)
         # Mud splashed on the banks once the head has passed; fresh splashes
         # are darker, then dry to a thin stain.
         bank = covered & (region == DF_BANK)
         out[bank] = blend(rgb[bank], WET_MUD, np.where(age[bank] < 4, 2, 1))
 
     elif hazard == 'debris_flow' and role == 'aftermath':
-        # Wet debris buries the fan: fresh deposit dark wet mud, older deposit
-        # drying lighter; sparse 1 px gravel and a few 2 px boulders.
-        stone = hash8(x, y) < 18
-        big = hash8(x >> 1, y >> 1) < 8
-        bed = layer & (region == DF_BED)
-        out[bed] = blend(rgb[bed], SLURRY, 2)
-        fan = covered & (region == DF_FAN)
-        fresh = fan & (age < 10)
-        dry = fan & ~fresh
-        out[fresh & ~stone & ~big] = blend(rgb[fresh & ~stone & ~big], WET_MUD, 3)
-        # Successive surges leave lobes: alternate tones every 4 time steps.
-        lobe = ((time >> 2) & 1) == 1
-        out[dry & lobe & ~stone & ~big] = blend(rgb[dry & lobe & ~stone & ~big], DEPOSIT, 3)
-        out[dry & ~lobe & ~stone & ~big] = blend(rgb[dry & ~lobe & ~stone & ~big], DEPOSIT, 2)
-        out[fan & stone & ~big] = blend(rgb[fan & stone & ~big], STONE, 3)
-        out[fan & big] = blend(rgb[fan & big], BOULDER, 3)
+        # The bed and the fan carry the same slurry at the distant view's
+        # scale (4 px cells), moving slower; the fan spreads by arrival time
+        # with a dark advancing edge.
+        mud = (layer & (region == DF_BED)) | (covered & (region == DF_FAN))
+        out = slurry(out, rgb, mud, covered & (region == DF_FAN) & (age < 2), x, y, fc, 2)
 
     elif hazard == 'flood' and role == 'onset':
         # Broken water from smooth noise in cells 32 px along the flow by 4 px
