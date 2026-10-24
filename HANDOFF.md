@@ -1,4 +1,6 @@
-# 当前交接：v0.31.0 首启讲解延后 s1-local.2 板测通过（2026-10-24）
+# 当前交接：v0.31.0 首启讲解延后正式版完成，已合并 main（2026-10-24）
+
+- **当前状态**：[v0.31.0 正式版](releases/v0.31.0/README.md)。复用板测通过的 s1-local.2 bit（Seed 3，677358 字节，逐字节一致）。17777 LUT（90.70# v0.31.0 首启讲解延后 s1-local.2 板测通过（2026-10-24）
 
 - **当前任务**：`feature/boot-narration-delay`。首启宣传讲解在显示器亮屏前开始，导致开头听不到。
 - **已完成**：`publicity_voice_control` 加 `BOOT_FRAMES=180`；专项与回归仿真通过；TD Seed 37 通过，local.1（180 帧）用户反馈讲解仍早约 1 s；改 240 帧，Seed 3 通过，候选 [s1-local.2](releases/v0.31.0/s1-local.2/README.md)。
