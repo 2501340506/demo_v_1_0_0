@@ -32,6 +32,10 @@ work/
 /_cleanup/
 /diagnostics/output/
 /diagnostics/local_tools/
+/competition_submission_v0.31.0/
+/competition_submission_v0.31.0_final/
+/competition_submission_v0.31.0_final.zip
+/competition_submission_v0.31.0_verified.zip
 __pycache__/
 # M4 reproducible scene output; fixed card assets are retained in the candidate.
 /tools/scenes/demo_village/generated_m4/
